@@ -1,6 +1,995 @@
 <!doctype html>
-<html>
-  <body>
-    <h1>It works 🎉</h1>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ahamstree — Handcrafted Sarees from Chanderi</title>
+  <meta name="description" content="Ahamstree is a saree brand from Chanderi — timeless weaves, modern elegance. Shop curated collections and bespoke orders." />
+
+  <!-- Fonts (optional). If you prefer no external calls, remove this link. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #07060a;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.09);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+      --muted2: rgba(255,255,255,.55);
+      --line: rgba(255,255,255,.12);
+      --gold: #e8c37a;
+      --rose: #ffb6c9;
+      --mint: #a9ffe7;
+      --accent: #b58cff;
+      --shadow: 0 20px 70px rgba(0,0,0,.55);
+      --radius: 22px;
+      --radius2: 28px;
+      --max: 1160px;
+    }
+
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
+    body{
+      margin:0;
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(232,195,122,.18), transparent 60%),
+                  radial-gradient(900px 600px at 80% 30%, rgba(181,140,255,.16), transparent 55%),
+                  radial-gradient(900px 700px at 50% 90%, rgba(255,182,201,.12), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow-x:hidden;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    .container{ width:min(var(--max), calc(100% - 40px)); margin:0 auto; }
+
+    /* ---------- Top ticker ---------- */
+    .ticker{
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      backdrop-filter: blur(14px);
+      background: rgba(5,5,9,.55);
+      border-bottom: 1px solid var(--line);
+    }
+    .ticker__track{
+      display:flex;
+      gap:24px;
+      align-items:center;
+      white-space:nowrap;
+      overflow:hidden;
+      padding: 10px 0;
+      mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    }
+    .ticker__move{
+      display:flex;
+      gap:26px;
+      animation: marquee 22s linear infinite;
+      padding-left: 100%;
+    }
+    .pill{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .dot{
+      width:7px; height:7px; border-radius:50%;
+      background: var(--gold);
+      box-shadow: 0 0 0 4px rgba(232,195,122,.14);
+    }
+    @keyframes marquee{
+      0%{ transform: translateX(0); }
+      100%{ transform: translateX(-100%); }
+    }
+
+    /* ---------- Nav ---------- */
+    header{
+      position: sticky;
+      top: 44px; /* below ticker */
+      z-index: 50;
+      padding: 14px 0;
+      backdrop-filter: blur(14px);
+      background: rgba(7,6,10,.45);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .brand{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      letter-spacing:.2px;
+    }
+    .brand__name{
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      font-size: 22px;
+      line-height:1;
+    }
+    .brand__tag{
+      font-size: 12px;
+      color: var(--muted2);
+      border:1px solid var(--line);
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.04);
+    }
+
+    .links{
+      display:flex;
+      gap:18px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .links a{
+      font-size: 13px;
+      color: var(--muted);
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: .2s ease;
+    }
+    .links a:hover{
+      color: var(--text);
+      border-color: var(--line);
+      background: rgba(255,255,255,.05);
+    }
+
+    .cta{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(232,195,122,.95), rgba(255,182,201,.85));
+      color: #1b1310;
+      font-weight: 700;
+      font-size: 13px;
+      border: 0;
+      cursor:pointer;
+      box-shadow: 0 12px 30px rgba(232,195,122,.18);
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .cta:hover{ transform: translateY(-1px); filter: brightness(1.02); }
+    .cta:active{ transform: translateY(0); }
+
+    /* ---------- Hero slider ---------- */
+    .hero{
+      position:relative;
+      padding: 30px 0 18px;
+    }
+    .heroGrid{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 22px;
+      align-items:stretch;
+      margin-top: 18px;
+    }
+    @media (max-width: 980px){
+      .heroGrid{ grid-template-columns: 1fr; }
+      header{ top: 42px; }
+    }
+
+    .slider{
+      position: relative;
+      border-radius: var(--radius2);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
+      min-height: 520px;
+      background: rgba(255,255,255,.03);
+    }
+    @media (max-width: 980px){ .slider{ min-height: 520px; } }
+    @media (max-width: 560px){ .slider{ min-height: 560px; } }
+
+    .slides{
+      display:flex;
+      width: 300%;
+      height:100%;
+      transform: translateX(0%);
+      transition: transform .7s cubic-bezier(.2,.9,.2,1);
+    }
+    .slide{
+      width: 100%;
+      position:relative;
+      padding: 38px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      gap: 14px;
+      overflow:hidden;
+    }
+
+    /* Faux “photo” backgrounds via gradients */
+    .slide--1{
+      background:
+        radial-gradient(900px 600px at 30% 20%, rgba(232,195,122,.32), transparent 60%),
+        radial-gradient(800px 600px at 80% 40%, rgba(181,140,255,.22), transparent 58%),
+        linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+    }
+    .slide--2{
+      background:
+        radial-gradient(900px 650px at 30% 20%, rgba(255,182,201,.28), transparent 60%),
+        radial-gradient(900px 700px at 75% 55%, rgba(169,255,231,.18), transparent 55%),
+        linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+    }
+    .slide--3{
+      background:
+        radial-gradient(900px 600px at 25% 35%, rgba(181,140,255,.28), transparent 60%),
+        radial-gradient(900px 700px at 75% 35%, rgba(232,195,122,.20), transparent 55%),
+        linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+    }
+
+    .kicker{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.18);
+      color: var(--muted);
+      font-size: 13px;
+      backdrop-filter: blur(10px);
+    }
+    .kicker b{ color: var(--text); font-weight:700; }
+
+    .heroTitle{
+      font-family:"Playfair Display", serif;
+      font-size: 54px;
+      line-height: 1.02;
+      letter-spacing: .2px;
+      margin: 0;
+    }
+    @media (max-width: 560px){ .heroTitle{ font-size: 42px; } }
+    .heroSub{
+      margin: 0;
+      max-width: 52ch;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .heroActions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top: 8px;
+    }
+    .btn{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-weight: 650;
+      font-size: 13px;
+      cursor:pointer;
+      transition: .2s ease;
+    }
+    .btn:hover{ background: rgba(255,255,255,.10); transform: translateY(-1px); }
+    .btn.primary{
+      border: 0;
+      background: linear-gradient(135deg, rgba(232,195,122,.95), rgba(181,140,255,.85));
+      color:#130f12;
+      box-shadow: 0 14px 34px rgba(181,140,255,.16);
+    }
+    .btn.primary:hover{ filter:brightness(1.03); }
+
+    .sliderControls{
+      position:absolute;
+      inset: auto 18px 18px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      pointer-events:none;
+    }
+    .dots{
+      display:flex; gap:8px; align-items:center;
+      pointer-events:auto;
+      padding: 8px 10px;
+      border-radius:999px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(10px);
+    }
+    .dotBtn{
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.28);
+      background: rgba(255,255,255,.10);
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    .dotBtn[aria-current="true"]{
+      width: 26px;
+      background: linear-gradient(90deg, rgba(232,195,122,.95), rgba(255,182,201,.85));
+      border-color: transparent;
+    }
+
+    .arrows{
+      display:flex; gap:10px; align-items:center;
+      pointer-events:auto;
+    }
+    .iconBtn{
+      width: 40px; height: 40px;
+      border-radius: 999px;
+      display:grid; place-items:center;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(10px);
+      cursor:pointer;
+      transition:.2s ease;
+      color: var(--text);
+    }
+    .iconBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.08); }
+
+    /* Floating motifs */
+    .motif{
+      position:absolute;
+      border-radius: 999px;
+      filter: blur(.2px);
+      opacity:.8;
+      mix-blend-mode: screen;
+      animation: floaty 10s ease-in-out infinite;
+      pointer-events:none;
+    }
+    .motif.m1{ width: 160px; height: 160px; left: -40px; top: 60px; background: radial-gradient(circle at 30% 30%, rgba(232,195,122,.9), transparent 55%); }
+    .motif.m2{ width: 220px; height: 220px; right: -70px; top: 120px; background: radial-gradient(circle at 40% 40%, rgba(181,140,255,.75), transparent 60%); animation-duration: 12s; }
+    .motif.m3{ width: 190px; height: 190px; right: 60px; bottom: -70px; background: radial-gradient(circle at 40% 40%, rgba(255,182,201,.75), transparent 60%); animation-duration: 11s; }
+    @keyframes floaty{
+      0%,100%{ transform: translateY(0) translateX(0) scale(1); }
+      50%{ transform: translateY(-18px) translateX(10px) scale(1.03); }
+    }
+
+    /* ---------- Side panel ---------- */
+    .panel{
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .panelInner{ padding: 22px; display:flex; flex-direction:column; gap:16px; }
+    .panelTitle{
+      font-family:"Playfair Display", serif;
+      font-size: 22px;
+      margin: 0;
+    }
+    .panelText{ margin:0; color: var(--muted); line-height:1.7; font-size: 14px; }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .stat{
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 18px;
+      padding: 14px 12px;
+      background: rgba(0,0,0,.16);
+    }
+    .stat b{ display:block; font-size: 16px; }
+    .stat span{ display:block; margin-top: 6px; font-size: 12px; color: var(--muted2); line-height:1.3; }
+
+    .miniCards{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .mini{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding: 14px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      transition: .2s ease;
+    }
+    .mini:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.06);
+    }
+    .miniIcon{
+      width: 38px; height: 38px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(232,195,122,.85), rgba(181,140,255,.75));
+      display:grid; place-items:center;
+      color:#140f12;
+      flex: 0 0 auto;
+      box-shadow: 0 12px 26px rgba(181,140,255,.12);
+      font-weight: 900;
+    }
+    .mini h4{ margin:0; font-size: 13px; }
+    .mini p{ margin:6px 0 0; font-size: 12px; color: var(--muted2); line-height:1.45; }
+
+    /* ---------- Sections ---------- */
+    section{ padding: 58px 0; }
+    .sectionHead{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:18px; flex-wrap:wrap;
+      margin-bottom: 18px;
+    }
+    .h2{
+      font-family:"Playfair Display", serif;
+      font-size: 34px;
+      margin:0;
+      line-height: 1.08;
+    }
+    .lead{ margin:0; color: var(--muted); max-width: 62ch; line-height:1.7; font-size: 14px; }
+
+    .grid3{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 980px){ .grid3{ grid-template-columns: 1fr; } }
+
+    .card{
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.04);
+      padding: 18px;
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(600px 260px at 20% 10%, rgba(232,195,122,.20), transparent 60%),
+                  radial-gradient(600px 260px at 80% 30%, rgba(181,140,255,.16), transparent 60%);
+      opacity:.9;
+      pointer-events:none;
+    }
+    .card > *{ position:relative; }
+    .card h3{ margin: 0 0 8px; font-size: 15px; }
+    .card p{ margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+
+    .chipRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px; }
+    .chip{
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.10);
+    }
+
+    /* Collections */
+    .collections{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+    .tile{
+      grid-column: span 4;
+      min-height: 240px;
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      box-shadow: 0 14px 48px rgba(0,0,0,.40);
+      overflow:hidden;
+      position:relative;
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      gap:8px;
+      transition:.25s ease;
+    }
+    .tile:hover{ transform: translateY(-2px); background: rgba(255,255,255,.06); }
+    .tile .title{ font-family:"Playfair Display", serif; font-size: 20px; margin:0; }
+    .tile .desc{ margin:0; color: var(--muted); font-size: 13px; line-height:1.55; max-width: 52ch;}
+    .tile .hint{ margin-top: 8px; font-size: 12px; color: var(--muted2); display:flex; gap:8px; align-items:center; }
+    .swash{
+      position:absolute; inset:-60px -60px auto auto;
+      width: 220px; height: 220px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, rgba(232,195,122,.45), transparent 62%);
+      transform: rotate(20deg);
+      pointer-events:none;
+    }
+    .swash.s2{ background: radial-gradient(circle at 30% 30%, rgba(255,182,201,.35), transparent 62%); inset:auto auto -70px -70px; transform: rotate(-20deg); }
+    .swash.s3{ background: radial-gradient(circle at 30% 30%, rgba(181,140,255,.35), transparent 62%); inset: -80px auto auto -80px; transform: rotate(10deg); }
+
+    @media (max-width: 980px){
+      .tile{ grid-column: span 12; min-height: 220px; }
+    }
+
+    /* Marquee testimonials */
+    .marqueeWrap{
+      border-top: 1px solid rgba(255,255,255,.10);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      overflow:hidden;
+      border-radius: var(--radius2);
+    }
+    .marquee{
+      display:flex;
+      gap:18px;
+      white-space:nowrap;
+      padding: 16px 0;
+      animation: marquee2 26s linear infinite;
+    }
+    .quote{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.12);
+      padding: 10px 12px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .star{ color: var(--gold); }
+    @keyframes marquee2{
+      0%{ transform: translateX(0); }
+      100%{ transform: translateX(-50%); }
+    }
+
+    /* Footer CTA */
+    .ctaBlock{
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.12);
+      background:
+        radial-gradient(900px 600px at 25% 20%, rgba(232,195,122,.22), transparent 60%),
+        radial-gradient(900px 700px at 80% 60%, rgba(181,140,255,.18), transparent 55%),
+        rgba(255,255,255,.04);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      display:flex;
+      gap: 16px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .ctaBlock h3{ font-family:"Playfair Display", serif; margin:0; font-size: 24px; }
+    .ctaBlock p{ margin:6px 0 0; color: var(--muted); line-height:1.6; font-size: 13px; max-width: 70ch; }
+    .formRow{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .input{
+      width: min(320px, 70vw);
+      padding: 12px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.16);
+      color: var(--text);
+      outline:none;
+    }
+    .input::placeholder{ color: rgba(255,255,255,.45); }
+    .fineprint{ margin-top: 10px; color: var(--muted2); font-size: 12px; }
+
+    footer{
+      padding: 26px 0 36px;
+      color: var(--muted2);
+      font-size: 12px;
+    }
+    .footerRow{
+      display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; align-items:center;
+      border-top: 1px solid rgba(255,255,255,.10);
+      padding-top: 16px;
+      margin-top: 26px;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .ticker__move, .marquee, .motif{ animation: none !important; }
+      .slides{ transition: none !important; }
+      html{ scroll-behavior:auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Top moving announcement -->
+  <div class="ticker" role="region" aria-label="Announcements">
+    <div class="container">
+      <div class="ticker__track">
+        <div class="ticker__move" aria-hidden="true">
+          <span class="pill"><span class="dot"></span> New drops every week • <b style="color:var(--text)">Chanderi classics</b></span>
+          <span class="pill"><span class="dot"></span> Bespoke orders & gifting available</span>
+          <span class="pill"><span class="dot"></span> Pan-India shipping • Easy returns</span>
+          <span class="pill"><span class="dot"></span> Limited edition handwoven pieces</span>
+          <span class="pill"><span class="dot"></span> DM for styling & blouse suggestions</span>
+        </div>
+        <div class="ticker__move" aria-hidden="true">
+          <span class="pill"><span class="dot"></span> New drops every week • <b style="color:var(--text)">Chanderi classics</b></span>
+          <span class="pill"><span class="dot"></span> Bespoke orders & gifting available</span>
+          <span class="pill"><span class="dot"></span> Pan-India shipping • Easy returns</span>
+          <span class="pill"><span class="dot"></span> Limited edition handwoven pieces</span>
+          <span class="pill"><span class="dot"></span> DM for styling & blouse suggestions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <header>
+    <div class="container">
+      <div class="nav">
+        <div class="brand">
+          <div class="brand__name">Ahamstree</div>
+          <div class="brand__tag">Sarees from Chanderi</div>
+        </div>
+
+        <div class="links" aria-label="Primary navigation">
+          <a href="#collections">Collections</a>
+          <a href="#craft">Craft</a>
+          <a href="#reviews">Reviews</a>
+          <a href="#contact">Contact</a>
+          <button class="cta" id="shopBtn" type="button" title="Update this link later">
+            <span>Shop on WhatsApp</span> <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <main class="hero">
+    <div class="container">
+      <div class="heroGrid">
+        <!-- Slider -->
+        <div class="slider" aria-label="Hero highlights">
+          <div class="motif m1"></div>
+          <div class="motif m2"></div>
+          <div class="motif m3"></div>
+
+          <div class="slides" id="slides">
+            <div class="slide slide--1">
+              <div class="kicker"><span class="dot"></span> Handcrafted • <b>Chanderi</b> • Limited pieces</div>
+              <h1 class="heroTitle">Timeless sarees,<br/>made to glow.</h1>
+              <p class="heroSub">
+                Ahamstree curates elegant Chanderi weaves—light, luminous, and finished with modern styling.
+                Perfect for festive evenings, intimate weddings, and everyday luxury.
+              </p>
+              <div class="heroActions">
+                <a class="btn primary" href="#collections">Explore collections <span aria-hidden="true">→</span></a>
+                <a class="btn" href="#contact">Bespoke / Custom order <span aria-hidden="true">✦</span></a>
+              </div>
+            </div>
+
+            <div class="slide slide--2">
+              <div class="kicker"><span class="dot"></span> New drop • <b>Soft pastels</b> • Subtle zari</div>
+              <h1 class="heroTitle">Quiet luxury<br/>in every weave.</h1>
+              <p class="heroSub">
+                From delicate bootas to refined borders—choose pieces that drape effortlessly and photograph beautifully.
+              </p>
+              <div class="heroActions">
+                <a class="btn primary" href="#craft">See the craft <span aria-hidden="true">→</span></a>
+                <a class="btn" href="#reviews">Customer love <span aria-hidden="true">★</span></a>
+              </div>
+            </div>
+
+            <div class="slide slide--3">
+              <div class="kicker"><span class="dot"></span> Styling help • <b>Blouse ideas</b> • Gift packing</div>
+              <h1 class="heroTitle">From Chanderi<br/>to your closet.</h1>
+              <p class="heroSub">
+                Need help choosing? Share your occasion—we’ll recommend the perfect palette, fabric, and styling.
+              </p>
+              <div class="heroActions">
+                <a class="btn primary" href="#contact">Talk to us <span aria-hidden="true">→</span></a>
+                <a class="btn" href="#collections">View bestsellers <span aria-hidden="true">↘</span></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="sliderControls">
+            <div class="dots" aria-label="Slide selection">
+              <button class="dotBtn" aria-label="Go to slide 1" data-slide="0" aria-current="true"></button>
+              <button class="dotBtn" aria-label="Go to slide 2" data-slide="1" aria-current="false"></button>
+              <button class="dotBtn" aria-label="Go to slide 3" data-slide="2" aria-current="false"></button>
+            </div>
+            <div class="arrows" aria-label="Slide navigation">
+              <button class="iconBtn" id="prevBtn" type="button" aria-label="Previous slide">←</button>
+              <button class="iconBtn" id="nextBtn" type="button" aria-label="Next slide">→</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side panel -->
+        <aside class="panel" aria-label="Highlights">
+          <div class="panelInner">
+            <h2 class="panelTitle">Made in Chanderi. Loved everywhere.</h2>
+            <p class="panelText">
+              Rooted in heritage, designed for today—Ahamstree brings handwoven sarees with a signature glow,
+              light drape, and refined detailing.
+            </p>
+
+            <div class="stats" aria-label="Stats">
+              <div class="stat">
+                <b>Handwoven</b>
+                <span>Authentic Chanderi craft</span>
+              </div>
+              <div class="stat">
+                <b>Light drape</b>
+                <span>Comfort all day</span>
+              </div>
+              <div class="stat">
+                <b>Curated</b>
+                <span>Limited edition drops</span>
+              </div>
+            </div>
+
+            <div class="miniCards">
+              <a class="mini" href="#collections">
+                <div class="miniIcon">✦</div>
+                <div>
+                  <h4>Festive & Wedding Edit</h4>
+                  <p>Elegant borders, subtle shimmer, camera-ready drapes.</p>
+                </div>
+              </a>
+              <a class="mini" href="#craft">
+                <div class="miniIcon">⌁</div>
+                <div>
+                  <h4>Craft & Care</h4>
+                  <p>Know your weave + easy care tips to keep the glow.</p>
+                </div>
+              </a>
+              <a class="mini" href="#contact">
+                <div class="miniIcon">✉</div>
+                <div>
+                  <h4>Bespoke Orders</h4>
+                  <p>Share your occasion—we’ll curate options and styling.</p>
+                </div>
+              </a>
+            </div>
+
+            <div class="fineprint">
+              Tip: replace gradients with your real photos later (hero banners + collection shots).
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- Why Ahamstree -->
+  <section id="craft">
+    <div class="container">
+      <div class="sectionHead">
+        <div>
+          <h2 class="h2">Heritage craft, modern elegance</h2>
+          <p class="lead">
+            Chanderi is known for its airy weave and luminous finish. At Ahamstree, we focus on timeless palettes,
+            refined borders, and pieces that feel as good as they look.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="card">
+          <h3>Signature glow</h3>
+          <p>Lightweight drape with a subtle sheen—perfect for long celebrations and intimate gatherings.</p>
+          <div class="chipRow">
+            <span class="chip">Chanderi weave</span>
+            <span class="chip">Soft finish</span>
+            <span class="chip">Occasion-ready</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Curated drops</h3>
+          <p>Limited pieces, thoughtfully selected—so your saree feels special, not mass-produced.</p>
+          <div class="chipRow">
+            <span class="chip">Limited edition</span>
+            <span class="chip">Seasonal palettes</span>
+            <span class="chip">Unique motifs</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Styling support</h3>
+          <p>We help with blouse ideas, color pairing, jewelry cues, and gifting—just message us.</p>
+          <div class="chipRow">
+            <span class="chip">Blouse suggestions</span>
+            <span class="chip">Gift packing</span>
+            <span class="chip">Personal assistance</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Collections -->
+  <section id="collections">
+    <div class="container">
+      <div class="sectionHead">
+        <div>
+          <h2 class="h2">Collections</h2>
+          <p class="lead">Start with these curated edits. Replace the text with your exact categories and pricing later.</p>
+        </div>
+        <a class="btn" href="#contact">Request catalogue <span aria-hidden="true">→</span></a>
+      </div>
+
+      <div class="collections">
+        <div class="tile">
+          <div class="swash"></div>
+          <h3 class="title">Festive Classics</h3>
+          <p class="desc">Elegant borders, subtle zari, timeless colors—made for poojas & celebrations.</p>
+          <div class="hint">Tap to update with product photos • <span aria-hidden="true">↗</span></div>
+        </div>
+
+        <div class="tile">
+          <div class="swash s2"></div>
+          <h3 class="title">Pastel Edit</h3>
+          <p class="desc">Soft hues with refined motifs—effortless styling for day weddings and brunches.</p>
+          <div class="hint">Add your hero images later • <span aria-hidden="true">↗</span></div>
+        </div>
+
+        <div class="tile">
+          <div class="swash s3"></div>
+          <h3 class="title">Wedding & Gifting</h3>
+          <p class="desc">Statement sarees and curated gift sets—wrapped beautifully for your special moments.</p>
+          <div class="hint">Link this section to WhatsApp • <span aria-hidden="true">↗</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews -->
+  <section id="reviews">
+    <div class="container">
+      <div class="sectionHead">
+        <div>
+          <h2 class="h2">Customer love</h2>
+          <p class="lead">Replace these with real testimonials later. The ticker keeps it lively.</p>
+        </div>
+      </div>
+
+      <div class="marqueeWrap" aria-label="Testimonials marquee">
+        <div class="marquee">
+          <span class="quote"><span class="star">★</span> “The drape is so light and the sheen is beautiful.”</span>
+          <span class="quote"><span class="star">★</span> “Loved the blouse suggestions—looked perfect for the event.”</span>
+          <span class="quote"><span class="star">★</span> “Premium finishing and the color was exactly as promised.”</span>
+          <span class="quote"><span class="star">★</span> “Quick delivery & lovely packing—felt special!”</span>
+          <span class="quote"><span class="star">★</span> “The Chanderi glow is unreal. My new favorite.”</span>
+
+          <!-- duplicate for seamless loop -->
+          <span class="quote"><span class="star">★</span> “The drape is so light and the sheen is beautiful.”</span>
+          <span class="quote"><span class="star">★</span> “Loved the blouse suggestions—looked perfect for the event.”</span>
+          <span class="quote"><span class="star">★</span> “Premium finishing and the color was exactly as promised.”</span>
+          <span class="quote"><span class="star">★</span> “Quick delivery & lovely packing—felt special!”</span>
+          <span class="quote"><span class="star">★</span> “The Chanderi glow is unreal. My new favorite.”</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact / CTA -->
+  <section id="contact">
+    <div class="container">
+      <div class="ctaBlock">
+        <div>
+          <h3>Want the latest catalogue?</h3>
+          <p>
+            Drop your email to receive new arrivals and styling notes. Prefer WhatsApp? Tap the button and we’ll share the catalogue instantly.
+          </p>
+          <div class="fineprint">No spam. Just new drops + occasional offers.</div>
+        </div>
+
+        <div>
+          <form class="formRow" id="emailForm">
+            <input class="input" type="email" name="email" placeholder="you@example.com" required />
+            <button class="btn primary" type="submit">Notify me</button>
+          </form>
+          <div style="height:10px"></div>
+          <div class="formRow">
+            <a class="btn" id="waBtn" href="#" target="_blank" rel="noopener">WhatsApp catalogue <span aria-hidden="true">↗</span></a>
+            <a class="btn" href="#collections">Browse edits <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footerRow">
+        <div>
+          <div style="font-family:'Playfair Display',serif; font-size:16px; color: var(--text);">Ahamstree</div>
+          <div style="margin-top:6px;">Handcrafted sarees from Chanderi • © <span id="year"></span></div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="btn" href="#craft">Craft</a>
+          <a class="btn" href="#collections">Collections</a>
+          <a class="btn" href="#contact">Contact</a>
+        </div>
+      </div>
+
+      <footer>
+        <div class="container" style="padding:0;">
+          <div style="opacity:.9;">
+            Replace the placeholder WhatsApp number, Instagram link, and any store links in the script below.
+          </div>
+        </div>
+      </footer>
+    </div>
+  </section>
+
+  <script>
+    // -------------------------
+    // Update these placeholders
+    // -------------------------
+    const WHATSAPP_NUMBER_INTERNATIONAL = "91XXXXXXXXXX"; // e.g., 919876543210 (no +, no spaces)
+    const WHATSAPP_MESSAGE = "Hi Ahamstree! Please share the latest saree catalogue and pricing.";
+    const INSTAGRAM_URL = "https://instagram.com/"; // optional, update or remove
+
+    // Buttons -> WhatsApp
+    const waLink = `https://wa.me/${WHATSAPP_NUMBER_INTERNATIONAL}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+    document.getElementById("waBtn").href = waLink;
+    document.getElementById("shopBtn").addEventListener("click", () => window.open(waLink, "_blank"));
+
+    // Year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Email capture (front-end only demo)
+    // If you want this to actually send somewhere, tell me what you prefer:
+    // - Formspree
+    // - Google Forms
+    // - Mailchimp
+    // and I’ll wire it up.
+    document.getElementById("emailForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = e.target.email.value.trim();
+      if(!email) return;
+      alert(`Thanks! We'll notify ${email} about new drops.`);
+      e.target.reset();
+    });
+
+    // -------------------------
+    // Hero slider (auto + manual)
+    // -------------------------
+    const slidesEl = document.getElementById("slides");
+    const dotButtons = Array.from(document.querySelectorAll(".dotBtn"));
+    let index = 0;
+    let timer;
+
+    function setSlide(i){
+      index = (i + 3) % 3;
+      slidesEl.style.transform = `translateX(-${index * 33.3333}%)`;
+      dotButtons.forEach((b, k) => b.setAttribute("aria-current", k === index ? "true" : "false"));
+      restart();
+    }
+
+    function next(){ setSlide(index + 1); }
+    function prev(){ setSlide(index - 1); }
+
+    function restart(){
+      clearInterval(timer);
+      timer = setInterval(next, 6500);
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", next);
+    document.getElementById("prevBtn").addEventListener("click", prev);
+    dotButtons.forEach(btn => btn.addEventListener("click", () => setSlide(Number(btn.dataset.slide))));
+
+    // Pause on hover (nice UX)
+    const slider = document.querySelector(".slider");
+    slider.addEventListener("mouseenter", () => clearInterval(timer));
+    slider.addEventListener("mouseleave", restart);
+
+    restart();
+  </script>
+</body>
 </html>
