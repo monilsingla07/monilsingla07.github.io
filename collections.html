@@ -3,84 +3,87 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Collections — AhamStree</title>
+  <title>Chanderi Sarees — AhamStree</title>
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
-  <div class="saree-border"></div>
 
-  <header>
-    <div class="container">
-      <div class="header-main">
-        <a class="brand" href="index.html">
-          <img src="assets/logo.png" alt="AhamStree logo"/>
-          <div class="name"><strong>AhamStree</strong><span>Ethnic Elegance</span></div>
-        </a>
-
-        <div class="header-actions">
-          <button class="btn ghost hamburger" id="hamburger" aria-label="Open menu">☰</button>
-          <button class="btn primary" data-whatsapp>WhatsApp 💬</button>
-        </div>
-      </div>
-
-      <div class="navbar">
-        <div class="container" style="padding:0;">
-          <nav class="navlinks" id="navlinks">
-            <a href="collections.html">Sarees</a>
-            <a href="collections.html">Chanderi</a>
-            <a href="collections.html">Cotton</a>
-            <a href="collections.html">Kurta Sets</a>
-            <a href="collections.html">Dupattas</a>
-            <a href="about.html">Our Story</a>
-            <a href="contact.html">Contact</a>
-          </nav>
+  <div class="brand-ribbon fade-bottom">
+    <div class="topbar">
+      <div class="container">
+        <div class="pill">All Chanderi Sarees</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="pill"><a href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a></div>
+          <div class="pill"><a href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a></div>
         </div>
       </div>
     </div>
-  </header>
+
+    <div class="header-shell">
+      <header>
+        <div class="container">
+          <div class="header-main">
+            <a class="brand" href="index.html">
+              <img src="assets/logo.png" alt="AhamStree logo"/>
+              <div class="name"><strong>AhamStree</strong><span>Chanderi Sarees</span></div>
+            </a>
+
+            <form class="search" id="searchForm">
+              <span>⌕</span>
+              <input id="qInput" placeholder="Search by fabric, finish, color..." />
+            </form>
+
+            <div class="actions">
+              <button class="btn ghost hamburger" id="hamburger" aria-label="Open menu">☰</button>
+              <a class="btn" href="index.html"><span>Home</span> ⟵</a>
+              <button class="btn primary" data-whatsapp><span>WhatsApp</span> 💬</button>
+            </div>
+          </div>
+
+          <div class="navbar">
+            <div class="container" style="padding:0;">
+              <nav class="navlinks" id="navlinks">
+                <a href="collections.html">All Chanderi</a>
+                <a href="collections.html?fabric=Silk">Silk</a>
+                <a href="collections.html?fabric=Cotton%20Silk">Cotton Silk</a>
+                <a href="collections.html?fabric=Tissue">Tissue</a>
+                <a href="collections.html?occasion=Wedding">Wedding Edit</a>
+                <a href="about.html">Our Story</a>
+                <a href="contact.html">Contact</a>
+              </nav>
+            </div>
+          </div>
+
+        </div>
+      </header>
+    </div>
+  </div>
 
   <main class="section">
     <div class="container">
-      <h2>Collections</h2>
 
-      <div class="card" style="padding:14px; margin-bottom:14px;">
-        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;">
-          <div style="display:flex; flex-wrap:wrap; gap:10px;">
-            <span class="btn" style="cursor:default;">Sarees</span>
-            <span class="btn" style="cursor:default;">Chanderi</span>
-            <span class="btn" style="cursor:default;">Cotton</span>
-            <span class="btn" style="cursor:default;">Festive</span>
-          </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            <span class="small" style="color:var(--muted);">Sort:</span>
-            <select class="btn" style="padding:10px 12px;">
-              <option>Featured</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-              <option>New Arrivals</option>
-            </select>
-          </div>
+      <div class="card sortbar">
+        <div>
+          <div style="font-weight:950; color:var(--brand-1);">Chanderi Sarees</div>
+          <div class="small" style="color:var(--muted);"><span id="resultCount"></span></div>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="small" style="color:var(--muted);">Sort</div>
+          <select id="sortSelect" class="select">
+            <option>Featured</option>
+            <option>Price: Low to High</option>
+            <option>Price: High to Low</option>
+            <option>New Arrivals</option>
+          </select>
         </div>
       </div>
 
-      <div class="products" id="collectionGrid"></div>
-    </div>
-  </main>
-
-  <footer>
-    <div class="container">
-      <div class="footer-bottom small" style="border-top:0;">
-        <div>© <span id="year"></span> AhamStree</div>
-        <div><a href="contact.html">Contact</a> • <a href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a></div>
-      </div>
-    </div>
-  </footer>
-
-  <div class="saree-border"></div>
-
-  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
-  <script src="js/products.js"></script>
-  <script src="js/app.js"></script>
-</body>
-</html>
-
+      <div class="catalog" style="margin-top:12px;">
+        <aside class="card filters">
+          <h3>Filter by Fabric</h3>
+          <div class="chiprow fgroup">
+            <button class="chip" data-filter-fabric="All">All</button>
+            <button class="chip" data-filter-fabric="Silk">Silk</button>
+            <button class="chip" data-filter-fabric="Cotton Silk">Cotton Silk</button>
+            <button class="chip"
