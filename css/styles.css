@@ -104,10 +104,21 @@ img{ max-width:100%; display:block; }
 /* ===== Header (Nalli-inspired structure: logo + search + quick actions + category nav) ===== */
 header{
   position:sticky; top:0; z-index:50;
-  background:rgba(255,247,239,.92);
-  backdrop-filter: blur(10px);
-  border-bottom:1px solid rgba(0,0,0,.06);
+  background: transparent;          /* important */
+  border-bottom:0;
 }
+
+/* The inner header bar now becomes maroon like logo */
+.header-shell{
+  background:
+    linear-gradient(90deg, var(--brand-1), var(--brand-2), var(--brand-1));
+  color: var(--gold-300);
+  border-bottom:1px solid rgba(243,226,181,.18);
+}
+.header-main{
+  padding:14px 0;
+}
+
 .header-main{
   display:flex; align-items:center; justify-content:space-between;
   padding:14px 0;
@@ -116,7 +127,24 @@ header{
 .brand{
   display:flex; align-items:center; gap:12px; min-width:180px;
 }
-.brand img{ width:46px; height:46px; object-fit:contain; }
+.brand img{
+  width:52px;
+  height:52px;
+  object-fit:contain;
+
+  /* makes it “sit in” */
+  background: transparent;
+  border-radius:12px;
+
+  /* removes that “sticker pasted” feeling */
+  box-shadow:none;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,.25));
+}
+
+/* Brand text becomes gold-ish on maroon */
+.brand .name strong{ color: var(--gold-300); }
+.brand .name span{ color: rgba(243,226,181,.80); }
+
 .brand .name{
   font-family: ui-serif, Georgia, "Times New Roman", serif;
   letter-spacing:.5px;
