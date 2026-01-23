@@ -12,10 +12,10 @@
   <div class="brand-ribbon fade-bottom">
     <div class="topbar">
       <div class="container">
-        <div class="pill">Handwoven • Chanderi Sarees • Premium Edits</div>
+        <div class="pill">Chanderi Sarees • Handwoven • Premium Edits</div>
         <div style="display:flex; gap:10px; align-items:center;">
-          <a class="pill" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a>
-          <a class="pill" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a>
+          <div class="pill"><a href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a></div>
+          <div class="pill"><a href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a></div>
         </div>
       </div>
     </div>
@@ -32,26 +32,26 @@
               </div>
             </a>
 
-            <div class="search" role="search" aria-label="Site search">
+            <div class="search" role="search">
               <span>⌕</span>
-              <input placeholder="Search Chanderi silk, tissue, zari..." />
+              <input placeholder="Search Chanderi silk, cotton-silk, tissue..." />
             </div>
 
-            <div class="header-actions">
-              <button class="btn hamburger" id="hamburger" aria-label="Open menu">☰</button>
-              <a class="btn" href="collections.html"><span>Collections</span> 🛍️</a>
+            <div class="actions">
+              <button class="btn ghost hamburger" id="hamburger" aria-label="Open menu">☰</button>
+              <a class="btn" href="collections.html"><span>Shop</span> 🛍️</a>
               <button class="btn primary" data-whatsapp><span>WhatsApp</span> 💬</button>
             </div>
           </div>
 
           <div class="navbar">
-            <div class="container">
-              <nav class="navlinks" id="navlinks" aria-label="Primary navigation">
+            <div class="container" style="padding:0;">
+              <nav class="navlinks" id="navlinks">
                 <a href="collections.html">All Chanderi</a>
-                <a href="collections.html#silk">Chanderi Silk</a>
-                <a href="collections.html#cottonsilk">Cotton Silk</a>
-                <a href="collections.html#tissue">Tissue</a>
-                <a href="collections.html#zari">Zari Border</a>
+                <a href="collections.html?fabric=Silk">Silk</a>
+                <a href="collections.html?fabric=Cotton%20Silk">Cotton Silk</a>
+                <a href="collections.html?fabric=Tissue">Tissue</a>
+                <a href="collections.html?occasion=Wedding">Wedding Edit</a>
                 <a href="about.html">Our Story</a>
                 <a href="contact.html">Contact</a>
               </nav>
@@ -68,27 +68,26 @@
       <div class="container">
         <div class="hero-grid">
           <div class="card hero-copy">
-            <div class="kicker">Chanderi Sarees Only</div>
-            <h1>Chanderi sarees that feel as light as air.</h1>
+            <div class="kicker">Curated Chanderi Collection</div>
+            <h1>Chanderi sarees, crafted for effortless elegance.</h1>
             <p>
-              Curated handwoven Chanderi sarees — silk, cotton-silk and tissue edits crafted for timeless elegance.
-              Message us on WhatsApp to check availability and styling recommendations.
+              Explore silk, cotton-silk and tissue Chanderi sarees with refined finishes.
+              For availability and color options, message us on WhatsApp.
             </p>
             <div class="hero-ctas">
-              <a class="btn light" href="collections.html">Shop Collections</a>
-              <button class="btn primary" data-whatsapp>Order on WhatsApp</button>
-              <button class="btn" data-instagram>Visit Instagram</button>
+              <a class="btn primary" href="collections.html">Shop Chanderi Sarees</a>
+              <button class="btn" data-whatsapp>Get Recommendations</button>
+              <button class="btn" data-instagram>View Instagram</button>
             </div>
           </div>
 
-          <div class="card hero-side">
-            <div class="banner">
-              <strong>Need help choosing?</strong>
-              <span>Send occasion + budget on WhatsApp — we’ll recommend the best Chanderi picks.</span>
-            </div>
-            <div class="banner" style="background:linear-gradient(135deg, rgba(212,175,55,.35), rgba(243,226,181,.18)); color:#fff; border-color: rgba(243,226,181,.28);">
-              <strong>New Arrivals</strong>
-              <span>Fresh Chanderi edits added regularly.</span>
+          <div class="card hero-visual">
+            <!-- If you don’t have assets/hero.jpg yet, add it later -->
+            <img src="assets/hero.jpg" alt="Chanderi Sarees" onerror="this.src='assets/placeholders/p4.jpg'">
+            <div class="overlay"></div>
+            <div class="badge">
+              <strong>Lightweight • Luxurious • Timeless</strong>
+              <span>Handwoven feel, modern styling</span>
             </div>
           </div>
         </div>
@@ -97,27 +96,27 @@
 
     <section class="section">
       <div class="container">
-        <h2 style="margin:0 0 14px; color:var(--brand-1);">Shop by Edit</h2>
+        <div class="h2">Shop by Edit</div>
         <div class="grid-4">
-          <a class="tile" href="collections.html#silk">
-            <div class="img"></div>
+          <a class="tile" href="collections.html?fabric=Silk">
+            <div class="thumb"><img src="assets/placeholders/p1.jpg" alt="Silk edit"></div>
             <div class="label">Chanderi Silk</div>
-            <div class="sub">Festive • Zari • Premium</div>
+            <div class="sub">Festive • Premium</div>
           </a>
-          <a class="tile" href="collections.html#cottonsilk">
-            <div class="img"></div>
+          <a class="tile" href="collections.html?fabric=Cotton%20Silk">
+            <div class="thumb"><img src="assets/placeholders/p2.jpg" alt="Cotton silk edit"></div>
             <div class="label">Cotton Silk</div>
-            <div class="sub">Light • Daily • Comfortable</div>
+            <div class="sub">Everyday elegance</div>
           </a>
-          <a class="tile" href="collections.html#tissue">
-            <div class="img"></div>
+          <a class="tile" href="collections.html?fabric=Tissue">
+            <div class="thumb"><img src="assets/placeholders/p3.jpg" alt="Tissue edit"></div>
             <div class="label">Tissue Chanderi</div>
-            <div class="sub">Shimmer • Occasion Wear</div>
+            <div class="sub">Shimmer • Occasion wear</div>
           </a>
-          <a class="tile" href="collections.html#zari">
-            <div class="img"></div>
-            <div class="label">Zari Border Edit</div>
-            <div class="sub">Classic • Wedding Ready</div>
+          <a class="tile" href="collections.html?occasion=Wedding">
+            <div class="thumb"><img src="assets/placeholders/p4.jpg" alt="Wedding edit"></div>
+            <div class="label">Wedding Edit</div>
+            <div class="sub">Zari • Rich finishes</div>
           </a>
         </div>
       </div>
@@ -125,8 +124,36 @@
 
     <section class="section">
       <div class="container">
-        <h2 style="margin:0 0 14px; color:var(--brand-1);">Featured Chanderi Picks</h2>
+        <div class="h2">New Arrivals</div>
+        <div class="products" id="newArrivals"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="h2">Bestsellers</div>
+        <div class="products" id="bestSellers"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="h2">Featured Collection</div>
         <div class="products" id="featuredProducts"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="card" style="padding:18px;">
+          <div class="h2" style="margin-bottom:8px;">Need styling help?</div>
+          <div style="color:var(--muted); line-height:1.7;">
+            Tell us your occasion, preferred colors, and budget — we’ll suggest Chanderi picks on WhatsApp.
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn primary" data-whatsapp>Message on WhatsApp</button>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -139,47 +166,59 @@
       <div class="container">
         <div class="footer-grid">
           <div>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <img src="assets/logo.png" alt="AhamStree logo" style="width:44px; height:44px; object-fit:contain; filter: drop-shadow(0 8px 16px rgba(0,0,0,.28));"/>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <img src="assets/logo.png" alt="AhamStree logo" style="width:44px; height:44px; border-radius:14px;">
               <div>
-                <div style="font-weight:900; letter-spacing:.3px;">AhamStree</div>
+                <div style="font-weight:950; letter-spacing:.3px;">AhamStree</div>
                 <div class="small">Chanderi Sarees</div>
               </div>
             </div>
             <p class="small" style="margin-top:10px;">
-              Premium Chanderi sarees curated with timeless elegance.
+              A curated Chanderi-only store — silk, cotton-silk and tissue edits crafted for timeless elegance.
             </p>
           </div>
 
           <div>
-            <div style="font-weight:900; margin-bottom:10px;">Shop</div>
-            <div class="small"><a href="collections.html">Collections</a></div>
-            <div class="small"><a href="collections.html#new">New Arrivals</a></div>
+            <div style="font-weight:950; margin-bottom:10px;">Shop</div>
+            <div class="small"><a href="collections.html">All Chanderi</a></div>
+            <div class="small"><a href="collections.html?fabric=Silk">Silk</a></div>
+            <div class="small"><a href="collections.html?fabric=Cotton%20Silk">Cotton Silk</a></div>
+            <div class="small"><a href="collections.html?fabric=Tissue">Tissue</a></div>
           </div>
 
           <div>
-            <div style="font-weight:900; margin-bottom:10px;">Company</div>
+            <div style="font-weight:950; margin-bottom:10px;">Company</div>
             <div class="small"><a href="about.html">Our Story</a></div>
             <div class="small"><a href="contact.html">Contact</a></div>
           </div>
 
           <div>
-            <div style="font-weight:900; margin-bottom:10px;">Connect</div>
+            <div style="font-weight:950; margin-bottom:10px;">Connect</div>
             <div class="small"><a href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a></div>
             <div class="small"><a href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a></div>
           </div>
         </div>
 
         <div class="footer-bottom small">
-          <div>© <span id="year"></span> AhamStree. All rights reserved.</div>
-          <div>Made with care.</div>
+          <div>© <span id="year"></span> AhamStree</div>
+          <div>Handcrafted feel • Modern finish</div>
         </div>
       </div>
     </footer>
   </div>
 
-  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="panel">
+      <div class="top">
+        <div id="lightboxTitle">Preview</div>
+        <button class="close" id="lightboxClose" aria-label="Close">×</button>
+      </div>
+      <img id="lightboxImg" src="" alt="Preview">
+    </div>
+  </div>
+
   <script src="js/products.js"></script>
-  <script src="js/app.js"></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
