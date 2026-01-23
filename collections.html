@@ -3,115 +3,99 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Chanderi Sarees — Shop | AhamStree</title>
-  <meta name="description" content="Browse Chanderi sarees. Filter by silk, cotton-silk, tissue, zari border. Multiple photos per product."/>
+  <title>Collections — AhamStree</title>
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
 
-  <div class="brand-ribbon brand-ribbon--fade-bottom">
+  <div class="brand-ribbon fade-bottom">
     <div class="topbar">
-      <div class="container topbar-inner">
-        <div class="topbar-left">Chanderi Sarees Only • Curated Edit</div>
-        <div class="topbar-right">
-          <a class="topbar-link" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a>
-          <a class="topbar-link" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a>
+      <div class="container">
+        <div class="pill">All Chanderi Sarees</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <a class="pill" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a>
+          <a class="pill" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a>
         </div>
       </div>
     </div>
 
-    <header class="header header--on-ribbon">
-      <div class="container header-inner">
-        <a class="brand" href="index.html">
-          <img src="assets/logo.png" alt="AhamStree logo" class="brand-logo"/>
-          <div class="brand-text">
-            <div class="brand-name">AhamStree</div>
-            <div class="brand-sub">Chanderi Sarees</div>
-          </div>
-        </a>
-
-        <div class="header-actions">
-          <a class="btn btn--ghost" href="index.html">Home</a>
-          <a class="btn btn--ghost" href="contact.html">Contact</a>
-          <a class="btn btn--primary" href="https://wa.me/919582297550" target="_blank" rel="noreferrer" data-track="whatsapp_click" data-track-where="collections_header">WhatsApp</a>
-          <button class="iconbtn" id="hamburger" aria-label="Open menu">☰</button>
-        </div>
-      </div>
-
+    <header>
       <div class="container">
-        <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
-          <a href="collections.html">All Chanderi</a>
-          <a href="#silk">Chanderi Silk</a>
-          <a href="#cottonsilk">Cotton Silk</a>
-          <a href="#tissue">Tissue</a>
-          <a href="#zari">Zari Border</a>
-          <a href="about.html">Our Story</a>
-        </nav>
+        <div class="header-main">
+          <a class="brand" href="index.html">
+            <img src="assets/logo.png" alt="AhamStree logo">
+            <div class="name">
+              <strong>AhamStree</strong>
+              <span>Chanderi Sarees</span>
+            </div>
+          </a>
+
+          <div class="header-actions">
+            <button class="btn hamburger" id="hamburger">☰</button>
+            <a class="btn" href="contact.html"><span>Contact</span> ☎</a>
+            <button class="btn primary" data-whatsapp><span>WhatsApp</span> 💬</button>
+          </div>
+        </div>
+
+        <div class="navbar">
+          <div class="container" style="padding:0;">
+            <nav class="navlinks" id="navlinks">
+              <a href="collections.html">All Chanderi</a>
+              <a href="product.html?id=chan-001">Featured</a>
+              <a href="account.html">Account</a>
+            </nav>
+          </div>
+        </div>
       </div>
     </header>
   </div>
 
   <main class="section">
     <div class="container">
+      <h2 style="margin:0 0 14px; color:var(--brand-2);">Collections</h2>
 
-      <div class="page-head">
-        <h1>Chanderi Sarees</h1>
-        <div class="muted">Browse curated edits • 5 photos per saree • Zoom on product page</div>
-      </div>
-
-      <div class="catalog-toolbar card-soft">
-        <div class="toolbar-row">
-          <div class="toolbar-left">
-            <div class="muted small">Filter</div>
-            <div class="chips">
-              <button class="chip chip--active" data-chip="all" type="button">All</button>
-              <button class="chip" data-chip="silk" type="button">Silk</button>
-              <button class="chip" data-chip="cottonsilk" type="button">Cotton Silk</button>
-              <button class="chip" data-chip="tissue" type="button">Tissue</button>
-              <button class="chip" data-chip="zari" type="button">Zari Border</button>
-              <button class="chip" data-chip="new" type="button">New</button>
-            </div>
+      <div class="filterbar">
+        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; align-items:center;">
+          <div class="chips">
+            <button class="chip active" data-filter="All">All</button>
+            <button class="chip" data-filter="Silk">Silk</button>
+            <button class="chip" data-filter="Cotton Silk">Cotton Silk</button>
+            <button class="chip" data-filter="Tissue">Tissue</button>
+            <button class="chip" data-filter="Zari Border">Zari Border</button>
+            <button class="chip" data-filter="Classic">Classic</button>
           </div>
 
-          <div class="toolbar-right">
-            <div class="searchbox" role="search">
-              <span>⌕</span>
-              <input id="searchInput" placeholder="Search (silk, zari, tissue…)" />
-            </div>
-
-            <select class="select" id="sortSelect" aria-label="Sort">
-              <option value="featured">Featured</option>
-              <option value="new">New Arrivals</option>
-              <option value="priceLow">Price: Low → High</option>
-              <option value="priceHigh">Price: High → Low</option>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span style="font-weight:800; color:var(--muted);">Sort</span>
+            <select class="select" id="sortSelect">
+              <option value="Featured">Featured</option>
+              <option value="PriceLow">Price: Low to High</option>
+              <option value="PriceHigh">Price: High to Low</option>
             </select>
           </div>
         </div>
-
-        <div class="toolbar-row toolbar-bottom">
-          <div class="muted small">Showing <strong id="resultCount">0</strong> items</div>
-          <a class="link" href="https://wa.me/919582297550" target="_blank" rel="noreferrer" data-track="whatsapp_click" data-track-where="collections_toolbar">Need help choosing? WhatsApp us</a>
-        </div>
       </div>
 
-      <div class="product-grid" id="collectionGrid"></div>
-
+      <div style="height:14px;"></div>
+      <div class="products" id="collectionGrid"></div>
     </div>
   </main>
 
-  <div class="brand-ribbon brand-ribbon--fade-top">
-    <footer class="footer">
-      <div class="container footer-bottom">
-        <div>© <span id="year"></span> AhamStree</div>
-        <div><a href="about.html">Our Story</a> • <a href="contact.html">Contact</a></div>
+  <a class="btn primary fab" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp 💬</a>
+
+  <div class="brand-ribbon fade-top">
+    <footer>
+      <div class="container">
+        <div class="footer-bottom small" style="border-top:0;">
+          <div>© <span id="year"></span> AhamStree</div>
+          <div><a href="contact.html">Contact</a> • <a href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a></div>
+        </div>
       </div>
     </footer>
   </div>
 
-  <a class="fab" href="https://wa.me/919582297550" target="_blank" rel="noreferrer" aria-label="WhatsApp">💬</a>
-
-  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
-  <script src="js/products.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/tracking.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
