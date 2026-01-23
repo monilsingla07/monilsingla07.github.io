@@ -9,37 +9,65 @@ function moneyINR(n){
   catch { return String(n); }
 }
 
-/* -------------------------
-   Tracking (works now; upgrade later)
-   - If GA4 exists (gtag), uses it
-   - Else logs to console
-   - Stores basic events in localStorage queue (future backend sync)
---------------------------*/
-function track(eventName, params = {}) {
+/* -------- Tracking (works now; future backend-ready) --------
+   - If GA4 gtag exists, uses it
+   - Always queues events into localStorage (aham_events_queue)
+*/
+function track(eventName, params = {}){
   const payload = {
     event: eventName,
     ...params,
     ts: Date.now(),
-    path: location.pathname + location.search
+    path: location.pathname + location.search,
+    title: document.title
   };
 
-  // GA4 (if you add it later)
-  if (typeof window.gtag === "function") {
+  if (typeof window.gtag === "function"){
     window.gtag("event", eventName, params);
   } else {
-    // keep it visible during setup
     console.log("[track]", payload);
   }
 
-  // Queue for future backend sync
-  try {
+  try{
     const key = "aham_events_queue";
     const arr = JSON.parse(localStorage.getItem(key) || "[]");
     arr.push(payload);
-    localStorage.setItem(key, JSON.stringify(arr.slice(-200)));
-  } catch {}
+    localStorage.setItem(key, JSON.stringify(arr.slice(-250)));
+  }catch{}
 }
 
+function getAllProducts(){
+  return Array.isArray(window.AHAM_PRODUCTS) ? window.AHAM_PRODUCTS : [];
+}
+function getProductById(id){
+  return getAllProducts().find(p => p.id === id);
+}
+
+/* Auto-generate image paths for 5 images/product */
+function getProductImages(p){
+  if (p && Array.isArray(p.images) && p.images.length) return p.images;
+  const count = (p && typeof p.image_count === "number") ? p.image_count : 0;
+  if (p && p.id && count > 0){
+    return Array.from({length: count}, (_, i) => `assets/products/${p.id}/${i+1}.jpg`);
+  }
+  return ["assets/products/placeholder.jpg"];
+}
+
+/* Recently viewed (local now, backend later) */
+function saveRecentlyViewed(productId){
+  try{
+    const key="aham_recent";
+    const arr = JSON.parse(localStorage.getItem(key) || "[]");
+    const next = [productId, ...arr.filter(x=>x!==productId)].slice(0, 6);
+    localStorage.setItem(key, JSON.stringify(next));
+  }catch{}
+}
+function getRecentlyViewed(){
+  try{ return JSON.parse(localStorage.getItem("aham_recent") || "[]"); }
+  catch{ return []; }
+}
+
+/* -------- Common header actions -------- */
 function toggleMobileNav(){
   const nav = $("#navlinks");
   if(nav) nav.classList.toggle("open");
@@ -49,333 +77,326 @@ function mountCommon(){
   const ham = $("#hamburger");
   if(ham) ham.addEventListener("click", toggleMobileNav);
 
-  $all("[data-whatsapp]").forEach(el => {
-    el.addEventListener("click", () => {
+  $all("[data-whatsapp]").forEach(el=>{
+    el.addEventListener("click", ()=>{
       track("whatsapp_click", { where: "header_or_cta" });
       window.open(WHATSAPP, "_blank");
     });
   });
 
-  $all("[data-instagram]").forEach(el => {
-    el.addEventListener("click", () => {
+  $all("[data-instagram]").forEach(el=>{
+    el.addEventListener("click", ()=>{
       track("instagram_click", { where: "header_or_cta" });
       window.open(INSTAGRAM, "_blank");
     });
   });
 
-  track("page_view", { title: document.title });
+  track("page_view");
 }
 
-/* -------------------------
-   Products helpers
---------------------------*/
-function getAllProducts(){
-  return Array.isArray(window.AHAM_PRODUCTS) ? window.AHAM_PRODUCTS : [];
-}
-
-function getProductById(id){
-  return getAllProducts().find(p => p.id === id);
-}
-
-function saveRecentlyViewed(productId){
-  try {
-    const key = "aham_recent";
-    const arr = JSON.parse(localStorage.getItem(key) || "[]");
-    const next = [productId, ...arr.filter(x => x !== productId)].slice(0, 6);
-    localStorage.setItem(key, JSON.stringify(next));
-  } catch {}
-}
-
-function getRecentlyViewed(){
-  try {
-    const key = "aham_recent";
-    return JSON.parse(localStorage.getItem(key) || "[]");
-  } catch { return []; }
-}
-
-/* -------------------------
-   Render product cards (with images)
---------------------------*/
+/* -------- Product cards (image-first) -------- */
 function productCardHTML(p){
-  const img = (p.images && p.images[0]) ? p.images[0] : "assets/products/placeholder.jpg";
-  const price = p.price_label || (p.price_inr ? `₹${moneyINR(p.price_inr)}` : "Ask on WhatsApp");
+  const imgs = getProductImages(p);
+  const img = imgs[0] || "assets/products/placeholder.jpg";
+  const price = typeof p.price_inr === "number" ? `₹${moneyINR(p.price_inr)}` : "Ask on WhatsApp";
+  const tag = (p.tags||[]).includes("new") ? `<span class="tag">New</span>` : "";
 
   return `
-    <a class="tile product" href="product.html?id=${encodeURIComponent(p.id)}" data-pid="${p.id}">
+    <a class="product-card" href="product.html?id=${encodeURIComponent(p.id)}" data-pid="${p.id}">
       <div class="product-imgwrap">
-        <img class="product-img" src="${img}" alt="${p.title}" loading="lazy"
+        <img src="${img}" alt="${p.title}" loading="lazy"
              onerror="this.onerror=null;this.src='assets/products/placeholder.jpg';"/>
       </div>
-      <div class="body">
-        <div class="title">${p.title}</div>
-        <div class="meta">${p.subtitle || "Chanderi Saree"}</div>
-        <div class="row">
+      <div class="product-body">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div class="product-title">${p.title}</div>
+          ${tag}
+        </div>
+        <div class="product-sub">${p.subtitle || "Chanderi Saree"}</div>
+        <div class="product-row">
           <div class="price">${price}</div>
-          <div class="btn primary" style="padding:8px 12px; border-radius:999px;">View</div>
+          <span class="small">View</span>
         </div>
       </div>
     </a>
   `;
 }
 
-function renderProducts(targetId, products, limit){
+function renderProducts(targetId, products){
   const el = document.getElementById(targetId);
   if(!el) return;
-
   const list = Array.isArray(products) ? products : [];
-  const items = typeof limit === "number" ? list.slice(0, limit) : list;
+  el.innerHTML = list.map(productCardHTML).join("");
 
-  el.innerHTML = items.map(productCardHTML).join("");
-
-  // tracking: click on product
-  el.querySelectorAll("[data-pid]").forEach(a => {
-    a.addEventListener("click", () => {
+  el.querySelectorAll("[data-pid]").forEach(a=>{
+    a.addEventListener("click", ()=>{
       track("product_click", { product_id: a.getAttribute("data-pid") });
     });
   });
 }
 
-/* -------------------------
-   Collections page filtering + sorting
---------------------------*/
-function parsePrice(p){
-  return typeof p.price_inr === "number" ? p.price_inr : 99999999;
-}
+/* -------- Collections: chips + drawer + search + sort -------- */
+function parsePrice(p){ return typeof p.price_inr === "number" ? p.price_inr : 99999999; }
 
 function setupCollections(){
   const grid = $("#collectionGrid");
   if(!grid) return;
 
   const all = getAllProducts();
-  let currentTag = "all";
-  let query = "";
-  let sort = "featured";
+  let current = { tag:"all", q:"", sort:"featured" };
 
   const chips = $all("[data-chip]");
   const search = $("#searchInput");
-  const sortSelect = $("#sortSelect");
+  const sortSel = $("#sortSelect");
   const countEl = $("#resultCount");
 
-  const apply = () => {
+  // Drawer (mobile)
+  const drawer = $("#filterDrawer");
+  const openBtn = $("#openFilters");
+  const closeBtn = $("#closeFilters");
+  const backdrop = $("#drawerBackdrop");
+
+  const fabricChecks = $all("[data-filter-fabric]");
+  const occasionChecks = $all("[data-filter-occasion]");
+
+  function closeDrawer(){
+    if(drawer) drawer.classList.remove("open");
+  }
+  function openDrawer(){
+    if(drawer) drawer.classList.add("open");
+  }
+
+  if(openBtn) openBtn.addEventListener("click", openDrawer);
+  if(closeBtn) closeBtn.addEventListener("click", closeDrawer);
+  if(backdrop) backdrop.addEventListener("click", closeDrawer);
+
+  function getDrawerFilters(){
+    const fabrics = fabricChecks.filter(c=>c.checked).map(c=>c.value);
+    const occasions = occasionChecks.filter(c=>c.checked).map(c=>c.value);
+    return { fabrics, occasions };
+  }
+
+  function apply(){
     let list = all.slice();
 
-    if(currentTag !== "all"){
-      list = list.filter(p => (p.tags || []).includes(currentTag));
+    // chip tag
+    if(current.tag !== "all"){
+      list = list.filter(p => (p.tags||[]).includes(current.tag));
     }
 
-    if(query){
-      const q = query.toLowerCase();
+    // search
+    if(current.q){
+      const q = current.q.toLowerCase();
       list = list.filter(p =>
-        (p.title || "").toLowerCase().includes(q) ||
-        (p.subtitle || "").toLowerCase().includes(q) ||
-        (p.fabric || "").toLowerCase().includes(q)
+        (p.title||"").toLowerCase().includes(q) ||
+        (p.subtitle||"").toLowerCase().includes(q) ||
+        (p.fabric||"").toLowerCase().includes(q)
       );
     }
 
-    if(sort === "priceLow") list.sort((a,b) => parsePrice(a)-parsePrice(b));
-    if(sort === "priceHigh") list.sort((a,b) => parsePrice(b)-parsePrice(a));
-    if(sort === "new") list.sort((a,b) => ((b.tags||[]).includes("new")?1:0) - ((a.tags||[]).includes("new")?1:0));
+    // drawer filters
+    const df = getDrawerFilters();
+    if(df.fabrics.length){
+      list = list.filter(p => df.fabrics.some(f => (p.fabric||"").toLowerCase().includes(f)));
+    }
+    if(df.occasions.length){
+      list = list.filter(p => df.occasions.some(o => (p.occasion||"").toLowerCase().includes(o)));
+    }
+
+    // sort
+    if(current.sort === "priceLow") list.sort((a,b)=>parsePrice(a)-parsePrice(b));
+    if(current.sort === "priceHigh") list.sort((a,b)=>parsePrice(b)-parsePrice(a));
+    if(current.sort === "new") list.sort((a,b)=>((b.tags||[]).includes("new")?1:0)-((a.tags||[]).includes("new")?1:0));
 
     renderProducts("collectionGrid", list);
-
     if(countEl) countEl.textContent = String(list.length);
-    track("catalog_view", { tag: currentTag, q: query || "", sort });
-  };
 
-  chips.forEach(btn => {
-    btn.addEventListener("click", () => {
-      currentTag = btn.getAttribute("data-chip") || "all";
-      chips.forEach(b => b.classList.remove("chip-active"));
-      btn.classList.add("chip-active");
+    track("catalog_view", { tag: current.tag, q: current.q, sort: current.sort, fabrics: df.fabrics.join(","), occasions: df.occasions.join(",") });
+  }
+
+  chips.forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      current.tag = btn.getAttribute("data-chip") || "all";
+      chips.forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
       apply();
     });
   });
 
   if(search){
-    search.addEventListener("input", () => {
-      query = search.value.trim();
+    search.addEventListener("input", ()=>{
+      current.q = search.value.trim();
       apply();
     });
   }
 
-  if(sortSelect){
-    sortSelect.addEventListener("change", () => {
-      sort = sortSelect.value;
+  if(sortSel){
+    sortSel.addEventListener("change", ()=>{
+      current.sort = sortSel.value;
       apply();
     });
   }
 
-  // default state
-  const allChip = chips.find(c => c.getAttribute("data-chip") === "all");
-  if(allChip) allChip.classList.add("chip-active");
+  [...fabricChecks, ...occasionChecks].forEach(c=>{
+    c.addEventListener("change", apply);
+  });
+
+  // default
+  const allChip = chips.find(c=>c.getAttribute("data-chip")==="all");
+  if(allChip) allChip.classList.add("active");
   apply();
 }
 
-/* -------------------------
-   Product page gallery + lightbox
---------------------------*/
+/* -------- Product page: gallery + zoom/lightbox + recently viewed -------- */
 function setupProductPage(){
-  const holder = $("#productTitle");
-  const mainImg = $("#mainImage");
-  if(!holder || !mainImg) return;
+  const main = $("#mainImage");
+  if(!main) return;
 
   const params = new URLSearchParams(location.search);
   const id = params.get("id") || "";
   const p = getProductById(id) || getAllProducts()[0];
-
   if(!p) return;
 
-  // set content
-  $("#crumbTitle").textContent = p.title || "Product";
-  $("#productKicker").textContent = "AhamStree • Chanderi";
-  $("#productTitle").textContent = p.title || "Chanderi Saree";
-  $("#productSubtitle").textContent = p.subtitle || "Chanderi Saree";
-  $("#productPrice").textContent = p.price_label || (p.price_inr ? `₹${moneyINR(p.price_inr)}` : "Ask on WhatsApp");
-  $("#metaFabric").textContent = p.fabric || "Chanderi";
-  $("#metaOccasion").textContent = p.occasion || "Festive";
-  $("#metaWeave").textContent = p.weave || "Handwoven";
-  $("#metaCare").textContent = p.care || "Dry Clean";
-  $("#productDesc").textContent = p.description || "Message us on WhatsApp for availability and styling help.";
-
   document.title = `${p.title} — AhamStree`;
+  $("#crumbTitle") && ($("#crumbTitle").textContent = p.title);
 
-  // tracking + recently viewed
+  $("#pTitle") && ($("#pTitle").textContent = p.title);
+  $("#pSub") && ($("#pSub").textContent = p.subtitle || "Chanderi Saree");
+  $("#pPrice") && ($("#pPrice").textContent = typeof p.price_inr === "number" ? `₹${moneyINR(p.price_inr)}` : "Ask on WhatsApp");
+  $("#mFabric") && ($("#mFabric").textContent = p.fabric || "Chanderi");
+  $("#mOccasion") && ($("#mOccasion").textContent = p.occasion || "Festive");
+  $("#mWeave") && ($("#mWeave").textContent = p.weave || "Handwoven");
+  $("#mCare") && ($("#mCare").textContent = p.care || "Dry Clean");
+  $("#pDesc") && ($("#pDesc").textContent = p.description || "Message us on WhatsApp for availability and styling help.");
+
+  // track + recent
   saveRecentlyViewed(p.id);
-  track("product_view", { product_id: p.id, title: p.title });
+  track("product_view", { product_id: p.id });
 
-  // whatsapp order with prefilled message
-  const orderBtn = $("#whatsappOrderBtn");
+  // WhatsApp order prefill
+  const orderBtn = $("#orderBtn");
   if(orderBtn){
-    orderBtn.addEventListener("click", () => {
+    orderBtn.addEventListener("click", ()=>{
       const msg = encodeURIComponent(
-        `Hi AhamStree, I'm interested in:\n${p.title}\nID: ${p.id}\nPrice: ${p.price_label || ""}\nPlease share availability and more photos.`
+        `Hi AhamStree, I'm interested in:\n${p.title}\nID: ${p.id}\nPlease share availability and details.`
       );
-      track("whatsapp_click", { where: "product_page", product_id: p.id });
+      track("whatsapp_click", { where:"product_page", product_id:p.id });
       window.open(`${WHATSAPP}?text=${msg}`, "_blank");
     });
   }
 
-  // gallery
-  const images = Array.isArray(p.images) && p.images.length ? p.images : ["assets/products/placeholder.jpg"];
+  const images = getProductImages(p);
   let idx = 0;
-
-  const thumbs = $("#thumbs");
-  thumbs.innerHTML = images.map((src, i) => `
-    <button class="thumb ${i===0?"active":""}" type="button" aria-label="View image ${i+1}">
-      <img src="${src}" alt="${p.title} thumbnail ${i+1}" loading="lazy"
-           onerror="this.onerror=null;this.src='assets/products/placeholder.jpg';"/>
-    </button>
-  `).join("");
 
   function setImage(i){
     idx = (i + images.length) % images.length;
-    mainImg.src = images[idx];
-    mainImg.onerror = () => { mainImg.src = "assets/products/placeholder.jpg"; };
-    $all(".thumb").forEach((t, k) => t.classList.toggle("active", k === idx));
-    track("product_image_change", { product_id: p.id, index: idx });
+    main.src = images[idx];
+    main.onerror = ()=>{ main.src = "assets/products/placeholder.jpg"; };
+    $all(".thumb").forEach((t,k)=>t.classList.toggle("active", k===idx));
+    track("product_image_change", { product_id:p.id, index: idx });
+  }
+
+  // thumbs
+  const thumbs = $("#thumbs");
+  if(thumbs){
+    thumbs.innerHTML = images.map((src,i)=>`
+      <button class="thumb ${i===0?"active":""}" type="button" aria-label="Image ${i+1}">
+        <img src="${src}" alt="${p.title} thumbnail ${i+1}" loading="lazy"
+             onerror="this.onerror=null;this.src='assets/products/placeholder.jpg';"/>
+      </button>
+    `).join("");
+
+    $all(".thumb").forEach((b,i)=>b.addEventListener("click", ()=>setImage(i)));
   }
 
   setImage(0);
 
-  $all(".thumb").forEach((btn, i) => {
-    btn.addEventListener("click", () => setImage(i));
-  });
-
-  // Lightbox
-  const lightbox = $("#lightbox");
-  const lbImg = $("#lightboxImg");
-  const lbClose = $("#lightboxClose");
-  const lbPrev = $("#lightboxPrev");
-  const lbNext = $("#lightboxNext");
-  const lbBackdrop = $("#lightboxBackdrop");
+  // lightbox
+  const lb = $("#lightbox");
+  const lbImg = $("#lbImg");
+  const lbClose = $("#lbClose");
+  const lbPrev = $("#lbPrev");
+  const lbNext = $("#lbNext");
+  const lbBackdrop = $("#lbBackdrop");
   const zoomBtn = $("#zoomBtn");
 
-  function openLightbox(){
+  function openLB(){
+    if(!lb || !lbImg) return;
     lbImg.src = images[idx];
-    lightbox.classList.add("open");
-    lightbox.setAttribute("aria-hidden", "false");
+    lb.classList.add("open");
     document.body.style.overflow = "hidden";
-    track("image_zoom_open", { product_id: p.id, index: idx });
+    track("image_zoom_open", { product_id:p.id, index:idx });
   }
-
-  function closeLightbox(){
-    lightbox.classList.remove("open");
-    lightbox.setAttribute("aria-hidden", "true");
+  function closeLB(){
+    if(!lb) return;
+    lb.classList.remove("open");
     document.body.style.overflow = "";
-    track("image_zoom_close", { product_id: p.id, index: idx });
+    track("image_zoom_close", { product_id:p.id, index:idx });
+  }
+  function nav(d){
+    setImage(idx + d);
+    if(lbImg) lbImg.src = images[idx];
   }
 
-  function nav(delta){
-    setImage(idx + delta);
-    lbImg.src = images[idx];
-  }
+  main.addEventListener("click", openLB);
+  zoomBtn && zoomBtn.addEventListener("click", openLB);
+  lbClose && lbClose.addEventListener("click", closeLB);
+  lbBackdrop && lbBackdrop.addEventListener("click", closeLB);
+  lbPrev && lbPrev.addEventListener("click", ()=>nav(-1));
+  lbNext && lbNext.addEventListener("click", ()=>nav(1));
 
-  mainImg.addEventListener("click", openLightbox);
-  if(zoomBtn) zoomBtn.addEventListener("click", openLightbox);
-  if(lbClose) lbClose.addEventListener("click", closeLightbox);
-  if(lbBackdrop) lbBackdrop.addEventListener("click", closeLightbox);
-  if(lbPrev) lbPrev.addEventListener("click", () => nav(-1));
-  if(lbNext) lbNext.addEventListener("click", () => nav(1));
-
-  document.addEventListener("keydown", (e) => {
-    if(!lightbox.classList.contains("open")) return;
-    if(e.key === "Escape") closeLightbox();
-    if(e.key === "ArrowLeft") nav(-1);
-    if(e.key === "ArrowRight") nav(1);
+  document.addEventListener("keydown", (e)=>{
+    if(!lb || !lb.classList.contains("open")) return;
+    if(e.key==="Escape") closeLB();
+    if(e.key==="ArrowLeft") nav(-1);
+    if(e.key==="ArrowRight") nav(1);
   });
 
-  // Recently viewed render (excluding current)
-  const recentIds = getRecentlyViewed().filter(x => x !== p.id);
-  const recentProducts = recentIds.map(getProductById).filter(Boolean);
-  renderProducts("recentlyViewed", recentProducts);
+  // recently viewed
+  const recentIds = getRecentlyViewed().filter(x=>x!==p.id);
+  const recent = recentIds.map(getProductById).filter(Boolean).slice(0,4);
+  renderProducts("recentGrid", recent);
 }
 
-/* -------------------------
-   Contact form -> WhatsApp + reset (from earlier)
---------------------------*/
-function setupContactForm() {
-  const form = document.getElementById("contactForm");
-  if (!form) return;
+/* -------- Contact: WhatsApp prefill + reset -------- */
+function setupContactForm(){
+  const form = $("#contactForm");
+  if(!form) return;
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", (e)=>{
     e.preventDefault();
-
     const fd = new FormData(form);
-    const name = (fd.get("name") || "").toString().trim();
-    const phone = (fd.get("phone") || "").toString().trim();
-    const email = (fd.get("email") || "").toString().trim();
-    const message = (fd.get("message") || "").toString().trim();
+    const name = (fd.get("name")||"").toString().trim();
+    const phone = (fd.get("phone")||"").toString().trim();
+    const email = (fd.get("email")||"").toString().trim();
+    const message = (fd.get("message")||"").toString().trim();
 
     const lines = [
-      "New enquiry from website:",
+      "New enquiry from AhamStree website:",
       `Name: ${name}`,
       `Phone: ${phone}`,
       email ? `Email: ${email}` : null,
-      `Message: ${message}`,
-      "",
-      "Please confirm availability / price."
+      `Message: ${message}`
     ].filter(Boolean);
 
-    const text = encodeURIComponent(lines.join("\n"));
-    track("contact_submit", { method: "whatsapp_prefill" });
+    track("contact_submit", { method:"whatsapp_prefill" });
 
+    const text = encodeURIComponent(lines.join("\n"));
     window.open(`${WHATSAPP}?text=${text}`, "_blank");
     form.reset();
   });
 }
 
-/* -------------------------
-   Boot
---------------------------*/
-document.addEventListener("DOMContentLoaded", () => {
+/* -------- Boot -------- */
+document.addEventListener("DOMContentLoaded", ()=>{
   mountCommon();
 
-  // Home page featured (if exists)
-  if ($("#featuredProducts")) {
-    renderProducts("featuredProducts", getAllProducts(), 8);
+  // Home featured
+  if($("#featuredGrid")){
+    renderProducts("featuredGrid", getAllProducts().slice(0, 8));
   }
 
-  // Collections page
+  // Collections
   setupCollections();
 
   // Product page
