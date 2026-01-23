@@ -4,38 +4,141 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Product — AhamStree</title>
+  <meta name="description" content="Chanderi saree details — view photos, zoom, and order on WhatsApp."/>
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
-  <div class="saree-border"></div>
 
-  <header>
-    <div class="container">
-      <div class="header-main">
-        <a class="brand" href="index.html">
-          <img src="assets/logo.png" alt="AhamStree logo"/>
-          <div class="name"><strong>AhamStree</strong><span>Ethnic Elegance</span></div>
-        </a>
-        <div class="header-actions">
-          <a class="btn" href="collections.html"><span>Back</span> ←</a>
-          <button class="btn primary" data-whatsapp><span>WhatsApp</span> 💬</button>
+  <!-- TOP BRAND RIBBON -->
+  <div class="brand-ribbon fade-bottom">
+    <div class="topbar">
+      <div class="container">
+        <div class="pill">Chanderi Sarees Only • Handwoven Edit</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <a class="pill" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a>
+          <a class="pill" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a>
         </div>
       </div>
     </div>
-  </header>
+
+    <div class="header-shell">
+      <header>
+        <div class="container">
+          <div class="header-main">
+            <a class="brand" href="index.html">
+              <img src="assets/logo.png" alt="AhamStree logo"/>
+              <div class="name">
+                <strong>AhamStree</strong>
+                <span>Chanderi Sarees</span>
+              </div>
+            </a>
+
+            <div class="header-actions">
+              <a class="btn" href="collections.html"><span>Back</span> ←</a>
+              <button class="btn primary" data-whatsapp><span>WhatsApp</span> 💬</button>
+            </div>
+          </div>
+        </div>
+      </header>
+    </div>
+  </div>
 
   <main class="section">
     <div class="container">
-      <div id="productDetails" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;"></div>
-      <style>
-        @media (max-width: 980px){ #productDetails{ grid-template-columns:1fr; } }
-      </style>
+
+      <!-- Breadcrumb -->
+      <div class="small" style="color:var(--muted); margin-bottom:10px;">
+        <a href="index.html">Home</a> / <a href="collections.html">Chanderi Sarees</a> / <span id="crumbTitle">Product</span>
+      </div>
+
+      <div class="product-layout">
+        <!-- Gallery -->
+        <section class="card product-gallery">
+          <div class="gallery-main">
+            <img id="mainImage" class="gallery-main-img" alt="Product image"/>
+            <button class="gallery-zoom" id="zoomBtn" type="button" aria-label="Zoom image">⤢</button>
+          </div>
+
+          <div class="gallery-thumbs" id="thumbs"></div>
+        </section>
+
+        <!-- Details -->
+        <section class="card product-info">
+          <div class="kicker" id="productKicker">AhamStree • Chanderi</div>
+          <h1 class="product-title" id="productTitle">Chanderi Saree</h1>
+          <div class="small" style="color:var(--muted);" id="productSubtitle">—</div>
+
+          <div class="product-price" id="productPrice">₹—</div>
+
+          <div class="product-meta-grid">
+            <div class="meta-box">
+              <div class="meta-label">Fabric</div>
+              <div class="meta-value" id="metaFabric">Chanderi</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-label">Occasion</div>
+              <div class="meta-value" id="metaOccasion">Festive</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-label">Weave</div>
+              <div class="meta-value" id="metaWeave">Handwoven</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-label">Care</div>
+              <div class="meta-value" id="metaCare">Dry Clean</div>
+            </div>
+          </div>
+
+          <div class="product-actions">
+            <button class="btn primary" id="whatsappOrderBtn" type="button">Order on WhatsApp</button>
+            <a class="btn" href="collections.html">Continue Shopping</a>
+          </div>
+
+          <div class="small" style="color:var(--muted); line-height:1.7; margin-top:12px;" id="productDesc">
+            Premium Chanderi saree with a refined finish. Message us on WhatsApp for availability, blouse pairing and styling help.
+          </div>
+
+          <hr style="border:0; border-top:1px solid rgba(0,0,0,.08); margin:16px 0;"/>
+
+          <div>
+            <div style="font-weight:900; color:var(--wine-900); margin-bottom:6px;">Recently Viewed</div>
+            <div class="products" id="recentlyViewed" style="grid-template-columns: repeat(2, 1fr);"></div>
+          </div>
+        </section>
+      </div>
+
     </div>
   </main>
 
-  <div class="saree-border"></div>
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+    <div class="lightbox-dialog" role="dialog" aria-modal="true" aria-label="Image zoom">
+      <button class="lightbox-close" id="lightboxClose" aria-label="Close">✕</button>
+      <button class="lightbox-nav left" id="lightboxPrev" aria-label="Previous image">‹</button>
+      <img id="lightboxImg" class="lightbox-img" alt="Zoomed image"/>
+      <button class="lightbox-nav right" id="lightboxNext" aria-label="Next image">›</button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="brand-ribbon fade-top">
+    <footer>
+      <div class="container">
+        <div class="footer-bottom small" style="border-top:0;">
+          <div>© <span id="year"></span> AhamStree. All rights reserved.</div>
+          <div><a href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a> •
+            <a href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <a class="btn primary fab" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp 💬</a>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
   <script src="js/products.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
-
