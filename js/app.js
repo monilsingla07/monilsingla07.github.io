@@ -77,10 +77,46 @@ function renderProductDetails(){
   `;
 }
 
+function setupContactForm() {
+  const form = document.getElementById("contactForm");
+  if (!form) return;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const fd = new FormData(form);
+    const name = (fd.get("name") || "").toString().trim();
+    const phone = (fd.get("phone") || "").toString().trim();
+    const email = (fd.get("email") || "").toString().trim();
+    const message = (fd.get("message") || "").toString().trim();
+
+    const lines = [
+      "New enquiry from website:",
+      `Name: ${name}`,
+      `Phone: ${phone}`,
+      email ? `Email: ${email}` : null,
+      `Message: ${message}`,
+      "",
+      "Please confirm availability / price."
+    ].filter(Boolean);
+
+    const text = encodeURIComponent(lines.join("\n"));
+
+    // Open WhatsApp chat to you with prefilled message
+    const url = `https://wa.me/919582297550?text=${text}`;
+    window.open(url, "_blank");
+
+    // Clear the form after submit
+    form.reset();
+  });
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
   mountCommon();
   renderProducts("featuredProducts", 8);
   renderProducts("collectionGrid", 12);
   renderProductDetails();
+  setupContactForm();
 });
 
