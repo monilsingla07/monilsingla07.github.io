@@ -3,264 +3,115 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Chanderi Sarees — AhamStree</title>
-  <meta name="description" content="Shop premium Chanderi sarees — silk, cotton-silk and tissue edits. WhatsApp to confirm availability and styling."/>
+  <title>Chanderi Sarees — Shop | AhamStree</title>
+  <meta name="description" content="Browse Chanderi sarees. Filter by silk, cotton-silk, tissue, zari border. Multiple photos per product."/>
   <link rel="stylesheet" href="css/styles.css"/>
-
-  <!-- Optional: preconnect for faster fonts later if you add -->
 </head>
 <body>
 
-  <!-- TOP BRAND RIBBON -->
-  <div class="brand-ribbon fade-bottom">
+  <div class="brand-ribbon brand-ribbon--fade-bottom">
     <div class="topbar">
-      <div class="container">
-        <div class="pill">Chanderi Sarees Only • Handwoven Edit</div>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <a class="pill" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a>
-          <a class="pill" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a>
+      <div class="container topbar-inner">
+        <div class="topbar-left">Chanderi Sarees Only • Curated Edit</div>
+        <div class="topbar-right">
+          <a class="topbar-link" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a>
+          <a class="topbar-link" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a>
         </div>
       </div>
     </div>
 
-    <div class="header-shell">
-      <header>
-        <div class="container">
-          <div class="header-main">
-            <a class="brand" href="index.html">
-              <img src="assets/logo.png" alt="AhamStree logo"/>
-              <div class="name">
-                <strong>AhamStree</strong>
-                <span>Chanderi Sarees</span>
-              </div>
-            </a>
-
-            <div class="search" role="search" aria-label="Search products">
-              <span class="icon">⌕</span>
-              <input id="searchInput" placeholder="Search chanderi silk, tissue, zari..." />
-            </div>
-
-            <div class="header-actions">
-              <button class="btn ghost hamburger" id="hamburger" aria-label="Open menu">☰</button>
-              <a class="btn" href="contact.html"><span>Contact</span> ✦</a>
-              <button class="btn primary" data-whatsapp><span>WhatsApp</span> 💬</button>
-            </div>
+    <header class="header header--on-ribbon">
+      <div class="container header-inner">
+        <a class="brand" href="index.html">
+          <img src="assets/logo.png" alt="AhamStree logo" class="brand-logo"/>
+          <div class="brand-text">
+            <div class="brand-name">AhamStree</div>
+            <div class="brand-sub">Chanderi Sarees</div>
           </div>
+        </a>
 
-          <div class="navbar">
-            <div class="container" style="padding:0;">
-              <nav class="navlinks" id="navlinks" aria-label="Primary navigation">
-                <a href="collections.html">All Chanderi</a>
-                <a href="#silk">Chanderi Silk</a>
-                <a href="#cottonsilk">Cotton Silk</a>
-                <a href="#tissue">Tissue</a>
-                <a href="#zari">Zari Border</a>
-                <a href="#new">New Arrivals</a>
-                <a href="about.html">Our Story</a>
-              </nav>
-            </div>
-          </div>
-
+        <div class="header-actions">
+          <a class="btn btn--ghost" href="index.html">Home</a>
+          <a class="btn btn--ghost" href="contact.html">Contact</a>
+          <a class="btn btn--primary" href="https://wa.me/919582297550" target="_blank" rel="noreferrer" data-track="whatsapp_click" data-track-where="collections_header">WhatsApp</a>
+          <button class="iconbtn" id="hamburger" aria-label="Open menu">☰</button>
         </div>
-      </header>
-    </div>
+      </div>
+
+      <div class="container">
+        <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+          <a href="collections.html">All Chanderi</a>
+          <a href="#silk">Chanderi Silk</a>
+          <a href="#cottonsilk">Cotton Silk</a>
+          <a href="#tissue">Tissue</a>
+          <a href="#zari">Zari Border</a>
+          <a href="about.html">Our Story</a>
+        </nav>
+      </div>
+    </header>
   </div>
 
-  <main>
+  <main class="section">
+    <div class="container">
 
-    <!-- COLLECTION HERO (Taneira-like) -->
-    <section class="section" style="padding-top:18px;">
-      <div class="container">
-        <div class="card" style="overflow:hidden; border-radius:22px;">
-          <div style="
-            padding:18px;
-            background:
-              radial-gradient(900px 260px at 20% 10%, rgba(212,175,55,.20), transparent 60%),
-              linear-gradient(135deg, rgba(58,0,22,.08), rgba(255,247,239,1));
-          ">
-            <div class="kicker">AhamStree • Curated Chanderi</div>
-            <h1 style="margin:10px 0 6px; color:var(--wine-900); font-size: clamp(22px, 3.2vw, 34px); line-height:1.1;">
-              Chanderi Sarees Collection
-            </h1>
-            <p style="margin:0; color:var(--muted); max-width:70ch;">
-              Light as air, rich in heritage. Explore silk, cotton-silk and tissue Chanderi sarees — curated for festive, wedding and elegant everyday drapes.
-            </p>
+      <div class="page-head">
+        <h1>Chanderi Sarees</h1>
+        <div class="muted">Browse curated edits • 5 photos per saree • Zoom on product page</div>
+      </div>
 
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-              <button class="btn primary" data-whatsapp>Ask on WhatsApp</button>
-              <a class="btn" href="#catalog">Browse Catalog</a>
+      <div class="catalog-toolbar card-soft">
+        <div class="toolbar-row">
+          <div class="toolbar-left">
+            <div class="muted small">Filter</div>
+            <div class="chips">
+              <button class="chip chip--active" data-chip="all" type="button">All</button>
+              <button class="chip" data-chip="silk" type="button">Silk</button>
+              <button class="chip" data-chip="cottonsilk" type="button">Cotton Silk</button>
+              <button class="chip" data-chip="tissue" type="button">Tissue</button>
+              <button class="chip" data-chip="zari" type="button">Zari Border</button>
+              <button class="chip" data-chip="new" type="button">New</button>
             </div>
           </div>
+
+          <div class="toolbar-right">
+            <div class="searchbox" role="search">
+              <span>⌕</span>
+              <input id="searchInput" placeholder="Search (silk, zari, tissue…)" />
+            </div>
+
+            <select class="select" id="sortSelect" aria-label="Sort">
+              <option value="featured">Featured</option>
+              <option value="new">New Arrivals</option>
+              <option value="priceLow">Price: Low → High</option>
+              <option value="priceHigh">Price: High → Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-row toolbar-bottom">
+          <div class="muted small">Showing <strong id="resultCount">0</strong> items</div>
+          <a class="link" href="https://wa.me/919582297550" target="_blank" rel="noreferrer" data-track="whatsapp_click" data-track-where="collections_toolbar">Need help choosing? WhatsApp us</a>
         </div>
       </div>
-    </section>
 
-    <!-- FILTERS + SORT BAR -->
-    <section class="section" id="catalog" style="padding-top:10px;">
-      <div class="container">
+      <div class="product-grid" id="collectionGrid"></div>
 
-        <div class="card" style="padding:14px; border-radius:20px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-              <span class="small" style="color:var(--muted); font-weight:800;">Filter:</span>
-
-              <!-- “chips” - you can wire these to JS later -->
-              <button class="btn" data-chip="all" type="button">All</button>
-              <button class="btn" data-chip="silk" type="button">Silk</button>
-              <button class="btn" data-chip="cotton-silk" type="button">Cotton Silk</button>
-              <button class="btn" data-chip="tissue" type="button">Tissue</button>
-              <button class="btn" data-chip="zari" type="button">Zari Border</button>
-            </div>
-
-            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-              <span class="small" style="color:var(--muted); font-weight:800;">Sort:</span>
-              <select class="btn" id="sortSelect" style="padding:10px 12px;">
-                <option value="featured">Featured</option>
-                <option value="new">New Arrivals</option>
-                <option value="priceLow">Price: Low → High</option>
-                <option value="priceHigh">Price: High → Low</option>
-              </select>
-            </div>
-          </div>
-
-          <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-            <div class="small" style="color:var(--muted);">
-              Showing <strong id="resultCount">0</strong> items
-            </div>
-
-            <!-- Mobile “Filter” button (optional) -->
-            <button class="btn" id="openFilters" type="button" style="display:none;">
-              Filters
-            </button>
-          </div>
-        </div>
-
-        <!-- GRID -->
-        <div style="margin-top:14px;">
-          <div class="products" id="collectionGrid"></div>
-        </div>
-
-        <!-- “Load more” (optional, for later) -->
-        <div style="display:flex; justify-content:center; margin-top:16px;">
-          <button class="btn" id="loadMoreBtn" type="button" style="display:none;">
-            Load More
-          </button>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ASSURANCE STRIP -->
-    <section class="section">
-      <div class="container">
-        <div class="grid-4">
-          <div class="tile">
-            <div class="label">Handpicked Chanderi</div>
-            <div class="sub">Curated weaves and premium feel</div>
-          </div>
-          <div class="tile">
-            <div class="label">Styling Support</div>
-            <div class="sub">WhatsApp us for blouse + drape help</div>
-          </div>
-          <div class="tile">
-            <div class="label">Multiple Photos</div>
-            <div class="sub">Zoom & gallery on product page</div>
-          </div>
-          <div class="tile">
-            <div class="label">Easy Ordering</div>
-            <div class="sub">Confirm availability on WhatsApp</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
+    </div>
   </main>
 
-  <!-- FOOTER (same brand ribbon) -->
-  <div class="brand-ribbon fade-top">
-    <footer>
-      <div class="container">
-        <div class="footer-grid">
-          <div>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <img src="assets/logo.png" alt="AhamStree logo" style="width:42px; height:42px; object-fit:contain;"/>
-              <div>
-                <div style="font-weight:900; letter-spacing:.3px;">AhamStree</div>
-                <div class="small">Chanderi Sarees Only</div>
-              </div>
-            </div>
-            <p class="small" style="margin-top:10px;">
-              Premium Chanderi sarees curated for timeless elegance. Message on WhatsApp to confirm availability.
-            </p>
-          </div>
-
-          <div>
-            <div style="font-weight:900; margin-bottom:10px;">Shop</div>
-            <div class="small"><a href="collections.html">All Chanderi</a></div>
-            <div class="small"><a href="#new">New Arrivals</a></div>
-            <div class="small"><a href="#zari">Zari Border</a></div>
-          </div>
-
-          <div>
-            <div style="font-weight:900; margin-bottom:10px;">Company</div>
-            <div class="small"><a href="about.html">Our Story</a></div>
-            <div class="small"><a href="contact.html">Contact</a></div>
-          </div>
-
-          <div>
-            <div style="font-weight:900; margin-bottom:10px;">Connect</div>
-            <div class="small"><a href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a></div>
-            <div class="small"><a href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a></div>
-          </div>
-        </div>
-
-        <div class="footer-bottom small">
-          <div>© <span id="year"></span> AhamStree. All rights reserved.</div>
-          <div>Handcrafted • Heritage • Chanderi</div>
-        </div>
+  <div class="brand-ribbon brand-ribbon--fade-top">
+    <footer class="footer">
+      <div class="container footer-bottom">
+        <div>© <span id="year"></span> AhamStree</div>
+        <div><a href="about.html">Our Story</a> • <a href="contact.html">Contact</a></div>
       </div>
     </footer>
   </div>
 
-  <a class="btn primary fab" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp 💬</a>
+  <a class="fab" href="https://wa.me/919582297550" target="_blank" rel="noreferrer" aria-label="WhatsApp">💬</a>
 
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
-
-  <!-- Data + App -->
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
   <script src="js/products.js"></script>
   <script src="js/app.js"></script>
-
-  <!-- Minimal page glue: show count + basic search filtering (works even if you haven't added advanced filters yet) -->
-  <script>
-    // This keeps the page functional even if your app.js is basic.
-    // It uses the rendered cards in #collectionGrid.
-    document.addEventListener("DOMContentLoaded", () => {
-      const countEl = document.getElementById("resultCount");
-      const grid = document.getElementById("collectionGrid");
-      const search = document.getElementById("searchInput");
-
-      const updateCount = () => {
-        if (!countEl || !grid) return;
-        const visible = [...grid.children].filter(x => x.style.display !== "none").length;
-        countEl.textContent = String(visible);
-      };
-
-      if (search) {
-        search.addEventListener("input", () => {
-          const q = search.value.trim().toLowerCase();
-          [...grid.children].forEach(card => {
-            const text = card.innerText.toLowerCase();
-            card.style.display = text.includes(q) ? "" : "none";
-          });
-          updateCount();
-        });
-      }
-
-      // If your app.js renders products, update count after render
-      setTimeout(updateCount, 50);
-    });
-  </script>
 </body>
 </html>
