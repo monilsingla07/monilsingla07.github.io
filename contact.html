@@ -3,88 +3,82 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Contact — AhamStree</title>
+  <title>Our Story — AhamStree</title>
+  <meta name="description" content="AhamStree — Chanderi sarees only. Heritage weaves, modern elegance."/>
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
-  <div class="saree-border"></div>
 
-  <header>
-    <div class="container">
-      <div class="header-main">
-        <a class="brand" href="index.html">
-          <img src="assets/logo.png" alt="AhamStree logo"/>
-          <div class="name"><strong>AhamStree</strong><span>Ethnic Elegance</span></div>
-        </a>
-        <div class="header-actions">
-          <a class="btn" href="collections.html">Shop 🛍️</a>
-          <button class="btn primary" data-whatsapp>WhatsApp 💬</button>
+  <div class="brand-ribbon brand-ribbon--fade-bottom">
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <div class="topbar-left">Chanderi Sarees Only</div>
+        <div class="topbar-right">
+          <a class="topbar-link" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a>
+          <a class="topbar-link" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp: 9582297550</a>
         </div>
       </div>
     </div>
-  </header>
+
+    <header class="header header--on-ribbon">
+      <div class="container header-inner">
+        <a class="brand" href="index.html">
+          <img src="assets/logo.png" alt="AhamStree logo" class="brand-logo"/>
+          <div class="brand-text">
+            <div class="brand-name">AhamStree</div>
+            <div class="brand-sub">Chanderi Sarees</div>
+          </div>
+        </a>
+
+        <div class="header-actions">
+          <a class="btn btn--ghost" href="collections.html">Shop</a>
+          <a class="btn btn--ghost" href="contact.html">Contact</a>
+          <a class="btn btn--primary" href="https://wa.me/919582297550" target="_blank" rel="noreferrer" data-track="whatsapp_click" data-track-where="about_header">WhatsApp</a>
+          <button class="iconbtn" id="hamburger" aria-label="Open menu">☰</button>
+        </div>
+      </div>
+
+      <div class="container">
+        <nav class="mobile-nav" id="mobileNav">
+          <a href="collections.html">All Chanderi</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+  </div>
 
   <main class="section">
     <div class="container">
-      <div class="card" style="padding:18px;">
-        <h2 style="margin-top:0;">Contact</h2>
-        <p class="small">Fastest response: WhatsApp us at <strong>9582297550</strong>.</p>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin:12px 0;">
-          <a class="btn primary" href="https://wa.me/919582297550" target="_blank" rel="noreferrer">WhatsApp Now</a>
-          <a class="btn" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noreferrer">Instagram</a>
+      <div class="card-soft" style="padding:18px;">
+        <div class="eyebrow">AhamStree • Our Story</div>
+        <h1 style="margin:10px 0 8px;">Chanderi, curated with a modern eye.</h1>
+        <p class="muted" style="line-height:1.8;">
+          AhamStree is dedicated to Chanderi sarees only — focusing on drape, finish, and timeless elegance.
+          Each edit is curated for fabric feel and refined detailing.
+        </p>
+        <p class="muted" style="line-height:1.8;">
+          For styling recommendations, blouse pairing, and availability, message us on WhatsApp.
+        </p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+          <a class="btn btn--primary" href="https://wa.me/919582297550" target="_blank" rel="noreferrer" data-track="whatsapp_click" data-track-where="about_body">WhatsApp us</a>
+          <a class="btn btn--ghost" href="collections.html">Shop Chanderi</a>
         </div>
-
-        <hr style="border:0; border-top:1px solid rgba(0,0,0,.08); margin:14px 0;"/>
-
-        <form id="contactForm">
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-    <input
-      class="btn"
-      style="border-radius:14px; justify-content:flex-start;"
-      name="name"
-      placeholder="Your name"
-      required
-    >
-    <input
-      class="btn"
-      style="border-radius:14px; justify-content:flex-start;"
-      name="phone"
-      placeholder="Phone"
-      required
-      inputmode="tel"
-    >
-  </div>
-
-  <input
-    class="btn"
-    style="border-radius:14px; width:100%; justify-content:flex-start; margin-top:10px;"
-    name="email"
-    placeholder="Email (optional)"
-    type="email"
-  >
-
-  <textarea
-    class="btn"
-    style="border-radius:14px; width:100%; height:110px; justify-content:flex-start; margin-top:10px;"
-    name="message"
-    placeholder="Message"
-    required
-  ></textarea>
-
-  <button class="btn primary" style="margin-top:10px;">Submit</button>
-
-  <p class="small" style="margin:10px 0 0; color:var(--muted);">
-    On submit, WhatsApp will open with your details to confirm.
-  </p>
-</form>
-
       </div>
     </div>
   </main>
 
-  <div class="saree-border"></div>
+  <div class="brand-ribbon brand-ribbon--fade-top">
+    <footer class="footer">
+      <div class="container footer-bottom">
+        <div>© <span id="year"></span> AhamStree</div>
+        <div><a href="collections.html">Shop</a> • <a href="contact.html">Contact</a></div>
+      </div>
+    </footer>
+  </div>
+
+  <a class="fab" href="https://wa.me/919582297550" target="_blank" rel="noreferrer" aria-label="WhatsApp">💬</a>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
   <script src="js/app.js"></script>
 </body>
 </html>
-
