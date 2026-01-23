@@ -1,13 +1,30 @@
 :root{
-  /* Brand ribbon colors (tuned to your logo vibe) */
-  --brand-1:#3a0016;   /* deep wine */
-  --brand-2:#5b0030;   /* rich magenta-wine */
-  --brand-3:#2a0010;   /* darkest */
+  --cream:#fff7ef;
+  --text:#1b0b10;
+  --muted:#6c5a60;
+
+  /* Brand ribbon colors (maroon like logo) */
+  --brand-1:#3a0016;
+  --brand-2:#5b0030;
+  --brand-3:#2a0010;
+
+  /* Gold accents */
   --gold-500:#d4af37;
   --gold-300:#f3e2b5;
+
+  --radius:18px;
+  --shadow: 0 10px 30px rgba(0,0,0,.18);
 }
 
-/* Brand Ribbon background (top & bottom) */
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; color:var(--text); background:var(--cream); }
+a{ color:inherit; text-decoration:none; }
+img{ max-width:100%; display:block; }
+.container{ width:min(1200px, 92vw); margin:0 auto; }
+
+/* =======================
+   BRAND RIBBON (TOP/BOTTOM)
+   ======================= */
 .brand-ribbon{
   background:
     radial-gradient(900px 220px at 20% 10%, rgba(212,175,55,.22), transparent 60%),
@@ -15,9 +32,10 @@
     linear-gradient(90deg, var(--brand-1), var(--brand-2), var(--brand-1)),
     linear-gradient(180deg, var(--brand-3), var(--brand-1));
   position:relative;
+  overflow:hidden;
 }
 
-/* Subtle woven/striped texture like a saree feel */
+/* subtle woven lines */
 .brand-ribbon::after{
   content:"";
   position:absolute; inset:0;
@@ -30,10 +48,8 @@
   pointer-events:none;
 }
 
-/* Smooth transition into the page (this is the “fade” you want) */
-.brand-ribbon.fade-bottom{
-  padding-bottom:18px; /* room for fade */
-}
+/* fade into page (top ribbon bottom edge) */
+.brand-ribbon.fade-bottom{ padding-bottom:16px; }
 .brand-ribbon.fade-bottom::before{
   content:"";
   position:absolute; left:0; right:0; bottom:-1px; height:26px;
@@ -41,10 +57,8 @@
   pointer-events:none;
 }
 
-/* Smooth transition from page into footer */
-.brand-ribbon.fade-top{
-  padding-top:18px;
-}
+/* fade from page into footer (bottom ribbon top edge) */
+.brand-ribbon.fade-top{ padding-top:16px; }
 .brand-ribbon.fade-top::before{
   content:"";
   position:absolute; left:0; right:0; top:-1px; height:26px;
@@ -52,41 +66,10 @@
   pointer-events:none;
 }
 
-
-*{ box-sizing:border-box; }
-html,body{ margin:0; padding:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; color:var(--text); background:var(--cream); }
-a{ color:inherit; text-decoration:none; }
-img{ max-width:100%; display:block; }
-.container{ width:min(1200px, 92vw); margin:0 auto; }
-
-/* ===== Saree border theme strips (top & bottom) ===== */
-.saree-border{
-  height:14px;
-  background:
-    linear-gradient(90deg,
-      var(--gold-300),
-      var(--gold-500),
-      var(--gold-300)
-    );
-  position:relative;
-  overflow:hidden;
-}
-.saree-border::after{
-  content:"";
-  position:absolute; inset:0;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(42,0,16,.35) 0 8px,
-      rgba(42,0,16,0) 8px 16px
-    );
-  mix-blend-mode:multiply;
-  opacity:.35;
-}
-
-/* ===== Top promo bar ===== */
+/* =======================
+   TOPBAR
+   ======================= */
 .topbar{
-  background:linear-gradient(90deg, var(--wine-900), var(--wine-800));
   color:var(--gold-300);
   font-size:13px;
 }
@@ -95,179 +78,191 @@ img{ max-width:100%; display:block; }
   padding:10px 0;
   gap:12px;
 }
-.topbar .pill{
+.pill{
   border:1px solid rgba(243,226,181,.35);
   padding:6px 10px; border-radius:999px;
   white-space:nowrap;
 }
 
-/* ===== Header (Nalli-inspired structure: logo + search + quick actions + category nav) ===== */
+/* =======================
+   HEADER
+   ======================= */
 header{
   position:sticky; top:0; z-index:50;
-  background: transparent;          /* important */
-  border-bottom:0;
+  background: transparent;
 }
 
-/* The inner header bar now becomes maroon like logo */
+/* header sits “inside” ribbon */
 .header-shell{
-  background:
-    linear-gradient(90deg, var(--brand-1), var(--brand-2), var(--brand-1));
-  color: var(--gold-300);
+  border-top:1px solid rgba(243,226,181,.18);
   border-bottom:1px solid rgba(243,226,181,.18);
 }
-.header-main{
-  padding:14px 0;
-}
 
+/* main header row */
 .header-main{
   display:flex; align-items:center; justify-content:space-between;
   padding:14px 0;
   gap:14px;
 }
+
+/* brand */
 .brand{
-  display:flex; align-items:center; gap:12px; min-width:180px;
+  display:flex; align-items:center; gap:12px;
+  min-width: 210px;
 }
 .brand img{
-  width:52px;
-  height:52px;
+  width:56px;
+  height:56px;
   object-fit:contain;
 
-  /* makes it “sit in” */
+  /* blend feel */
   background: transparent;
-  border-radius:12px;
-
-  /* removes that “sticker pasted” feeling */
+  border-radius:14px;
   box-shadow:none;
-  filter: drop-shadow(0 6px 14px rgba(0,0,0,.25));
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,.28));
 }
-
-/* Brand text becomes gold-ish on maroon */
-.brand .name strong{ color: var(--gold-300); }
-.brand .name span{ color: rgba(243,226,181,.80); }
-
 .brand .name{
-  font-family: ui-serif, Georgia, "Times New Roman", serif;
-  letter-spacing:.5px;
   line-height:1.1;
 }
-.brand .name strong{ display:block; font-size:18px; color:var(--wine-900); }
-.brand .name span{ font-size:12px; color:var(--muted); }
+.brand .name strong{
+  display:block;
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  font-size:18px;
+  letter-spacing:.5px;
+  color:var(--gold-300);
+}
+.brand .name span{
+  display:block;
+  font-size:12px;
+  color:rgba(243,226,181,.85);
+}
 
+/* search */
 .search{
   flex:1;
   display:flex; align-items:center;
-  background:#fff;
-  border:1px solid rgba(0,0,0,.10);
   border-radius:999px;
   padding:10px 14px;
   gap:10px;
   max-width:520px;
+
+  background: rgba(255,255,255,.08);
+  border:1px solid rgba(243,226,181,.22);
+  color:rgba(243,226,181,.95);
 }
 .search input{
   border:0; outline:0; width:100%;
   font-size:14px; background:transparent;
+  color:rgba(243,226,181,.95);
 }
+.search input::placeholder{ color:rgba(243,226,181,.65); }
+
 .header-actions{
   display:flex; align-items:center; gap:10px;
 }
+
+/* buttons */
 .btn{
   display:inline-flex; align-items:center; justify-content:center;
   gap:8px;
   padding:10px 14px;
   border-radius:999px;
-  border:1px solid rgba(0,0,0,.12);
-  background:#fff;
-  font-weight:600;
+  border:1px solid rgba(243,226,181,.22);
+  background: rgba(255,255,255,.06);
+  color:rgba(243,226,181,.95);
+  font-weight:700;
   cursor:pointer;
 }
+
 .btn.primary{
-  background:linear-gradient(90deg, var(--wine-900), var(--wine-800));
-  color:var(--gold-300);
-  border-color:rgba(243,226,181,.30);
+  background: linear-gradient(90deg, rgba(212,175,55,.30), rgba(243,226,181,.18));
+  border-color: rgba(243,226,181,.35);
+  color: #fff;
 }
-.btn.ghost{
-  background:transparent;
-}
-.icon{
-  width:18px; height:18px; display:inline-block;
+.btn.light{
+  background:#fff;
+  border-color: rgba(0,0,0,.10);
+  color: var(--brand-1);
 }
 
-/* Category nav */
+/* navbar */
 .navbar{
-  border-top:1px solid rgba(0,0,0,.06);
+  border-top:1px solid rgba(243,226,181,.18);
 }
 .navbar .container{
   display:flex; align-items:center; justify-content:space-between;
   padding:10px 0;
+  position:relative;
 }
 .navlinks{
-  display:flex; gap:18px; align-items:center;
-  font-weight:700;
-  color:var(--wine-900);
+  display:flex; gap:12px; align-items:center;
+  font-weight:800;
+  color:rgba(243,226,181,.95);
 }
-.navlinks a{ padding:8px 10px; border-radius:999px; }
-.navlinks a:hover{ background:rgba(212,175,55,.12); }
+.navlinks a{
+  padding:8px 10px;
+  border-radius:999px;
+}
+.navlinks a:hover{
+  background: rgba(243,226,181,.12);
+}
+
 .hamburger{ display:none; }
 
-/* ===== Hero ===== */
-.hero{
-  background:
-    radial-gradient(900px 300px at 20% 0%, rgba(212,175,55,.18), transparent 60%),
-    radial-gradient(700px 260px at 80% 10%, rgba(75,10,31,.18), transparent 60%),
-    linear-gradient(180deg, #fff7ef, #fff2e2);
-  padding:34px 0 28px;
-}
-.hero-grid{
-  display:grid;
-  grid-template-columns: 1.2fr .8fr;
-  gap:22px;
-  align-items:stretch;
-}
+/* =======================
+   PAGE SECTIONS
+   ======================= */
+.section{ padding:26px 0; }
+
 .card{
   background:#fff;
   border:1px solid rgba(0,0,0,.08);
   border-radius:var(--radius);
   box-shadow: var(--shadow);
 }
-.hero-copy{ padding:26px; }
+
+.hero{
+  padding:20px 0 24px;
+}
+.hero-grid{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap:16px;
+  align-items:stretch;
+}
+.hero-copy{ padding:22px; }
 .kicker{
   display:inline-flex; align-items:center; gap:8px;
   background:rgba(212,175,55,.14);
-  color:var(--wine-900);
+  color:var(--brand-1);
   border:1px solid rgba(212,175,55,.25);
   padding:6px 10px; border-radius:999px;
-  font-weight:800; font-size:12px;
+  font-weight:900; font-size:12px;
 }
 .hero h1{
-  margin:14px 0 10px;
+  margin:12px 0 10px;
   font-size: clamp(28px, 3.3vw, 44px);
   line-height:1.05;
-  color:var(--wine-900);
-  letter-spacing:.2px;
+  color:var(--brand-1);
 }
-.hero p{ margin:0 0 18px; color:var(--muted); font-size:15px; line-height:1.55; }
+.hero p{ margin:0 0 16px; color:var(--muted); font-size:15px; line-height:1.55; }
 .hero-ctas{ display:flex; flex-wrap:wrap; gap:10px; }
 
 .hero-side{
-  padding:20px;
+  padding:18px;
   display:flex; flex-direction:column; gap:12px;
 }
 .banner{
   border-radius:16px;
   padding:16px;
-  background: linear-gradient(135deg, var(--wine-900), var(--wine-700));
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
   color:var(--gold-300);
   border:1px solid rgba(243,226,181,.25);
 }
 .banner strong{ display:block; font-size:16px; }
 .banner span{ display:block; margin-top:6px; font-size:13px; opacity:.9; }
 
-/* ===== Sections ===== */
-.section{ padding:26px 0; }
-.section h2{
-  margin:0 0 14px;
-  font-size:22px; color:var(--wine-900);
-}
+/* category tiles */
 .grid-4{
   display:grid;
   grid-template-columns: repeat(4, 1fr);
@@ -281,10 +276,18 @@ header{
   transition:.15s transform ease;
 }
 .tile:hover{ transform: translateY(-2px); }
-.tile .label{ font-weight:900; color:var(--wine-900); margin-top:10px; }
+.tile .img{
+  aspect-ratio:16/10;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(212,175,55,.25), transparent 60%),
+    linear-gradient(180deg, #fff, #fff4e6);
+  border:1px solid rgba(0,0,0,.06);
+}
+.tile .label{ font-weight:900; color:var(--brand-1); margin-top:10px; }
 .tile .sub{ color:var(--muted); font-size:13px; margin-top:4px; }
 
-/* Product grid */
+/* products */
 .products{
   display:grid;
   grid-template-columns: repeat(4, 1fr);
@@ -292,25 +295,26 @@ header{
 }
 .product{
   overflow:hidden;
+  border-radius:16px;
 }
 .product .img{
   aspect-ratio: 4/5;
   background:
-    radial-gradient(circle at 30% 20%, rgba(212,175,55,.28), transparent 60%),
+    radial-gradient(circle at 30% 20%, rgba(212,175,55,.25), transparent 60%),
     linear-gradient(180deg, #fff, #fff4e6);
   border-bottom:1px solid rgba(0,0,0,.06);
 }
 .product .body{ padding:14px; }
-.product .title{ font-weight:900; color:var(--wine-900); }
+.product .title{ font-weight:900; color:var(--brand-1); }
 .product .meta{ font-size:13px; color:var(--muted); margin-top:6px; }
 .product .price{ margin-top:10px; font-weight:900; }
 .product .row{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:12px; }
 
-/* ===== Footer ===== */
+/* footer */
 footer{
-  background:linear-gradient(180deg, var(--wine-950), var(--wine-900));
+  background: transparent;
   color:rgba(243,226,181,.95);
-  padding:24px 0;
+  padding:22px 0;
 }
 .footer-grid{
   display:grid;
@@ -320,7 +324,7 @@ footer{
 }
 footer a{ color:rgba(243,226,181,.95); opacity:.92; }
 footer a:hover{ opacity:1; text-decoration:underline; }
-.small{ font-size:13px; opacity:.9; line-height:1.6; }
+.small{ font-size:13px; opacity:.92; line-height:1.6; }
 .footer-bottom{
   border-top:1px solid rgba(243,226,181,.18);
   padding-top:14px;
@@ -329,13 +333,13 @@ footer a:hover{ opacity:1; text-decoration:underline; }
   gap:10px;
 }
 
-/* WhatsApp floating button */
+/* floating WhatsApp */
 .fab{
   position:fixed; right:16px; bottom:16px; z-index:70;
   box-shadow: var(--shadow);
 }
 
-/* ===== Responsive ===== */
+/* responsive */
 @media (max-width: 980px){
   .hero-grid{ grid-template-columns:1fr; }
   .grid-4{ grid-template-columns: repeat(2, 1fr); }
@@ -348,15 +352,16 @@ footer a:hover{ opacity:1; text-decoration:underline; }
     display:flex;
     flex-direction:column;
     align-items:flex-start;
-    background:#fff;
-    border:1px solid rgba(0,0,0,.10);
+    background: rgba(0,0,0,.20);
+    border:1px solid rgba(243,226,181,.22);
     border-radius:16px;
     padding:10px;
     position:absolute;
-    left:4vw; right:4vw;
+    left:0; right:0;
     top:100%;
+    margin-top:10px;
+    backdrop-filter: blur(10px);
   }
-  .navbar .container{ position:relative; }
 }
 
 @media (max-width: 520px){
@@ -365,4 +370,3 @@ footer a:hover{ opacity:1; text-decoration:underline; }
   .footer-grid{ grid-template-columns: 1fr; }
   .products{ grid-template-columns: 1fr; }
 }
-
