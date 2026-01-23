@@ -37,14 +37,48 @@
 
         <hr style="border:0; border-top:1px solid rgba(0,0,0,.08); margin:14px 0;"/>
 
-        <form onsubmit="event.preventDefault(); alert('Thanks! For now, please WhatsApp us to confirm orders.');">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <input class="btn" style="border-radius:14px; justify-content:flex-start;" placeholder="Your name" required>
-            <input class="btn" style="border-radius:14px; justify-content:flex-start;" placeholder="Phone" required>
-          </div>
-          <textarea class="btn" style="border-radius:14px; width:100%; height:110px; justify-content:flex-start; margin-top:10px;" placeholder="Message" required></textarea>
-          <button class="btn primary" style="margin-top:10px;">Submit</button>
-        </form>
+        <form id="contactForm">
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+    <input
+      class="btn"
+      style="border-radius:14px; justify-content:flex-start;"
+      name="name"
+      placeholder="Your name"
+      required
+    >
+    <input
+      class="btn"
+      style="border-radius:14px; justify-content:flex-start;"
+      name="phone"
+      placeholder="Phone"
+      required
+      inputmode="tel"
+    >
+  </div>
+
+  <input
+    class="btn"
+    style="border-radius:14px; width:100%; justify-content:flex-start; margin-top:10px;"
+    name="email"
+    placeholder="Email (optional)"
+    type="email"
+  >
+
+  <textarea
+    class="btn"
+    style="border-radius:14px; width:100%; height:110px; justify-content:flex-start; margin-top:10px;"
+    name="message"
+    placeholder="Message"
+    required
+  ></textarea>
+
+  <button class="btn primary" style="margin-top:10px;">Submit</button>
+
+  <p class="small" style="margin:10px 0 0; color:var(--muted);">
+    On submit, WhatsApp will open with your details to confirm.
+  </p>
+</form>
+
       </div>
     </div>
   </main>
