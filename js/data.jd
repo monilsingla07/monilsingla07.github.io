@@ -1,0 +1,69 @@
+window.AHAM_CONFIG = {
+  brandName: "AhamStree",
+  instagram: "https://www.instagram.com/ahamstree/",
+  whatsappNumber: "919582297550", // country code + number
+};
+
+const P = (path) => path; // helper
+
+window.AHAM_PRODUCTS = [
+  {
+    id: "chan-001",
+    title: "Pure Chanderi Silk Saree",
+    subtitle: "Zari Border • Festive",
+    price: "₹8,499",
+    tags: ["Silk", "Zari Border", "Festive"],
+    images: [
+      P("assets/products/chan-001-1.jpg"),
+      P("assets/products/chan-001-2.jpg"),
+      P("assets/products/chan-001-3.jpg")
+    ]
+  },
+  {
+    id: "chan-002",
+    title: "Chanderi Cotton Silk Saree",
+    subtitle: "Lightweight • Everyday",
+    price: "₹3,499",
+    tags: ["Cotton Silk", "Daily Wear"],
+    images: [
+      P("assets/products/chan-002-1.jpg"),
+      P("assets/products/chan-002-2.jpg")
+    ]
+  },
+  {
+    id: "chan-003",
+    title: "Chanderi Tissue Saree",
+    subtitle: "Soft Shimmer • Occasion",
+    price: "₹9,999",
+    tags: ["Tissue", "Occasion"],
+    images: [
+      P("assets/products/chan-003-1.jpg"),
+      P("assets/products/chan-003-2.jpg")
+    ]
+  },
+  {
+    id: "chan-004",
+    title: "Chanderi Floral Weave Saree",
+    subtitle: "Pastels • Elegant",
+    price: "₹6,999",
+    tags: ["Silk", "Floral"],
+    images: [
+      P("assets/products/chan-004-1.jpg"),
+      P("assets/products/chan-004-2.jpg")
+    ]
+  },
+  {
+    id: "chan-005",
+    title: "Chanderi Buti Saree",
+    subtitle: "Classic Motifs • Timeless",
+    price: "₹7,499",
+    tags: ["Buti", "Classic"],
+    images: [
+      P("assets/products/chan-005-1.jpg"),
+      P("assets/products/chan-005-2.jpg")
+    ]
+  }
+];
+
+// If any image file is missing, UI will fall back to placeholder.jpg
+window.AHAM_PLACEHOLDER = "assets/products/placeholder.jpg";
