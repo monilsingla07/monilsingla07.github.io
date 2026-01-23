@@ -1,21 +1,57 @@
 :root{
-  --wine-950:#2a0010;
-  --wine-900:#3a0016;
-  --wine-800:#4b0a1f;
-  --wine-700:#5c1026;
-  --cream:#fff7ef;
-
-  /* sampled “gold family” from your logo feel */
-  --gold-600:#caa24a;
+  /* Brand ribbon colors (tuned to your logo vibe) */
+  --brand-1:#3a0016;   /* deep wine */
+  --brand-2:#5b0030;   /* rich magenta-wine */
+  --brand-3:#2a0010;   /* darkest */
   --gold-500:#d4af37;
   --gold-300:#f3e2b5;
-
-  --text:#1b0b10;
-  --muted:#6c5a60;
-
-  --radius:18px;
-  --shadow: 0 10px 30px rgba(0,0,0,.18);
 }
+
+/* Brand Ribbon background (top & bottom) */
+.brand-ribbon{
+  background:
+    radial-gradient(900px 220px at 20% 10%, rgba(212,175,55,.22), transparent 60%),
+    radial-gradient(700px 200px at 80% 20%, rgba(243,226,181,.10), transparent 55%),
+    linear-gradient(90deg, var(--brand-1), var(--brand-2), var(--brand-1)),
+    linear-gradient(180deg, var(--brand-3), var(--brand-1));
+  position:relative;
+}
+
+/* Subtle woven/striped texture like a saree feel */
+.brand-ribbon::after{
+  content:"";
+  position:absolute; inset:0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(243,226,181,.10) 0 2px,
+    rgba(243,226,181,0) 2px 10px
+  );
+  opacity:.25;
+  pointer-events:none;
+}
+
+/* Smooth transition into the page (this is the “fade” you want) */
+.brand-ribbon.fade-bottom{
+  padding-bottom:18px; /* room for fade */
+}
+.brand-ribbon.fade-bottom::before{
+  content:"";
+  position:absolute; left:0; right:0; bottom:-1px; height:26px;
+  background: linear-gradient(180deg, rgba(255,247,239,0), rgba(255,247,239,1));
+  pointer-events:none;
+}
+
+/* Smooth transition from page into footer */
+.brand-ribbon.fade-top{
+  padding-top:18px;
+}
+.brand-ribbon.fade-top::before{
+  content:"";
+  position:absolute; left:0; right:0; top:-1px; height:26px;
+  background: linear-gradient(0deg, rgba(255,247,239,0), rgba(255,247,239,1));
+  pointer-events:none;
+}
+
 
 *{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; color:var(--text); background:var(--cream); }
