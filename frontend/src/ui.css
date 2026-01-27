@@ -1,1 +1,16 @@
+:root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+body { margin: 0; background: #fff; color: #111; }
+header, footer { padding: 14px 18px; border-bottom: 1px solid #eee; }
+footer { border-top: 1px solid #eee; border-bottom: none; margin-top: 40px; }
+nav a { margin-right: 14px; text-decoration: none; color: #111; }
+.container { max-width: 1050px; margin: 0 auto; padding: 18px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.card { border: 1px solid #eee; border-radius: 12px; padding: 12px; }
+.btn { padding: 10px 12px; border: 1px solid #111; background: #111; color: #fff; border-radius: 10px; cursor: pointer; }
+.btn.secondary { background: #fff; color: #111; }
+.badge { display:inline-block; padding: 3px 8px; border: 1px solid #ddd; border-radius: 999px; font-size: 12px; }
+.row { display:flex; align-items:center; justify-content:space-between; gap: 12px; }
+.small { color:#555; font-size: 13px; }
+.banner { background:#111; color:#fff; padding: 8px 18px; }
+.hidden { display:none; }
 
