@@ -1,1 +1,82 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Account - Ahamstree</title></head>
+  <body>
+    <header>
+      <div class="row">
+        <strong><a href="/" style="text-decoration:none;color:#111">Ahamstree</a></strong>
+        <nav>
+          <a href="/shop.html">Shop</a>
+          <a href="/cart.html">Cart</a>
+          <a href="/orders.html">My Orders</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="container">
+      <h1>Account</h1>
+
+      <div id="status" class="card"></div>
+
+      <div class="card" style="margin-top:12px;">
+        <h2>Sign up / Login</h2>
+        <div class="small">Use the same form for both. If the user doesn’t exist, sign up.</div>
+        <div style="margin-top:10px;">
+          <input id="email" placeholder="Email" style="padding:10px; width:100%; max-width:420px;" />
+        </div>
+        <div style="margin-top:10px;">
+          <input id="pass" type="password" placeholder="Password" style="padding:10px; width:100%; max-width:420px;" />
+        </div>
+        <div style="margin-top:10px;" class="row">
+          <button id="login" class="btn">Login</button>
+          <button id="signup" class="btn secondary">Sign up</button>
+          <button id="logout" class="btn secondary">Logout</button>
+        </div>
+        <p class="small">You may need to confirm your email depending on Supabase Auth settings. Redirect URLs are configurable in Supabase Auth settings. :contentReference[oaicite:8]{index=8}</p>
+      </div>
+    </div>
+
+    <script type="module">
+      import "./src/ui.css";
+      import { supabase } from "./src/supabaseClient.js";
+
+      const status = document.getElementById("status");
+
+      async function refresh() {
+        const { data } = await supabase.auth.getSession();
+        status.innerHTML = data.session
+          ? `<div><strong>Logged in</strong></div><div class="small">${data.session.user.email}</div>`
+          : `<div><strong>Not logged in</strong></div><div class="small">Create an account to checkout and view orders.</div>`;
+      }
+
+      await refresh();
+
+      document.getElementById("login").onclick = async () => {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("pass").value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) alert(error.message);
+        await refresh();
+      };
+
+      document.getElementById("signup").onclick = async () => {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("pass").value;
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: location.origin + "/account.html" }
+        });
+        if (error) alert(error.message);
+        else alert("Check your email to confirm (if confirmation is enabled).");
+        await refresh();
+      };
+
+      document.getElementById("logout").onclick = async () => {
+        await supabase.auth.signOut();
+        await refresh();
+      };
+    </script>
+  </body>
+</html>
 
