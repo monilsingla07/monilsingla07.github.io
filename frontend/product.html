@@ -1,1 +1,67 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Product - Ahamstree</title></head>
+  <body>
+    <header>
+      <div class="row">
+        <strong><a href="/" style="text-decoration:none;color:#111">Ahamstree</a></strong>
+        <nav>
+          <a href="/shop.html">Shop</a>
+          <a href="/account.html">Account</a>
+          <a href="/cart.html">Cart</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="container">
+      <div id="view" class="card"></div>
+    </div>
+
+    <script type="module">
+      import "./src/ui.css";
+      import { supabase } from "./src/supabaseClient.js";
+      import { addToCart } from "./src/cart.js";
+
+      const params = new URLSearchParams(location.search);
+      const id = params.get("id");
+
+      const { data: p, error } = await supabase
+        .from("products")
+        .select("id, sku, title, description, price_paise, image_url, stock_qty, is_active")
+        .eq("id", id)
+        .single();
+
+      if (error) { alert(error.message); throw error; }
+
+      const view = document.getElementById("view");
+      view.innerHTML = `
+        <div class="row" style="align-items:flex-start;">
+          <img src="${p.image_url ?? ""}" style="width:340px; max-width:45%; border-radius:12px; aspect-ratio:4/5; object-fit:cover;" />
+          <div style="flex:1;">
+            <h1 style="margin-top:0;">${p.title}</h1>
+            <div class="small">SKU ${p.sku}</div>
+            <p>${p.description ?? ""}</p>
+            <h2>₹${(p.price_paise/100).toFixed(2)}</h2>
+            ${p.stock_qty === 0 ? `<div class="badge">SOLD OUT</div>` : `<div class="badge">In stock: ${p.stock_qty}</div>`}
+            <div style="margin-top:12px" class="row">
+              <button id="add" class="btn" ${p.stock_qty === 0 ? "disabled" : ""}>Add to cart</button>
+              <a class="btn secondary" href="/cart.html">Go to cart</a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("add").onclick = () => {
+        addToCart({
+          product_id: p.id,
+          sku: p.sku,
+          title: p.title,
+          unit_price_paise: p.price_paise,
+          qty: 1
+        });
+        alert("Added to cart");
+      };
+    </script>
+  </body>
+</html>
 
