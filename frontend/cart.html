@@ -1,1 +1,65 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Cart - Ahamstree</title></head>
+  <body>
+    <header>
+      <div class="row">
+        <strong><a href="/" style="text-decoration:none;color:#111">Ahamstree</a></strong>
+        <nav>
+          <a href="/shop.html">Shop</a>
+          <a href="/account.html">Account</a>
+          <a href="/orders.html">My Orders</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="container">
+      <h1>Cart</h1>
+      <div id="items"></div>
+      <div class="card" style="margin-top:12px;">
+        <div class="row">
+          <div>
+            <div><strong>Total</strong></div>
+            <div class="small" id="total"></div>
+          </div>
+          <a class="btn" href="/checkout.html">Checkout</a>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import "./src/ui.css";
+      import { getCart, removeFromCart } from "./src/cart.js";
+
+      const items = getCart();
+      const wrap = document.getElementById("items");
+
+      const totalPaise = items.reduce((s, x) => s + x.unit_price_paise * x.qty, 0);
+      document.getElementById("total").textContent = `₹${(totalPaise/100).toFixed(2)}`;
+
+      wrap.innerHTML = items.length === 0 ? `<p class="small">Your cart is empty.</p>` :
+        items.map(x => `
+          <div class="card" style="margin-top:10px;">
+            <div class="row">
+              <div>
+                <div><strong>${x.title}</strong></div>
+                <div class="small">${x.sku} • Qty ${x.qty}</div>
+              </div>
+              <div class="row">
+                <div>₹${((x.unit_price_paise*x.qty)/100).toFixed(2)}</div>
+                <button class="btn secondary" data-id="${x.product_id}">Remove</button>
+              </div>
+            </div>
+          </div>
+        `).join("");
+
+      wrap.querySelectorAll("button[data-id]").forEach(btn => {
+        btn.onclick = () => {
+          removeFromCart(btn.dataset.id);
+          location.reload();
+        };
+      });
+    </script>
+  </body>
+</html>
 
