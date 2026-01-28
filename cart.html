@@ -37,75 +37,84 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter } from "./assets/ui.js";
-    import { getCart, updateQty, removeFromCart, clearCart } from "./assets/cart.js";
+  import { renderHeader, renderFooter } from "./assets/ui.js";
+  import { getCart, updateQty, removeFromCart, clearCart } from "./assets/cart.js";
 
-    function money(n){ return "₹" + n; }
+  function money(n) {
+    return "₹" + n;
+  }
 
-    function render() {
-      // Render header/footer every time so Cart count updates
-      document.getElementById("header").innerHTML = renderHeader("cart");
-      document.getElementById("footer").innerHTML = renderFooter();
+  function render() {
+    document.getElementById("header").innerHTML = renderHeader("cart");
+    document.getElementById("footer").innerHTML = renderFooter();
 
-      const items = getCart();
-      const empty = document.getElementById("empty");
-      const list = document.getElementById("list");
-      const summary = document.getElementById("summary");
+    const items = getCart();
+    const empty = document.getElementById("empty");
+    const list = document.getElementById("list");
+    const summary = document.getElementById("summary");
 
-      if (!items.length) {
-        empty.style.display = "block";
-        list.innerHTML = "";
-        summary.style.display = "none";
-        return;
-      }
-
-      empty.style.display = "none";
-      summary.style.display = "block";
-
-      const subtotal = items.reduce((s,i)=> s + i.price_inr*i.qty, 0);
-      document.getElementById("subtotal").textContent = money(subtotal);
-
-      list.innerHTML = items.map(i => `
-        <div class="card" style="padding:12px;border-radius:14px;display:flex;gap:12px;margin-bottom:12px;">
-          <div style="width:72px;height:90px;border-radius:12px;overflow:hidden;background:#fafafa;">
-            ${i.image_url ? `<img src="${i.image_url}" alt="${i.title}" style="width:100%;height:100%;object-fit:cover;">` : ""}
-          </div>
-          <div style="flex:1;">
-            <div style="font-weight:900;">${i.title}</div>
-            <div style="margin-top:6px;opacity:.85;">${money(i.price_inr)}</div>
-            <div class="row" style="margin-top:10px;">
-              <span class="small">Qty</span>
-              <input data-id="${i.product_id}" class="qty input" style="width:90px;" type="number" min="1" max="99" value="${i.qty}">
-              <button data-id="${i.product_id}" class="remove btn secondary" type="button">Remove</button>
-            </div>
-          </div>
-          <div style="font-weight:900;">${money(i.price_inr*i.qty)}</div>
-        </div>
-      `).join("");
-
-      // qty updates
-      document.querySelectorAll(".qty").forEach(inp => {
-        inp.addEventListener("change", (e) => {
-          updateQty(e.target.dataset.id, e.target.value);
-          render();
-        });
-      });
-
-      // remove
-      document.querySelectorAll(".remove").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          removeFromCart(e.target.dataset.id);
-          render();
-        });
-      });
-
-      document.getElementById("clearBtn").onclick = () => {
-        clearCart();
-        render();
-      };
+    if (!items.length) {
+      empty.style.display = "block";
+      list.innerHTML = "";
+      summary.style.display = "none";
+      return;
     }
 
-    render();
-  </script>
+    empty.style.display = "none";
+    summary.style.display = "block";
+
+    let subtotal = 0;
+    let html = "";
+
+    items.forEach((i) => {
+      subtotal += i.price_inr * i.qty;
+
+      html +=
+        '<div class="card" style="padding:12px;border-radius:14px;display:flex;gap:12px;margin-bottom:12px;">' +
+          '<div style="width:72px;height:90px;border-radius:12px;overflow:hidden;background:#fafafa;">' +
+            (i.image_url
+              ? '<img src="' + i.image_url + '" alt="' + i.title + '" style="width:100%;height:100%;object-fit:cover;">'
+              : ''
+            ) +
+          '</div>' +
+          '<div style="flex:1;">' +
+            '<div style="font-weight:900;">' + i.title + '</div>' +
+            '<div style="margin-top:6px;opacity:.85;">' + money(i.price_inr) + '</div>' +
+            '<div class="row" style="margin-top:10px;">' +
+              '<span class="small">Qty</span>' +
+              '<input class="qty input" data-id="' + i.product_id + '" style="width:90px;" type="number" min="1" max="99" value="' + i.qty + '">' +
+              '<button class="remove btn secondary" data-id="' + i.product_id + '" type="button">Remove</button>' +
+            '</div>' +
+          '</div>' +
+          '<div style="font-weight:900;">' + money(i.price_inr * i.qty) + '</div>' +
+        '</div>';
+    });
+
+    list.innerHTML = html;
+    document.getElementById("subtotal").textContent = money(subtotal);
+
+    document.querySelectorAll(".qty").forEach((inp) => {
+      inp.addEventListener("change", (e) => {
+        updateQty(e.target.dataset.id, e.target.value);
+        render();
+      });
+    });
+
+    document.querySelectorAll(".remove").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        removeFromCart(e.target.dataset.id);
+        render();
+      });
+    });
+
+    document.getElementById("clearBtn").onclick = () => {
+      clearCart();
+      render();
+    };
+  }
+
+  render();
+</script>
+
 </body>
 </html>
