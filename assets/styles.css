@@ -148,6 +148,48 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
   flex-wrap: wrap;
   margin-bottom: 10px;
 }
+
+.social-links {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.social-links img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.75;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.social-links a:hover img {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+/* Brand hover colors */
+.social-links a.instagram:hover img {
+  filter: invert(34%) sepia(92%) saturate(482%) hue-rotate(315deg) brightness(95%);
+}
+
+.social-links a.facebook:hover img {
+  filter: invert(29%) sepia(86%) saturate(2034%) hue-rotate(202deg) brightness(95%);
+}
+
+.social-links a.pinterest:hover img {
+  filter: invert(18%) sepia(96%) saturate(5240%) hue-rotate(355deg) brightness(90%);
+}
+
+.social-links a.youtube:hover img {
+  filter: invert(19%) sepia(88%) saturate(5632%) hue-rotate(357deg) brightness(90%);
+}
+
+.social-links a.whatsapp:hover img {
+  filter: invert(55%) sepia(77%) saturate(429%) hue-rotate(86deg) brightness(95%);
+}
+
+
 .small { font-size: 12px; opacity: 0.75; }
 
 /* Mobile */
