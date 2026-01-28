@@ -164,10 +164,6 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.social-links a:hover img {
-  opacity: 1;
-  transform: translateY(-2px);
-}
 /* Brand hover colors */
 .social-links a.instagram:hover img {
   filter: invert(34%) sepia(92%) saturate(482%) hue-rotate(315deg) brightness(95%);
