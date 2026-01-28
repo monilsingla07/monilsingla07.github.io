@@ -1,6 +1,15 @@
+// assets/search.js - simple client-side search using Supabase
 import { ENV } from "./env.local.js";
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 const supabase = createClient(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY);
+
+import { renderHeader, renderFooter } from "./assets/ui.js";
+import { showCookieConsent } from "./assets/cookie-consent.js";
+import { loadAnalytics } from "./assets/analytics.js";
+
+document.getElementById("header").innerHTML = renderHeader("products");
+document.getElementById("footer").innerHTML = renderFooter();
+showCookieConsent(loadAnalytics);
 
 const input = document.getElementById("search-input");
 const status = document.getElementById("search-status");
@@ -22,8 +31,6 @@ async function doSearch(q) {
   }
   status.textContent = "Searching…";
   try {
-    // Basic approach: ilike on title and description.
-    // For better results consider Supabase full-text or Postgres text search.
     const { data, error } = await supabase
       .from("products")
       .select("*")
