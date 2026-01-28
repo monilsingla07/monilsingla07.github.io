@@ -10,7 +10,7 @@
   <div id="header"></div>
 
   <div class="container">
-    <h2 style="margin-top:0;">Sarees</h2>
+    <h2 id="pageTitle" style="margin-top:0;">Sarees</h2>
     <div class="small">Click a product to view details</div>
     <hr />
     <div id="status" class="small">Loading…</div>
@@ -30,11 +30,26 @@
       const status = document.getElementById("status");
       const grid = document.getElementById("grid");
 
-      const { data, error } = await supabase
+      // Optional filter via URL hash (e.g. products.html#silk)
+      const hash = (location.hash || "").replace("#","").trim().toLowerCase();
+      const filterable = ["silk","cotton","banarasi","kanjivaram","organza","party","new"];
+      const pageTitle = document.getElementById("pageTitle");
+      if (pageTitle) {
+        pageTitle.textContent = hash ? (hash === "new" ? "New Arrivals" : hash.charAt(0).toUpperCase() + hash.slice(1) + " Sarees") : "Sarees";
+      }
+
+      let query = supabase
         .from("products")
         .select("id,title,price_inr,inventory_qty,is_active, product_images(image_url, sort_order)")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
+
+      if (hash && filterable.includes(hash) && hash !== "new") {
+        // We only filter on title because it is guaranteed to exist.
+        query = query.ilike("title", `%${hash}%`);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         status.textContent = "Error: " + error.message;

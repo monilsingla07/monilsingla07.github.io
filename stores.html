@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stores — AhamStree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <div class="card" style="padding:22px;border-radius:18px;">
+      <h2 style="margin-top:0;">Find a Store</h2>
+      <p class="small" style="max-width:72ch;">Stores page placeholder. Add your store addresses, opening hours, and map links.</p>
+      
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn" href="products.html">Browse Sarees</a>
+        <a class="btn ghost" href="cart.html">Go to Cart</a>
+        <a class="btn ghost" href="index.html">Home</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter } from "./assets/ui.js";
+    document.getElementById("header").innerHTML = renderHeader("");
+    document.getElementById("footer").innerHTML = renderFooter();
+  </script>
+</body>
+</html>
