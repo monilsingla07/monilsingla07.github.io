@@ -1,1 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product — AhamStree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <a href="products.html">← Back to products</a>
+    <div id="status" class="small" style="margin-top:12px;">Loading…</div>
+
+    <div id="content" style="display:none;">
+      <div class="grid" style="grid-template-columns: 1fr; gap: 16px;">
+        <div class="card" style="border-radius:16px;">
+          <img id="mainImg" alt="" />
+        </div>
+
+        <div id="thumbs" class="row"></div>
+
+        <div class="card" style="padding:16px;border-radius:16px;">
+          <div id="title" style="font-size:22px;font-weight:900;"></div>
+          <div id="price" style="margin-top:8px;font-size:18px;"></div>
+          <div id="stock" class="small" style="margin-top:8px;"></div>
+          <div id="desc" style="margin-top:12px;opacity:.9;"></div>
+
+          <div class="row" style="margin-top:14px;">
+            <button id="addBtn" class="btn">Add to cart</button>
+            <a class="btn secondary" href="cart.html">Go to cart</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+    import { addToCart } from "./assets/cart.js";
+
+    document.getElementById("header").innerHTML = renderHeader("products");
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
+
+    async function loadProduct() {
+      const status = document.getElementById("status");
+
+      const { data, error } = await supabase
+        .from("products")
+        .select("id,title,description,price_inr,inventory_qty,is_active, product_images(image_url, sort_order, alt_text)")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (error || !data) {
+        status.textContent = "Product not found.";
+        return;
+      }
+
+      const images = (data.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
+      const main = images[0]?.image_url ?? "";
+
+      document.getElementById("status").style.display = "none";
+      document.getElementById("content").style.display = "block";
+
+      document.getElementById("title").textContent = data.title;
+      document.getElementById("price").textContent = `₹${data.price_inr}`;
+      document.getElementById("stock").textContent = data.inventory_qty > 0 ? `${data.inventory_qty} available` : "Sold out";
+      document.getElementById("desc").textContent = data.description ?? "";
+
+      const mainImg = document.getElementById("mainImg");
+      mainImg.src = main;
+      mainImg.alt = data.title;
+
+      const thumbs = document.getElementById("thumbs");
+      thumbs.innerHTML = images.map(img => `
+        <button style="border:1px solid #eee;border-radius:12px;padding:0;overflow:hidden;width:80px;height:100px;background:#fafafa;cursor:pointer;">
+          <img src="${img.image_url}" alt="${img.alt_text ?? data.title}" style="width:100%;height:100%;object-fit:cover;">
+        </button>
+      `).join("");
+
+      // clicking thumbnails changes main image
+      Array.from(thumbs.querySelectorAll("button")).forEach((btn, idx) => {
+        btn.addEventListener("click", () => {
+          mainImg.src = images[idx].image_url;
+        });
+      });
+
+      const addBtn = document.getElementById("addBtn");
+      if (data.inventory_qty <= 0) {
+        addBtn.disabled = true;
+        addBtn.textContent = "Sold out";
+        addBtn.style.background = "#ddd";
+        addBtn.style.borderColor = "#ddd";
+        addBtn.style.color = "#666";
+      } else {
+        addBtn.addEventListener("click", () => {
+          addToCart({ ...data, image_url: main }, 1);
+          location.href = "cart.html";
+        });
+      }
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>
 
