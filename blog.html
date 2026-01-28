@@ -57,7 +57,10 @@
         : "";
 
       // Content can be plain text or HTML
-      content.innerHTML = data.content;
+      // Safe render as text (no HTML execution)
+content.textContent = data.content ?? "";
+content.style.whiteSpace = "pre-wrap";
+
     }
 
     loadPost();
