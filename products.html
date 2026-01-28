@@ -18,7 +18,14 @@
   </div>
 
   <div id="footer"></div>
+<div class="filter-tabs" id="fabricTabs">
+  <button class="filter-tab active" data-q="saree">All</button>
+  <button class="filter-tab" data-q="silk">Silk</button>
+  <button class="filter-tab" data-q="cotton">Cotton</button>
+  <button class="filter-tab" data-q="silk cotton">Silk-Cotton</button>
+</div>
 
+  
   <script type="module">
     import { renderHeader, renderFooter } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
