@@ -22,7 +22,10 @@ export function renderHeader(active = "") {
       <div class="container header-inner">
         <!-- Left: Navigation -->
         <nav class="nav">
-        
+        <a href="index.html" class="site-logo">
+  <img src="assets/images/ahamstree-logo.png" alt="Ahamstree">
+</a>
+
           <a href="products.html" class="${active === "products" ? "active" : ""}">Sarees</a>
           <a href="products.html#new" class="">New Arrivals</a>
           <a href="collections.html" class="">Collections</a>
