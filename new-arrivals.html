@@ -1,1 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>New Arrivals — Ahamstree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h2 style="margin-top:0;">New Arrivals</h2>
+    <div class="small">Latest launches</div>
+    <hr />
+    <div id="status" class="small">Loading…</div>
+    <div id="grid" class="grid" style="margin-top:12px;"></div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+
+    document.getElementById("header").innerHTML = renderHeader("");
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    async function loadNewArrivals() {
+      const status = document.getElementById("status");
+      const grid = document.getElementById("grid");
+
+      const { data, error } = await supabase
+        .from("products")
+        .select("id,title,price_inr,inventory_qty,is_active,created_at, product_images(image_url, sort_order)")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(24);
+
+      if (error) {
+        status.textContent = "Error: " + error.message;
+        return;
+      }
+
+      status.textContent = "";
+
+      const normalized = (data ?? []).map(p => {
+        const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
+        return { ...p, image_url: imgs[0]?.image_url ?? "" };
+      });
+
+      grid.innerHTML = normalized.map(p => `
+        <div class="card">
+          <a href="product.html?id=${encodeURIComponent(p.id)}" style="text-decoration:none;color:inherit;">
+            ${p.image_url ? `<img src="${p.image_url}" alt="${p.title}" loading="lazy">` : `<div style="height:280px;background:#fafafa;"></div>`}
+            <div class="p">
+              <div style="font-weight:900;">${p.title}</div>
+              <div style="margin-top:6px;opacity:.85;">₹${p.price_inr}</div>
+              <div class="small" style="margin-top:6px;">
+                ${p.inventory_qty > 0 ? `${p.inventory_qty} in stock` : "Sold out"}
+              </div>
+            </div>
+          </a>
+        </div>
+      `).join("");
+    }
+
+    loadNewArrivals();
+  </script>
+</body>
+</html>
 
