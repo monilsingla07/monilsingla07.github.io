@@ -1,1 +1,17 @@
+/* assets/styles.css */
+body { font-family: system-ui, Arial, sans-serif; margin: 0; background: #fff; color: #111; }
+header, footer { padding: 14px 16px; border-bottom: 1px solid #eee; }
+footer { border-top: 1px solid #eee; border-bottom: none; margin-top: 24px; }
+.container { max-width: 1050px; margin: 0 auto; padding: 16px; }
+nav a { margin-right: 12px; text-decoration: none; color: #111; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.card { border: 1px solid #eee; border-radius: 14px; overflow: hidden; background: #fff; }
+.card img { width: 100%; height: 280px; object-fit: cover; display: block; background: #fafafa; }
+.card .p { padding: 12px; }
+.btn { display: inline-block; padding: 10px 14px; border-radius: 12px; border: 1px solid #111; background: #111; color: #fff; cursor: pointer; text-decoration: none; }
+.btn.secondary { background: #fff; color: #111; border: 1px solid #eee; }
+.small { font-size: 12px; opacity: 0.75; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.input { padding: 10px; border-radius: 12px; border: 1px solid #eee; width: 100%; }
+hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
 
