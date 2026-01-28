@@ -114,7 +114,13 @@
   }
 
   render();
+  import { renderHeader, renderFooter } from "./assets/ui.js";
+  document.getElementById("header").innerHTML = renderHeader("home");
+  document.getElementById("footer").innerHTML = renderFooter();
 </script>
+
+  
+
 
 </body>
 </html>
