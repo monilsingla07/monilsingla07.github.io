@@ -49,10 +49,7 @@ export function renderHeader(active = "") {
       <div class="container subnav-inner">
         <a href="products.html#silk">Silk</a>
         <a href="products.html#cotton">Cotton</a>
-        <a href="products.html#banarasi">Banarasi</a>
-        <a href="products.html#kanjivaram">Kanjivaram</a>
-        <a href="products.html#organza">Organza</a>
-        <a href="products.html#party">Party Wear</a>
+        <a href="products.html#cotton">Silk-Cotton</a>
       </div>
     </div>
   `;
@@ -90,7 +87,7 @@ export function renderFooter() {
           <div class="footer-title">About Ahamstree</div>
           <a href="about.html">Our Story</a>
           <a href="contact.html">Contact</a>
-          <a href="stores.html">Find a Store</a>
+          
         </div>
 
       </div>
