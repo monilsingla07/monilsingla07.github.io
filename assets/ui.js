@@ -27,7 +27,7 @@ export function renderHeader(active = "") {
 </a>
 
           <a href="products.html" class="${active === "products" ? "active" : ""}">Sarees</a>
-          <a href="products.html#new" class="">New Arrivals</a>
+          <a href="new-arrivals.html" class="">New Arrivals</a>
           <a href="collections.html" class="">Collections</a>
           <a href="sale.html" class="">Sale</a>
           <a href="blogs.html" class="">Blogs</a>
