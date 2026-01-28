@@ -3,31 +3,56 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Blogs — AhamStree</title>
+  <title>Blogs — Ahamstree</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <div id="header"></div>
 
   <div class="container">
-    <div class="card" style="padding:22px;border-radius:18px;">
-      <h2 style="margin-top:0;">Blogs</h2>
-      <p class="small" style="max-width:72ch;">Blogs page placeholder. If you host content elsewhere, link out; otherwise you can render posts from a CMS table.</p>
-      
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <a class="btn" href="products.html">Browse Sarees</a>
-        <a class="btn ghost" href="cart.html">Go to Cart</a>
-        <a class="btn ghost" href="index.html">Home</a>
-      </div>
-    </div>
+    <h2 style="margin-top:0;">Blogs</h2>
+    <div class="small">Stories, styling, care & craft</div>
+    <hr />
+    <div id="status" class="small">Loading…</div>
+    <div id="list" style="margin-top:12px;display:grid;gap:12px;"></div>
   </div>
 
   <div id="footer"></div>
 
   <script type="module">
     import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
+
+    async function loadBlogs() {
+      const status = document.getElementById("status");
+      const list = document.getElementById("list");
+
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("title,slug,excerpt,cover_image_url,published_at,is_published")
+        .eq("is_published", true)
+        .order("published_at", { ascending: false });
+
+      if (error) { status.textContent = "Error: " + error.message; return; }
+      status.textContent = "";
+
+      list.innerHTML = (data ?? []).map(p => `
+        <a class="card" href="blog.html?slug=${encodeURIComponent(p.slug)}" style="text-decoration:none;color:inherit;">
+          <div style="display:flex;gap:14px;align-items:center;">
+            ${p.cover_image_url ? `<img src="${p.cover_image_url}" alt="${p.title}" style="width:110px;height:80px;object-fit:cover;border-radius:12px;">` : ``}
+            <div>
+              <div style="font-weight:900;">${p.title}</div>
+              <div class="small" style="margin-top:6px;opacity:.85;">${p.excerpt ?? ""}</div>
+            </div>
+          </div>
+        </a>
+      `).join("");
+    }
+
+    loadBlogs();
   </script>
 </body>
 </html>
