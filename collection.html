@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Collection — Ahamstree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h2 id="title" style="margin-top:0;">Collection</h2>
+    <div id="desc" class="small"></div>
+    <hr />
+    <div id="status" class="small">Loading…</div>
+    <div id="grid" class="grid" style="margin-top:12px;"></div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+
+    document.getElementById("header").innerHTML = renderHeader("");
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    const params = new URLSearchParams(location.search);
+    const slug = params.get("slug");
+
+    async function loadCollection() {
+      const status = document.getElementById("status");
+      const grid = document.getElementById("grid");
+      const title = document.getElementById("title");
+      const desc = document.getElementById("desc");
+
+      if (!slug) { status.textContent = "Missing collection slug."; return; }
+
+      const { data: col, error: colErr } = await supabase
+        .from("collections")
+        .select("id,name,description")
+        .eq("slug", slug)
+        .maybeSingle();
+
+      if (colErr || !col) { status.textContent = "Collection not found."; return; }
+
+      title.textContent = col.name;
+      desc.textContent = col.description ?? "";
+
+      const { data, error } = await supabase
+        .from("collection_products")
+        .select("sort_order, product:products(id,title,price_inr,inventory_qty,is_active, product_images(image_url, sort_order))")
+        .eq("collection_id", col.id)
+        .order("sort_order", { ascending: true });
+
+      if (error) { status.textContent = "Error: " + error.message; return; }
+
+      status.textContent = "";
+
+      const products = (data ?? [])
+        .map(r => r.product)
+        .filter(p => p && p.is_active);
+
+      const normalized = products.map(p => {
+        const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
+        return { ...p, image_url: imgs[0]?.image_url ?? "" };
+      });
+
+      grid.innerHTML = normalized.map(p => `
+        <div class="card">
+          <a href="product.html?id=${encodeURIComponent(p.id)}" style="text-decoration:none;color:inherit;">
+            ${p.image_url ? `<img src="${p.image_url}" alt="${p.title}" loading="lazy">` : `<div style="height:280px;background:#fafafa;"></div>`}
+            <div class="p">
+              <div style="font-weight:900;">${p.title}</div>
+              <div style="margin-top:6px;opacity:.85;">₹${p.price_inr}</div>
+              <div class="small" style="margin-top:6px;">
+                ${p.inventory_qty > 0 ? `${p.inventory_qty} in stock` : "Sold out"}
+              </div>
+            </div>
+          </a>
+        </div>
+      `).join("");
+    }
+
+    loadCollection();
+  </script>
+</body>
+</html>
