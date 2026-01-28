@@ -97,13 +97,30 @@ export function renderFooter() {
       </div>
 
       <div class="container footer-bottom">
-        <div class="social">
-          <a href="#" aria-label="Instagram">Instagram</a>
-          <a href="#" aria-label="Facebook">Facebook</a>
-          <a href="#" aria-label="Pinterest">Pinterest</a>
-          <a href="#" aria-label="YouTube">YouTube</a>
-          <a href="#" aria-label="WhatsApp">WhatsApp</a>
-        </div>
+        <div class="social-links">
+  <a href="https://www.instagram.com/ahamstree/" target="_blank"
+     class="instagram" aria-label="Instagram">
+    <img src="assets/images/icons/instagram.svg" alt="Instagram">
+  </a>
+
+  <a href="#" target="_blank" class="facebook" aria-label="Facebook">
+    <img src="assets/images/icons/facebook.svg" alt="Facebook">
+  </a>
+
+  <a href="#" target="_blank" class="pinterest" aria-label="Pinterest">
+    <img src="assets/images/icons/pinterest.svg" alt="Pinterest">
+  </a>
+
+  <a href="#" target="_blank" class="youtube" aria-label="YouTube">
+    <img src="assets/images/icons/youtube.svg" alt="YouTube">
+  </a>
+
+  <a href="https://wa.me/919582297550" target="_blank"
+     class="whatsapp" aria-label="WhatsApp">
+    <img src="assets/images/icons/whatsapp.svg" alt="WhatsApp">
+  </a>
+</div>
+
 
         <div class="payments small">
           Visa • MasterCard • Rupay • UPI
