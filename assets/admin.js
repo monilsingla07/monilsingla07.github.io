@@ -1,13 +1,17 @@
-// Simple admin CRUD page using Supabase client
-// Place this file at assets/admin.js
+// assets/admin.js - admin UI (client-side). Requires assets/env.local.js to exist.
 import { ENV } from "./env.local.js";
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 const supabase = createClient(ENV.SUPABASE_URL, ENV.SUPABASE_ANON_KEY);
 
-// Optional: fallback list of admin emails if you don't have an admins table in Supabase
-const FALLBACK_ADMINS = [
-  // "you@example.com"
-];
+import { renderHeader, renderFooter } from "./assets/ui.js";
+import { showCookieConsent } from "./assets/cookie-consent.js";
+import { loadAnalytics } from "./assets/analytics.js";
+
+document.getElementById("header").innerHTML = renderHeader("home");
+document.getElementById("footer").innerHTML = renderFooter();
+showCookieConsent(loadAnalytics);
+
+const FALLBACK_ADMINS = []; // add admin emails locally if you prefer
 
 const loginBox = document.getElementById("admin-login");
 const panel = document.getElementById("admin-panel");
@@ -34,7 +38,6 @@ signoutBtn.onclick = async () => {
   showLoggedOut();
 };
 
-// Check session on load
 async function init() {
   const { data } = await supabase.auth.getSession();
   const session = data?.session;
@@ -50,7 +53,6 @@ async function init() {
     showLoggedOut();
   }
 
-  // listen for auth changes (magic link may redirect back)
   supabase.auth.onAuthStateChange((event, sessionData) => {
     if (sessionData?.session) {
       const user = sessionData.session.user;
@@ -67,7 +69,6 @@ async function init() {
 
 async function isAdminUser(user) {
   if (!user?.email) return false;
-  // Try checking admins table
   try {
     const { data, error } = await supabase
       .from("admins")
@@ -78,8 +79,6 @@ async function isAdminUser(user) {
     if (error) throw error;
     if (data) return true;
   } catch (err) {
-    // no admins table or permission error
-    // fallback to static list:
     if (FALLBACK_ADMINS.includes(user.email)) return true;
   }
   return false;
@@ -96,7 +95,6 @@ function showAdmin(user) {
   loadProducts();
 }
 
-// CRUD operations
 const productsGrid = document.getElementById("products-grid");
 const productForm = document.getElementById("product-form");
 const formStatus = document.getElementById("form-status");
@@ -112,6 +110,10 @@ async function loadProducts() {
     productsGrid.innerHTML = "Error loading products: " + error.message;
     return;
   }
+  if (!data || !data.length) {
+    productsGrid.innerHTML = `<div class="card empty">No products found.</div>`;
+    return;
+  }
   productsGrid.innerHTML = data.map(p => `
     <div class="card" style="padding:12px;">
       <div style="font-weight:900;">${escapeHtml(p.title)}</div>
@@ -124,7 +126,6 @@ async function loadProducts() {
       </div>
     </div>
   `).join("");
-  // wire up edit buttons
   Array.from(productsGrid.querySelectorAll("button[data-action]")).forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
