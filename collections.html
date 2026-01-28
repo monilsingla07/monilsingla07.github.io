@@ -3,31 +3,56 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Collections — AhamStree</title>
+  <title>Collections — Ahamstree</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <div id="header"></div>
 
   <div class="container">
-    <div class="card" style="padding:22px;border-radius:18px;">
-      <h2 style="margin-top:0;">Collections</h2>
-      <p class="small" style="max-width:72ch;">Collections page placeholder. You can link collections to Supabase (e.g., a 'collections' table) and show curated product lists here.</p>
-      
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <a class="btn" href="products.html">Browse Sarees</a>
-        <a class="btn ghost" href="cart.html">Go to Cart</a>
-        <a class="btn ghost" href="index.html">Home</a>
-      </div>
-    </div>
+    <h2 style="margin-top:0;">Collections</h2>
+    <div class="small">Curated edits</div>
+    <hr />
+    <div id="status" class="small">Loading…</div>
+    <div id="grid" class="grid" style="margin-top:12px;"></div>
   </div>
 
   <div id="footer"></div>
 
   <script type="module">
     import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
+
+    async function loadCollections() {
+      const status = document.getElementById("status");
+      const grid = document.getElementById("grid");
+
+      const { data, error } = await supabase
+        .from("collections")
+        .select("name,slug,description,cover_image_url,is_active,created_at")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+
+      if (error) { status.textContent = "Error: " + error.message; return; }
+      status.textContent = "";
+
+      grid.innerHTML = (data ?? []).map(c => `
+        <div class="card">
+          <a href="collection.html?slug=${encodeURIComponent(c.slug)}" style="text-decoration:none;color:inherit;">
+            ${c.cover_image_url ? `<img src="${c.cover_image_url}" alt="${c.name}" loading="lazy">` : `<div style="height:220px;background:#fafafa;"></div>`}
+            <div class="p">
+              <div style="font-weight:900;">${c.name}</div>
+              <div class="small" style="margin-top:6px;opacity:.85;">${c.description ?? ""}</div>
+            </div>
+          </a>
+        </div>
+      `).join("");
+    }
+
+    loadCollections();
   </script>
 </body>
 </html>
