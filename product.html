@@ -48,7 +48,31 @@
 
     const params = new URLSearchParams(location.search);
     const id = params.get("id");
+let currentQ = "saree";
 
+async function loadProducts() {
+  const { data, error } = await supabase
+    .from("products")
+    .select("id,title,price_inr,inventory_qty,is_active,created_at, product_images(image_url, sort_order)")
+    .eq("is_active", true)
+    .ilike("title", `%${currentQ}%`)
+    .order("created_at", { ascending: false });
+
+  // render data...
+}
+
+document.getElementById("fabricTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".filter-tab");
+  if (!btn) return;
+
+  document.querySelectorAll(".filter-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  currentQ = btn.dataset.q;     // "silk", "cotton", etc.
+  loadProducts();
+});
+
+    
     async function loadProduct() {
       const status = document.getElementById("status");
 
