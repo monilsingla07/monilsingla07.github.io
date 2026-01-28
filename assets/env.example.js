@@ -1,4 +1,5 @@
-// Example env file - DO NOT commit real keys
+// Example env file - DO NOT commit real keys. Copy to assets/env.local.js for local dev.
+// Deploy: GitHub Actions will generate assets/env.local.js during deploy from repository secrets.
 export const ENV = {
   SUPABASE_URL: "https://your-project.supabase.co",
   SUPABASE_ANON_KEY: "public-anon-key",
