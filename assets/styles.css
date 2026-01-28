@@ -14,8 +14,16 @@ nav a { margin-right: 12px; text-decoration: none; color: #111; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 .input { padding: 10px; border-radius: 12px; border: 1px solid #eee; width: 100%; }
 hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
-/* ===== Taneira-like header/footer layout ===== */
 
+
+/* Header logo sizing */
+.site-logo img {
+  height: 34px;      /* adjust: 28–40px usually perfect */
+  width: auto;
+  display: block;
+}
+
+/* ===== Taneira-like header/footer layout ===== */
 .topbar {
   border-bottom: 1px solid #eee;
   background: #fff;
