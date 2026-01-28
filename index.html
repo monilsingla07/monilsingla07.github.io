@@ -1,1 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AhamStree — Sarees</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <div class="card" style="padding:18px;border-radius:16px;">
+      <div style="font-size:30px;font-weight:900;line-height:1.1;">
+        Elegant Sarees.<br/>Delivered to your door.
+      </div>
+      <p style="opacity:.8;margin-top:10px;">
+        New launches, festive picks, and timeless classics.
+      </p>
+      <div class="row">
+        <a class="btn" href="products.html">Shop Sarees</a>
+        <a class="btn secondary" href="#offer">First-time offer</a>
+      </div>
+    </div>
+
+    <div id="offer" class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
+      <div style="font-weight:900;">First-time buyer discount</div>
+      <div class="small" style="margin-top:6px;">
+        (Placeholder) We’ll add coupon logic later.
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
+      <div style="font-weight:900;">About AhamStree</div>
+      <div class="small" style="margin-top:6px;">
+        Add your story, fabric quality, sourcing, and trust markers.
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter } from "./assets/ui.js";
+    document.getElementById("header").innerHTML = renderHeader("home");
+    document.getElementById("footer").innerHTML = renderFooter();
+  </script>
+</body>
+</html>
 
