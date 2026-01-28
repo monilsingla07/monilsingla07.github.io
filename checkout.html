@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Checkout — AhamStree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h2 style="margin-top:0;">Checkout</h2>
+    <div class="small">Enter shipping details. You’ll be redirected to Razorpay to pay.</div>
+    <hr />
+
+    <div id="warn" class="small" style="color:crimson; display:none;"></div>
+
+    <form id="form" class="card" style="padding:16px;border-radius:16px;max-width:680px;">
+      <label class="small">Full name</label>
+      <input class="input" name="full_name" required placeholder="e.g., Monil Gupta" />
+
+      <div style="height:10px;"></div>
+
+      <label class="small">Phone</label>
+      <input class="input" name="phone" required placeholder="10-digit mobile" />
+
+      <div style="height:10px;"></div>
+
+      <label class="small">Address line 1</label>
+      <input class="input" name="address_line1" required placeholder="House / street" />
+
+      <div style="height:10px;"></div>
+
+      <label class="small">Address line 2 (optional)</label>
+      <input class="input" name="address_line2" placeholder="Landmark" />
+
+      <div style="height:10px;"></div>
+
+      <div class="row">
+        <div style="flex:1;">
+          <label class="small">City</label>
+          <input class="input" name="city" required />
+        </div>
+        <div style="flex:1;">
+          <label class="small">State</label>
+          <input class="input" name="state" required />
+        </div>
+      </div>
+
+      <div style="height:10px;"></div>
+
+      <label class="small">Pincode</label>
+      <input class="input" name="pincode" required placeholder="e.g., 560001" />
+
+      <div style="height:14px;"></div>
+
+      <button class="btn" type="submit" id="payBtn">Pay with Razorpay</button>
+      <div id="status" class="small" style="margin-top:10px;"></div>
+
+      <div class="small" style="margin-top:12px;">
+        Tip: For best experience, ask users to login (optional). For launch, guest checkout is okay.
+      </div>
+    </form>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { getCart } from "./assets/cart.js";
+    import { supabase } from "./assets/supabase.js";
+
+    document.getElementById("header").innerHTML = renderHeader("cart");
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    const cart = getCart();
+    const warn = document.getElementById("warn");
+    if (!cart.length) {
+      warn.style.display = "block";
+      warn.textContent = "Your cart is empty. Go back and add products first.";
+    }
+
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!cart.length) return;
+
+      const status = document.getElementById("status");
+      const payBtn = document.getElementById("payBtn");
+      status.textContent = "Creating order…";
+      payBtn.disabled = true;
+
+      const fd = new FormData(e.target);
+      const shipping = Object.fromEntries(fd.entries());
+
+      // Call Supabase Edge Function (server-side) to:
+      // 1) validate inventory & prices
+      // 2) create order + order_items
+      // 3) create Razorpay payment link
+      // 4) return payment_link_url
+      const { data, error } = await supabase.functions.invoke("create-payment-link", {
+        body: { cart, shipping }
+      });
+
+      if (error) {
+        status.textContent = "Error: " + error.message;
+        payBtn.disabled = false;
+        return;
+      }
+
+      if (!data?.payment_link_url) {
+        status.textContent = "Error: Payment link not created.";
+        payBtn.disabled = false;
+        return;
+      }
+
+      status.textContent = "Redirecting to Razorpay…";
+      window.location.href = data.payment_link_url;
+    });
+  </script>
+</body>
+</html>
+

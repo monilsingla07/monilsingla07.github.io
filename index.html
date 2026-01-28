@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AhamStree — Sarees</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <div class="card" style="padding:26px;border-radius:18px;">
+  <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px;">
+    <img src="assets/logo.svg" alt="Ahamstree" style="max-width:520px; width:80%; height:auto;"
+      onerror="this.style.display='none'; document.getElementById('fallbackBrand').style.display='block';" />
+    <div id="fallbackBrand" style="display:none; font-size:42px; font-weight:900; letter-spacing:1px;">ahamstree</div>
+
+    <div style="max-width:720px; opacity:0.85; font-size:16px; line-height:1.5;">
+      Thoughtfully curated sarees for every occasion — festive, wedding, and everyday elegance.
+    </div>
+
+    <div class="row" style="justify-content:center; margin-top:8px;">
+      <a class="btn" href="products.html">Shop Sarees</a>
+      <a class="btn secondary" href="about.html">Our Story</a>
+    </div>
+  </div>
+</div>
+
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter } from "./assets/ui.js";
+    document.getElementById("header").innerHTML = renderHeader("home");
+    document.getElementById("footer").innerHTML = renderFooter();
+  </script>
+</body>
+</html>
+

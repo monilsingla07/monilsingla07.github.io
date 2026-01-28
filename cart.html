@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cart — AhamStree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h2 style="margin-top:0;">Your cart</h2>
+
+    <div id="empty" style="display:none;">
+      <div class="small">Cart is empty.</div>
+      <div style="margin-top:10px;"><a class="btn" href="products.html">Browse products</a></div>
+    </div>
+
+    <div id="list"></div>
+
+    <div id="summary" class="card" style="padding:16px;border-radius:16px;margin-top:14px;display:none;">
+      <div style="display:flex;justify-content:space-between;">
+        <div style="opacity:.8;">Subtotal</div>
+        <div style="font-weight:900;" id="subtotal"></div>
+      </div>
+
+      <div class="small" style="margin-top:10px;">Shipping + Razorpay payment link comes in checkout.</div>
+
+      <div class="row" style="margin-top:14px;">
+        <a class="btn" href="checkout.html">Checkout</a>
+        <button id="clearBtn" class="btn secondary" type="button">Clear cart</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+  import { renderHeader, renderFooter } from "./assets/ui.js";
+  import { getCart, updateQty, removeFromCart, clearCart } from "./assets/cart.js";
+
+  function money(n) {
+    return "₹" + n;
+  }
+
+  function render() {
+    document.getElementById("header").innerHTML = renderHeader("cart");
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    const items = getCart();
+    const empty = document.getElementById("empty");
+    const list = document.getElementById("list");
+    const summary = document.getElementById("summary");
+
+    if (!items.length) {
+      empty.style.display = "block";
+      list.innerHTML = "";
+      summary.style.display = "none";
+      return;
+    }
+
+    empty.style.display = "none";
+    summary.style.display = "block";
+
+    let subtotal = 0;
+    let html = "";
+
+    items.forEach((i) => {
+      subtotal += i.price_inr * i.qty;
+
+      html +=
+        '<div class="card" style="padding:12px;border-radius:14px;display:flex;gap:12px;margin-bottom:12px;">' +
+          '<div style="width:72px;height:90px;border-radius:12px;overflow:hidden;background:#fafafa;">' +
+            (i.image_url
+              ? '<img src="' + i.image_url + '" alt="' + i.title + '" style="width:100%;height:100%;object-fit:cover;">'
+              : ''
+            ) +
+          '</div>' +
+          '<div style="flex:1;">' +
+            '<div style="font-weight:900;">' + i.title + '</div>' +
+            '<div style="margin-top:6px;opacity:.85;">' + money(i.price_inr) + '</div>' +
+            '<div class="row" style="margin-top:10px;">' +
+              '<span class="small">Qty</span>' +
+              '<input class="qty input" data-id="' + i.product_id + '" style="width:90px;" type="number" min="1" max="99" value="' + i.qty + '">' +
+              '<button class="remove btn secondary" data-id="' + i.product_id + '" type="button">Remove</button>' +
+            '</div>' +
+          '</div>' +
+          '<div style="font-weight:900;">' + money(i.price_inr * i.qty) + '</div>' +
+        '</div>';
+    });
+
+    list.innerHTML = html;
+    document.getElementById("subtotal").textContent = money(subtotal);
+
+    document.querySelectorAll(".qty").forEach((inp) => {
+      inp.addEventListener("change", (e) => {
+        updateQty(e.target.dataset.id, e.target.value);
+        render();
+      });
+    });
+
+    document.querySelectorAll(".remove").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        removeFromCart(e.target.dataset.id);
+        render();
+      });
+    });
+
+    document.getElementById("clearBtn").onclick = () => {
+      clearCart();
+      render();
+    };
+  }
+
+  render();
+</script>
+
+</body>
+</html>

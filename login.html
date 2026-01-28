@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Account — AhamStree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h2 style="margin-top:0;">Account</h2>
+
+    <!-- This always shows, even if JS fails -->
+    <div id="debug" class="card" style="padding:12px;border-radius:14px;margin-bottom:12px;">
+      <div style="font-weight:900;">Account page loaded ✅</div>
+      <div class="small">If you only see this box and nothing else, JS imports are failing.</div>
+    </div>
+
+    <div id="app" class="card" style="padding:16px;border-radius:16px;max-width:680px;">
+      <div class="small">Loading account…</div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+
+    document.getElementById("header").innerHTML = renderHeader("login");
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    const app = document.getElementById("app");
+
+    function renderLoggedOut() {
+      app.innerHTML = `
+        <div style="font-weight:900;">Login / Sign up</div>
+        <div class="small" style="margin-top:6px;">
+          Enter your email and we’ll send you a login link (OTP/magic link).
+        </div>
+
+        <div style="margin-top:12px;">
+          <input id="email" class="input" type="email" placeholder="your@email.com" />
+        </div>
+
+        <button id="send" class="btn" style="margin-top:12px;">Send login link</button>
+        <div id="status" class="small" style="margin-top:10px;"></div>
+      `;
+
+      const sendBtn = document.getElementById("send");
+      const status = document.getElementById("status");
+
+      sendBtn.onclick = async () => {
+        const email = document.getElementById("email").value.trim();
+        if (!email) {
+          status.textContent = "Please enter an email.";
+          return;
+        }
+
+        status.textContent = "Sending…";
+
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            // We'll set this properly after your custom domain is finalized.
+            // emailRedirectTo: window.location.origin + "/login.html",
+          },
+        });
+
+        status.textContent = error ? ("Error: " + error.message) : "Check your email for the login link.";
+      };
+    }
+
+    function renderLoggedIn(email) {
+      app.innerHTML = `
+        <div style="font-weight:900;">Logged in ✅</div>
+        <div class="small" style="margin-top:6px;">${email}</div>
+        <button id="logout" class="btn secondary" style="margin-top:12px;">Log out</button>
+      `;
+
+      document.getElementById("logout").onclick = async () => {
+        await supabase.auth.signOut();
+        renderLoggedOut();
+      };
+    }
+
+    // Initial render
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userEmail = sessionData?.session?.user?.email;
+    if (userEmail) renderLoggedIn(userEmail);
+    else renderLoggedOut();
+
+    // Keep in sync if auth changes
+    supabase.auth.onAuthStateChange((_event, session) => {
+      const e = session?.user?.email;
+      if (e) renderLoggedIn(e);
+      else renderLoggedOut();
+    });
+  </script>
+</body>
+</html>
