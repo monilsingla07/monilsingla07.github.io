@@ -1,12 +1,14 @@
-// assets/ui.js
+// assets/ui.js (updated UI helpers + accessibility tweaks)
 import { cartCount } from "./cart.js";
 
 export function renderHeader(active = "") {
   const count = cartCount();
 
   return `
-    <!-- Top announcement bar (Taneira-like) -->
-    <div class="topbar">
+    <a class="skip-link" href="#content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Skip to content</a>
+
+    <!-- Top announcement bar -->
+    <div class="topbar" role="region" aria-label="Announcement">
       <div class="container topbar-inner">
         <div class="topbar-left">Free shipping in India above ₹999 • Easy returns</div>
         <div class="topbar-right">
@@ -18,15 +20,15 @@ export function renderHeader(active = "") {
     </div>
 
     <!-- Main header -->
-    <header class="header">
+    <header class="header" role="banner">
       <div class="container header-inner">
         <!-- Left: Navigation -->
-        <nav class="nav">
-          <a href="products.html" class="${active === "products" ? "active" : ""}">Sarees</a>
-          <a href="products.html#new" class="">New Arrivals</a>
-          <a href="collections.html" class="">Collections</a>
-          <a href="sale.html" class="">Sale</a>
-          <a href="blogs.html" class="">Blogs</a>
+        <nav class="nav" role="navigation" aria-label="Main navigation">
+          <a href="products.html" class="${active === "products" ? "active" : ""}" aria-current="${active === "products" ? "page" : "false"}">Sarees</a>
+          <a href="products.html#new" class="" aria-current="false">New Arrivals</a>
+          <a href="collections.html" class="" aria-current="false">Collections</a>
+          <a href="sale.html" class="" aria-current="false">Sale</a>
+          <a href="blogs.html" class="" aria-current="false">Blogs</a>
         </nav>
 
         <!-- Center: Logo -->
@@ -44,8 +46,8 @@ export function renderHeader(active = "") {
       </div>
     </header>
 
-    <!-- Secondary category bar (optional, very Taneira-like feel) -->
-    <div class="subnav">
+    <!-- Secondary category bar -->
+    <div class="subnav" role="navigation" aria-label="Product categories">
       <div class="container subnav-inner">
         <a href="products.html#silk">Silk</a>
         <a href="products.html#cotton">Cotton</a>
@@ -60,7 +62,7 @@ export function renderHeader(active = "") {
 
 export function renderFooter() {
   return `
-    <footer class="footer">
+    <footer class="footer" role="contentinfo">
       <div class="container footer-grid">
 
         <div>
