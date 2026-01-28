@@ -11,6 +11,7 @@
 
   <div class="container">
     <h2 style="margin-top:0;">Your cart</h2>
+
     <div id="empty" style="display:none;">
       <div class="small">Cart is empty.</div>
       <div style="margin-top:10px;"><a class="btn" href="products.html">Browse products</a></div>
@@ -23,11 +24,12 @@
         <div style="opacity:.8;">Subtotal</div>
         <div style="font-weight:900;" id="subtotal"></div>
       </div>
-      <div class="small" style="margin-top:10px;">Shipping + Razorpay payment link will come in Part 3.</div>
+
+      <div class="small" style="margin-top:10px;">Shipping + Razorpay payment link comes in checkout.</div>
 
       <div class="row" style="margin-top:14px;">
-        <button id="checkoutBtn" class="btn">Checkout</button>
-        <button id="clearBtn" class="btn secondary">Clear cart</button>
+        <a class="btn" href="checkout.html">Checkout</a>
+        <button id="clearBtn" class="btn secondary" type="button">Clear cart</button>
       </div>
     </div>
   </div>
@@ -41,6 +43,7 @@
     function money(n){ return "₹" + n; }
 
     function render() {
+      // Render header/footer every time so Cart count updates
       document.getElementById("header").innerHTML = renderHeader("cart");
       document.getElementById("footer").innerHTML = renderFooter();
 
@@ -73,7 +76,7 @@
             <div class="row" style="margin-top:10px;">
               <span class="small">Qty</span>
               <input data-id="${i.product_id}" class="qty input" style="width:90px;" type="number" min="1" max="99" value="${i.qty}">
-              <button data-id="${i.product_id}" class="remove btn secondary">Remove</button>
+              <button data-id="${i.product_id}" class="remove btn secondary" type="button">Remove</button>
             </div>
           </div>
           <div style="font-weight:900;">${money(i.price_inr*i.qty)}</div>
@@ -96,10 +99,9 @@
         });
       });
 
-      document.getElementById("clearBtn").onclick = () => { clearCart(); render(); };
-      document.getElementById("checkoutBtn").onclick = () => {
-        alert(location.href = "checkout.html";
-);
+      document.getElementById("clearBtn").onclick = () => {
+        clearCart();
+        render();
       };
     }
 
@@ -107,4 +109,3 @@
   </script>
 </body>
 </html>
-
