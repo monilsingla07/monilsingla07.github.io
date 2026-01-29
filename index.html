@@ -9,34 +9,160 @@
 <body>
   <div id="header"></div>
 
-  <div class="container">
-    <div class="card" style="padding:26px;border-radius:18px;">
-  <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px;">
-    <img src="assets/logo.svg" alt="Ahamstree" style="max-width:520px; width:80%; height:auto;"
-      onerror="this.style.display='none'; document.getElementById('fallbackBrand').style.display='block';" />
-    <div id="fallbackBrand" style="display:none; font-size:42px; font-weight:900; letter-spacing:1px;">ahamstree</div>
+  <!-- Big hero banner (Nalli-like) -->
+  <section class="hero-banner">
+    <div class="hero-track" aria-label="Promotions">
+      <article class="hero-slide" data-slide="1">
+        <div class="hero-overlay">
+          <div class="hero-kicker">AhamStree</div>
+          <h1 class="hero-title">Timeless sarees. Modern styling.</h1>
+          <p class="hero-subtitle">Festive • Wedding • Everyday elegance</p>
+          <div class="hero-cta">
+            <a class="btn" href="products.html">Shop Sarees</a>
+            <a class="btn secondary" href="new-arrivals.html">New Arrivals</a>
+          </div>
+        </div>
 
-    <div style="max-width:720px; opacity:0.85; font-size:16px; line-height:1.5;">
-      Thoughtfully curated sarees for every occasion — festive, wedding, and everyday elegance.
+        <!-- Floating banners -->
+        <div class="float-badges" aria-hidden="true">
+          <div class="float-badge b1">Free Shipping ₹999+</div>
+          <div class="float-badge b2">Easy Returns</div>
+          <div class="float-badge b3">New Drop</div>
+        </div>
+      </article>
+
+      <article class="hero-slide" data-slide="2">
+        <div class="hero-overlay">
+          <div class="hero-kicker">Handpicked</div>
+          <h2 class="hero-title">Silk sarees for celebrations</h2>
+          <p class="hero-subtitle">Kanjivaram • Banarasi • Pure Silk</p>
+          <div class="hero-cta">
+            <a class="btn" href="products.html#silk">Shop Silk</a>
+            <a class="btn secondary" href="collections.html">Explore Collections</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="hero-slide" data-slide="3">
+        <div class="hero-overlay">
+          <div class="hero-kicker">Everyday Edit</div>
+          <h2 class="hero-title">Cotton & Silk-Cotton staples</h2>
+          <p class="hero-subtitle">Breathable • Elegant • Easy to drape</p>
+          <div class="hero-cta">
+            <a class="btn" href="products.html#cotton">Shop Cotton</a>
+            <a class="btn secondary" href="sale.html">Sale</a>
+          </div>
+        </div>
+      </article>
     </div>
 
-    <div class="row" style="justify-content:center; margin-top:8px;">
-      <a class="btn" href="products.html">Shop Sarees</a>
-      <a class="btn secondary" href="about.html">Our Story</a>
+    <div class="hero-dots" role="tablist" aria-label="Hero carousel controls">
+      <button class="hero-dot" data-go="1" aria-label="Go to slide 1"></button>
+      <button class="hero-dot" data-go="2" aria-label="Go to slide 2"></button>
+      <button class="hero-dot" data-go="3" aria-label="Go to slide 3"></button>
     </div>
-  </div>
-</div>
+  </section>
+
+  <div class="container" style="margin-top:22px;">
+
+    <!-- Category quick links -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Shop by Category</h2>
+        <a class="section-link" href="products.html">View all</a>
+      </div>
+
+      <div class="category-tiles">
+        <a class="cat-tile" href="products.html#silk">
+          <div class="cat-title">Silk</div>
+          <div class="cat-sub">Wedding & festive</div>
+        </a>
+        <a class="cat-tile" href="products.html#cotton">
+          <div class="cat-title">Cotton</div>
+          <div class="cat-sub">Everyday comfort</div>
+        </a>
+        <a class="cat-tile" href="products.html#banarasi">
+          <div class="cat-title">Banarasi</div>
+          <div class="cat-sub">Classic zari</div>
+        </a>
+        <a class="cat-tile" href="products.html#kanjivaram">
+          <div class="cat-title">Kanjivaram</div>
+          <div class="cat-sub">Iconic weaves</div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Bestsellers -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Bestsellers</h2>
+        <a class="section-link" href="products.html">Shop all</a>
+      </div>
+
+      <div id="bestsellersStatus" class="small" style="margin-bottom:10px;"></div>
+      <div id="bestsellersGrid" class="grid grid-3"></div>
+    </section>
+
+    <!-- New Collection -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">New Collection</h2>
+        <a class="section-link" href="new-arrivals.html">See more</a>
+      </div>
+
+      <div id="newCollectionStatus" class="small" style="margin-bottom:10px;"></div>
+      <div id="newCollectionGrid" class="grid grid-3"></div>
+    </section>
 
   </div>
+
+  <!-- Floating CTA (WhatsApp-like) -->
+  <a class="floating-cta" href="https://wa.me/" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+    <span class="floating-cta-dot" aria-hidden="true"></span>
+    Need help?
+  </a>
 
   <div id="footer"></div>
 
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
+    import { hydrateHome } from "/assets/home.js";
+
     document.getElementById("header").innerHTML = renderHeader("home");
     hydrateHeaderAuth();
     document.getElementById("footer").innerHTML = renderFooter();
+
+    // Home page dynamic sections
+    hydrateHome();
+
+    // Simple hero carousel (no dependencies)
+    const track = document.querySelector(".hero-track");
+    const dots = Array.from(document.querySelectorAll(".hero-dot"));
+    let current = 1;
+
+    function go(n) {
+      current = n;
+      const width = track?.clientWidth ?? 0;
+      if (track && width) track.scrollTo({ left: (n - 1) * width, behavior: "smooth" });
+      dots.forEach((d, i) => d.setAttribute("aria-current", String(i + 1 === n)));
+    }
+
+    dots.forEach(d => d.addEventListener("click", () => go(Number(d.dataset.go))));
+
+    // Autoplay
+    setInterval(() => go(((current) % 3) + 1), 6500);
+
+    // Sync on manual scroll
+    track?.addEventListener("scroll", () => {
+      const width = track.clientWidth || 1;
+      const idx = Math.round(track.scrollLeft / width) + 1;
+      if (idx !== current) {
+        current = idx;
+        dots.forEach((d, i) => d.setAttribute("aria-current", String(i + 1 === current)));
+      }
+    });
+
+    go(1);
   </script>
 </body>
 </html>
-
