@@ -138,6 +138,8 @@ export function renderFooter() {
   `;
 }
 
+let _authHeaderListenerSet = false;
+
 export async function hydrateHeaderAuth() {
   const a = document.getElementById("accountLink");
   if (!a) return;
@@ -146,5 +148,13 @@ export async function hydrateHeaderAuth() {
   const loggedIn = !!data?.session?.user;
 
   a.textContent = loggedIn ? "Account" : "Login / Sign up";
+
+  // Keep it updated automatically after login/logout without page refresh
+  if (!_authHeaderListenerSet) {
+    _authHeaderListenerSet = true;
+    supabase.auth.onAuthStateChange(() => {
+      hydrateHeaderAuth();
+    });
+  }
 }
 
