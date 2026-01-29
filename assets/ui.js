@@ -104,24 +104,24 @@ export function renderFooter() {
         <div class="social-links">
   <a href="https://www.instagram.com/ahamstree/" target="_blank"
      class="instagram" aria-label="Instagram">
-    <img src="assets/images/icons/instagram.svg" alt="Instagram">
+    <img src="assets/images/icons/instagram.png" alt="Instagram">
   </a>
 
   <a href="#" target="_blank" class="facebook" aria-label="Facebook">
-    <img src="assets/images/icons/facebook.svg" alt="Facebook">
+    <img src="assets/images/icons/facebook.png" alt="Facebook">
   </a>
 
   <a href="#" target="_blank" class="pinterest" aria-label="Pinterest">
-    <img src="assets/images/icons/pinterest.svg" alt="Pinterest">
+    <img src="assets/images/icons/pinterest.png" alt="Pinterest">
   </a>
 
   <a href="#" target="_blank" class="youtube" aria-label="YouTube">
-    <img src="assets/images/icons/youtube.svg" alt="YouTube">
+    <img src="assets/images/icons/youtube.png" alt="YouTube">
   </a>
 
   <a href="https://wa.me/919582297550" target="_blank"
      class="whatsapp" aria-label="WhatsApp">
-    <img src="assets/images/icons/whatsapp.svg" alt="WhatsApp">
+    <img src="assets/images/icons/whatsapp.png" alt="WhatsApp">
   </a>
 </div>
 
