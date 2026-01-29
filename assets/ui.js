@@ -148,6 +148,8 @@ export async function hydrateHeaderAuth() {
   const loggedIn = !!data?.session?.user;
 
   a.textContent = loggedIn ? "Account" : "Login / Sign up";
+a.href = loggedIn ? "account.html" : "login.html";
+
 
   // Keep it updated automatically after login/logout without page refresh
   if (!_authHeaderListenerSet) {
