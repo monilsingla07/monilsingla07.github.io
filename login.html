@@ -26,156 +26,117 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter } from "/assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
 import { supabase } from "/assets/supabase.js";
 
+
     document.getElementById("header").innerHTML = renderHeader("login");
-    document.getElementById("footer").innerHTML = renderFooter();
+document.getElementById("footer").innerHTML = renderFooter();
+hydrateHeaderAuth();
+
 
     const app = document.getElementById("app");
 
         function renderLoggedOut() {
   app.innerHTML = `
-    <div style="font-weight:900;">Account</div>
-    <div class="small" style="margin-top:6px;">Login or create a new account.</div>
-
-    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-      <button id="tabOtp" class="btn secondary">Email login link</button>
-      <button id="tabPw" class="btn secondary">Email + password</button>
+    <div style="font-weight:900;">Login / Sign up</div>
+    <div class="small" style="margin-top:6px;">
+      Create an account or log in with email + password.
     </div>
 
-    <div id="panel" style="margin-top:14px;"></div>
+    <div style="margin-top:14px;display:grid;gap:10px;">
+      <input id="fullName" class="input" type="text" placeholder="Full name" />
+      <input id="phone" class="input" type="tel" placeholder="Phone number" />
+      <input id="email" class="input" type="email" placeholder="Email address" />
+      <input id="password" class="input" type="password" placeholder="Password (min 6 chars)" />
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button id="signup" class="btn">Create account</button>
+      <button id="login" class="btn secondary">Log in</button>
+    </div>
+
+    <div id="status" class="small" style="margin-top:10px;"></div>
   `;
 
-  const panel = document.getElementById("panel");
-  const tabOtp = document.getElementById("tabOtp");
-  const tabPw = document.getElementById("tabPw");
+  const status = document.getElementById("status");
 
-  function setActive(which) {
-    // simple visual state
-    [tabOtp, tabPw].forEach(b => b.classList.remove("active"));
-    (which === "otp" ? tabOtp : tabPw).classList.add("active");
-  }
+  const getForm = () => ({
+    full_name: document.getElementById("fullName").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    password: document.getElementById("password").value,
+  });
 
-  function renderOtp() {
-    setActive("otp");
-    panel.innerHTML = `
-      <div style="font-weight:800;">Login / Sign up with email link</div>
-      <div class="small" style="margin-top:6px;">
-        We’ll email you a one-time link to sign in (works for new users too).
-      </div>
+  document.getElementById("signup").onclick = async () => {
+    const { full_name, phone, email, password } = getForm();
 
-      <div style="margin-top:12px;">
-        <input id="emailOtp" class="input" type="email" placeholder="your@email.com" />
-      </div>
+    if (!email) return (status.textContent = "Please enter an email.");
+    if (!password || password.length < 6) return (status.textContent = "Password must be at least 6 characters.");
 
-      <button id="sendOtp" class="btn" style="margin-top:12px;">Send login link</button>
-      <div id="statusOtp" class="small" style="margin-top:10px;"></div>
-    `;
+    status.textContent = "Creating account… check your email to verify.";
 
-    document.getElementById("sendOtp").onclick = async () => {
-      const email = document.getElementById("emailOtp").value.trim();
-      const status = document.getElementById("statusOtp");
-      if (!email) { status.textContent = "Please enter an email."; return; }
+    // store profile draft so we can write it after user confirms/signs in
+    localStorage.setItem("pending_profile", JSON.stringify({ full_name, phone }));
 
-      status.textContent = "Sending…";
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin + "/login.html",
+      },
+    });
 
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          // IMPORTANT: set this once your domain is final
-          emailRedirectTo: window.location.origin + "/login.html",
-        },
-      });
+    status.textContent = error
+      ? ("Error: " + error.message)
+      : "Account created. Please verify your email, then come back to log in.";
+  };
 
-      status.textContent = error ? ("Error: " + error.message) : "Check your email for the login link.";
-    };
-  }
+  document.getElementById("login").onclick = async () => {
+    const { email, password } = getForm();
 
-  function renderPassword() {
-    setActive("pw");
-    panel.innerHTML = `
-      <div style="font-weight:800;">Email + password</div>
-      <div class="small" style="margin-top:6px;">
-        Create an account with a password, or log in if you already have one.
-      </div>
+    if (!email) return (status.textContent = "Please enter an email.");
+    if (!password) return (status.textContent = "Please enter a password.");
 
-      <div style="margin-top:12px;">
-        <input id="emailPw" class="input" type="email" placeholder="your@email.com" />
-      </div>
-      <div style="margin-top:10px;">
-        <input id="passPw" class="input" type="password" placeholder="Password (min 6 chars)" />
-      </div>
+    status.textContent = "Logging in…";
 
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-        <button id="signupPw" class="btn">Create account</button>
-        <button id="loginPw" class="btn secondary">Log in</button>
-      </div>
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-      <div id="statusPw" class="small" style="margin-top:10px;"></div>
-    `;
-
-    const status = document.getElementById("statusPw");
-
-    document.getElementById("signupPw").onclick = async () => {
-      const email = document.getElementById("emailPw").value.trim();
-      const password = document.getElementById("passPw").value;
-      if (!email) { status.textContent = "Please enter an email."; return; }
-      if (!password || password.length < 6) { status.textContent = "Password must be at least 6 characters."; return; }
-
-      status.textContent = "Creating account…";
-
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          // If email confirmations are ON, Supabase will send a confirmation email
-          emailRedirectTo: window.location.origin + "/login.html",
-        },
-      });
-
-      status.textContent = error
-        ? ("Error: " + error.message)
-        : "Account created. If confirmation is enabled, check your email to confirm.";
-    };
-
-    document.getElementById("loginPw").onclick = async () => {
-      const email = document.getElementById("emailPw").value.trim();
-      const password = document.getElementById("passPw").value;
-      if (!email) { status.textContent = "Please enter an email."; return; }
-      if (!password) { status.textContent = "Please enter a password."; return; }
-
-      status.textContent = "Logging in…";
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      status.textContent = error ? ("Error: " + error.message) : "Logged in ✅";
-    };
-  }
-
-  tabOtp.onclick = renderOtp;
-  tabPw.onclick = renderPassword;
-
-  // default tab
-  renderOtp();
+    status.textContent = error ? ("Error: " + error.message) : "Logged in ✅";
+  };
 }
+
 
 function renderLoggedIn(email) {
   app.innerHTML = `
     <div style="font-weight:900;">My Account</div>
     <div class="small" style="margin-top:6px;">Signed in as ${email}</div>
 
-    <button id="logout" class="btn secondary" style="margin-top:12px;">
-      Log out
-    </button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+      <a class="btn secondary" href="orders.html">Orders</a>
+      <a class="btn secondary" href="profile.html">Profile</a>
+      <button id="logout" class="btn">Log out</button>
+    </div>
   `;
 
   document.getElementById("logout").onclick = async () => {
     await supabase.auth.signOut();
   };
+}
+
+async function upsertProfileIfPending(userId) {
+  const raw = localStorage.getItem("pending_profile");
+  if (!raw) return;
+
+  const pending = JSON.parse(raw);
+  localStorage.removeItem("pending_profile");
+
+  // Write profile row (requires RLS policy allowing user to upsert their own profile)
+  await supabase.from("profiles").upsert({
+    user_id: userId,
+    full_name: pending.full_name || null,
+    phone: pending.phone || null,
+  });
 }
 
     // Initial render
@@ -185,11 +146,20 @@ function renderLoggedIn(email) {
     else renderLoggedOut();
 
     // Keep in sync if auth changes
-    supabase.auth.onAuthStateChange((_event, session) => {
-      const e = session?.user?.email;
-      if (e) renderLoggedIn(e);
-      else renderLoggedOut();
-    });
+    supabase.auth.onAuthStateChange(async (_event, session) => {
+  hydrateHeaderAuth();
+
+  const e = session?.user?.email;
+  const uid = session?.user?.id;
+
+  if (e && uid) {
+    await upsertProfileIfPending(uid);
+    renderLoggedIn(e);
+  } else {
+    renderLoggedOut();
+  }
+});
+
   </script>
 </body>
 </html>
