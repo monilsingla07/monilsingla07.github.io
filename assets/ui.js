@@ -3,6 +3,7 @@ import { cartCount } from "./cart.js";
 import { supabase } from "./supabase.js";
 
 
+
 export function renderHeader(active = "") {
   const count = cartCount();
 
