@@ -251,11 +251,9 @@ async function upsertProfileIfPending(userId) {
     // Initial render
     const { data: sessionData } = await supabase.auth.getSession();
     const userEmail = sessionData?.session?.user?.email;
-   if (userEmail) {
-  window.location.href = "index.html";
-} else {
-  renderLoggedOut();
-}
+  if (userEmail) renderLoggedIn(userEmail);
+else renderLoggedOut();
+
 
 
     // Keep in sync if auth changes
