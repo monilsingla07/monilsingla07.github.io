@@ -8,8 +8,53 @@ nav a { margin-right: 12px; text-decoration: none; color: #111; }
 .card { border: 1px solid #eee; border-radius: 14px; overflow: hidden; background: #fff; }
 .card img { width: 100%; height: 280px; object-fit: cover; display: block; background: #fafafa; }
 .card .p { padding: 12px; }
-.btn { display: inline-block; padding: 10px 14px; border-radius: 12px; border: 1px solid #111; background: #111; color: #fff; cursor: pointer; text-decoration: none; }
-.btn.secondary { background: #fff; color: #111; border: 1px solid #eee; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px 22px;
+  border-radius: 999px;
+
+  background: #262626;          /* softer than pure black */
+  color: #ffffff;
+  border: none;
+
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+
+  cursor: pointer;
+  text-decoration: none;
+
+  transition:
+    background 0.25s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.btn:hover {
+  background: #2b2b2b;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+/* Secondary (ghost-style) button */
+.btn.secondary {
+  background: transparent;
+  color: #1f1f1f;
+  border: 1px solid #d6d6d6;
+}
+
+.btn.secondary:hover {
+  background: #f5f5f5;
+}
+
 .small { font-size: 12px; opacity: 0.75; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 .input { padding: 10px; border-radius: 12px; border: 1px solid #eee; width: 100%; }
