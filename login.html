@@ -34,72 +34,186 @@ document.getElementById("footer").innerHTML = renderFooter();
 
         function renderLoggedOut() {
   app.innerHTML = `
-    <div style="font-weight:900;">Login / Sign up</div>
+    <div style="font-weight:900;">Login</div>
     <div class="small" style="margin-top:6px;">
-      Create an account or log in with email + password.
+      Log in with your email and password.
     </div>
 
-    <div style="margin-top:14px;display:grid;gap:10px;">
-      <input id="fullName" class="input" type="text" placeholder="Full name" />
-      <input id="phone" class="input" type="tel" placeholder="Phone number" />
-      <input id="email" class="input" type="email" placeholder="Email address" />
-      <input id="password" class="input" type="password" placeholder="Password (min 6 chars)" />
-    </div>
-
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-      <button id="signup" class="btn">Create account</button>
-      <button id="login" class="btn secondary">Log in</button>
-    </div>
+    <div id="panel" style="margin-top:14px;"></div>
 
     <div id="status" class="small" style="margin-top:10px;"></div>
   `;
 
+  const panel = document.getElementById("panel");
   const status = document.getElementById("status");
 
-  const getForm = () => ({
-    full_name: document.getElementById("fullName").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    password: document.getElementById("password").value,
-  });
+  const escapeHtml = (s) =>
+    String(s ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;",
+    }[c]));
 
-  document.getElementById("signup").onclick = async () => {
-    const { full_name, phone, email, password } = getForm();
+  function renderLogin() {
+    panel.innerHTML = `
+      <div style="display:grid;gap:10px;">
+        <input id="loginEmail" class="input" type="email" placeholder="Email address" required />
+        <div style="position:relative;">
+          <input id="loginPassword" class="input" type="password" placeholder="Password" required />
+          <button id="toggleLoginPw" type="button" class="btn secondary"
+            style="position:absolute;right:8px;top:8px;padding:6px 10px;">
+            Show
+          </button>
+        </div>
+      </div>
 
-    if (!email) return (status.textContent = "Please enter an email.");
-    if (!password || password.length < 6) return (status.textContent = "Password must be at least 6 characters.");
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <button id="doLogin" class="btn">Log in</button>
+        <button id="goSignup" class="btn secondary">New user</button>
+      </div>
+    `;
 
-    status.textContent = "Creating account… check your email to verify.";
+    const toggleBtn = document.getElementById("toggleLoginPw");
+    toggleBtn.onclick = () => {
+      const pw = document.getElementById("loginPassword");
+      const isHidden = pw.type === "password";
+      pw.type = isHidden ? "text" : "password";
+      toggleBtn.textContent = isHidden ? "Hide" : "Show";
+    };
 
-    // store profile draft so we can write it after user confirms/signs in
-    localStorage.setItem("pending_profile", JSON.stringify({ full_name, phone }));
+    document.getElementById("doLogin").onclick = async () => {
+      status.textContent = "";
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin + "/login.html",
-      },
-    });
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
 
-    status.textContent = error
-      ? ("Error: " + error.message)
-      : "Account created. Please verify your email, then come back to log in.";
-  };
+      if (!email) return (status.textContent = "Please enter your email.");
+      if (!password) return (status.textContent = "Please enter your password.");
 
-  document.getElementById("login").onclick = async () => {
-    const { email, password } = getForm();
+      status.textContent = "Logging in…";
 
-    if (!email) return (status.textContent = "Please enter an email.");
-    if (!password) return (status.textContent = "Please enter a password.");
+const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-    status.textContent = "Logging in…";
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-    status.textContent = error ? ("Error: " + error.message) : "Logged in ✅";
-  };
+if (error) {
+  status.textContent = "Error: " + error.message;
+} else {
+  status.textContent = "Logged in ✅ Redirecting…";
+  setTimeout(() => {
+    window.location.href = "index.html";
+  }, 500);
 }
+
+    };
+
+    document.getElementById("goSignup").onclick = renderSignup;
+  }
+
+  function renderSignup() {
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-weight:900;">Create account</div>
+        <button id="goLogin" type="button" class="btn secondary">Back to login</button>
+      </div>
+
+      <div class="small" style="margin-top:6px;">
+        All fields are required. Password must be at least 8 characters.
+      </div>
+
+      <div style="margin-top:14px;display:grid;gap:10px;">
+        <input id="fullName" class="input" type="text" placeholder="Full name" required />
+        <input id="phone" class="input" type="tel" placeholder="Phone number" required />
+        <input id="signupEmail" class="input" type="email" placeholder="Email address" required />
+
+        <div style="position:relative;">
+          <input id="signupPassword" class="input" type="password" placeholder="Password (min 8 chars)" required />
+          <button id="toggleSignupPw" type="button" class="btn secondary"
+            style="position:absolute;right:8px;top:8px;padding:6px 10px;">
+            Show
+          </button>
+        </div>
+
+        <div style="position:relative;">
+          <input id="signupPassword2" class="input" type="password" placeholder="Confirm password" required />
+          <button id="toggleSignupPw2" type="button" class="btn secondary"
+            style="position:absolute;right:8px;top:8px;padding:6px 10px;">
+            Show
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <button id="doSignup" class="btn">Create account</button>
+      </div>
+    `;
+
+    document.getElementById("goLogin").onclick = renderLogin;
+
+    const toggle = (inputId, btnId) => {
+      const pw = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      btn.onclick = () => {
+        const isHidden = pw.type === "password";
+        pw.type = isHidden ? "text" : "password";
+        btn.textContent = isHidden ? "Hide" : "Show";
+      };
+    };
+
+    toggle("signupPassword", "toggleSignupPw");
+    toggle("signupPassword2", "toggleSignupPw2");
+
+    const validateSignup = () => {
+      const full_name = document.getElementById("fullName").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value;
+      const confirm = document.getElementById("signupPassword2").value;
+
+      if (!full_name) return "Please enter your full name.";
+      if (!phone) return "Please enter your phone number.";
+      if (!email) return "Please enter your email.";
+      if (!password) return "Please enter a password.";
+      if (password.length < 8) return "Password must be at least 8 characters.";
+      if (!confirm) return "Please confirm your password.";
+      if (password !== confirm) return "Passwords do not match.";
+      return null;
+    };
+
+    document.getElementById("doSignup").onclick = async () => {
+      status.textContent = "";
+
+      const err = validateSignup();
+      if (err) return (status.textContent = err);
+
+      const full_name = document.getElementById("fullName").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value;
+
+      status.textContent = "Creating account… please check your email to verify.";
+
+      // Save profile info temporarily so we can write it after login
+      localStorage.setItem("pending_profile", JSON.stringify({ full_name, phone }));
+
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin + "/index.html",
+        },
+      });
+
+      status.textContent = error
+        ? ("Error: " + error.message)
+        : "Account created. Please verify your email, then log in.";
+    };
+  }
+
+  // Default: show login form first
+  renderLogin();
+}
+
 
 
 function renderLoggedIn(email) {
@@ -137,8 +251,12 @@ async function upsertProfileIfPending(userId) {
     // Initial render
     const { data: sessionData } = await supabase.auth.getSession();
     const userEmail = sessionData?.session?.user?.email;
-    if (userEmail) renderLoggedIn(userEmail);
-    else renderLoggedOut();
+   if (userEmail) {
+  window.location.href = "index.html";
+} else {
+  renderLoggedOut();
+}
+
 
     // Keep in sync if auth changes
     supabase.auth.onAuthStateChange(async (_event, session) => {
