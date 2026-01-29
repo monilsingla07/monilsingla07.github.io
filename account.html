@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Account — AhamStree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h2 style="margin-top:0;">My Account</h2>
+
+    <div id="app" class="card" style="padding:16px;border-radius:16px;max-width:860px;">
+      <div class="small">Loading…</div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
+    import { supabase } from "/assets/supabase.js";
+
+    document.getElementById("header").innerHTML = renderHeader("account");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const app = document.getElementById("app");
+
+    function renderLoggedOut() {
+      // If user opens account page without login
+      window.location.href = "login.html";
+    }
+
+    function renderLoggedIn(email) {
+      app.innerHTML = `
+        <div style="font-weight:900;">Account</div>
+        <div class="small" style="margin-top:6px;">Signed in as ${email}</div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+          <a class="btn secondary" href="orders.html">Orders</a>
+          <a class="btn secondary" href="profile.html">Profile</a>
+          <button id="logout" class="btn">Log out</button>
+        </div>
+      `;
+
+      document.getElementById("logout").onclick = async () => {
+        await supabase.auth.signOut();
+        window.location.href = "index.html";
+      };
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userEmail = sessionData?.session?.user?.email;
+
+    if (userEmail) renderLoggedIn(userEmail);
+    else renderLoggedOut();
+  </script>
+</body>
+</html>
