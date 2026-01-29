@@ -25,8 +25,9 @@ import { supabase } from "/assets/supabase.js";
 
 
     document.getElementById("header").innerHTML = renderHeader("login");
+    hydrateHeaderAuth();
 document.getElementById("footer").innerHTML = renderFooter();
-hydrateHeaderAuth();
+
 
 
     const app = document.getElementById("app");
