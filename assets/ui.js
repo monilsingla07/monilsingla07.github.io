@@ -1,5 +1,7 @@
 // assets/ui.js
 import { cartCount } from "./cart.js";
+import { supabase } from "./supabase.js";
+
 
 export function renderHeader(active = "") {
   const count = cartCount();
@@ -42,7 +44,8 @@ export function renderHeader(active = "") {
         <!-- Right: Utilities -->
         <div class="utils">
           <a class="util-link" href="search.html" title="Search">Search</a>
-          <a class="util-link" href="login.html" title="Account">Account</a>
+          <a id="accountLink" class="util-link" href="login.html" title="Account">Login / Sign up</a>
+
           <a class="util-link ${active === "cart" ? "active" : ""}" href="cart.html" title="Cart">Cart (${count})</a>
         </div>
       </div>
@@ -133,3 +136,14 @@ export function renderFooter() {
     </footer>
   `;
 }
+
+export async function hydrateHeaderAuth() {
+  const a = document.getElementById("accountLink");
+  if (!a) return;
+
+  const { data } = await supabase.auth.getSession();
+  const loggedIn = !!data?.session?.user;
+
+  a.textContent = loggedIn ? "Account" : "Login / Sign up";
+}
+
