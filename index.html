@@ -32,8 +32,9 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
     document.getElementById("header").innerHTML = renderHeader("home");
+    hydrateHeaderAuth();
     document.getElementById("footer").innerHTML = renderFooter();
   </script>
 </body>
