@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Orders — AhamStree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h2 style="margin-top:0;">My Orders</h2>
+
+    <div class="row" style="margin-bottom:12px;">
+      <a class="btn secondary" href="account.html">Account</a>
+      <a class="btn secondary" href="profile.html">Profile</a>
+    </div>
+
+    <div id="app" style="display:grid;gap:12px;"></div>
+    <div id="status" class="small" style="margin-top:10px;"></div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
+    import { supabase } from "/assets/supabase.js";
+
+    document.getElementById("header").innerHTML = renderHeader("account");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const app = document.getElementById("app");
+    const status = document.getElementById("status");
+
+    const { data: sess } = await supabase.auth.getSession();
+    const user = sess?.session?.user;
+
+    if (!user) window.location.href = "login.html";
+
+    function money(v) {
+      return "₹" + Number(v || 0).toLocaleString("en-IN");
+    }
+
+    function badge(st) {
+      const map = {
+        paid: "Paid",
+        payment_link_created: "Payment pending",
+        payment_failed: "Payment failed",
+        expired: "Payment expired",
+        cancelled: "Cancelled",
+        fulfilled: "Fulfilled",
+        shipped: "Shipped",
+        delivered: "Delivered",
+      };
+      return map[st] || st;
+    }
+
+    function renderOrder(o) {
+      const items = (o.order_items || [])
+        .map(it => `<div class="small">${it.qty} × ${it.title} — ${money(it.price_inr)}</div>`)
+        .join("");
+
+      const payLink = o.razorpay_payment_link_url;
+
+      return `
+        <div class="card">
+          <div class="p" style="padding:16px;">
+            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+              <div>
+                <div style="font-weight:900;">Order ${o.id}</div>
+                <div class="small" style="margin-top:6px;">
+                  Status: <b>${badge(o.status)}</b> • Total: <b>${money(o.total_inr)}</b>
+                </div>
+                <div class="small">Placed: ${new Date(o.created_at).toLocaleString("en-IN")}</div>
+              </div>
+
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;">
+                ${
+                  (o.status === "payment_link_created" || o.status === "payment_failed" || o.status === "expired")
+                  && payLink
+                    ? `<a class="btn" href="${payLink}" target="_blank" rel="noopener">Pay now</a>`
+                    : ``
+                }
+              </div>
+            </div>
+
+            <hr/>
+            ${items}
+          </div>
+        </div>
+      `;
+    }
+
+    status.textConte
