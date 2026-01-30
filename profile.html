@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile — AhamStree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container">
+    <h2 style="margin-top:0;">Profile</h2>
+
+    <div id="app" class="card" style="padding:16px;border-radius:16px;max-width:860px;">
+      <div class="small">Loading…</div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
+    import { supabase } from "/assets/supabase.js";
+
+    document.getElementById("header").innerHTML = renderHeader("account");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const app = document.getElementById("app");
+
+    const { data: sess } = await supabase.auth.getSession();
+    const user = sess?.session?.user;
+
+    if (!user) {
+      window.location.href = "login.html";
+    }
+
+    function renderForm(p) {
+      app.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+          <div>
+            <div style="font-weight:900;">My Details</div>
+            <div class="small" style="margin-top:6px;">Email: ${user.email ?? "-"}</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a class="btn secondary" href="orders.html">Orders</a>
+            <button id="logout" class="btn secondary">Log out</button>
+          </div>
+        </div>
+
+        <hr/>
+
+        <div style="display:grid;gap:10px;grid-template-columns: 1fr 1fr;">
+          <div style="grid-column: 1 / -1;">
+            <label class="small">Full name</label>
+            <input id="full_name" class="input" value="${p.full_name ?? ""}" />
+          </div>
+
+          <div>
+            <label class="small">Phone</label>
+            <input id="phone" class="input" value="${p.phone ?? ""}" />
+          </div>
+
+          <div>
+            <label class="small">Pincode</label>
+            <input id="pincode" class="input" value="${p.pincode ?? ""}" />
+          </div>
+
+          <div style="grid-column: 1 / -1;">
+            <label class="small">Address line 1</label>
+            <input id="address_line1" class="input" value="${p.address_line1 ?? ""}" />
+          </div>
+
+          <div style="grid-column: 1 / -1;">
+            <label class="small">Address line 2</label>
+            <input id="address_line2" class="input" value="${p.address_line2 ?? ""}" />
+          </div>
+
+          <div>
+            <label class="small">City</label>
+            <input id="city" class="input" value="${p.city ?? ""}" />
+          </div>
+
+          <div>
+            <label class="small">State</label>
+            <input id="state" class="input" value="${p.state ?? ""}" />
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+          <button id="save" class="btn">Save profile</button>
+          <div id="status" class="small" style="align-self:center;"></div>
+        </div>
+      `;
+
+      document.getElementById("logout").onclick = async () => {
+        await supabase.auth.signOut();
+        window.location.href = "index.html";
+      };
+
+      document.getElementById("save").onclick = async () => {
+        const status = document.getElementById("status");
+        status.textContent = "Saving…";
+
+        const payload = {
+          user_id: user.id,
+          full_name: document.getElementById("full_name").value.trim() || null,
+          phone: document.getElementById("phone").value.trim() || null,
+          address_line1: document.getElementById("address_line1").value.trim() || null,
+          address_line2: document.getElementById("address_line2").value.trim() || null,
+          city: document.getElementById("city").value.trim() || null,
+          state: document.getElementById("state").value.trim() || null,
+          pincode: document.getElementById("pincode").value.trim() || null,
+          updated_at: new Date().toISOString(),
+        };
+
+        const { error } = await supabase.from("profiles").upsert(payload);
+        status.textContent = error ? ("Error: " + error.message) : "Saved ✅";
+      };
+    }
+
+    // load or create empty profile
+    const { data: prof, error: pe } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (pe) {
+      app.innerHTML = `<div class="small">Error loading profile: ${pe.message}</div>`;
+    } else {
+      renderForm(prof ?? {});
+    }
+  </script>
+</body>
+</html>
