@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — AhamStree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="header"></div>
+  <div class="container">
+    <h2 style="margin-top:0;">Admin Dashboard</h2>
+
+    <div id="cards" class="grid"></div>
+    <div style="margin-top:14px;">
+      <a class="btn secondary" href="admin-orders.html">View Orders</a>
+    </div>
+
+    <div id="status" class="small" style="margin-top:10px;"></div>
+  </div>
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
+    import { supabase } from "/assets/supabase.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const status = document.getElementById("status");
+    const cards = document.getElementById("cards");
+
+    const { data: sess } = await supabase.auth.getSession();
+    if (!sess?.session) {
+      window.location.href = "login.html";
+    }
+
+    status.textContent = "Loading…";
+
+    const { data, error } = await supabase.functions.invoke("admin-dashboard");
+    if (error) {
+      status.textContent = "Access denied / error: " + error.message;
+      cards.innerHTML = "";
+    } else {
+      status.textContent = "";
+      const items = [
+        ["Orders", data.ordersCount],
+        ["Users", data.usersCount],
+        ["Paid", data.paidCount],
+        ["Pending", data.pendingCount],
+        ["Failed", data.failedCount],
+        ["Expired", data.expiredCount],
+        ["Revenue (paid)", "₹" + Number(data.revenuePaidInr||0).toLocaleString("en-IN")],
+      ];
+      cards.innerHTML = items.map(([k,v]) => `
+        <div class="card"><div class="p">
+          <div style="font-weight:900;">${k}</div>
+          <div style="font-size:22px;margin-top:6px;">${v}</div>
+        </div></div>
+      `).join("");
+    }
+  </script>
+</body>
+</html>
