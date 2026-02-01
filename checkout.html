@@ -126,187 +126,89 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
-    import { getCart } from "./assets/cart.js";
-    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
-    const { data, error } = await supabase.functions.invoke("create-payment-link", {
-  body: { cart: cart.map(i => ({ product_id: i.product_id, qty: i.qty })), shipping },
-  headers: {
-    Authorization: `Bearer ${session.access_token}`,
-    apikey: SUPABASE_ANON_KEY
+  const statusEl = document.getElementById("status");
+  const payBtn = document.getElementById("payBtn");
+  const form = document.getElementById("form");
+
+  // If this doesn't appear, your script isn't running at all.
+  statusEl.textContent = "✅ Checkout JS loaded";
+
+  if (!payBtn) {
+    statusEl.textContent = "❌ payBtn not found (check id='payBtn')";
+    throw new Error("payBtn missing");
   }
-});
+  if (!form) {
+    statusEl.textContent = "❌ form not found (check id='form')";
+    throw new Error("form missing");
+  }
 
+  // Attach handler FIRST so click always does something
+  payBtn.addEventListener("click", async () => {
+    statusEl.textContent = "Clicked. Loading checkout modules…";
 
+    try {
+      // Import modules lazily so we can show errors properly
+      const ui = await import("./assets/ui.js");
+      const cartMod = await import("./assets/cart.js");
+      const sbMod = await import("./assets/supabase.js");
 
-    document.getElementById("header").innerHTML = renderHeader("cart");
-    document.getElementById("footer").innerHTML = renderFooter();
-    hydrateHeaderAuth();
+      // Basic sanity
+      if (!sbMod.supabase) throw new Error("supabase not exported from assets/supabase.js");
+      if (!sbMod.SUPABASE_ANON_KEY) throw new Error("SUPABASE_ANON_KEY not exported from assets/supabase.js");
 
-    // Responsive helper (keeps your CSS untouched)
-    const style = document.createElement("style");
-    style.textContent = `
-      @media (max-width: 900px) {
-        .checkout-grid { grid-template-columns: 1fr !important; }
-      }
-    `;
-    document.head.appendChild(style);
-
-    const cart = getCart();
-
-    const warn = document.getElementById("warn");
-    const warnText = document.getElementById("warnText");
-    const statusEl = document.getElementById("status");
-    const payBtn = document.getElementById("payBtn");
-const form = document.getElementById("form");
-    const authBanner = document.getElementById("authBanner");
-    const authText = document.getElementById("authText");
-
-    const summaryItems = document.getElementById("summaryItems");
-    const subtotalEl = document.getElementById("subtotal");
-    const shippingEl = document.getElementById("shipping");
-    const totalEl = document.getElementById("total");
-
-    function moneyINR(v) {
-      const n = Number(v);
-      if (!Number.isFinite(n)) return "₹0";
-      return "₹" + n.toString("en-IN");
-    }
-
-    function setWarn(msg) {
-      warn.style.display = "block";
-      warnText.textContent = msg;
-    }
-
-    // Render summary from cart (client-side estimate)
-    function renderSummary() {
+      const cart = cartMod.getCart();
       if (!cart.length) {
-        setWarn("Your cart is empty. Go back and add products first.");
-        payBtn.disabled = true;
+        statusEl.textContent = "Cart is empty. Add products first.";
         return;
       }
 
-      // Your cart items likely include {id/title/price/qty/image_url} depending on your cart.js.
-      // We render best-effort with fallbacks.
-      summaryItems.innerHTML = cart.map((i) => {
-        const title = i.title ?? i.name ?? "Item";
-        const qty = Number(i.qty ?? 1);
-        const price = Number(i.price_inr ?? i.price ?? 0);
-        const line = price * qty;
+      const fd = new FormData(form);
+      const shipping = Object.fromEntries(fd.entries());
 
-        const img = i.image_url
-          ? `<img src="${i.image_url}" alt="${title}" style="width:54px;height:54px;object-fit:cover;border-radius:12px;">`
-          : `<div style="width:54px;height:54px;border-radius:12px;background:rgba(255,255,255,.08);"></div>`;
+      statusEl.textContent = "Checking login…";
+      const { data: sess } = await sbMod.supabase.auth.getSession();
+      const session = sess?.session;
 
-        return `
-          <div style="display:flex; gap:12px; align-items:center;">
-            ${img}
-            <div style="flex:1; min-width:0;">
-              <div style="font-weight:800; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${title}</div>
-              <div class="small" style="opacity:.75; margin-top:4px;">Qty: ${qty}</div>
-            </div>
-            <div style="font-weight:900; white-space:nowrap;">${moneyINR(line)}</div>
-          </div>
-        `;
-      }).join("");
-
-      const subtotal = cart.reduce((acc, i) => acc + (Number(i.price_inr ?? i.price ?? 0) * Number(i.qty ?? 1)), 0);
-      const shipping = 0;
-      const total = subtotal + shipping;
-
-      subtotalEl.textContent = moneyINR(subtotal);
-      shippingEl.textContent = moneyINR(shipping);
-      totalEl.textContent = moneyINR(total);
-    }
-
-    // Show auth state clearly (separate from header)
-    async function renderAuthBanner() {
-      const { data } = await supabase.auth.getSession();
-      const session = data?.session;
-
-      if (session?.user?.email) {
-        authBanner.style.display = "block";
-        authText.textContent = `Logged in as ${session.user.email}.`;
-      } else {
-        authBanner.style.display = "block";
-        authText.textContent = `You are not logged in. Please login to continue checkout.`;
+      if (!session?.access_token) {
+        statusEl.textContent = "Not logged in. Please login before paying.";
+        return;
       }
-    }
 
-    renderSummary();
-    renderAuthBanner();
+      statusEl.textContent = "Creating payment link…";
 
-    // Submit
-  payBtn.addEventListener("click", async () => {
-  try {
-    statusEl.textContent = "";
-    payBtn.disabled = true;
+      const payloadCart = cart.map(i => ({ product_id: i.product_id, qty: i.qty }));
 
-    const cart = getCart();
-    if (!cart.length) {
-      statusEl.textContent = "Cart is empty. Please add items first.";
-      payBtn.disabled = false;
-      return;
-    }
+      const { data, error } = await sbMod.supabase.functions.invoke("create-payment-link", {
+        body: { cart: payloadCart, shipping },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: sbMod.SUPABASE_ANON_KEY
+        }
+      });
 
-    // capture form values safely
-    const fd = new FormData(form);
-    const shipping = Object.fromEntries(fd.entries());
-
-    // basic validation
-    if (!shipping.full_name || !shipping.phone || !shipping.address_line1 || !shipping.city || !shipping.state || !shipping.pincode) {
-      statusEl.textContent = "Please fill all required shipping fields.";
-      payBtn.disabled = false;
-      return;
-    }
-
-    statusEl.textContent = "Checking login…";
-
-    const { data: sess } = await supabase.auth.getSession();
-    const session = sess?.session;
-
-    if (!session?.access_token) {
-      statusEl.textContent = "Please login before paying.";
-      payBtn.disabled = false;
-      return;
-    }
-
-    statusEl.textContent = "Creating payment link…";
-
-    const payloadCart = cart.map(i => ({ product_id: i.product_id, qty: i.qty }));
-
-    const { data, error } = await supabase.functions.invoke("create-payment-link", {
-      body: { cart: payloadCart, shipping },
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        apikey: SUPABASE_ANON_KEY
+      if (error) {
+        const st = error.context?.status ?? "?";
+        const body = error.context?.body
+          ? (typeof error.context.body === "string" ? error.context.body : JSON.stringify(error.context.body))
+          : "{}";
+        statusEl.textContent = `Error (${st}): ${error.message} — ${body}`;
+        return;
       }
-    });
 
-    if (error) {
-      const st = error.context?.status ?? "?";
-      const body = error.context?.body
-        ? (typeof error.context.body === "string" ? error.context.body : JSON.stringify(error.context.body))
-        : "{}";
-      statusEl.textContent = `Error (${st}): ${error.message} — ${body}`;
-      payBtn.disabled = false;
-      return;
+      if (!data?.payment_link_url) {
+        statusEl.textContent = "Server did not return payment_link_url.";
+        return;
+      }
+
+      statusEl.textContent = "Redirecting to Razorpay…";
+      window.location.href = data.payment_link_url;
+
+    } catch (e) {
+      statusEl.textContent = `❌ JS/import error: ${String(e?.message ?? e)}`;
+      console.error(e);
     }
+  });
+</script>
 
-    if (!data?.payment_link_url) {
-      statusEl.textContent = "Payment link not returned by server.";
-      payBtn.disabled = false;
-      return;
-    }
-
-    statusEl.textContent = "Redirecting to Razorpay…";
-    window.location.href = data.payment_link_url;
-
-  } catch (e) {
-    statusEl.textContent = `Unexpected error: ${String(e?.message ?? e)}`;
-    payBtn.disabled = false;
-  }
-});
-  </script>
 </body>
 </html>
