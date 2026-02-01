@@ -4,64 +4,123 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Checkout — AhamStree</title>
+  <meta name="description" content="Secure checkout. Shipping details and Razorpay payment." />
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
+
 <body>
   <div id="header"></div>
 
   <div class="container">
-    <h2 style="margin-top:0;">Checkout</h2>
-    <div class="small">Enter shipping details. You’ll be redirected to Razorpay to pay.</div>
-    <hr />
+    <div class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="index.html">Home</a> <span class="sep">›</span>
+      <a href="cart.html">Cart</a> <span class="sep">›</span>
+      <span>Checkout</span>
+    </div>
 
-    <div id="warn" class="small" style="color:crimson; display:none;"></div>
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Checkout</h1>
+        <div class="small page-subtitle">Confirm your cart, add shipping details, and pay securely via Razorpay.</div>
+      </div>
+      <a class="btn ghost" href="cart.html" style="height:40px;">Edit cart</a>
+    </div>
 
-    <form id="form" class="card" style="padding:16px;border-radius:16px;max-width:680px;">
-      <label class="small">Full name</label>
-      <input class="input" name="full_name" required placeholder="e.g., Monil Gupta" />
+    <div id="authBanner" class="card" style="padding:12px 14px; border-radius:16px; display:none; margin-bottom:12px;">
+      <div class="small" id="authText"></div>
+    </div>
 
-      <div style="height:10px;"></div>
+    <div id="warn" class="card" style="padding:12px 14px; border-radius:16px; display:none; border:1px solid rgba(220,20,60,.35);">
+      <div class="small" style="color:crimson;" id="warnText"></div>
+    </div>
 
-      <label class="small">Phone</label>
-      <input class="input" name="phone" required placeholder="10-digit mobile" />
+    <div style="display:grid; grid-template-columns: 1.4fr .9fr; gap:16px; align-items:start;" class="checkout-grid">
 
-      <div style="height:10px;"></div>
+      <!-- LEFT: Shipping -->
+      <form id="form" class="card" style="padding:16px; border-radius:16px;">
+        <h3 style="margin:0 0 8px 0;">Shipping details</h3>
+        <div class="small" style="opacity:.8; margin-bottom:12px;">Used for delivery updates and invoice.</div>
 
-      <label class="small">Address line 1</label>
-      <input class="input" name="address_line1" required placeholder="House / street" />
+        <label class="small">Full name</label>
+        <input class="input" name="full_name" required placeholder="e.g., Monil Gupta" />
 
-      <div style="height:10px;"></div>
+        <div style="height:10px;"></div>
 
-      <label class="small">Address line 2 (optional)</label>
-      <input class="input" name="address_line2" placeholder="Landmark" />
+        <label class="small">Phone</label>
+        <input class="input" name="phone" required placeholder="10-digit mobile" inputmode="numeric" />
 
-      <div style="height:10px;"></div>
+        <div style="height:10px;"></div>
 
-      <div class="row">
-        <div style="flex:1;">
-          <label class="small">City</label>
-          <input class="input" name="city" required />
+        <label class="small">Email (optional)</label>
+        <input class="input" name="email" placeholder="name@email.com" inputmode="email" />
+
+        <div style="height:10px;"></div>
+
+        <label class="small">Address line 1</label>
+        <input class="input" name="address_line1" required placeholder="House / street" />
+
+        <div style="height:10px;"></div>
+
+        <label class="small">Address line 2 (optional)</label>
+        <input class="input" name="address_line2" placeholder="Landmark" />
+
+        <div style="height:10px;"></div>
+
+        <div class="row">
+          <div style="flex:1;">
+            <label class="small">City</label>
+            <input class="input" name="city" required />
+          </div>
+          <div style="flex:1;">
+            <label class="small">State</label>
+            <input class="input" name="state" required />
+          </div>
         </div>
-        <div style="flex:1;">
-          <label class="small">State</label>
-          <input class="input" name="state" required />
+
+        <div style="height:10px;"></div>
+
+        <label class="small">Pincode</label>
+        <input class="input" name="pincode" required placeholder="e.g., 560001" inputmode="numeric" />
+
+        <div style="height:14px;"></div>
+
+        <button class="btn" type="submit" id="payBtn" style="width:100%;">Pay with Razorpay</button>
+        <div id="status" class="small" style="margin-top:10px;"></div>
+
+        <div class="small" style="margin-top:12px; opacity:.8;">
+          Note: Payments are processed by Razorpay. You’ll be redirected to a secure payment page.
+        </div>
+      </form>
+
+      <!-- RIGHT: Order Summary -->
+      <div class="card" style="padding:16px; border-radius:16px;">
+        <h3 style="margin:0 0 8px 0;">Order summary</h3>
+        <div class="small" style="opacity:.8; margin-bottom:12px;">Review your items before payment.</div>
+
+        <div id="summaryItems" style="display:flex; flex-direction:column; gap:10px;"></div>
+
+        <div style="height:12px;"></div>
+        <div style="border-top:1px solid rgba(255,255,255,.08); padding-top:12px;">
+          <div style="display:flex; justify-content:space-between; gap:10px;">
+            <div class="small">Subtotal</div>
+            <div class="small" id="subtotal">₹0</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; gap:10px; margin-top:6px;">
+            <div class="small">Shipping</div>
+            <div class="small" id="shipping">₹0</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; gap:10px; margin-top:10px; font-weight:900;">
+            <div>Total</div>
+            <div id="total">₹0</div>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+        <div class="small" style="opacity:.75;">
+          If payment fails or is cancelled, you can retry from your cart.
         </div>
       </div>
-
-      <div style="height:10px;"></div>
-
-      <label class="small">Pincode</label>
-      <input class="input" name="pincode" required placeholder="e.g., 560001" />
-
-      <div style="height:14px;"></div>
-
-      <button class="btn" type="submit" id="payBtn">Pay with Razorpay</button>
-      <div id="status" class="small" style="margin-top:10px;"></div>
-
-      <div class="small" style="margin-top:12px;">
-        Tip: For best experience, ask users to login (optional). For launch, guest checkout is okay.
-      </div>
-    </form>
+    </div>
   </div>
 
   <div id="footer"></div>
@@ -69,67 +128,160 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { getCart } from "./assets/cart.js";
-    import { supabase } from "./assets/supabase.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
 
     document.getElementById("header").innerHTML = renderHeader("cart");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
 
+    // Responsive helper (keeps your CSS untouched)
+    const style = document.createElement("style");
+    style.textContent = `
+      @media (max-width: 900px) {
+        .checkout-grid { grid-template-columns: 1fr !important; }
+      }
+    `;
+    document.head.appendChild(style);
+
     const cart = getCart();
+
     const warn = document.getElementById("warn");
-    if (!cart.length) {
-      warn.style.display = "block";
-      warn.textContent = "Your cart is empty. Go back and add products first.";
+    const warnText = document.getElementById("warnText");
+    const statusEl = document.getElementById("status");
+    const payBtn = document.getElementById("payBtn");
+
+    const authBanner = document.getElementById("authBanner");
+    const authText = document.getElementById("authText");
+
+    const summaryItems = document.getElementById("summaryItems");
+    const subtotalEl = document.getElementById("subtotal");
+    const shippingEl = document.getElementById("shipping");
+    const totalEl = document.getElementById("total");
+
+    function moneyINR(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return "₹0";
+      return "₹" + n.toString("en-IN");
     }
 
+    function setWarn(msg) {
+      warn.style.display = "block";
+      warnText.textContent = msg;
+    }
+
+    // Render summary from cart (client-side estimate)
+    function renderSummary() {
+      if (!cart.length) {
+        setWarn("Your cart is empty. Go back and add products first.");
+        payBtn.disabled = true;
+        return;
+      }
+
+      // Your cart items likely include {id/title/price/qty/image_url} depending on your cart.js.
+      // We render best-effort with fallbacks.
+      summaryItems.innerHTML = cart.map((i) => {
+        const title = i.title ?? i.name ?? "Item";
+        const qty = Number(i.qty ?? 1);
+        const price = Number(i.price_inr ?? i.price ?? 0);
+        const line = price * qty;
+
+        const img = i.image_url
+          ? `<img src="${i.image_url}" alt="${title}" style="width:54px;height:54px;object-fit:cover;border-radius:12px;">`
+          : `<div style="width:54px;height:54px;border-radius:12px;background:rgba(255,255,255,.08);"></div>`;
+
+        return `
+          <div style="display:flex; gap:12px; align-items:center;">
+            ${img}
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:800; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${title}</div>
+              <div class="small" style="opacity:.75; margin-top:4px;">Qty: ${qty}</div>
+            </div>
+            <div style="font-weight:900; white-space:nowrap;">${moneyINR(line)}</div>
+          </div>
+        `;
+      }).join("");
+
+      const subtotal = cart.reduce((acc, i) => acc + (Number(i.price_inr ?? i.price ?? 0) * Number(i.qty ?? 1)), 0);
+      const shipping = 0;
+      const total = subtotal + shipping;
+
+      subtotalEl.textContent = moneyINR(subtotal);
+      shippingEl.textContent = moneyINR(shipping);
+      totalEl.textContent = moneyINR(total);
+    }
+
+    // Show auth state clearly (separate from header)
+    async function renderAuthBanner() {
+      const { data } = await supabase.auth.getSession();
+      const session = data?.session;
+
+      if (session?.user?.email) {
+        authBanner.style.display = "block";
+        authText.textContent = `Logged in as ${session.user.email}.`;
+      } else {
+        authBanner.style.display = "block";
+        authText.textContent = `You are not logged in. Please login to continue checkout.`;
+      }
+    }
+
+    renderSummary();
+    renderAuthBanner();
+
+    // Submit
     document.getElementById("form").addEventListener("submit", async (e) => {
       e.preventDefault();
+      statusEl.textContent = "";
+      warn.style.display = "none";
+
       if (!cart.length) return;
 
-      const status = document.getElementById("status");
-      const payBtn = document.getElementById("payBtn");
-      status.textContent = "Creating order…";
       payBtn.disabled = true;
+      statusEl.textContent = "Creating order…";
 
       const fd = new FormData(e.target);
       const shipping = Object.fromEntries(fd.entries());
 
+      // Prefer logged-in user's email if shipping email is empty
       const { data: s } = await supabase.auth.getSession();
-      if (!s?.session?.access_token) {
-        status.textContent = "Please login before paying (required for now).";
+      const session = s?.session;
+
+      if (!session?.access_token) {
         payBtn.disabled = false;
+        statusEl.textContent = "Please login before paying.";
         return;
       }
 
-      // Call Supabase Edge Function (server-side) to:
-      // 1) validate inventory & prices
-      // 2) create order + order_items
-      // 3) create Razorpay payment link
-      // 4) return payment_link_url
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
+      if (!shipping.email && session.user?.email) shipping.email = session.user.email;
 
+      // IMPORTANT: Passing headers can override defaults.
+      // Ensure BOTH Authorization and apikey are present.
       const { data, error } = await supabase.functions.invoke("create-payment-link", {
-        body: { cart, shipping },
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+        body: { cart: cart.map(x => ({ product_id: x.product_id ?? x.id, qty: x.qty ?? 1 })), shipping },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: SUPABASE_ANON_KEY,
+        },
       });
 
       if (error) {
-        status.textContent = `Error (${error.context?.status ?? "?"}): ${error.message}` + (error.context?.body ? ` — ${typeof error.context.body === "string" ? error.context.body : JSON.stringify(error.context.body)}` : "");
+        const st = error.context?.status ?? "?";
+        const body = error.context?.body
+          ? (typeof error.context.body === "string" ? error.context.body : JSON.stringify(error.context.body))
+          : "{}";
+        statusEl.textContent = `Error (${st}): ${error.message} — ${body}`;
         payBtn.disabled = false;
         return;
       }
 
       if (!data?.payment_link_url) {
-        status.textContent = "Error: Payment link not created.";
+        statusEl.textContent = "Error: Payment link not created (missing payment_link_url).";
         payBtn.disabled = false;
         return;
       }
 
-      status.textContent = "Redirecting to Razorpay…";
+      statusEl.textContent = "Redirecting to Razorpay…";
       window.location.href = data.payment_link_url;
     });
   </script>
 </body>
 </html>
-
