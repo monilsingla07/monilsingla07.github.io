@@ -39,12 +39,13 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { addToCart } from "./assets/cart.js";
 
     document.getElementById("header").innerHTML = renderHeader("products");
     document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
 
     const params = new URLSearchParams(location.search);
     const id = params.get("id");

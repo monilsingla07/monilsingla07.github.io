@@ -67,12 +67,13 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { getCart } from "./assets/cart.js";
     import { supabase } from "./assets/supabase.js";
 
     document.getElementById("header").innerHTML = renderHeader("cart");
     document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
 
     const cart = getCart();
     const warn = document.getElementById("warn");
@@ -93,17 +94,28 @@
       const fd = new FormData(e.target);
       const shipping = Object.fromEntries(fd.entries());
 
+      const { data: s } = await supabase.auth.getSession();
+      if (!s?.session?.access_token) {
+        status.textContent = "Please login before paying (required for now).";
+        payBtn.disabled = false;
+        return;
+      }
+
       // Call Supabase Edge Function (server-side) to:
       // 1) validate inventory & prices
       // 2) create order + order_items
       // 3) create Razorpay payment link
       // 4) return payment_link_url
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
       const { data, error } = await supabase.functions.invoke("create-payment-link", {
-        body: { cart, shipping }
+        body: { cart, shipping },
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
       });
 
       if (error) {
-        status.textContent = "Error: " + error.message;
+        status.textContent = `Error (${error.context?.status ?? "?"}): ${error.message}` + (error.context?.body ? ` — ${typeof error.context.body === "string" ? error.context.body : JSON.stringify(error.context.body)}` : "");
         payBtn.disabled = false;
         return;
       }

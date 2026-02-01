@@ -37,7 +37,7 @@
   <div id="footer"></div>
 
   <script type="module">
-  import { renderHeader, renderFooter } from "./assets/ui.js";
+  import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
   import { getCart, updateQty, removeFromCart, clearCart } from "./assets/cart.js";
 
   function money(n) {
@@ -47,6 +47,7 @@
   function render() {
     document.getElementById("header").innerHTML = renderHeader("cart");
     document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
 
     const items = getCart();
     const empty = document.getElementById("empty");

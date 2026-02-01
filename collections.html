@@ -20,11 +20,12 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
 
     async function loadCollections() {
       const status = document.getElementById("status");

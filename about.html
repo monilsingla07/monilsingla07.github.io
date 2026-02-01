@@ -54,9 +54,10 @@ the quiet beauty of handmade fabrics.
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
   </script>
 </body>
 </html>
