@@ -158,7 +158,7 @@
     const warnText = document.getElementById("warnText");
     const statusEl = document.getElementById("status");
     const payBtn = document.getElementById("payBtn");
-
+const form = document.getElementById("form");
     const authBanner = document.getElementById("authBanner");
     const authText = document.getElementById("authText");
 
@@ -237,60 +237,76 @@
     renderAuthBanner();
 
     // Submit
-    document.getElementById("form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      statusEl.textContent = "";
-      warn.style.display = "none";
+  payBtn.addEventListener("click", async () => {
+  try {
+    statusEl.textContent = "";
+    payBtn.disabled = true;
 
-      if (!cart.length) return;
+    const cart = getCart();
+    if (!cart.length) {
+      statusEl.textContent = "Cart is empty. Please add items first.";
+      payBtn.disabled = false;
+      return;
+    }
 
-      payBtn.disabled = true;
-      statusEl.textContent = "Creating order…";
+    // capture form values safely
+    const fd = new FormData(form);
+    const shipping = Object.fromEntries(fd.entries());
 
-      const fd = new FormData(e.target);
-      const shipping = Object.fromEntries(fd.entries());
+    // basic validation
+    if (!shipping.full_name || !shipping.phone || !shipping.address_line1 || !shipping.city || !shipping.state || !shipping.pincode) {
+      statusEl.textContent = "Please fill all required shipping fields.";
+      payBtn.disabled = false;
+      return;
+    }
 
-      // Prefer logged-in user's email if shipping email is empty
-      const { data: s } = await supabase.auth.getSession();
-      const session = s?.session;
+    statusEl.textContent = "Checking login…";
 
-      if (!session?.access_token) {
-        payBtn.disabled = false;
-        statusEl.textContent = "Please login before paying.";
-        return;
+    const { data: sess } = await supabase.auth.getSession();
+    const session = sess?.session;
+
+    if (!session?.access_token) {
+      statusEl.textContent = "Please login before paying.";
+      payBtn.disabled = false;
+      return;
+    }
+
+    statusEl.textContent = "Creating payment link…";
+
+    const payloadCart = cart.map(i => ({ product_id: i.product_id, qty: i.qty }));
+
+    const { data, error } = await supabase.functions.invoke("create-payment-link", {
+      body: { cart: payloadCart, shipping },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        apikey: SUPABASE_ANON_KEY
       }
-
-      if (!shipping.email && session.user?.email) shipping.email = session.user.email;
-
-      // IMPORTANT: Passing headers can override defaults.
-      // Ensure BOTH Authorization and apikey are present.
-      const { data, error } = await supabase.functions.invoke("create-payment-link", {
-        body: { cart: cart.map(x => ({ product_id: x.product_id ?? x.id, qty: x.qty ?? 1 })), shipping },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          apikey: SUPABASE_ANON_KEY,
-        },
-      });
-
-      if (error) {
-        const st = error.context?.status ?? "?";
-        const body = error.context?.body
-          ? (typeof error.context.body === "string" ? error.context.body : JSON.stringify(error.context.body))
-          : "{}";
-        statusEl.textContent = `Error (${st}): ${error.message} — ${body}`;
-        payBtn.disabled = false;
-        return;
-      }
-
-      if (!data?.payment_link_url) {
-        statusEl.textContent = "Error: Payment link not created (missing payment_link_url).";
-        payBtn.disabled = false;
-        return;
-      }
-
-      statusEl.textContent = "Redirecting to Razorpay…";
-      window.location.href = data.payment_link_url;
     });
+
+    if (error) {
+      const st = error.context?.status ?? "?";
+      const body = error.context?.body
+        ? (typeof error.context.body === "string" ? error.context.body : JSON.stringify(error.context.body))
+        : "{}";
+      statusEl.textContent = `Error (${st}): ${error.message} — ${body}`;
+      payBtn.disabled = false;
+      return;
+    }
+
+    if (!data?.payment_link_url) {
+      statusEl.textContent = "Payment link not returned by server.";
+      payBtn.disabled = false;
+      return;
+    }
+
+    statusEl.textContent = "Redirecting to Razorpay…";
+    window.location.href = data.payment_link_url;
+
+  } catch (e) {
+    statusEl.textContent = `Unexpected error: ${String(e?.message ?? e)}`;
+    payBtn.disabled = false;
+  }
+});
   </script>
 </body>
 </html>
