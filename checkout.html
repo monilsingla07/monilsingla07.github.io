@@ -129,6 +129,15 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { getCart } from "./assets/cart.js";
     import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    const { data, error } = await supabase.functions.invoke("create-payment-link", {
+  body: { cart: cart.map(i => ({ product_id: i.product_id, qty: i.qty })), shipping },
+  headers: {
+    Authorization: `Bearer ${session.access_token}`,
+    apikey: SUPABASE_ANON_KEY
+  }
+});
+
+
 
     document.getElementById("header").innerHTML = renderHeader("cart");
     document.getElementById("footer").innerHTML = renderFooter();
