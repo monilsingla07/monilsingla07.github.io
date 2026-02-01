@@ -12,6 +12,16 @@ export function setCart(items) {
 
 export function addToCart(product, qty = 1) {
   const cart = getCart();
+
+  // Prefer sale price if present, else regular price
+  const unitPrice =
+    product.sale_price_inr != null && product.sale_price_inr !== ""
+      ? Number(product.sale_price_inr)
+      : Number(product.price_inr);
+
+  // Guard: if price is missing/invalid, store 0 but also keep debugging info
+  const safePrice = Number.isFinite(unitPrice) ? unitPrice : 0;
+
   const found = cart.find(i => i.product_id === product.id);
 
   const next = found
@@ -19,7 +29,7 @@ export function addToCart(product, qty = 1) {
     : [...cart, {
         product_id: product.id,
         title: product.title,
-        price_inr: product.price_inr,
+        price_inr: safePrice,            // what checkout UI uses
         image_url: product.image_url || "",
         qty
       }];
@@ -27,6 +37,7 @@ export function addToCart(product, qty = 1) {
   setCart(next);
   return next;
 }
+
 
 export function removeFromCart(product_id) {
   const next = getCart().filter(i => i.product_id !== product_id);
