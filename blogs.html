@@ -44,6 +44,10 @@
         <a class="card" href="blog.html?slug=${encodeURIComponent(p.slug)}" style="text-decoration:none;color:inherit;">
           <div style="display:flex;gap:14px;align-items:center;">
             ${p.cover_image_url ? `<img src="${p.cover_image_url}" alt="${p.title}" style="width:110px;height:80px;object-fit:cover;border-radius:12px;">` : ``}
+            <div class="small" style="margin-top:6px;opacity:.7;">
+  ${p.published_at ? new Date(p.published_at).toDateString() : ""}
+</div>
+
             <div>
               <div style="font-weight:900;">${p.title}</div>
               <div class="small" style="margin-top:6px;opacity:.85;">${p.excerpt ?? ""}</div>
