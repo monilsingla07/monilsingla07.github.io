@@ -132,7 +132,62 @@
   const payBtn = document.getElementById("payBtn");
   const form = document.getElementById("form");
 
-  statusEl.textContent = "✅ Checkout JS loaded";
+   
+   function money(n) {
+  return "₹" + Number(n || 0);
+}
+
+async function renderOrderSummary() {
+  const summaryItems = document.getElementById("summaryItems");
+  const subtotalEl = document.getElementById("subtotal");
+  const shippingEl = document.getElementById("shipping");
+  const totalEl = document.getElementById("total");
+
+  // Import cart module (same as cart page uses)
+  const cartMod = await import("./assets/cart.js");
+  const items = cartMod.getCart();
+
+  if (!items.length) {
+    summaryItems.innerHTML = `<div class="small" style="opacity:.75;">Your cart is empty.</div>`;
+    subtotalEl.textContent = money(0);
+    shippingEl.textContent = money(0);
+    totalEl.textContent = money(0);
+    return;
+  }
+
+  let subtotal = 0;
+
+  summaryItems.innerHTML = items.map((i) => {
+    const lineTotal = i.price_inr * i.qty;
+    subtotal += lineTotal;
+
+    return `
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div style="width:54px;height:64px;border-radius:12px;overflow:hidden;background:#fafafa;flex:0 0 auto;">
+          ${i.image_url ? `<img src="${i.image_url}" alt="${i.title}" style="width:100%;height:100%;object-fit:cover;">` : ""}
+        </div>
+
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            ${i.title}
+          </div>
+          <div class="small" style="opacity:.75;">₹${i.price_inr} × ${i.qty}</div>
+        </div>
+
+        <div style="font-weight:900; flex:0 0 auto;">${money(lineTotal)}</div>
+      </div>
+    `;
+  }).join("");
+
+  // Simple shipping rule (edit later if needed)
+  const shipping = 0;
+  const total = subtotal + shipping;
+
+  subtotalEl.textContent = money(subtotal);
+  shippingEl.textContent = money(shipping);
+  totalEl.textContent = money(total);
+}
+
 
   const showError = (msg) => {
     warnBox.style.display = "block";
@@ -142,6 +197,7 @@
     warnBox.style.display = "none";
     warnText.textContent = "";
   };
+renderOrderSummary();
 
   // --- helpers
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
