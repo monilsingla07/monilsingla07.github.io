@@ -125,7 +125,7 @@
 
   <div id="footer"></div>
 
-  <script type="module">
+ <script type="module">
   const statusEl = document.getElementById("status");
   const warnBox = document.getElementById("warn");
   const warnText = document.getElementById("warnText");
@@ -138,40 +138,38 @@
     warnBox.style.display = "block";
     warnText.textContent = msg;
   };
-
   const clearError = () => {
     warnBox.style.display = "none";
     warnText.textContent = "";
   };
 
-  // ---------- Validation helpers ----------
+  // --- helpers
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
-
   const sanitizeText = (s) => String(s || "").trim().replace(/\s+/g, " ");
-
   const normalizePhone10 = (raw) => {
     let digits = String(raw || "").replace(/\D/g, "");
     if (digits.startsWith("91") && digits.length === 12) digits = digits.slice(2);
     if (digits.startsWith("0") && digits.length === 11) digits = digits.slice(1);
     return digits;
   };
-
   const normalizePincode6 = (raw) => String(raw || "").replace(/\D/g, "");
 
-  // Add simple inline styling (red outline) without touching your CSS file
+  // ✅ softer styling: use CSS classes (not harsh outline)
   const markInvalid = (inputEl, msg) => {
-    inputEl.style.outline = "2px solid rgba(220,20,60,.8)";
-    inputEl.style.borderColor = "rgba(220,20,60,.8)";
+    inputEl.classList.add("is-invalid");
+    inputEl.classList.remove("is-valid");
     inputEl.dataset.error = msg;
   };
-
   const markValid = (inputEl) => {
-    inputEl.style.outline = "";
-    inputEl.style.borderColor = "";
+    inputEl.classList.remove("is-invalid");
+    inputEl.classList.add("is-valid"); // optional (remove if you don't want green)
+    delete inputEl.dataset.error;
+  };
+  const clearMarks = (inputEl) => {
+    inputEl.classList.remove("is-invalid", "is-valid");
     delete inputEl.dataset.error;
   };
 
-  // Validate ONE field and return { ok, message }
   const validateField = (name, valueRaw) => {
     const v = valueRaw;
 
@@ -220,51 +218,62 @@
       return { ok: true };
     }
 
-    // for non-required optional fields
     return { ok: true };
   };
 
-  // Validate ALL required fields; update button enabled state
   const requiredFields = ["full_name", "phone", "address_line1", "city", "state", "pincode"];
-
   const getInput = (name) => form.querySelector(`[name="${name}"]`);
 
-  const validateAll = (showTopError = false) => {
-    let firstError = null;
+  // ✅ This is the key:
+  // - only show red for touched fields
+  // - still keep button disabled until valid
+  const validateAll = ({ showErrors = false } = {}) => {
     let allOk = true;
+    let firstError = null;
 
-    // Validate required fields
-    for (const field of requiredFields) {
-      const input = getInput(field);
-      const res = validateField(field, input.value);
+    const inputs = form.querySelectorAll("input[name]");
+    inputs.forEach((input) => {
+      const name = input.name;
+      const res = validateField(name, input.value);
 
-      if (!res.ok) {
+      // required fields: if empty => invalid (but only show red if touched or showErrors)
+      const isRequired = requiredFields.includes(name);
+
+      if (isRequired && !res.ok) {
         allOk = false;
-        markInvalid(input, res.message);
+        if (showErrors || input.dataset.touched === "1") {
+          markInvalid(input, res.message);
+        } else {
+          // not touched yet: don't show red
+          clearMarks(input);
+        }
+        if (!firstError) firstError = res.message;
+      } else if (!isRequired && name === "email" && !res.ok) {
+        allOk = false;
+        if (showErrors || input.dataset.touched === "1") {
+          markInvalid(input, res.message);
+        } else {
+          clearMarks(input);
+        }
         if (!firstError) firstError = res.message;
       } else {
-        markValid(input);
+        // valid
+        if (input.value.trim() === "" && !isRequired && name !== "email") {
+          clearMarks(input);
+        } else {
+          // Optional: only mark green if user typed something
+          if (input.value.trim() === "") clearMarks(input);
+          else markValid(input);
+        }
       }
-    }
+    });
 
-    // Validate optional email if present
-    const emailInput = getInput("email");
-    if (emailInput) {
-      const resEmail = validateField("email", emailInput.value);
-      if (!resEmail.ok) {
-        allOk = false;
-        markInvalid(emailInput, resEmail.message);
-        if (!firstError) firstError = resEmail.message;
-      } else {
-        markValid(emailInput);
-      }
-    }
-
+    // button behaviour
     payBtn.disabled = !allOk;
     payBtn.style.opacity = allOk ? "1" : "0.6";
     payBtn.style.cursor = allOk ? "pointer" : "not-allowed";
 
-    if (showTopError) {
+    if (showErrors) {
       if (!allOk && firstError) showError(firstError);
       else clearError();
     }
@@ -272,57 +281,41 @@
     return allOk;
   };
 
-  // Live events: validate on typing and on leaving the field
+  // Live validation: gentle while typing; show red only after blur (touched)
   const attachLiveValidation = () => {
     const inputs = form.querySelectorAll("input[name]");
     inputs.forEach((input) => {
-      const name = input.getAttribute("name");
+      const name = input.name;
 
-      // As user types: validate & format for phone/pincode
       input.addEventListener("input", () => {
-        // gentle normalizing while typing (no popup)
-        if (name === "phone") {
-          const digits = String(input.value || "").replace(/\D/g, "");
-          input.value = digits; // keep digits only
-        }
-        if (name === "pincode") {
-          const digits = String(input.value || "").replace(/\D/g, "");
-          input.value = digits.slice(0, 6);
-        }
+        // keep phone/pincode clean but DON'T scream red until touched
+        if (name === "phone") input.value = String(input.value || "").replace(/\D/g, "").slice(0, 10);
+        if (name === "pincode") input.value = String(input.value || "").replace(/\D/g, "").slice(0, 6);
 
-        // Validate silently (no big red banner while typing)
-        const res = validateField(name, input.value);
-        if (!res.ok) markInvalid(input, res.message);
-        else markValid(input);
-
-        validateAll(false);
+        validateAll({ showErrors: false });
       });
 
-      // On blur: show banner if invalid (user finished field)
       input.addEventListener("blur", () => {
+        input.dataset.touched = "1"; // ✅ touched
+        validateAll({ showErrors: false });
+
+        // If this specific field is invalid now, show banner message
         const res = validateField(name, input.value);
-        if (!res.ok) {
-          markInvalid(input, res.message);
-          showError(res.message);
-        } else {
-          markValid(input);
-          // If current banner was about this field, clear it
-          if (warnText.textContent === input.dataset.error) clearError();
-        }
-        validateAll(false);
+        const isRequired = requiredFields.includes(name);
+        if ((isRequired || name === "email") && !res.ok) showError(res.message);
+        else clearError();
       });
 
-      // If user focuses again, don’t show banner immediately
       input.addEventListener("focus", () => {
-        // No action needed; keeps UX calm
+        // don't show banner on focus
       });
     });
   };
 
   attachLiveValidation();
-  validateAll(false); // initial state disables Pay until valid
+  validateAll({ showErrors: false }); // initial: no red, button disabled
 
-  // ---------- Payment click handler ----------
+  // --- Payment click handler (still validates everything)
   let isProcessing = false;
 
   const buildShippingAndCustomer = () => {
@@ -338,40 +331,39 @@
     const state = sanitizeText(raw.state);
     const pincode = normalizePincode6(raw.pincode);
 
-    const shipping = {
-      full_name,
-      phone: phone10,
-      email: email || null,
-      address_line1,
-      address_line2: address_line2 || null,
-      city,
-      state,
-      pincode
+    return {
+      shipping: {
+        full_name,
+        phone: phone10,
+        email: email || null,
+        address_line1,
+        address_line2: address_line2 || null,
+        city,
+        state,
+        pincode
+      },
+      customer: {
+        name: full_name,
+        contact: `+91${phone10}`,
+        email: email || undefined
+      }
     };
-
-    const customer = {
-      name: full_name,
-      contact: `+91${phone10}`,
-      email: email || undefined
-    };
-
-    return { shipping, customer };
   };
 
   payBtn.addEventListener("click", async () => {
-    // Final gate: show top error banner if anything invalid
-    const ok = validateAll(true);
+    // On click: mark everything touched + show errors
+    form.querySelectorAll("input[name]").forEach(i => (i.dataset.touched = "1"));
+    const ok = validateAll({ showErrors: true });
     if (!ok) return;
 
     if (isProcessing) return;
-
-    clearError();
-    statusEl.textContent = "Creating payment…";
 
     try {
       isProcessing = true;
       payBtn.disabled = true;
       payBtn.textContent = "Processing…";
+      clearError();
+      statusEl.textContent = "Creating payment…";
 
       const cartMod = await import("./assets/cart.js");
       const sbMod = await import("./assets/supabase.js");
@@ -395,29 +387,11 @@
       const payloadCart = cart.map(i => ({ product_id: i.product_id, qty: i.qty }));
 
       const { data, error } = await sbMod.supabase.functions.invoke("create-payment-link", {
-        body: {
-          cart: payloadCart,
-          shipping,
-          customer,
-          notes: {
-            source: "ahamstree_web",
-            city: shipping.city,
-            state: shipping.state,
-            pincode: shipping.pincode
-          }
-        }
+        body: { cart: payloadCart, shipping, customer }
       });
 
-      if (error) {
-        const st = error.context?.status ?? "?";
-        showError(`Payment setup failed (${st}). Please try again.`);
-        console.error(error);
-        statusEl.textContent = "";
-        return;
-      }
-
-      if (!data?.payment_link_url) {
-        showError("Server did not return payment_link_url.");
+      if (error || !data?.payment_link_url) {
+        showError("Payment setup failed. Please try again.");
         statusEl.textContent = "";
         return;
       }
@@ -427,15 +401,16 @@
 
     } catch (e) {
       showError(String(e?.message ?? e));
-      console.error(e);
       statusEl.textContent = "";
+      console.error(e);
     } finally {
       isProcessing = false;
-      payBtn.disabled = !validateAll(false); // keep disabled if form invalid
       payBtn.textContent = "Pay with Razorpay";
+      validateAll({ showErrors: false });
     }
   });
 </script>
+
 
 
 
