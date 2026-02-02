@@ -127,73 +127,176 @@
 
   <script type="module">
   const statusEl = document.getElementById("status");
+  const warnBox = document.getElementById("warn");
+  const warnText = document.getElementById("warnText");
   const payBtn = document.getElementById("payBtn");
   const form = document.getElementById("form");
 
-  // If this doesn't appear, your script isn't running at all.
   statusEl.textContent = "✅ Checkout JS loaded";
 
-  if (!payBtn) {
-    statusEl.textContent = "❌ payBtn not found (check id='payBtn')";
-    throw new Error("payBtn missing");
-  }
-  if (!form) {
-    statusEl.textContent = "❌ form not found (check id='form')";
-    throw new Error("form missing");
-  }
+  const showError = (msg) => {
+    warnBox.style.display = "block";
+    warnText.textContent = msg;
+  };
 
-  // Attach handler FIRST so click always does something
+  const clearError = () => {
+    warnBox.style.display = "none";
+    warnText.textContent = "";
+  };
+
+  // Simple validators
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
+
+  const normalizePhone10 = (raw) => {
+    // Keep digits only
+    let digits = String(raw || "").replace(/\D/g, "");
+
+    // Handle common cases: +91 / 91 prefix / leading 0
+    if (digits.startsWith("91") && digits.length === 12) digits = digits.slice(2);
+    if (digits.startsWith("0") && digits.length === 11) digits = digits.slice(1);
+
+    return digits; // should be 10 digits
+  };
+
+  const normalizePincode6 = (raw) => String(raw || "").replace(/\D/g, "");
+
+  const sanitizeText = (s) => String(s || "").trim().replace(/\s+/g, " ");
+
+  const validateAndBuildShipping = () => {
+    const fd = new FormData(form);
+    const shippingRaw = Object.fromEntries(fd.entries());
+
+    // Normalize
+    const full_name = sanitizeText(shippingRaw.full_name);
+    const phone10 = normalizePhone10(shippingRaw.phone);
+    const email = sanitizeText(shippingRaw.email).toLowerCase();
+    const address_line1 = sanitizeText(shippingRaw.address_line1);
+    const address_line2 = sanitizeText(shippingRaw.address_line2);
+    const city = sanitizeText(shippingRaw.city);
+    const state = sanitizeText(shippingRaw.state);
+    const pincode = normalizePincode6(shippingRaw.pincode);
+
+    // Rules
+    if (!full_name || full_name.length < 3) {
+      throw new Error("Please enter a valid full name (at least 3 characters).");
+    }
+
+    // India mobile: 10 digits, usually starts 6-9
+    if (!phone10 || phone10.length !== 10 || !/^[6-9]\d{9}$/.test(phone10)) {
+      throw new Error("Please enter a valid 10-digit Indian mobile number (starts with 6–9).");
+    }
+
+    if (email && !isValidEmail(email)) {
+      throw new Error("Please enter a valid email address, or leave it blank.");
+    }
+
+    if (!address_line1 || address_line1.length < 5) {
+      throw new Error("Please enter a valid Address line 1.");
+    }
+
+    if (!city) throw new Error("Please enter your city.");
+    if (!state) throw new Error("Please enter your state.");
+
+    if (!pincode || pincode.length !== 6) {
+      throw new Error("Please enter a valid 6-digit pincode.");
+    }
+
+    // Build normalized shipping object (what you store + use for delivery)
+    const shipping = {
+      full_name,
+      phone: phone10,         // stored clean
+      email: email || null,   // store null if blank
+      address_line1,
+      address_line2: address_line2 || null,
+      city,
+      state,
+      pincode
+    };
+
+    // Razorpay-friendly customer fields (sent to your function)
+    const customer = {
+      name: full_name,
+      contact: `+91${phone10}`, // Razorpay likes +countrycode format
+      email: email || undefined
+    };
+
+    return { shipping, customer };
+  };
+
+  let isProcessing = false;
+
   payBtn.addEventListener("click", async () => {
-    statusEl.textContent = "Clicked. Loading checkout modules…";
+    if (isProcessing) return;
+
+    clearError();
+    statusEl.textContent = "Clicked. Preparing payment…";
 
     try {
-      // Import modules lazily so we can show errors properly
+      // Prevent double clicks
+      isProcessing = true;
+      payBtn.disabled = true;
+      payBtn.textContent = "Processing…";
+
       const ui = await import("./assets/ui.js");
       const cartMod = await import("./assets/cart.js");
       const sbMod = await import("./assets/supabase.js");
 
-      // Basic sanity
       if (!sbMod.supabase) throw new Error("supabase not exported from assets/supabase.js");
       if (!sbMod.SUPABASE_ANON_KEY) throw new Error("SUPABASE_ANON_KEY not exported from assets/supabase.js");
 
       const cart = cartMod.getCart();
       if (!cart.length) {
-        statusEl.textContent = "Cart is empty. Add products first.";
+        showError("Your cart is empty. Please add products first.");
+        statusEl.textContent = "";
         return;
       }
 
-      const fd = new FormData(form);
-      const shipping = Object.fromEntries(fd.entries());
+      // Validate + normalize shipping & customer fields
+      const { shipping, customer } = validateAndBuildShipping();
 
       statusEl.textContent = "Checking login…";
       const { data: sess } = await sbMod.supabase.auth.getSession();
       const session = sess?.session;
 
       if (!session?.access_token) {
-        statusEl.textContent = "Not logged in. Please login before paying.";
+        showError("You are not logged in. Please login before paying.");
+        statusEl.textContent = "";
         return;
       }
 
-      statusEl.textContent = "Creating payment link…";
+      statusEl.textContent = "Creating Razorpay payment link…";
 
       const payloadCart = cart.map(i => ({ product_id: i.product_id, qty: i.qty }));
 
+      // Send customer + shipping + notes to backend
+      // Your edge function should map these into Razorpay Payment Link fields
       const { data, error } = await sbMod.supabase.functions.invoke("create-payment-link", {
-  body: { cart: payloadCart, shipping },
-});
-
+        body: {
+          cart: payloadCart,
+          shipping,
+          customer,
+          notes: {
+            source: "ahamstree_web",
+            city: shipping.city,
+            state: shipping.state,
+            pincode: shipping.pincode
+          }
+        },
+      });
 
       if (error) {
         const st = error.context?.status ?? "?";
         const body = error.context?.body
           ? (typeof error.context.body === "string" ? error.context.body : JSON.stringify(error.context.body))
           : "{}";
-        statusEl.textContent = `Error (${st}): ${error.message} — ${body}`;
+        showError(`Payment setup failed. (${st}) ${error.message}`);
+        statusEl.textContent = body;
         return;
       }
 
       if (!data?.payment_link_url) {
-        statusEl.textContent = "Server did not return payment_link_url.";
+        showError("Server did not return payment_link_url.");
+        statusEl.textContent = "";
         return;
       }
 
@@ -201,11 +304,17 @@
       window.location.href = data.payment_link_url;
 
     } catch (e) {
-      statusEl.textContent = `❌ JS/import error: ${String(e?.message ?? e)}`;
+      showError(String(e?.message ?? e));
+      statusEl.textContent = "";
       console.error(e);
+    } finally {
+      isProcessing = false;
+      payBtn.disabled = false;
+      payBtn.textContent = "Pay with Razorpay";
     }
   });
 </script>
+
 
 </body>
 </html>
