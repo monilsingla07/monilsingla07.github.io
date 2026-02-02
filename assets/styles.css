@@ -152,6 +152,16 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
 }
 .nav a:hover { opacity: 1; }
 .nav a.active { font-weight: 900; }
+/* Prevent nav items from wrapping when active link is bold */
+.header .nav {
+  gap: 12px;            /* slightly tighter spacing */
+  flex-wrap: nowrap;    /* keep all items on one line */
+  white-space: nowrap;
+}
+
+.header .nav a {
+  font-size: 14px;      /* slightly smaller to avoid overflow */
+}
 
 .brand {
   text-decoration: none;
