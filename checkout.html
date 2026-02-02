@@ -144,68 +144,204 @@
     warnText.textContent = "";
   };
 
-  // Simple validators
+  // ---------- Validation helpers ----------
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
 
-  const normalizePhone10 = (raw) => {
-    // Keep digits only
-    let digits = String(raw || "").replace(/\D/g, "");
+  const sanitizeText = (s) => String(s || "").trim().replace(/\s+/g, " ");
 
-    // Handle common cases: +91 / 91 prefix / leading 0
+  const normalizePhone10 = (raw) => {
+    let digits = String(raw || "").replace(/\D/g, "");
     if (digits.startsWith("91") && digits.length === 12) digits = digits.slice(2);
     if (digits.startsWith("0") && digits.length === 11) digits = digits.slice(1);
-
-    return digits; // should be 10 digits
+    return digits;
   };
 
   const normalizePincode6 = (raw) => String(raw || "").replace(/\D/g, "");
 
-  const sanitizeText = (s) => String(s || "").trim().replace(/\s+/g, " ");
+  // Add simple inline styling (red outline) without touching your CSS file
+  const markInvalid = (inputEl, msg) => {
+    inputEl.style.outline = "2px solid rgba(220,20,60,.8)";
+    inputEl.style.borderColor = "rgba(220,20,60,.8)";
+    inputEl.dataset.error = msg;
+  };
 
-  const validateAndBuildShipping = () => {
+  const markValid = (inputEl) => {
+    inputEl.style.outline = "";
+    inputEl.style.borderColor = "";
+    delete inputEl.dataset.error;
+  };
+
+  // Validate ONE field and return { ok, message }
+  const validateField = (name, valueRaw) => {
+    const v = valueRaw;
+
+    if (name === "full_name") {
+      const full = sanitizeText(v);
+      if (!full || full.length < 3) return { ok: false, message: "Enter a valid full name (min 3 chars)." };
+      return { ok: true };
+    }
+
+    if (name === "phone") {
+      const phone10 = normalizePhone10(v);
+      if (!phone10 || phone10.length !== 10 || !/^[6-9]\d{9}$/.test(phone10)) {
+        return { ok: false, message: "Enter a valid 10-digit Indian mobile (starts 6–9)." };
+      }
+      return { ok: true };
+    }
+
+    if (name === "email") {
+      const email = sanitizeText(v).toLowerCase();
+      if (!email) return { ok: true }; // optional
+      if (!isValidEmail(email)) return { ok: false, message: "Enter a valid email or leave blank." };
+      return { ok: true };
+    }
+
+    if (name === "address_line1") {
+      const a1 = sanitizeText(v);
+      if (!a1 || a1.length < 5) return { ok: false, message: "Enter Address line 1 (min 5 chars)." };
+      return { ok: true };
+    }
+
+    if (name === "city") {
+      const city = sanitizeText(v);
+      if (!city) return { ok: false, message: "Enter your city." };
+      return { ok: true };
+    }
+
+    if (name === "state") {
+      const state = sanitizeText(v);
+      if (!state) return { ok: false, message: "Enter your state." };
+      return { ok: true };
+    }
+
+    if (name === "pincode") {
+      const pin = normalizePincode6(v);
+      if (!pin || pin.length !== 6) return { ok: false, message: "Enter a valid 6-digit pincode." };
+      return { ok: true };
+    }
+
+    // for non-required optional fields
+    return { ok: true };
+  };
+
+  // Validate ALL required fields; update button enabled state
+  const requiredFields = ["full_name", "phone", "address_line1", "city", "state", "pincode"];
+
+  const getInput = (name) => form.querySelector(`[name="${name}"]`);
+
+  const validateAll = (showTopError = false) => {
+    let firstError = null;
+    let allOk = true;
+
+    // Validate required fields
+    for (const field of requiredFields) {
+      const input = getInput(field);
+      const res = validateField(field, input.value);
+
+      if (!res.ok) {
+        allOk = false;
+        markInvalid(input, res.message);
+        if (!firstError) firstError = res.message;
+      } else {
+        markValid(input);
+      }
+    }
+
+    // Validate optional email if present
+    const emailInput = getInput("email");
+    if (emailInput) {
+      const resEmail = validateField("email", emailInput.value);
+      if (!resEmail.ok) {
+        allOk = false;
+        markInvalid(emailInput, resEmail.message);
+        if (!firstError) firstError = resEmail.message;
+      } else {
+        markValid(emailInput);
+      }
+    }
+
+    payBtn.disabled = !allOk;
+    payBtn.style.opacity = allOk ? "1" : "0.6";
+    payBtn.style.cursor = allOk ? "pointer" : "not-allowed";
+
+    if (showTopError) {
+      if (!allOk && firstError) showError(firstError);
+      else clearError();
+    }
+
+    return allOk;
+  };
+
+  // Live events: validate on typing and on leaving the field
+  const attachLiveValidation = () => {
+    const inputs = form.querySelectorAll("input[name]");
+    inputs.forEach((input) => {
+      const name = input.getAttribute("name");
+
+      // As user types: validate & format for phone/pincode
+      input.addEventListener("input", () => {
+        // gentle normalizing while typing (no popup)
+        if (name === "phone") {
+          const digits = String(input.value || "").replace(/\D/g, "");
+          input.value = digits; // keep digits only
+        }
+        if (name === "pincode") {
+          const digits = String(input.value || "").replace(/\D/g, "");
+          input.value = digits.slice(0, 6);
+        }
+
+        // Validate silently (no big red banner while typing)
+        const res = validateField(name, input.value);
+        if (!res.ok) markInvalid(input, res.message);
+        else markValid(input);
+
+        validateAll(false);
+      });
+
+      // On blur: show banner if invalid (user finished field)
+      input.addEventListener("blur", () => {
+        const res = validateField(name, input.value);
+        if (!res.ok) {
+          markInvalid(input, res.message);
+          showError(res.message);
+        } else {
+          markValid(input);
+          // If current banner was about this field, clear it
+          if (warnText.textContent === input.dataset.error) clearError();
+        }
+        validateAll(false);
+      });
+
+      // If user focuses again, don’t show banner immediately
+      input.addEventListener("focus", () => {
+        // No action needed; keeps UX calm
+      });
+    });
+  };
+
+  attachLiveValidation();
+  validateAll(false); // initial state disables Pay until valid
+
+  // ---------- Payment click handler ----------
+  let isProcessing = false;
+
+  const buildShippingAndCustomer = () => {
     const fd = new FormData(form);
-    const shippingRaw = Object.fromEntries(fd.entries());
+    const raw = Object.fromEntries(fd.entries());
 
-    // Normalize
-    const full_name = sanitizeText(shippingRaw.full_name);
-    const phone10 = normalizePhone10(shippingRaw.phone);
-    const email = sanitizeText(shippingRaw.email).toLowerCase();
-    const address_line1 = sanitizeText(shippingRaw.address_line1);
-    const address_line2 = sanitizeText(shippingRaw.address_line2);
-    const city = sanitizeText(shippingRaw.city);
-    const state = sanitizeText(shippingRaw.state);
-    const pincode = normalizePincode6(shippingRaw.pincode);
+    const full_name = sanitizeText(raw.full_name);
+    const phone10 = normalizePhone10(raw.phone);
+    const email = sanitizeText(raw.email).toLowerCase();
+    const address_line1 = sanitizeText(raw.address_line1);
+    const address_line2 = sanitizeText(raw.address_line2);
+    const city = sanitizeText(raw.city);
+    const state = sanitizeText(raw.state);
+    const pincode = normalizePincode6(raw.pincode);
 
-    // Rules
-    if (!full_name || full_name.length < 3) {
-      throw new Error("Please enter a valid full name (at least 3 characters).");
-    }
-
-    // India mobile: 10 digits, usually starts 6-9
-    if (!phone10 || phone10.length !== 10 || !/^[6-9]\d{9}$/.test(phone10)) {
-      throw new Error("Please enter a valid 10-digit Indian mobile number (starts with 6–9).");
-    }
-
-    if (email && !isValidEmail(email)) {
-      throw new Error("Please enter a valid email address, or leave it blank.");
-    }
-
-    if (!address_line1 || address_line1.length < 5) {
-      throw new Error("Please enter a valid Address line 1.");
-    }
-
-    if (!city) throw new Error("Please enter your city.");
-    if (!state) throw new Error("Please enter your state.");
-
-    if (!pincode || pincode.length !== 6) {
-      throw new Error("Please enter a valid 6-digit pincode.");
-    }
-
-    // Build normalized shipping object (what you store + use for delivery)
     const shipping = {
       full_name,
-      phone: phone10,         // stored clean
-      email: email || null,   // store null if blank
+      phone: phone10,
+      email: email || null,
       address_line1,
       address_line2: address_line2 || null,
       city,
@@ -213,36 +349,32 @@
       pincode
     };
 
-    // Razorpay-friendly customer fields (sent to your function)
     const customer = {
       name: full_name,
-      contact: `+91${phone10}`, // Razorpay likes +countrycode format
+      contact: `+91${phone10}`,
       email: email || undefined
     };
 
     return { shipping, customer };
   };
 
-  let isProcessing = false;
-
   payBtn.addEventListener("click", async () => {
+    // Final gate: show top error banner if anything invalid
+    const ok = validateAll(true);
+    if (!ok) return;
+
     if (isProcessing) return;
 
     clearError();
-    statusEl.textContent = "Clicked. Preparing payment…";
+    statusEl.textContent = "Creating payment…";
 
     try {
-      // Prevent double clicks
       isProcessing = true;
       payBtn.disabled = true;
       payBtn.textContent = "Processing…";
 
-      const ui = await import("./assets/ui.js");
       const cartMod = await import("./assets/cart.js");
       const sbMod = await import("./assets/supabase.js");
-
-      if (!sbMod.supabase) throw new Error("supabase not exported from assets/supabase.js");
-      if (!sbMod.SUPABASE_ANON_KEY) throw new Error("SUPABASE_ANON_KEY not exported from assets/supabase.js");
 
       const cart = cartMod.getCart();
       if (!cart.length) {
@@ -251,25 +383,17 @@
         return;
       }
 
-      // Validate + normalize shipping & customer fields
-      const { shipping, customer } = validateAndBuildShipping();
-
-      statusEl.textContent = "Checking login…";
       const { data: sess } = await sbMod.supabase.auth.getSession();
       const session = sess?.session;
-
       if (!session?.access_token) {
         showError("You are not logged in. Please login before paying.");
         statusEl.textContent = "";
         return;
       }
 
-      statusEl.textContent = "Creating Razorpay payment link…";
-
+      const { shipping, customer } = buildShippingAndCustomer();
       const payloadCart = cart.map(i => ({ product_id: i.product_id, qty: i.qty }));
 
-      // Send customer + shipping + notes to backend
-      // Your edge function should map these into Razorpay Payment Link fields
       const { data, error } = await sbMod.supabase.functions.invoke("create-payment-link", {
         body: {
           cart: payloadCart,
@@ -281,16 +405,14 @@
             state: shipping.state,
             pincode: shipping.pincode
           }
-        },
+        }
       });
 
       if (error) {
         const st = error.context?.status ?? "?";
-        const body = error.context?.body
-          ? (typeof error.context.body === "string" ? error.context.body : JSON.stringify(error.context.body))
-          : "{}";
-        showError(`Payment setup failed. (${st}) ${error.message}`);
-        statusEl.textContent = body;
+        showError(`Payment setup failed (${st}). Please try again.`);
+        console.error(error);
+        statusEl.textContent = "";
         return;
       }
 
@@ -305,15 +427,16 @@
 
     } catch (e) {
       showError(String(e?.message ?? e));
-      statusEl.textContent = "";
       console.error(e);
+      statusEl.textContent = "";
     } finally {
       isProcessing = false;
-      payBtn.disabled = false;
+      payBtn.disabled = !validateAll(false); // keep disabled if form invalid
       payBtn.textContent = "Pay with Razorpay";
     }
   });
 </script>
+
 
 
 </body>
