@@ -11,7 +11,7 @@ export function renderHeader(active = "") {
     <!-- Top announcement bar (Taneira-like) -->
     <div class="topbar">
       <div class="container topbar-inner">
-        <div class="topbar-left">Free shipping in India above ₹999 • Easy returns</div>
+        <div class="topbar-left">Free shipping in India • Easy returns</div>
         <div class="topbar-right">
           <a href="about.html">About</a>
           <a href="shipping.html">Shipping</a>
@@ -29,7 +29,7 @@ export function renderHeader(active = "") {
   <img src="assets/images/ahamstree-logo.png" alt="Ahamstree">
 </a>
 
-          <a href="products.html" class="${active === "products" ? "active" : ""}">Sarees</a>
+          <a href="products.html" class="${active === "products" ? "active" : ""}">Handloom Sarees</a>
           <a href="new-arrivals.html" class="">New Arrivals</a>
           <a href="collections.html" class="">Collections</a>
           <a href="sale.html" class="">Sale</a>
