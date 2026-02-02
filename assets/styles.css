@@ -98,6 +98,13 @@ color: #ffffff;
 
 hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
 
+/* Prevent layout shift: reserve space for header that is injected via JS */
+#header { min-height: 160px; background: #fff; }
+@media (max-width: 768px){
+  #header { min-height: 190px; }
+}
+
+
 
 /* Header logo sizing */
 .site-logo img {

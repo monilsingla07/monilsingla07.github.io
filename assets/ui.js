@@ -102,20 +102,20 @@ export function renderFooter() {
 
       <div class="container footer-bottom">
         <div class="social-links">
-  <a href="https://www.instagram.com/ahamstree/" target="_blank"
+  <a href="https://www.instagram.com/ahamstree/" target="_blank" rel="noopener"
      class="instagram" aria-label="Instagram">
     <img src="assets/images/icons/instagram.png" alt="Instagram">
   </a>
 
-  <a href="#" target="_blank" class="facebook" aria-label="Facebook">
+  <a href="https://www.facebook.com/" target="_blank" rel="noopener" class="facebook" aria-label="Facebook">
     <img src="assets/images/icons/facebook.png" alt="Facebook">
   </a>
 
-  <a href="#" target="_blank" class="pinterest" aria-label="Pinterest">
+  <a href="https://www.pinterest.com/" target="_blank" rel="noopener" class="pinterest" aria-label="Pinterest">
     <img src="assets/images/icons/pinterest.png" alt="Pinterest">
   </a>
 
-  <a href="#" target="_blank" class="youtube" aria-label="YouTube">
+  <a href="https://www.youtube.com/" target="_blank" rel="noopener" class="youtube" aria-label="YouTube">
     <img src="assets/images/icons/youtube.png" alt="YouTube">
   </a>
 
