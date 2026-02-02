@@ -179,12 +179,9 @@
       const payloadCart = cart.map(i => ({ product_id: i.product_id, qty: i.qty }));
 
       const { data, error } = await sbMod.supabase.functions.invoke("create-payment-link", {
-        body: { cart: payloadCart, shipping },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          apikey: sbMod.SUPABASE_ANON_KEY
-        }
-      });
+  body: { cart: payloadCart, shipping },
+});
+
 
       if (error) {
         const st = error.context?.status ?? "?";
