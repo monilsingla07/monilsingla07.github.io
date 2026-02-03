@@ -210,6 +210,7 @@
       const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
       return { ...p, image_url: imgs[0]?.image_url ?? "" };
     });
+status.textContent = normalized.length ? "" : "No products found.";
 
     grid.innerHTML = normalized.map(p => `
       <div class="card">
