@@ -18,23 +18,54 @@
 <body>
   <div id="header"></div>
 
-  <div class="container">
-    <h2 id="pageTitle" style="margin-top:0;">Sarees</h2>
-    <div class="small">Click a product to view details</div>
-    <hr />
-    <div id="status" class="small">Loading…</div>
-    <div id="grid" class="grid" style="margin-top:12px;"></div>
-  </div>
+ <div class="container">
+  <h2 id="pageTitle" style="margin-top:0;">Sarees</h2>
+  <div class="small">Click a product to view details</div>
+  <hr />
 
-  <div id="footer"></div>
-<div class="filter-tabs" id="fabricTabs">
-  <button class="filter-tab active" data-q="saree">All</button>
-  <button class="filter-tab" data-q="silk">Silk</button>
-  <button class="filter-tab" data-q="cotton">Cotton</button>
-  <button class="filter-tab" data-q="silk cotton">Silk-Cotton</button>
+  <div class="products-layout">
+    <!-- LEFT: Filters -->
+    <aside class="filters card">
+      <div style="font-weight:900;margin-bottom:10px;">Filter</div>
+
+      <div class="filter-block">
+        <div class="filter-title">Collection</div>
+        <div id="collectionList" class="filter-list small">Loading…</div>
+      </div>
+
+      <div class="filter-block">
+        <div class="filter-title">Price (₹)</div>
+        <div class="price-row">
+          <input id="minPrice" class="input" placeholder="Min" inputmode="numeric" />
+          <input id="maxPrice" class="input" placeholder="Max" inputmode="numeric" />
+        </div>
+        <button id="applyPrice" class="btn" style="margin-top:10px;width:100%;">Apply</button>
+      </div>
+
+      <div class="filter-block">
+        <div class="filter-title">Sort</div>
+        <select id="sortBy" class="input" style="width:100%;">
+          <option value="newest">Newest</option>
+          <option value="mostLoved">Most loved</option>
+          <option value="priceLow">Price: Low to High</option>
+          <option value="priceHigh">Price: High to Low</option>
+        </select>
+      </div>
+
+      <button id="clearAll" class="btn secondary" style="margin-top:12px;width:100%;">Clear all</button>
+    </aside>
+
+    <!-- RIGHT: Products -->
+    <main>
+      <div id="status" class="small">Loading…</div>
+      <div id="grid" class="grid" style="margin-top:12px;"></div>
+    </main>
+  </div>
 </div>
 
-  
+
+  <div id="footer"></div>
+ 
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
