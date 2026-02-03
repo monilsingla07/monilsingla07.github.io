@@ -10,8 +10,11 @@ import { supabase } from "./supabase.js";
 function moneyINR(v) {
   const n = Number(v);
   if (!Number.isFinite(n)) return "";
-  return "₹" + n.toLocaleString("en-IN");
+  return "₹" + n.toLocaleString("en-IN", {
+    maximumFractionDigits: 0
+  });
 }
+
 
 
 function normalizeProducts(rows = []) {
