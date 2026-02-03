@@ -45,12 +45,13 @@ async function fetchMostLoved(limit = 6) {
     .select("id,title,price_inr,inventory_qty,is_active,created_at,view_count, product_images(image_url, sort_order)")
     .eq("is_active", true)
     .order("view_count", { ascending: false })
-    .order("created_at", { ascending: false }) // tie-breaker
+    .order("created_at", { ascending: false })
     .limit(limit);
 
   if (error) throw error;
   return normalizeProducts(data ?? []);
 }
+
 
 
 function setStatus(id, msg) {
