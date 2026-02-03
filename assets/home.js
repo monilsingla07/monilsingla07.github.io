@@ -85,7 +85,10 @@ export async function hydrateHome() {
     setStatus("bestsellersStatus", "");
 
     // New Collection: same data source for now, but offset a bit so sections differ.
-    const allLatest = await fetchLatestActive(12);
+    const mostLoved = await fetchMostLoved(6);
+renderGrid("bestsellersGrid", mostLoved);
+setStatus("bestsellersStatus", "");
+
     const newCollection = allLatest.slice(6, 12);
     renderGrid("newCollectionGrid", newCollection);
     setStatus("newCollectionStatus", "");
