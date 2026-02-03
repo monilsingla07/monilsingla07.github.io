@@ -80,10 +80,15 @@
   const url = new URL(location.href);
   const params = url.searchParams;
 
-  function numOrNull(v){
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  }
+function numOrNull(v) {
+  if (v === null || v === undefined) return null;
+  const s = String(v).trim();
+  if (s === "") return null;
+
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
 
   function setParam(k, v){
     if (v === null || v === undefined || v === "") params.delete(k);
