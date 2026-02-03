@@ -2,19 +2,20 @@
 <html>
 <head>
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
 
-  gtag('config', 'G-CKQ1EXBHY6');
-</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Product — AhamStree</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
+
 <body>
   <div id="header"></div>
 
@@ -24,8 +25,9 @@
 
     <div id="content" style="display:none;">
       <div class="grid" style="grid-template-columns: 1fr; gap: 16px;">
+
         <div class="card" style="border-radius:16px;">
-          <img id="mainImg" alt="" />
+          <img id="mainImg" alt="" style="cursor: zoom-in;" />
         </div>
 
         <div id="thumbs" class="row"></div>
@@ -41,7 +43,18 @@
             <a class="btn secondary" href="cart.html">Go to cart</a>
           </div>
         </div>
+
       </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" aria-hidden="true">
+    <div id="lightboxInner">
+      <img id="lightboxImg" alt="Product image enlarged" />
+      <button id="lbClose" class="lb-btn" type="button">✕</button>
+      <button id="lbPrev" class="lb-btn" type="button">‹</button>
+      <button id="lbNext" class="lb-btn" type="button">›</button>
     </div>
   </div>
 
@@ -58,9 +71,14 @@
 
     const params = new URLSearchParams(location.search);
     const id = params.get("id");
-   
+
     async function loadProduct() {
       const status = document.getElementById("status");
+
+      if (!id) {
+        status.textContent = "Product not found.";
+        return;
+      }
 
       const { data, error } = await supabase
         .from("products")
@@ -72,14 +90,11 @@
         status.textContent = "Product not found.";
         return;
       }
-// Increment view count (safe DB function)
-try {
-  await supabase.rpc("increment_product_view", { p_id: id });
-} catch (e) {
-  console.warn("View increment failed", e);
-}
 
-      const images = (data.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
+      const images = (data.product_images ?? [])
+        .slice()
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
       const main = images[0]?.image_url ?? "";
 
       document.getElementById("status").style.display = "none";
@@ -87,7 +102,8 @@ try {
 
       document.getElementById("title").textContent = data.title;
       document.getElementById("price").textContent = `₹${data.price_inr}`;
-      document.getElementById("stock").textContent = data.inventory_qty > 0 ? `${data.inventory_qty} available` : "Sold out";
+      document.getElementById("stock").textContent =
+        data.inventory_qty > 0 ? `${data.inventory_qty} available` : "Sold out";
       document.getElementById("desc").textContent = data.description ?? "";
 
       const mainImg = document.getElementById("mainImg");
@@ -95,19 +111,84 @@ try {
       mainImg.alt = data.title;
 
       const thumbs = document.getElementById("thumbs");
-      thumbs.innerHTML = images.map(img => `
-        <button style="border:1px solid #eee;border-radius:12px;padding:0;overflow:hidden;width:80px;height:100px;background:#fafafa;cursor:pointer;">
+      thumbs.innerHTML = images.map((img, idx) => `
+        <button data-idx="${idx}" style="border:1px solid #eee;border-radius:12px;padding:0;overflow:hidden;width:80px;height:100px;background:#fafafa;cursor:pointer;">
           <img src="${img.image_url}" alt="${img.alt_text ?? data.title}" style="width:100%;height:100%;object-fit:cover;">
         </button>
       `).join("");
 
-      // clicking thumbnails changes main image
-      Array.from(thumbs.querySelectorAll("button")).forEach((btn, idx) => {
+      // ===== Lightbox logic =====
+      let currentIndex = 0;
+
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = document.getElementById("lightboxImg");
+      const lbClose = document.getElementById("lbClose");
+      const lbPrev = document.getElementById("lbPrev");
+      const lbNext = document.getElementById("lbNext");
+
+      function openLightbox(idx) {
+        if (!images.length) return;
+
+        currentIndex = Math.max(0, Math.min(idx, images.length - 1));
+        lightboxImg.src = images[currentIndex].image_url;
+
+        lightbox.classList.add("open");
+        lightbox.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeLightbox() {
+        lightbox.classList.remove("open");
+        lightbox.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+      }
+
+      function showNext() {
+        if (!images.length) return;
+        currentIndex = (currentIndex + 1) % images.length;
+        lightboxImg.src = images[currentIndex].image_url;
+      }
+
+      function showPrev() {
+        if (!images.length) return;
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        lightboxImg.src = images[currentIndex].image_url;
+      }
+
+      // Open lightbox when clicking main image
+      mainImg.addEventListener("click", () => {
+        const idx = images.findIndex(x => x.image_url === mainImg.src);
+        openLightbox(idx >= 0 ? idx : 0);
+      });
+
+      // Clicking thumbnails changes main image AND opens lightbox
+      Array.from(thumbs.querySelectorAll("button")).forEach((btn) => {
         btn.addEventListener("click", () => {
+          const idx = Number(btn.getAttribute("data-idx") || "0");
           mainImg.src = images[idx].image_url;
+          openLightbox(idx);
         });
       });
 
+      // Buttons
+      lbClose.addEventListener("click", closeLightbox);
+      lbNext.addEventListener("click", showNext);
+      lbPrev.addEventListener("click", showPrev);
+
+      // Close when clicking outside the image
+      lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) closeLightbox();
+      });
+
+      // Keyboard support
+      document.addEventListener("keydown", (e) => {
+        if (!lightbox.classList.contains("open")) return;
+        if (e.key === "Escape") closeLightbox();
+        if (e.key === "ArrowRight") showNext();
+        if (e.key === "ArrowLeft") showPrev();
+      });
+
+      // Add to cart
       const addBtn = document.getElementById("addBtn");
       if (data.inventory_qty <= 0) {
         addBtn.disabled = true;
@@ -127,4 +208,3 @@ try {
   </script>
 </body>
 </html>
-
