@@ -133,6 +133,13 @@
   }
 
   async function loadProducts(){
+    console.log("DEBUG params", {
+  collection: params.get("collection"),
+  min: params.get("min"),
+  max: params.get("max"),
+  sort: params.get("sort")
+});
+
     status.textContent = "Loading…";
     grid.innerHTML = "";
 
@@ -198,6 +205,7 @@
     else query = query.order("created_at", { ascending: false });
 
     const { data, error } = await query;
+console.log("DEBUG products result", { error, rows: data?.length, sample: (data ?? [])[0] });
 
     if (error){
       status.textContent = "Error: " + error.message;
