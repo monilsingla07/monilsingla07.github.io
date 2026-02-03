@@ -97,8 +97,9 @@ setStatus("bestsellersStatus", "");
     pickHeroBackground(allLatest);
 
   } catch (e) {
-    console.error(e);
-    setStatus("bestsellersStatus", "Could not load products. Please try again later.");
+        console.error(e);
+setStatus("bestsellersStatus", `Could not load products: ${e?.message ?? e}`);
+
     setStatus("newCollectionStatus", "");
   }
 }
