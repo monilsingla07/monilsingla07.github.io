@@ -825,3 +825,36 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
   .products-layout{ grid-template-columns: 1fr; }
   .filters{ position: relative; top: 0; }
 }
+
+/* Header main row layout */
+.header-row,
+.nav-row,
+.site-header .header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Left: logo */
+.header-left {
+  flex: 0 0 auto;
+}
+
+/* Center: main nav */
+.header-center {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+}
+
+/* Right: search/account/cart */
+.header-right {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  white-space: nowrap;
+}
+
