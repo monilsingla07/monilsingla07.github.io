@@ -36,13 +36,7 @@ export function renderHeader(active = "") {
           <a href="blogs.html" class="">Blogs</a>
         </nav>
 
-        <!-- Center: Logo -->
-        <a class="brand" href="index.html" aria-label="Ahamstree Home">
-          <img src="assets/logo.svg" alt="Ahamstree" onerror="this.style.display='none'; this.parentElement.querySelector('.brand-text').style.display='block';">
-          <span class="brand-text" style="display:none;">ahamstree</span>
-        </a>
-
-        <!-- Right: Utilities -->
+            <!-- Right: Utilities -->
         <div class="utils">
           <a class="util-link" href="search.html" title="Search">Search</a>
           <a id="accountLink" class="util-link" href="login.html" title="Account">Login / Sign up</a>
