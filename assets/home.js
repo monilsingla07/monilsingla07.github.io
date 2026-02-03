@@ -78,7 +78,8 @@ export async function hydrateHome() {
 
     // Bestsellers: until you add an explicit bestseller flag in the DB,
     // we show the latest active products (fast + reliable).
-    const bestsellers = await fetchLatestActive(6);
+   const bestsellers = await fetchMostLoved(6);
+
     renderGrid("bestsellersGrid", bestsellers);
     setStatus("bestsellersStatus", "");
 
