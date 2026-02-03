@@ -202,6 +202,10 @@ function numOrNull(v) {
     // Price filter
     if (min !== null) query = query.gte("price_inr", min);
     if (max !== null) query = query.lte("price_inr", max);
+    if (min !== null && max !== null && min > max) {
+  status.textContent = "Min price cannot be greater than Max price.";
+  return;
+}
 
     // Sorting
     if (sort === "mostLoved") query = query.order("view_count", { ascending: false }).order("created_at", { ascending: false });
