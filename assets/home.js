@@ -39,17 +39,19 @@ function productCard(p) {
   `;
 }
 
-async function fetchLatestActive(limit = 6) {
+async function fetchMostLoved(limit = 6) {
   const { data, error } = await supabase
     .from("products")
-    .select("id,title,price_inr,inventory_qty,is_active,created_at, product_images(image_url, sort_order)")
+    .select("id,title,price_inr,inventory_qty,is_active,created_at,view_count, product_images(image_url, sort_order)")
     .eq("is_active", true)
-    .order("created_at", { ascending: false })
+    .order("view_count", { ascending: false })
+    .order("created_at", { ascending: false }) // tie-breaker
     .limit(limit);
 
   if (error) throw error;
   return normalizeProducts(data ?? []);
 }
+
 
 function setStatus(id, msg) {
   const el = document.getElementById(id);
