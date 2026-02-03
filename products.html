@@ -66,69 +66,199 @@
 
   <div id="footer"></div>
  
-  <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
-    import { supabase } from "./assets/supabase.js";
+<script type="module">
+  import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+  import { supabase } from "./assets/supabase.js";
 
-    document.getElementById("header").innerHTML = renderHeader("products");
-    document.getElementById("footer").innerHTML = renderFooter();
-    hydrateHeaderAuth();
+  document.getElementById("header").innerHTML = renderHeader("products");
+  document.getElementById("footer").innerHTML = renderFooter();
+  hydrateHeaderAuth();
 
-    async function loadProducts() {
-      const status = document.getElementById("status");
-      const grid = document.getElementById("grid");
+  const status = document.getElementById("status");
+  const grid = document.getElementById("grid");
 
-      // Optional filter via URL hash (e.g. products.html#silk)
-      const hash = (location.hash || "").replace("#","").trim().toLowerCase();
-      const filterable = ["silk","cotton","banarasi","kanjivaram","organza","party","new"];
-      const pageTitle = document.getElementById("pageTitle");
-      if (pageTitle) {
-        pageTitle.textContent = hash ? (hash === "new" ? "New Arrivals" : hash.charAt(0).toUpperCase() + hash.slice(1) + " Sarees") : "Sarees";
-      }
+  const url = new URL(location.href);
+  const params = url.searchParams;
 
-      let query = supabase
-        .from("products")
-        .select("id,title,price_inr,inventory_qty,is_active, product_images(image_url, sort_order)")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
+  function numOrNull(v){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
 
-      if (hash && filterable.includes(hash) && hash !== "new") {
-        // We only filter on title because it is guaranteed to exist.
-        query = query.ilike("title", `%${hash}%`);
-      }
+  function setParam(k, v){
+    if (v === null || v === undefined || v === "") params.delete(k);
+    else params.set(k, String(v));
+    history.replaceState({}, "", url.pathname + "?" + params.toString());
+  }
 
-      const { data, error } = await query;
+  function moneyINR(v){
+    const n = Number(v);
+    if (!Number.isFinite(n)) return "";
+    return "₹" + n.toLocaleString("en-IN");
+  }
 
-      if (error) {
-        status.textContent = "Error: " + error.message;
+  async function loadCollections(){
+    const box = document.getElementById("collectionList");
+    const selected = params.get("collection") || "";
+
+    const { data, error } = await supabase
+      .from("collections")
+      .select("id,name,slug")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (error){
+      box.textContent = "Could not load collections.";
+      return;
+    }
+
+    box.innerHTML = `
+      <label style="display:flex;gap:8px;align-items:center;">
+        <input type="radio" name="col" value="" ${selected ? "" : "checked"} />
+        <span>All</span>
+      </label>
+    ` + (data ?? []).map(c => `
+      <label style="display:flex;gap:8px;align-items:center;">
+        <input type="radio" name="col" value="${c.slug}" ${c.slug === selected ? "checked" : ""} />
+        <span>${c.name}</span>
+      </label>
+    `).join("");
+
+    Array.from(box.querySelectorAll("input[name='col']")).forEach(r => {
+      r.addEventListener("change", () => {
+        setParam("collection", r.value);
+        loadProducts();
+      });
+    });
+  }
+
+  async function loadProducts(){
+    status.textContent = "Loading…";
+    grid.innerHTML = "";
+
+    const selectedSlug = params.get("collection") || "";
+    const min = numOrNull(params.get("min"));
+    const max = numOrNull(params.get("max"));
+    const sort = params.get("sort") || "newest";
+
+    let productIds = null;
+
+    if (selectedSlug){
+      // Find collection id
+      const { data: col, error: colErr } = await supabase
+        .from("collections")
+        .select("id,name")
+        .eq("slug", selectedSlug)
+        .maybeSingle();
+
+      if (colErr || !col){
+        status.textContent = "Collection not found.";
         return;
       }
 
-      status.textContent = "";
+      document.getElementById("pageTitle").textContent = col.name;
 
-      const normalized = (data ?? []).map(p => {
-        const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
-        return { ...p, image_url: imgs[0]?.image_url ?? "" };
-      });
+      // Fetch product ids in that collection
+      const { data: links, error: linkErr } = await supabase
+        .from("collection_products")
+        .select("product_id")
+        .eq("collection_id", col.id);
 
-      grid.innerHTML = normalized.map(p => `
-        <div class="card">
-          <a href="product.html?id=${encodeURIComponent(p.id)}" style="text-decoration:none;color:inherit;">
-            ${p.image_url ? `<img src="${p.image_url}" alt="${p.title}" loading="lazy">` : `<div style="height:280px;background:#fafafa;"></div>`}
-            <div class="p">
-              <div style="font-weight:900;">${p.title}</div>
-              <div style="margin-top:6px;opacity:.85;">₹${p.price_inr}</div>
-              <div class="small" style="margin-top:6px;">
-                ${p.inventory_qty > 0 ? `${p.inventory_qty} in stock` : "Sold out"}
-              </div>
-            </div>
-          </a>
-        </div>
-      `).join("");
+      if (linkErr){
+        status.textContent = "Could not load collection products.";
+        return;
+      }
+
+      productIds = (links ?? []).map(x => x.product_id);
+
+      if (productIds.length === 0){
+        status.textContent = "No products in this collection yet.";
+        return;
+      }
+    } else {
+      document.getElementById("pageTitle").textContent = "Sarees";
     }
 
+    let query = supabase
+      .from("products")
+      .select("id,title,price_inr,inventory_qty,is_active,created_at,view_count, product_images(image_url, sort_order)")
+      .eq("is_active", true);
+
+    // Apply collection product ids
+    if (productIds) query = query.in("id", productIds);
+
+    // Price filter
+    if (min !== null) query = query.gte("price_inr", min);
+    if (max !== null) query = query.lte("price_inr", max);
+
+    // Sorting
+    if (sort === "mostLoved") query = query.order("view_count", { ascending: false }).order("created_at", { ascending: false });
+    else if (sort === "priceLow") query = query.order("price_inr", { ascending: true });
+    else if (sort === "priceHigh") query = query.order("price_inr", { ascending: false });
+    else query = query.order("created_at", { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error){
+      status.textContent = "Error: " + error.message;
+      return;
+    }
+
+    status.textContent = "";
+
+    const normalized = (data ?? []).map(p => {
+      const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
+      return { ...p, image_url: imgs[0]?.image_url ?? "" };
+    });
+
+    grid.innerHTML = normalized.map(p => `
+      <div class="card">
+        <a href="product.html?id=${encodeURIComponent(p.id)}" style="text-decoration:none;color:inherit;">
+          ${p.image_url ? `<img src="${p.image_url}" alt="${p.title}" loading="lazy">` : `<div style="height:280px;background:#fafafa;"></div>`}
+          <div class="p">
+            <div style="font-weight:900;">${p.title}</div>
+            <div style="margin-top:6px;opacity:.85;">${moneyINR(p.price_inr)}</div>
+            <div class="small" style="margin-top:6px;">
+              ${p.inventory_qty > 0 ? `${p.inventory_qty} in stock` : "Sold out"}
+            </div>
+          </div>
+        </a>
+      </div>
+    `).join("");
+  }
+
+  // Wire controls to URL params
+  document.getElementById("minPrice").value = params.get("min") || "";
+  document.getElementById("maxPrice").value = params.get("max") || "";
+  document.getElementById("sortBy").value = params.get("sort") || "newest";
+
+  document.getElementById("applyPrice").addEventListener("click", () => {
+    setParam("min", document.getElementById("minPrice").value.trim());
+    setParam("max", document.getElementById("maxPrice").value.trim());
     loadProducts();
-  </script>
+  });
+
+  document.getElementById("sortBy").addEventListener("change", (e) => {
+    setParam("sort", e.target.value);
+    loadProducts();
+  });
+
+  document.getElementById("clearAll").addEventListener("click", () => {
+    params.delete("collection"); params.delete("min"); params.delete("max"); params.delete("sort");
+    history.replaceState({}, "", url.pathname);
+    document.getElementById("minPrice").value = "";
+    document.getElementById("maxPrice").value = "";
+    document.getElementById("sortBy").value = "newest";
+    loadCollections();
+    loadProducts();
+  });
+
+  // Init
+  loadCollections();
+  loadProducts();
+</script>
+
+  
 </body>
 </html>
 
