@@ -540,3 +540,49 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
   background: #2dd36f;
   box-shadow: 0 0 0 6px rgba(45,211,111,0.12);
 }
+/* ===== Product Lightbox ===== */
+#lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+#lightbox.open { display: flex; }
+
+#lightboxInner {
+  position: relative;
+  max-width: 1000px;
+  width: 100%;
+  max-height: 90vh;
+}
+
+#lightboxImg {
+  width: 100%;
+  height: auto;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 16px;
+  background: #111;
+}
+
+.lb-btn {
+  position: absolute;
+  top: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(0,0,0,.45);
+  color: #fff;
+  cursor: pointer;
+}
+
+#lbClose { right: 10px; }
+#lbPrev  { left: 10px; top: 50%; transform: translateY(-50%); }
+#lbNext  { right: 10px; top: 50%; transform: translateY(-50%); }
+
+#mainImg { cursor: zoom-in; }
