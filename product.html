@@ -72,6 +72,12 @@
         status.textContent = "Product not found.";
         return;
       }
+// Increment view count (safe DB function)
+try {
+  await supabase.rpc("increment_product_view", { p_id: id });
+} catch (e) {
+  console.warn("View increment failed", e);
+}
 
       const images = (data.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
       const main = images[0]?.image_url ?? "";
