@@ -2,27 +2,59 @@
 <html>
 <head>
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);} 
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
 
-  gtag('config', 'G-CKQ1EXBHY6');
-</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>My Account — AhamStree</title>
   <link rel="stylesheet" href="assets/styles.css" />
+
+  <!-- Page-only styles (keeps global CSS untouched) -->
+  <style>
+    .acct-wrap { max-width: 980px; }
+    .acct-shell { display:grid; grid-template-columns: 260px 1fr; gap: 16px; align-items:start; }
+    @media (max-width: 820px) { .acct-shell { grid-template-columns: 1fr; } }
+
+    .acct-nav { padding: 14px; border-radius: 16px; }
+    .acct-nav .nav-title { font-weight: 900; margin-bottom: 8px; }
+    .acct-nav .nav-item {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #eee;
+      background: #fff;
+      cursor: pointer;
+      text-align:left;
+      margin-top: 8px;
+      font: inherit;
+    }
+    .acct-nav .nav-item.active { background:#fafafa; border-color:#ddd; font-weight:900; }
+    .acct-nav .nav-muted { opacity: .75; }
+
+    .acct-main { padding: 16px; border-radius: 16px; min-height: 260px; }
+    .acct-row { display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px; }
+    .acct-kv { display:grid; grid-template-columns: 160px 1fr; gap: 10px; margin-top: 12px; }
+    @media (max-width: 520px) { .acct-kv { grid-template-columns: 1fr; } }
+    .acct-card { border: 1px solid #eee; border-radius: 14px; padding: 12px; background: #fff; }
+  </style>
 </head>
+
 <body>
   <div id="header"></div>
 
-  <div class="container">
+  <div class="container acct-wrap">
     <h2 style="margin-top:0;">My Account</h2>
-
-    <div id="app" class="card" style="padding:16px;border-radius:16px;max-width:860px;">
-      <div class="small">Loading…</div>
+    <div id="app">
+      <div class="card" style="padding:16px;border-radius:16px;">
+        <div class="small">Loading…</div>
+      </div>
     </div>
   </div>
 
@@ -38,20 +70,65 @@
 
     const app = document.getElementById("app");
 
-    function renderLoggedOut() {
-      // If user opens account page without login
+    function redirectToLogin() {
       window.location.href = "login.html";
     }
 
-    function renderLoggedIn(email) {
-      app.innerHTML = `
-        <div style="font-weight:900;">Account</div>
-        <div class="small" style="margin-top:6px;">Signed in as ${email}</div>
+    function navButton(id, label, rightText = "") {
+      return `
+        <button class="nav-item" data-view="${id}" type="button">
+          <span>${label}</span>
+          ${rightText ? `<span class="small nav-muted">${rightText}</span>` : ``}
+        </button>
+      `;
+    }
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
-          <a class="btn secondary" href="orders.html">Orders</a>
-          <a class="btn secondary" href="profile.html">Profile</a>
-          <button id="logout" class="btn">Log out</button>
+    function setActive(viewId) {
+      document.querySelectorAll(".nav-item").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.view === viewId);
+      });
+    }
+
+    function safeText(v) {
+      return (v === null || v === undefined || String(v).trim() === "") ? "—" : String(v);
+    }
+
+    async function loadProfile(userId) {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name,phone,address_line1,address_line2,city,state,pincode")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) return { error, profile: null };
+      return { error: null, profile: data || {} };
+    }
+
+    function renderShell(email) {
+      app.innerHTML = `
+        <div class="acct-shell">
+          <aside class="card acct-nav">
+            <div class="nav-title">Account</div>
+            <div class="small nav-muted">Signed in as</div>
+            <div style="margin-top:4px;font-weight:900;word-break:break-word;">${email}</div>
+
+            <div style="margin-top:12px;">
+              ${navButton("profile", "Profile")}
+              ${navButton("orders", "Orders")}
+              ${navButton("addresses", "Addresses")}
+              ${navButton("wishlist", "Wishlist")}
+              ${navButton("support", "Support")}
+            </div>
+
+            <div style="margin-top:14px;">
+              <button id="logout" class="btn" style="width:100%;">Log out</button>
+            </div>
+          </aside>
+
+          <main class="card acct-main">
+            <div id="panelTitle" style="font-weight:900;font-size:18px;">Profile</div>
+            <div id="panelBody" style="margin-top:12px;"></div>
+          </main>
         </div>
       `;
 
@@ -61,11 +138,143 @@
       };
     }
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const userEmail = sessionData?.session?.user?.email;
+    async function renderProfilePanel(user) {
+      document.getElementById("panelTitle").textContent = "Profile";
+      const body = document.getElementById("panelBody");
+      body.innerHTML = `<div class="small">Loading…</div>`;
 
-    if (userEmail) renderLoggedIn(userEmail);
-    else renderLoggedOut();
+      const { error, profile } = await loadProfile(user.id);
+      if (error) {
+        body.innerHTML = `<div class="small">Could not load profile: ${error.message}</div>`;
+        return;
+      }
+
+      body.innerHTML = `
+        <div class="small acct-nav nav-muted">Your details</div>
+
+        <div class="acct-kv">
+          <div class="small nav-muted">Email</div>
+          <div style="font-weight:900;">${safeText(user.email)}</div>
+
+          <div class="small nav-muted">Name</div>
+          <div>${safeText(profile.full_name)}</div>
+
+          <div class="small nav-muted">Phone</div>
+          <div>${safeText(profile.phone)}</div>
+        </div>
+
+        <div class="acct-row">
+          <a class="btn secondary" href="profile.html">Edit profile</a>
+          <a class="btn secondary" href="orders.html">View orders</a>
+        </div>
+      `;
+    }
+
+    function renderOrdersPanel() {
+      document.getElementById("panelTitle").textContent = "Orders";
+      document.getElementById("panelBody").innerHTML = `
+        <div class="small nav-muted">View your past orders and status.</div>
+        <div class="acct-row">
+          <a class="btn" href="orders.html">Go to orders</a>
+        </div>
+      `;
+    }
+
+    async function renderAddressesPanel(user) {
+      document.getElementById("panelTitle").textContent = "Addresses";
+      const body = document.getElementById("panelBody");
+      body.innerHTML = `<div class="small">Loading…</div>`;
+
+      const { error, profile } = await loadProfile(user.id);
+      if (error) {
+        body.innerHTML = `<div class="small">Could not load address: ${error.message}</div>`;
+        return;
+      }
+
+      const hasAny = !!(profile.address_line1 || profile.city || profile.state || profile.pincode);
+      const line2 = profile.address_line2 ? `<div>${safeText(profile.address_line2)}</div>` : ``;
+
+      body.innerHTML = `
+        <div class="small nav-muted">Shipping / billing address</div>
+        <div style="margin-top:10px;" class="acct-card">
+          ${hasAny ? `
+            <div style="font-weight:900;">Default address</div>
+            <div style="margin-top:8px;">
+              <div>${safeText(profile.address_line1)}</div>
+              ${line2}
+              <div>${safeText(profile.city)}${profile.city ? ", " : ""}${safeText(profile.state)} ${safeText(profile.pincode)}</div>
+            </div>
+          ` : `
+            <div style="font-weight:900;">No address saved yet</div>
+            <div class="small nav-muted" style="margin-top:6px;">Add your address so checkout becomes faster.</div>
+          `}
+        </div>
+
+        <div class="acct-row">
+          <a class="btn secondary" href="profile.html">Edit address</a>
+          <a class="btn" href="checkout.html">Go to checkout</a>
+        </div>
+      `;
+    }
+
+    function renderWishlistPanel() {
+      document.getElementById("panelTitle").textContent = "Wishlist";
+      document.getElementById("panelBody").innerHTML = `
+        <div class="small nav-muted">Save items you love and buy later.</div>
+        <div class="acct-row">
+          <a class="btn" href="wishlist.html">Open wishlist</a>
+        </div>
+        <div class="small nav-muted" style="margin-top:12px;">
+          Tip: You can add items from the product page (we’ll add a “♡ Wishlist” button there next).
+        </div>
+      `;
+    }
+
+    function renderSupportPanel() {
+      document.getElementById("panelTitle").textContent = "Support";
+      document.getElementById("panelBody").innerHTML = `
+        <div class="small nav-muted">Quick links</div>
+
+        <div class="acct-row">
+          <a class="btn secondary" href="help.html">Help</a>
+          <a class="btn secondary" href="returns.html">Returns</a>
+          <a class="btn secondary" href="shipping.html">Shipping</a>
+          <a class="btn secondary" href="contact.html">Contact</a>
+        </div>
+
+        <div style="margin-top:14px;" class="acct-card">
+          <div style="font-weight:900;">Need help?</div>
+          <div class="small nav-muted" style="margin-top:6px;">Email us at <b>support@ahamstree.com</b></div>
+        </div>
+      `;
+    }
+
+    async function renderView(viewId, user) {
+      setActive(viewId);
+      if (viewId === "orders") return renderOrdersPanel();
+      if (viewId === "addresses") return renderAddressesPanel(user);
+      if (viewId === "wishlist") return renderWishlistPanel();
+      if (viewId === "support") return renderSupportPanel();
+      return renderProfilePanel(user); // default
+    }
+
+    // --- Init ---
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData?.session?.user;
+    if (!user) {
+      redirectToLogin();
+    } else {
+      renderShell(user.email || "");
+
+      // Default: Profile open
+      await renderView("profile", user);
+
+      document.querySelectorAll(".nav-item").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          await renderView(btn.dataset.view, user);
+        });
+      });
+    }
   </script>
 </body>
 </html>
