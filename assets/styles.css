@@ -884,3 +884,8 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
   /* Optional: hide subnav on mobile to reduce clutter */
   .subnav{ display:none; }
 }
+
+@media (max-width: 560px){
+  .btn { width: 100%; }
+}
+
