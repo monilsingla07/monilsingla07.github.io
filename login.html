@@ -41,6 +41,25 @@ document.getElementById("footer").innerHTML = renderFooter();
 
     const app = document.getElementById("app");
 
+
+    // If user came here from another page, we keep where to go next
+    const __params = new URLSearchParams(location.search);
+    const __nextRaw = __params.get("next");
+
+    function getNextUrl() {
+      if (!__nextRaw) return null;
+      let decoded = "";
+      try { decoded = decodeURIComponent(__nextRaw); } catch { decoded = __nextRaw; }
+
+      // Allow only same-site relative paths to avoid open redirects
+      if (decoded.startsWith("/")) return decoded;
+      if (decoded.endsWith(".html") || decoded.includes(".html?")) return "/" + decoded.replace(/^\/+/, "");
+      return null;
+    }
+
+    const NEXT_URL = getNextUrl();
+
+
         function renderLoggedOut() {
   app.innerHTML = `
     <div style="font-weight:900;">Login</div>
@@ -110,7 +129,7 @@ if (error) {
 } else {
   status.textContent = "Logged in ✅ Redirecting…";
   setTimeout(() => {
-    window.location.href = "index.html";
+    window.location.href = (NEXT_URL || "/account.html");
   }, 500);
 }
 
@@ -209,7 +228,7 @@ if (error) {
         email,
         password,
         options: {
-          emailRedirectTo: window.location.origin + "/index.html",
+          emailRedirectTo: window.location.origin + (NEXT_URL || "/account.html"),
         },
       });
 
@@ -226,6 +245,13 @@ if (error) {
 
 
 function renderLoggedIn(email) {
+
+  // Already signed in: take user back to where they wanted to go
+  if (NEXT_URL) {
+    window.location.href = NEXT_URL;
+    return;
+  }
+
   app.innerHTML = `
     <div style="font-weight:900;">My Account</div>
     <div class="small" style="margin-top:6px;">Signed in as ${email}</div>
