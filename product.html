@@ -64,6 +64,7 @@
               </div>
 
               <button id="addBtn" class="btn pd-add">Add to cart</button>
+              <button id="wishBtn" type="button" class="btn secondary pd-wish">♡ Wishlist</button>
               <a class="btn secondary pd-go" href="cart.html">Go to cart</a>
             </div>
 
@@ -344,7 +345,92 @@
       } else {
         addBtn.addEventListener("click", () => {
           const qty = getQty();
-          addToCart({ ...data, image_url: main }, qty);
+          addToC
+
+// ===== Wishlist (requires login) =====
+const wishBtn = document.getElementById("wishBtn");
+
+async function syncWishlistButton() {
+  if (!wishBtn) return;
+
+  const { data: sess } = await supabase.auth.getSession();
+  const user = sess?.session?.user;
+
+  // Not logged in: show normal button
+  if (!user) {
+    wishBtn.textContent = "♡ Wishlist";
+    wishBtn.dataset.inWishlist = "0";
+    return;
+  }
+
+  const { data: wRow, error: wErr } = await supabase
+    .from("wishlist_items")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("product_id", data.id)
+    .maybeSingle();
+
+  if (wErr) {
+    // If wishlist table not set up yet, don't block the page
+    console.warn("Wishlist check failed:", wErr.message);
+    wishBtn.textContent = "♡ Wishlist";
+    wishBtn.dataset.inWishlist = "0";
+    return;
+  }
+
+  if (wRow?.id) {
+    wishBtn.textContent = "♥ In wishlist";
+    wishBtn.dataset.inWishlist = "1";
+  } else {
+    wishBtn.textContent = "♡ Wishlist";
+    wishBtn.dataset.inWishlist = "0";
+  }
+}
+
+if (wishBtn) {
+  wishBtn.addEventListener("click", async () => {
+    const { data: sess } = await supabase.auth.getSession();
+    const user = sess?.session?.user;
+
+    if (!user) {
+      // Send them to login, then they can come back
+      const next = encodeURIComponent(location.pathname + location.search);
+      location.href = `login.html?next=${next}`;
+      return;
+    }
+
+    const inWishlist = wishBtn.dataset.inWishlist === "1";
+
+    if (inWishlist) {
+      const { error: delErr } = await supabase
+        .from("wishlist_items")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("product_id", data.id);
+
+      if (delErr) {
+        alert("Could not remove from wishlist. Please try again.");
+        console.error(delErr);
+        return;
+      }
+    } else {
+      const { error: insErr } = await supabase
+        .from("wishlist_items")
+        .insert({ user_id: user.id, product_id: data.id });
+
+      if (insErr) {
+        // Unique violation means it's already there; just sync UI
+        console.warn(insErr);
+      }
+    }
+
+    await syncWishlistButton();
+  });
+
+  // initial state
+  await syncWishlistButton();
+}
+art({ ...data, image_url: main }, qty);
           location.href = "cart.html";
         });
       }
