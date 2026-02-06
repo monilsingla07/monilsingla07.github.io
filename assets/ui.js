@@ -199,6 +199,16 @@ export function renderFooter() {
 }
 
 let _authHeaderListenerSet = false;
+
+let _headerOffsetListenerSet = false;
+
+function applyHeaderOffset(){
+  const wrap = document.querySelector(\".site-header-wrap\");
+  if (!wrap) return;
+  const h = Math.ceil(wrap.getBoundingClientRect().height);
+  if (h > 0) document.documentElement.style.setProperty(\"--header-offset\", `${h}px`);
+}
+
 let _menuInitDone = false;
 
 function initMobileMenu() {
@@ -296,7 +306,18 @@ export async function hydrateHeaderAuth() {
   // Set up mobile menu interactions once (header exists on all pages)
   initMobileMenu();
 
-  const aDesktop = document.getElementById("accountLink");
+  
+  // Header is fixed; set correct page offset so content starts below it
+  applyHeaderOffset();
+  if (!_headerOffsetListenerSet) {
+    _headerOffsetListenerSet = true;
+    window.addEventListener(\"resize\", () => applyHeaderOffset());
+    window.addEventListener(\"orientationchange\", () => applyHeaderOffset());
+    // Re-check after the browser has laid out the injected header
+    requestAnimationFrame(() => applyHeaderOffset());
+    setTimeout(() => applyHeaderOffset(), 150);
+  }
+const aDesktop = document.getElementById("accountLink");
   const aMobile = document.getElementById("accountLinkMobile");
 
   if (!aDesktop && !aMobile) return;
@@ -312,6 +333,8 @@ export async function hydrateHeaderAuth() {
   if (aMobile) {
     aMobile.href = loggedIn ? "account.html" : "login.html";
   }
+  // In case header height changed (fonts/login text), update again
+  applyHeaderOffset();
 
 
   // Keep it updated automatically after login/logout without page refresh
