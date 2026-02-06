@@ -13,11 +13,21 @@
 
 body { font-family: system-ui, Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
 
-/* Keep header visible on scroll (Nalli-like) */
+/* Keep header visible on scroll (Nalli-like)
+   - Mobile: sticky
+   - Desktop: fixed (always visible while scrolling)
+*/
 .site-header-wrap{
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  width: 100%;
+  z-index: 1000;
+}
+
+@media (max-width: 768px){
+  .site-header-wrap{ position: sticky; top: 0; }
+}
+
+@media (min-width: 769px){
+  .site-header-wrap{ position: fixed; top: 0; left: 0; }
 }
 
 body.no-scroll{ overflow: hidden; }
@@ -130,11 +140,8 @@ color: #ffffff;
 
 hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
 
-/* Prevent layout shift: reserve space for header that is injected via JS */
-#header { min-height: 140px; background: #fff; }
-@media (max-width: 768px){
-  #header { min-height: 110px; }
-}
+/* Header spacer (JS will set height on desktop when header is fixed) */
+#header { min-height: 0; background: transparent; }
 
 
 

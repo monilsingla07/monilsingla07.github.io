@@ -200,6 +200,23 @@ export function renderFooter() {
 
 let _authHeaderListenerSet = false;
 let _menuInitDone = false;
+let _headerSpacerInit = false;
+
+function syncHeaderSpacer() {
+  const spacer = document.getElementById("header");
+  const wrap = document.querySelector(".site-header-wrap");
+  if (!spacer || !wrap) return;
+
+  // Desktop: header is fixed, so we need a spacer to prevent content hiding underneath.
+  // Mobile: header is sticky/in-flow, so spacer should be auto.
+  const desktop = window.matchMedia("(min-width: 769px)").matches;
+
+  if (desktop) {
+    spacer.style.height = wrap.offsetHeight + "px";
+  } else {
+    spacer.style.height = "auto";
+  }
+}
 
 function initMobileMenu() {
   const drawer = document.getElementById("mobileDrawer");
@@ -295,6 +312,15 @@ function iconClose() {
 export async function hydrateHeaderAuth() {
   // Set up mobile menu interactions once (header exists on all pages)
   initMobileMenu();
+
+  // Keep the desktop header "fixed" without covering the page content
+  syncHeaderSpacer();
+  if (!_headerSpacerInit) {
+    _headerSpacerInit = true;
+    window.addEventListener("resize", () => {
+      syncHeaderSpacer();
+    });
+  }
 
   const aDesktop = document.getElementById("accountLink");
   const aMobile = document.getElementById("accountLinkMobile");
