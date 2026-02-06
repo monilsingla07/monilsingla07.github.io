@@ -199,24 +199,17 @@ export function renderFooter() {
 }
 
 let _authHeaderListenerSet = false;
-let _menuInitDone = false;
-let _headerSpacerInit = false;
 
-function syncHeaderSpacer() {
-  const spacer = document.getElementById("header");
+let _headerOffsetListenerSet = false;
+
+function applyHeaderOffset(){
   const wrap = document.querySelector(".site-header-wrap");
-  if (!spacer || !wrap) return;
-
-  // Desktop: header is fixed, so we need a spacer to prevent content hiding underneath.
-  // Mobile: header is sticky/in-flow, so spacer should be auto.
-  const desktop = window.matchMedia("(min-width: 769px)").matches;
-
-  if (desktop) {
-    spacer.style.height = wrap.offsetHeight + "px";
-  } else {
-    spacer.style.height = "auto";
-  }
+  if (!wrap) return;
+  const h = Math.ceil(wrap.getBoundingClientRect().height);
+  if (h > 0) document.documentElement.style.setProperty("--header-offset", `${h}px`);
 }
+
+let _menuInitDone = false;
 
 function initMobileMenu() {
   const drawer = document.getElementById("mobileDrawer");
@@ -313,16 +306,18 @@ export async function hydrateHeaderAuth() {
   // Set up mobile menu interactions once (header exists on all pages)
   initMobileMenu();
 
-  // Keep the desktop header "fixed" without covering the page content
-  syncHeaderSpacer();
-  if (!_headerSpacerInit) {
-    _headerSpacerInit = true;
-    window.addEventListener("resize", () => {
-      syncHeaderSpacer();
-    });
+  
+  // Header is fixed; set correct page offset so content starts below it
+  applyHeaderOffset();
+  if (!_headerOffsetListenerSet) {
+    _headerOffsetListenerSet = true;
+    window.addEventListener("resize", () => applyHeaderOffset());
+    window.addEventListener("orientationchange", () => applyHeaderOffset());
+    // Re-check after the browser has laid out the injected header
+    requestAnimationFrame(() => applyHeaderOffset());
+    setTimeout(() => applyHeaderOffset(), 150);
   }
-
-  const aDesktop = document.getElementById("accountLink");
+const aDesktop = document.getElementById("accountLink");
   const aMobile = document.getElementById("accountLinkMobile");
 
   if (!aDesktop && !aMobile) return;
@@ -338,6 +333,8 @@ export async function hydrateHeaderAuth() {
   if (aMobile) {
     aMobile.href = loggedIn ? "account.html" : "login.html";
   }
+  // In case header height changed (fonts/login text), update again
+  applyHeaderOffset();
 
 
   // Keep it updated automatically after login/logout without page refresh
