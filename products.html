@@ -2,14 +2,14 @@
 <html>
 <head>
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);} 
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
 
-  gtag('config', 'G-CKQ1EXBHY6');
-</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Products — AhamStree</title>
@@ -18,16 +18,43 @@
 <body>
   <div id="header"></div>
 
- <div class="container">
-  <h2 id="pageTitle" style="margin-top:0;">Sarees</h2>
-  <div class="small">Click a product to view details</div>
-  <hr />
+  <div class="container">
+    <h2 id="pageTitle" style="margin-top:0;">Sarees</h2>
+    <div class="small">Click a product to view details</div>
 
-  <div class="products-layout">
-    <!-- LEFT: Filters -->
-    <aside class="filters card">
-      <div style="font-weight:900;margin-bottom:10px;">Filter</div>
+    <!-- Nalli-like toolbar row -->
+    <div class="listing-toolbar" style="margin-top:12px;">
+      <button id="openFilters" class="toolbar-btn" type="button">
+        <span class="toolbar-btn-icon" aria-hidden="true">☰</span>
+        <span>Show Filters</span>
+      </button>
 
+      <div id="itemsCount" class="toolbar-count small">&nbsp;</div>
+
+      <select id="sortBy" class="input toolbar-sort" aria-label="Sort">
+        <option value="newest">Newest</option>
+        <option value="mostLoved">Most loved</option>
+        <option value="priceLow">Price: Low to High</option>
+        <option value="priceHigh">Price: High to Low</option>
+      </select>
+    </div>
+
+    <hr />
+
+    <div id="status" class="small">Loading…</div>
+    <div id="grid" class="grid" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- Filter drawer (Nalli-like) -->
+  <div id="filterOverlay" class="drawer-overlay" aria-hidden="true"></div>
+
+  <aside id="filterDrawer" class="filter-drawer" aria-hidden="true" aria-label="Filter">
+    <div class="filter-drawer-head">
+      <div class="filter-drawer-title">Filter</div>
+      <button id="closeFilters" class="icon-btn" type="button" aria-label="Close filters">✕</button>
+    </div>
+
+    <div class="filter-drawer-body">
       <div class="filter-block">
         <div class="filter-title">Collection</div>
         <div id="collectionList" class="filter-list small">Loading…</div>
@@ -39,33 +66,20 @@
           <input id="minPrice" class="input" placeholder="Min" inputmode="numeric" />
           <input id="maxPrice" class="input" placeholder="Max" inputmode="numeric" />
         </div>
-        <button id="applyPrice" class="btn" style="margin-top:10px;width:100%;">Apply</button>
-      </div>
-
-      <div class="filter-block">
-        <div class="filter-title">Sort</div>
-        <select id="sortBy" class="input" style="width:100%;">
-          <option value="newest">Newest</option>
-          <option value="mostLoved">Most loved</option>
-          <option value="priceLow">Price: Low to High</option>
-          <option value="priceHigh">Price: High to Low</option>
-        </select>
+        <div class="small" style="margin-top:10px; opacity:.75;">Tip: leave blank to ignore.</div>
       </div>
 
       <button id="clearAll" class="btn secondary" style="margin-top:12px;width:100%;">Clear all</button>
-    </aside>
+    </div>
 
-    <!-- RIGHT: Products -->
-    <main>
-      <div id="status" class="small">Loading…</div>
-      <div id="grid" class="grid" style="margin-top:12px;"></div>
-    </main>
-  </div>
-</div>
+    <div class="filter-drawer-foot">
+      <button id="applyFilters" class="btn" style="width:100%;">See items</button>
+    </div>
+  </aside>
 
 
   <div id="footer"></div>
- 
+
 <script type="module">
   import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
   import { supabase } from "/assets/supabase.js";
@@ -76,19 +90,19 @@
 
   const status = document.getElementById("status");
   const grid = document.getElementById("grid");
+  const itemsCount = document.getElementById("itemsCount");
+  const applyFiltersBtn = document.getElementById("applyFilters");
 
   const url = new URL(location.href);
   const params = url.searchParams;
 
-function numOrNull(v) {
-  if (v === null || v === undefined) return null;
-  const s = String(v).trim();
-  if (s === "") return null;
-
-  const n = Number(s);
-  return Number.isFinite(n) ? n : null;
-}
-
+  function numOrNull(v) {
+    if (v === null || v === undefined) return null;
+    const s = String(v).trim();
+    if (s === "") return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
 
   function setParam(k, v){
     if (v === null || v === undefined || v === "") params.delete(k);
@@ -101,6 +115,33 @@ function numOrNull(v) {
     if (!Number.isFinite(n)) return "";
     return "₹" + n.toLocaleString("en-IN");
   }
+
+  // ===== Drawer open/close (Nalli-like) =====
+  const overlay = document.getElementById("filterOverlay");
+  const drawer = document.getElementById("filterDrawer");
+  const openBtn = document.getElementById("openFilters");
+  const closeBtn = document.getElementById("closeFilters");
+
+  function openDrawer(){
+    overlay.classList.add("open");
+    drawer.classList.add("open");
+    overlay.setAttribute("aria-hidden", "false");
+    drawer.setAttribute("aria-hidden", "false");
+    document.body.classList.add("no-scroll");
+  }
+
+  function closeDrawer(){
+    overlay.classList.remove("open");
+    drawer.classList.remove("open");
+    overlay.setAttribute("aria-hidden", "true");
+    drawer.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("no-scroll");
+  }
+
+  openBtn.addEventListener("click", openDrawer);
+  closeBtn.addEventListener("click", closeDrawer);
+  overlay.addEventListener("click", closeDrawer);
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
 
   async function loadCollections(){
     const box = document.getElementById("collectionList");
@@ -118,33 +159,26 @@ function numOrNull(v) {
     }
 
     box.innerHTML = `
-      <label style="display:flex;gap:8px;align-items:center;">
+      <label class="filter-option">
         <input type="radio" name="col" value="" ${selected ? "" : "checked"} />
         <span>All</span>
       </label>
     ` + (data ?? []).map(c => `
-      <label style="display:flex;gap:8px;align-items:center;">
+      <label class="filter-option">
         <input type="radio" name="col" value="${c.slug}" ${c.slug === selected ? "checked" : ""} />
         <span>${c.name}</span>
       </label>
     `).join("");
 
+    // Nalli-like: changes are applied when user taps "See items"
     Array.from(box.querySelectorAll("input[name='col']")).forEach(r => {
       r.addEventListener("change", () => {
         setParam("collection", r.value);
-        loadProducts();
       });
     });
   }
 
   async function loadProducts(){
-    console.log("DEBUG params", {
-  collection: params.get("collection"),
-  min: params.get("min"),
-  max: params.get("max"),
-  sort: params.get("sort")
-});
-
     status.textContent = "Loading…";
     grid.innerHTML = "";
 
@@ -156,7 +190,6 @@ function numOrNull(v) {
     let productIds = null;
 
     if (selectedSlug){
-      // Find collection id
       const { data: col, error: colErr } = await supabase
         .from("collections")
         .select("id,name")
@@ -170,7 +203,6 @@ function numOrNull(v) {
 
       document.getElementById("pageTitle").textContent = col.name;
 
-      // Fetch product ids in that collection
       const { data: links, error: linkErr } = await supabase
         .from("collection_products")
         .select("product_id")
@@ -185,10 +217,17 @@ function numOrNull(v) {
 
       if (productIds.length === 0){
         status.textContent = "No products in this collection yet.";
+        itemsCount.textContent = "0 items";
+        applyFiltersBtn.textContent = "See items";
         return;
       }
     } else {
       document.getElementById("pageTitle").textContent = "Sarees";
+    }
+
+    if (min !== null && max !== null && min > max) {
+      status.textContent = "Min price cannot be greater than Max price.";
+      return;
     }
 
     let query = supabase
@@ -196,45 +235,39 @@ function numOrNull(v) {
       .select("id,title,price_inr,inventory_qty,is_active,created_at,view_count, product_images(image_url, sort_order)")
       .eq("is_active", true);
 
-    // Apply collection product ids
     if (productIds) query = query.in("id", productIds);
-
-    // Price filter
     if (min !== null) query = query.gte("price_inr", min);
     if (max !== null) query = query.lte("price_inr", max);
-    if (min !== null && max !== null && min > max) {
-  status.textContent = "Min price cannot be greater than Max price.";
-  return;
-}
 
-    // Sorting
     if (sort === "mostLoved") query = query.order("view_count", { ascending: false }).order("created_at", { ascending: false });
     else if (sort === "priceLow") query = query.order("price_inr", { ascending: true });
     else if (sort === "priceHigh") query = query.order("price_inr", { ascending: false });
     else query = query.order("created_at", { ascending: false });
 
     const { data, error } = await query;
-console.log("DEBUG products result", { error, rows: data?.length, sample: (data ?? [])[0] });
 
     if (error){
       status.textContent = "Error: " + error.message;
       return;
     }
 
-    status.textContent = "";
-
     const normalized = (data ?? []).map(p => {
       const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
       return { ...p, image_url: imgs[0]?.image_url ?? "" };
     });
-status.textContent = normalized.length ? "" : "No products found.";
+
+    status.textContent = normalized.length ? "" : "No products found.";
+
+    // Update Nalli-like counts / CTA
+    itemsCount.textContent = `${normalized.length} items`;
+    applyFiltersBtn.textContent = normalized.length ? `See ${normalized.length} items` : "See items";
 
     grid.innerHTML = normalized.map(p => `
-      <div class="card">
-        <a href="product.html?id=${encodeURIComponent(p.id)}" style="text-decoration:none;color:inherit;">
+      <div class="card product-card">
+        <a class="product-link" href="product.html?id=${encodeURIComponent(p.id)}">
           ${p.image_url ? `<img src="${p.image_url}" alt="${p.title}" loading="lazy">` : `<div style="height:280px;background:#fafafa;"></div>`}
           <div class="p">
-            <div style="font-weight:900;">${p.title}</div>
+            <div class="product-title">${p.title}</div>
             <div style="margin-top:6px;opacity:.85;">${moneyINR(p.price_inr)}</div>
             <div class="small" style="margin-top:6px;">
               ${p.inventory_qty > 0 ? `${p.inventory_qty} in stock` : "Sold out"}
@@ -245,30 +278,37 @@ status.textContent = normalized.length ? "" : "No products found.";
     `).join("");
   }
 
-  // Wire controls to URL params
+  // Init control values from URL
   document.getElementById("minPrice").value = params.get("min") || "";
   document.getElementById("maxPrice").value = params.get("max") || "";
   document.getElementById("sortBy").value = params.get("sort") || "newest";
 
-  document.getElementById("applyPrice").addEventListener("click", () => {
-    setParam("min", document.getElementById("minPrice").value.trim());
-    setParam("max", document.getElementById("maxPrice").value.trim());
-    loadProducts();
-  });
-
+  // Sort applies immediately (like Nalli)
   document.getElementById("sortBy").addEventListener("change", (e) => {
     setParam("sort", e.target.value);
     loadProducts();
   });
 
+  // Apply button applies price + refreshes products, then closes drawer
+  applyFiltersBtn.addEventListener("click", () => {
+    setParam("min", document.getElementById("minPrice").value.trim());
+    setParam("max", document.getElementById("maxPrice").value.trim());
+    loadProducts();
+    closeDrawer();
+  });
+
+  // Clear all resets everything
   document.getElementById("clearAll").addEventListener("click", () => {
     params.delete("collection"); params.delete("min"); params.delete("max"); params.delete("sort");
     history.replaceState({}, "", url.pathname);
+
     document.getElementById("minPrice").value = "";
     document.getElementById("maxPrice").value = "";
     document.getElementById("sortBy").value = "newest";
+
     loadCollections();
     loadProducts();
+    closeDrawer();
   });
 
   // Init
@@ -276,7 +316,5 @@ status.textContent = normalized.length ? "" : "No products found.";
   loadProducts();
 </script>
 
-  
 </body>
 </html>
-
