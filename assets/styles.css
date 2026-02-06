@@ -22,6 +22,140 @@ body { font-family: system-ui, Arial, sans-serif; margin: 0; background: var(--b
 
 body.no-scroll{ overflow: hidden; }
 
+/* =========================================
+   Products listing: Nalli-like toolbar + filter drawer
+   ========================================= */
+
+/* Toolbar row (Show Filters | count | sort) */
+.listing-toolbar{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toolbar-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.toolbar-btn:hover{ background: #f7f5f2; }
+
+.toolbar-btn-icon{ font-size: 16px; line-height: 1; }
+
+.toolbar-count{
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.listing-toolbar .toolbar-sort{
+  width: 220px;
+  max-width: 100%;
+}
+
+@media (max-width: 700px){
+  .listing-toolbar{
+    flex-wrap: wrap;
+  }
+
+  /* On mobile: sort becomes full width under the row */
+  .toolbar-count{ margin: 0; width: 100%; text-align: left; }
+  .listing-toolbar .toolbar-sort{ width: 100%; }
+}
+
+/* Drawer overlay */
+.drawer-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.40);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+  z-index: 9997;
+}
+
+.drawer-overlay.open{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Filter drawer panel */
+.filter-drawer{
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 360px;
+  max-width: 88vw;
+  background: #fff;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.22);
+  transform: translateX(-102%);
+  transition: transform 220ms ease;
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-drawer.open{ transform: translateX(0); }
+
+.filter-drawer-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.filter-drawer-title{ font-weight: 900; }
+
+.filter-drawer-body{
+  padding: 14px 16px;
+  overflow: auto;
+  flex: 1;
+}
+
+.filter-drawer-foot{
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
+
+/* Make the bottom CTA feel closer to Nalli */
+.filter-drawer-foot .btn{
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-weight: 800;
+}
+
+.filter-block{ margin-bottom: 14px; }
+.filter-title{ font-weight: 900; margin-bottom: 8px; }
+
+.filter-option{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.filter-option input{ margin: 0; }
+
+.price-row{
+  display: flex;
+  gap: 10px;
+}
+
+.price-row .input{ flex: 1; }
+
 header, footer { padding: 14px 16px; border-bottom: 1px solid var(--border); }
 footer { border-top: 1px solid var(--border); border-bottom: none; margin-top: 24px; }
 
