@@ -1,6 +1,5 @@
 /* assets/styles.css */
 :root{
-  --header-offset: 150px; /* updated dynamically by JS */
   --bg: #fbfaf8;          /* warm off-white */
   --surface: #ffffff;     /* card surfaces */
   --text: #1f1f1f;        /* soft charcoal */
@@ -12,7 +11,7 @@
 }
 
 
-body { font-family: system-ui, Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-top: var(--header-offset, 0px); }
+body { font-family: system-ui, Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
 
 /* Keep header visible on scroll (Nalli-like) */
 .site-header-wrap{
@@ -20,11 +19,13 @@ body { font-family: system-ui, Arial, sans-serif; margin: 0; background: var(--b
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1200;
-  background: #fff;
-  box-shadow: 0 8px 26px rgba(0,0,0,0.06);
+  z-index: 1000;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
+/* Page content should start below the fixed header */
+body{ padding-top: var(--header-offset, 120px); }
 
 body.no-scroll{ overflow: hidden; }
 
@@ -136,8 +137,13 @@ color: #ffffff;
 
 hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
 
-/* Header is fixed; body padding-top creates space */
-#header { min-height: 0; background: transparent; }
+/* Prevent layout shift: reserve space for header that is injected via JS */
+#header { min-height: 140px; background: #fff; }
+@media (max-width: 768px){
+  #header { min-height: 110px; }
+}
+
+
 
 /* Header logo sizing */
 .site-logo img {
@@ -222,7 +228,7 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
   inset: 0;
   background: rgba(0,0,0,0.38);
   display:none;
-  z-index: 1600;
+  z-index: 200;
 }
 .mobile-drawer.open{ display:block; }
 .mobile-drawer-panel{
@@ -925,108 +931,7 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
 .bullets { padding-left: 18px; margin: 0; }
 .bullets li { margin: 6px 0; }
 
-/* ===== Products listing toolbar + filter drawer (Nalli-like) ===== */
-.listing-toolbar{
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 12px;
-}
-.toolbar-btn{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid rgba(0,0,0,0.12);
-  border-radius: 12px;
-  background: #fff;
-  cursor: pointer;
-  font-weight: 900;
-}
-.toolbar-btn:hover{ background: #f2efea; }
-.toolbar-btn-icon{ font-size: 16px; line-height: 1; }
-.toolbar-count{ text-align: center; }
-.toolbar-sort{
-  min-width: 230px;
-  max-width: 320px;
-  justify-self: end;
-}
-
-@media (max-width: 820px){
-  .listing-toolbar{
-    grid-template-columns: 1fr;
-  }
-  .toolbar-count{ text-align: left; }
-  .toolbar-sort{
-    width: 100%;
-    max-width: none;
-  }
-}
-
-.drawer-overlay{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .18s ease;
-  z-index: 1400;
-}
-.drawer-overlay.open{
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.filter-drawer{
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100dvh;
-  width: 360px;
-  max-width: 86vw;
-  background: #fff;
-  transform: translateX(-105%);
-  transition: transform .22s ease;
-  z-index: 1500;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 18px 60px rgba(0,0,0,0.22);
-}
-.filter-drawer.open{ transform: translateX(0); }
-
-.filter-drawer-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  padding: 14px 14px;
-  border-bottom: 1px solid var(--border);
-  background: #fff;
-}
-.filter-drawer-title{ font-weight: 900; }
-.filter-drawer-body{
-  padding: 14px;
-  overflow: auto;
-  flex: 1 1 auto;
-}
-.filter-drawer-foot{
-  padding: 12px 14px;
-  border-top: 1px solid var(--border);
-  background: #fff;
-}
-
-.filter-option{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding: 10px 8px;
-  border-radius: 12px;
-  cursor:pointer;
-}
-.filter-option:hover{ background: #f2efea; }
-.filter-option input{ margin: 0; }
-
-.products-layout{
+..products-layout{
   display:grid;
   grid-template-columns: 260px 1fr;
   gap: 14px;
@@ -1059,7 +964,7 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
 }
 
 @media (max-width: 900px){
-  .products-layout{ grid-template-columns: 1fr; }
+  ..products-layout{ grid-template-columns: 1fr; }
   .filters{ position: relative; top: 0; }
 }
 
@@ -1126,3 +1031,131 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
   .btn { width: 100%; }
 }
 
+
+
+
+/* === Products toolbar + filter drawer (Nalli-like) === */
+.listing-toolbar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toolbar-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.toolbar-btn-icon{
+  display: inline-block;
+  line-height: 1;
+  font-size: 16px;
+}
+
+.toolbar-count{
+  flex: 1 1 auto;
+  text-align: center;
+  white-space: nowrap;
+  opacity: .8;
+}
+
+.toolbar-sort{
+  width: auto;
+  min-width: 180px;
+  max-width: 260px;
+}
+
+@media (max-width: 700px){
+  .listing-toolbar{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .toolbar-count{
+    grid-column: 1 / -1;
+    text-align: left;
+    padding-left: 2px;
+  }
+  .toolbar-sort{ min-width: 0; max-width: none; width: 100%; }
+}
+
+/* Overlay behind drawer */
+.drawer-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+  z-index: 1100;
+}
+.drawer-overlay.open{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Drawer itself */
+.filter-drawer{
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 380px;
+  max-width: 90vw;
+  background: #fff;
+  transform: translateX(-105%);
+  transition: transform .25s ease;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 28px rgba(0,0,0,0.20);
+}
+.filter-drawer.open{
+  transform: translateX(0);
+}
+
+.filter-drawer-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.filter-drawer-title{
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.filter-drawer-body{
+  padding: 14px 16px;
+  overflow: auto;
+  flex: 1 1 auto;
+}
+
+.filter-drawer-foot{
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
+
+.filter-option{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+.filter-option input{ margin: 0; }
+
+/* Make sure drawer UI doesn't get hidden behind fixed header */
+@media (min-width: 1px){
+  .drawer-overlay, .filter-drawer{ top: 0; }
+}

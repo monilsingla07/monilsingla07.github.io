@@ -3,6 +3,32 @@ import { cartCount } from "./cart.js";
 import { supabase } from "./supabase.js";
 
 
+// Keeps body content from sliding under the fixed header
+let _headerOffsetInitDone = false;
+function updateHeaderOffset(){
+  const wrap = document.querySelector(".site-header-wrap");
+  if (!wrap) return;
+  const h = Math.ceil(wrap.getBoundingClientRect().height);
+  document.documentElement.style.setProperty("--header-offset", h + "px");
+}
+function initHeaderOffset(){
+  if (_headerOffsetInitDone) return;
+  _headerOffsetInitDone = true;
+
+  const run = () => {
+    updateHeaderOffset();
+    // run again after layout settles (fonts/images)
+    requestAnimationFrame(updateHeaderOffset);
+  };
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
+  else run();
+
+  window.addEventListener("resize", updateHeaderOffset);
+}
+
+
+
 
 export function renderHeader(active = "") {
   const count = cartCount();
@@ -199,16 +225,6 @@ export function renderFooter() {
 }
 
 let _authHeaderListenerSet = false;
-
-let _headerOffsetListenerSet = false;
-
-function applyHeaderOffset(){
-  const wrap = document.querySelector(".site-header-wrap");
-  if (!wrap) return;
-  const h = Math.ceil(wrap.getBoundingClientRect().height);
-  if (h > 0) document.documentElement.style.setProperty("--header-offset", `${h}px`);
-}
-
 let _menuInitDone = false;
 
 function initMobileMenu() {
@@ -305,19 +321,9 @@ function iconClose() {
 export async function hydrateHeaderAuth() {
   // Set up mobile menu interactions once (header exists on all pages)
   initMobileMenu();
+  initHeaderOffset();
 
-  
-  // Header is fixed; set correct page offset so content starts below it
-  applyHeaderOffset();
-  if (!_headerOffsetListenerSet) {
-    _headerOffsetListenerSet = true;
-    window.addEventListener("resize", () => applyHeaderOffset());
-    window.addEventListener("orientationchange", () => applyHeaderOffset());
-    // Re-check after the browser has laid out the injected header
-    requestAnimationFrame(() => applyHeaderOffset());
-    setTimeout(() => applyHeaderOffset(), 150);
-  }
-const aDesktop = document.getElementById("accountLink");
+  const aDesktop = document.getElementById("accountLink");
   const aMobile = document.getElementById("accountLinkMobile");
 
   if (!aDesktop && !aMobile) return;
@@ -333,8 +339,6 @@ const aDesktop = document.getElementById("accountLink");
   if (aMobile) {
     aMobile.href = loggedIn ? "account.html" : "login.html";
   }
-  // In case header height changed (fonts/login text), update again
-  applyHeaderOffset();
 
 
   // Keep it updated automatically after login/logout without page refresh
