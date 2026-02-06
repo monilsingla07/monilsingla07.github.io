@@ -203,10 +203,10 @@ let _authHeaderListenerSet = false;
 let _headerOffsetListenerSet = false;
 
 function applyHeaderOffset(){
-  const wrap = document.querySelector(\".site-header-wrap\");
+  const wrap = document.querySelector(".site-header-wrap");
   if (!wrap) return;
   const h = Math.ceil(wrap.getBoundingClientRect().height);
-  if (h > 0) document.documentElement.style.setProperty(\"--header-offset\", `${h}px`);
+  if (h > 0) document.documentElement.style.setProperty("--header-offset", `${h}px`);
 }
 
 let _menuInitDone = false;
@@ -311,8 +311,8 @@ export async function hydrateHeaderAuth() {
   applyHeaderOffset();
   if (!_headerOffsetListenerSet) {
     _headerOffsetListenerSet = true;
-    window.addEventListener(\"resize\", () => applyHeaderOffset());
-    window.addEventListener(\"orientationchange\", () => applyHeaderOffset());
+    window.addEventListener("resize", () => applyHeaderOffset());
+    window.addEventListener("orientationchange", () => applyHeaderOffset());
     // Re-check after the browser has laid out the injected header
     requestAnimationFrame(() => applyHeaderOffset());
     setTimeout(() => applyHeaderOffset(), 150);

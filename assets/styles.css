@@ -925,7 +925,7 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
 .bullets { padding-left: 18px; margin: 0; }
 .bullets li { margin: 6px 0; }
 
-./* ===== Products listing toolbar + filter drawer (Nalli-like) ===== */
+/* ===== Products listing toolbar + filter drawer (Nalli-like) ===== */
 .listing-toolbar{
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -1026,7 +1026,7 @@ hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
 .filter-option:hover{ background: #f2efea; }
 .filter-option input{ margin: 0; }
 
-products-layout{
+.products-layout{
   display:grid;
   grid-template-columns: 260px 1fr;
   gap: 14px;
