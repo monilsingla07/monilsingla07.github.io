@@ -5,7 +5,7 @@
   --text: #1f1f1f;        /* soft charcoal */
   --muted: rgba(31,31,31,.72);
   --border: #e9e6e1;      /* warm border */
-
+--header-offset: 120px;
   --brand: #6e2236;       /* deep wine (primary CTA) */
   --brand-hover: #812a41; /* hover wine */
 }
@@ -137,11 +137,8 @@ color: #ffffff;
 
 hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
 
-/* Prevent layout shift: reserve space for header that is injected via JS */
-#header { min-height: 140px; background: #fff; }
-@media (max-width: 768px){
-  #header { min-height: 110px; }
-}
+/* Header is fixed, so don't reserve extra space here */
+#header { min-height: 0 !important; background: transparent; }
 
 
 
