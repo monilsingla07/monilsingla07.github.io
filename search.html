@@ -1,109 +1,171 @@
 <!doctype html>
 <html>
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-CKQ1EXBHY6');
-</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Search — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .search-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 16px;
+    }
+    
+    .search-box {
+      position: relative;
+      margin-bottom: 32px;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 16px 20px;
+      font-size: 18px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 0.2s ease;
+      font-family: var(--font-body);
+    }
+    
+    .search-input:focus {
+      border-color: var(--brand);
+    }
+    
+    .search-icon {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+    }
+    
+    .search-status {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-light);
+    }
+    
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+      margin-top: 32px;
+    }
+    
+    @media (max-width: 768px) {
+      .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+  </style>
 </head>
+
 <body>
   <div id="header"></div>
 
-  <div class="container">
-    <div class="card" style="padding:22px;border-radius:18px;">
-      <h2 style="margin-top:0;">Search</h2>
-      <p class="small" style="max-width:72ch;">Search page placeholder. Add a search box and query Supabase by product title/description.</p>
-      <div style="margin-top:12px;"><input id="q" placeholder="Search products…" style="width:100%;max-width:480px;padding:12px;border-radius:12px;border:1px solid #eee;" /><div id="results" style="margin-top:12px;"></div></div>
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <a class="btn" href="products.html">Browse Sarees</a>
-        <a class="btn ghost" href="cart.html">Go to Cart</a>
-        <a class="btn ghost" href="index.html">Home</a>
-      </div>
+  <div class="search-container">
+    <h1 style="font-size: 32px; margin-bottom: 8px;">Search Products</h1>
+    <p style="color: var(--text-light); margin-bottom: 24px;">
+      Find your perfect saree from our handloom collection
+    </p>
+
+    <div class="search-box">
+      <input 
+        type="text" 
+        id="searchInput" 
+        class="search-input" 
+        placeholder="Search for sarees, fabrics, colors..."
+        autofocus
+      />
+      <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
     </div>
+
+    <div id="searchStatus" class="search-status"></div>
+    <div id="searchResults" class="results-grid"></div>
   </div>
 
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
-    import { supabase } from "./assets/supabase.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
+    import { searchProducts, renderSearchResults } from "/assets/search.js";
 
-    document.getElementById("header").innerHTML = renderHeader("");
-    document.getElementById("footer").innerHTML = renderFooter();
+    // Render header and footer
+    document.getElementById("header").innerHTML = renderHeader();
     hydrateHeaderAuth();
+    document.getElementById("footer").innerHTML = renderFooter();
 
-    const q = document.getElementById("q");
-    const results = document.getElementById("results");
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const searchStatus = document.getElementById('searchStatus');
 
-    async function runSearch(term) {
-      const t = (term || "").trim();
-      if (!t) {
-        results.innerHTML = '<div class="small">Type to search products.</div>';
-        return;
-      }
+    let debounceTimer;
 
-      results.innerHTML = '<div class="small">Searching…</div>';
-
-      const { data, error } = await supabase
-        .from("products")
-        .select("id,title,price_inr,is_active, product_images(image_url, sort_order)")
-        .eq("is_active", true)
-        .ilike("title", `%${t}%`)
-        .order("created_at", { ascending: false })
-        .limit(24);
-
-      if (error) {
-        results.innerHTML = '<div class="small">Error: ' + error.message + "</div>";
-        return;
-      }
-
-      const normalized = (data || []).map(p => {
-        const imgs = (p.product_images || []).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
-        return { id: p.id, title: p.title, price_inr: p.price_inr, image_url: imgs[0]?.image_url || "" };
-      });
-
-      if (!normalized.length) {
-        results.innerHTML = '<div class="small">No results found.</div>';
-        return;
-      }
-
-      results.innerHTML = `
-        <div class="grid" style="margin-top:10px;">
-          ${normalized.map(p => `
-            <div class="card">
-              <a href="product.html?id=${encodeURIComponent(p.id)}" style="text-decoration:none;color:inherit;">
-                ${p.image_url ? `<img src="${p.image_url}" alt="${p.title}" loading="lazy">` : `<div style="height:280px;background:#fafafa;"></div>`}
-                <div class="p">
-                  <div style="font-weight:900;">${p.title}</div>
-                  <div style="margin-top:6px;opacity:.85;">₹${p.price_inr}</div>
-                </div>
-              </a>
-            </div>
-          `).join("")}
-        </div>
-      `;
+    // Get query from URL if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialQuery = urlParams.get('q');
+    if (initialQuery) {
+      searchInput.value = initialQuery;
+      performSearch(initialQuery);
     }
 
-    if (q) {
-      q.addEventListener("input", () => runSearch(q.value));
-      // auto-run if ?q=
-      const qp = new URLSearchParams(location.search);
-      const initial = qp.get("q") || "";
-      if (initial) { q.value = initial; runSearch(initial); }
-      else { runSearch(""); }
+    // Search when user types
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value;
+      
+      // Update URL
+      const url = new URL(window.location);
+      if (query) {
+        url.searchParams.set('q', query);
+      } else {
+        url.searchParams.delete('q');
+      }
+      window.history.replaceState({}, '', url);
+
+      // Debounce search
+      clearTimeout(debounceTimer);
+      
+      if (query.trim().length < 2) {
+        searchResults.innerHTML = '';
+        searchStatus.textContent = '';
+        return;
+      }
+
+      searchStatus.textContent = 'Searching...';
+      
+      debounceTimer = setTimeout(() => {
+        performSearch(query);
+      }, 300);
+    });
+
+    async function performSearch(query) {
+      try {
+        const { data: products, error } = await searchProducts(query);
+
+        if (error) {
+          searchStatus.textContent = 'Error searching. Please try again.';
+          searchResults.innerHTML = '';
+          return;
+        }
+
+        searchStatus.textContent = products.length > 0 
+          ? `Found ${products.length} product${products.length === 1 ? '' : 's'}`
+          : 'No products found';
+
+        searchResults.innerHTML = renderSearchResults(products);
+
+      } catch (err) {
+        console.error('Search error:', err);
+        searchStatus.textContent = 'Error searching. Please try again.';
+      }
     }
   </script>
 </body>
