@@ -1,150 +1,100 @@
 <!doctype html>
 <html>
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);} 
-    gtag('js', new Date());
-    gtag('config', 'G-CKQ1EXBHY6');
-  </script>
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Wishlist — AhamStree</title>
+  <title>My Wishlist — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
-
-  <style>
-    .wl-top { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start; }
-    .wl-actions { display:flex; gap:10px; flex-wrap:wrap; }
-    .wl-item { display:grid; grid-template-columns: 96px 1fr auto; gap: 12px; align-items:center; }
-    @media (max-width: 520px) { .wl-item { grid-template-columns: 72px 1fr; } .wl-item .wl-right { grid-column: 1 / -1; } }
-    .wl-img { width:96px; height:96px; border-radius:12px; overflow:hidden; background:#fafafa; border:1px solid #eee; }
-    .wl-img img { width:100%; height:100%; object-fit:cover; display:block; }
-  </style>
 </head>
 
 <body>
   <div id="header"></div>
 
-  <div class="container" style="max-width:980px;">
-    <div class="wl-top">
-      <div>
-        <h2 style="margin-top:0;">Wishlist</h2>
-        <div class="small" style="opacity:.75;">Items you saved for later</div>
-      </div>
-      <div class="wl-actions">
-        <a class="btn secondary" href="account.html">Account</a>
-        <a class="btn secondary" href="products.html">Continue shopping</a>
-      </div>
-    </div>
+  <div class="container" style="padding-top: 40px; padding-bottom: 40px;">
+    <h1 style="font-size: 32px; margin-bottom: 8px;">My Wishlist</h1>
+    <p style="color: var(--text-light); margin-bottom: 32px;">
+      Your saved sarees
+    </p>
 
-    <div id="status" class="small" style="margin-top:12px;">Loading…</div>
-    <div id="list" style="display:grid;gap:12px;margin-top:12px;"></div>
+    <div id="wishlistStatus" style="text-align: center; padding: 20px;"></div>
+    <div id="wishlistGrid" class="grid grid-3"></div>
   </div>
 
   <div id="footer"></div>
 
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
-    import { supabase } from "/assets/supabase.js";
+    import { getWishlist, removeFromWishlist } from "/assets/wishlist.js";
 
-    document.getElementById("header").innerHTML = renderHeader("account");
-    document.getElementById("footer").innerHTML = renderFooter();
+    document.getElementById("header").innerHTML = renderHeader();
     hydrateHeaderAuth();
+    document.getElementById("footer").innerHTML = renderFooter();
 
-    const status = document.getElementById("status");
-    const list = document.getElementById("list");
+    const wishlistGrid = document.getElementById('wishlistGrid');
+    const wishlistStatus = document.getElementById('wishlistStatus');
 
-    function moneyINR(v){
-      const n = Number(v);
-      if (!Number.isFinite(n)) return "";
-      return "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
-    }
+    // Load wishlist
+    loadWishlist();
 
-    function normalizeProducts(rows = []) {
-      return (rows ?? []).map(p => {
-        const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order ?? 0) - (b.sort_order ?? 0));
-        return { ...p, image_url: imgs[0]?.image_url ?? "" };
-      });
-    }
+    async function loadWishlist() {
+      wishlistStatus.textContent = 'Loading...';
 
-    function renderItem(row){
-      const p = row.products;
-      const img = p?.image_url ? `<img src="${p.image_url}" alt="${p.title ?? ""}" loading="lazy">` : "";
-      return `
-        <div class="card">
-          <div class="p" style="padding:14px;">
-            <div class="wl-item">
-              <a class="wl-img" href="product.html?id=${encodeURIComponent(p.id)}">${img}</a>
-              <div>
-                <div style="font-weight:900;">${p.title ?? ""}</div>
-                <div class="small" style="margin-top:6px;opacity:.85;">${moneyINR(p.price_inr)}</div>
-                <div class="small" style="margin-top:6px;opacity:.7;">Saved on ${new Date(row.created_at).toLocaleDateString("en-IN")}</div>
-              </div>
-              <div class="wl-right" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
-                <a class="btn secondary" href="product.html?id=${encodeURIComponent(p.id)}">View</a>
-                <button class="btn" data-remove="${row.id}" type="button">Remove</button>
-              </div>
-            </div>
+      const { data: products, error } = await getWishlist();
+
+      if (error) {
+        wishlistStatus.textContent = 'Error loading wishlist';
+        return;
+      }
+
+      wishlistStatus.textContent = '';
+
+      if (!products || products.length === 0) {
+        wishlistGrid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
+            <p style="font-size: 18px; color: var(--text-light); margin-bottom: 20px;">
+              Your wishlist is empty
+            </p>
+            <a href="products.html" class="btn">Browse Products</a>
+          </div>
+        `;
+        return;
+      }
+
+      wishlistGrid.innerHTML = products.map(product => `
+        <div class="card product-card">
+          <a href="product.html?id=${product.id}">
+            <img src="${product.images?.[0] || 'assets/images/placeholder.jpg'}" 
+                 alt="${product.name}"
+                 loading="lazy">
+          </a>
+          <div class="p">
+            <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit;">
+              <div class="product-title">${product.name}</div>
+              <div class="product-price">₹${product.price.toLocaleString('en-IN')}</div>
+            </a>
+            <button 
+              class="btn secondary" 
+              style="width: 100%; margin-top: 12px;"
+              onclick="removeItem(${product.id})">
+              Remove
+            </button>
           </div>
         </div>
-      `;
+      `).join('');
     }
 
-    async function removeItem(id){
-      status.textContent = "Removing…";
-      const { error } = await supabase.from("wishlist_items").delete().eq("id", id);
-      if (error) {
-        status.textContent = "Could not remove: " + error.message;
-        return;
+    // Make removeItem available globally
+    window.removeItem = async function(productId) {
+      if (!confirm('Remove this item from wishlist?')) return;
+
+      const { success } = await removeFromWishlist(productId);
+      if (success) {
+        loadWishlist();
       }
-      await loadWishlist();
-    }
-
-    async function loadWishlist(){
-      status.textContent = "Loading…";
-      list.innerHTML = "";
-
-      const { data: sess } = await supabase.auth.getSession();
-      const user = sess?.session?.user;
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
-
-      // wishlist_items -> products -> product_images
-      const { data, error } = await supabase
-        .from("wishlist_items")
-        .select("id,created_at, products(id,title,price_inr,is_active, product_images(image_url,sort_order))")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        status.textContent = "Could not load wishlist: " + error.message;
-        return;
-      }
-
-      const rows = (data ?? []).filter(r => r.products && r.products.is_active);
-      // Normalize images on nested products
-      for (const r of rows) {
-        const normalized = normalizeProducts([r.products]);
-        r.products = normalized[0];
-      }
-
-      status.textContent = rows.length ? "" : "Your wishlist is empty.";
-      list.innerHTML = rows.map(renderItem).join("");
-
-      Array.from(list.querySelectorAll("button[data-remove]"))
-        .forEach(btn => btn.addEventListener("click", () => removeItem(btn.dataset.remove)));
-    }
-
-    loadWishlist();
+    };
   </script>
 </body>
 </html>
