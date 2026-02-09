@@ -1,1 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Payment Cancelled — AhamStree</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
 
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="padding-top:30px; padding-bottom:30px;">
+    <div class="card" style="padding:22px;border-radius:18px;">
+      <h2 style="margin-top:0;">Payment cancelled</h2>
+      <p>Your payment was not completed. Your cart is still saved.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+        <a class="btn" href="cart.html">Back to Cart</a>
+        <a class="btn secondary" href="products.html">Continue Shopping</a>
+        <a class="btn secondary" href="index.html">Home</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    document.getElementById("header").innerHTML = renderHeader("");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+  </script>
+</body>
+</html>

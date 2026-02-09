@@ -26,10 +26,10 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
-    import { getWishlist, removeFromWishlist } from "/assets/wishlist.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { getWishlist, removeFromWishlist } from "./assets/wishlist.js";
 
-    document.getElementById("header").innerHTML = renderHeader();
+    document.getElementById("header").innerHTML = renderHeader("wishlist");
     hydrateHeaderAuth();
     document.getElementById("footer").innerHTML = renderFooter();
 
@@ -38,6 +38,12 @@
 
     // Load wishlist
     loadWishlist();
+
+    function moneyINR(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return "";
+      return "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
+    }
 
     async function loadWishlist() {
       wishlistStatus.textContent = 'Loading...';
@@ -63,38 +69,54 @@
         return;
       }
 
-      wishlistGrid.innerHTML = products.map(product => `
-        <div class="card product-card">
-          <a href="product.html?id=${product.id}">
-            <img src="${product.images?.[0] || 'assets/images/placeholder.jpg'}" 
-                 alt="${product.name}"
-                 loading="lazy">
-          </a>
-          <div class="p">
-            <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit;">
-              <div class="product-title">${product.name}</div>
-              <div class="product-price">₹${product.price.toLocaleString('en-IN')}</div>
+      wishlistGrid.innerHTML = products.map(product => {
+        const price = Number(product.price_inr || 0);
+        const sale = product.sale_price_inr === null || product.sale_price_inr === undefined
+          ? null
+          : Number(product.sale_price_inr || 0);
+
+        const showSale = Number.isFinite(sale) && sale > 0 && sale < price && Number.isFinite(price);
+        const priceHtml = showSale
+          ? `<span style="font-weight:900;">${moneyINR(sale)}</span> <span class="small" style="opacity:.7;text-decoration:line-through;">${moneyINR(price)}</span>`
+          : `<span style="font-weight:900;">${moneyINR(price)}</span>`;
+
+        const imgHtml = product.image_url
+          ? `<img src="${product.image_url}" alt="${product.title || 'Product'}" loading="lazy">`
+          : `<div style="height:260px;background:#fafafa;border-radius:12px;"></div>`;
+
+        return `
+          <div class="card product-card">
+            <a href="product.html?id=${encodeURIComponent(product.id)}" style="text-decoration:none;color:inherit;">
+              ${imgHtml}
             </a>
-            <button 
-              class="btn secondary" 
-              style="width: 100%; margin-top: 12px;"
-              onclick="removeItem(${product.id})">
-              Remove
-            </button>
+            <div class="p">
+              <a href="product.html?id=${encodeURIComponent(product.id)}" style="text-decoration: none; color: inherit;">
+                <div class="product-title">${product.title || ''}</div>
+                <div class="product-price" style="margin-top:6px;">${priceHtml}</div>
+              </a>
+              <button
+                class="btn secondary js-remove"
+                style="width: 100%; margin-top: 12px;"
+                data-id="${product.id}">
+                Remove
+              </button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
+
+      // Wire remove buttons
+      wishlistGrid.querySelectorAll('.js-remove').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const productId = btn.getAttribute('data-id');
+          if (!productId) return;
+          if (!confirm('Remove this item from wishlist?')) return;
+
+          const { success } = await removeFromWishlist(productId);
+          if (success) loadWishlist();
+        });
+      });
     }
-
-    // Make removeItem available globally
-    window.removeItem = async function(productId) {
-      if (!confirm('Remove this item from wishlist?')) return;
-
-      const { success } = await removeFromWishlist(productId);
-      if (success) {
-        loadWishlist();
-      }
-    };
   </script>
 </body>
 </html>

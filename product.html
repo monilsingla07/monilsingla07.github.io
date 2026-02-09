@@ -106,6 +106,7 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { addToCart } from "./assets/cart.js";
+    import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
 
     document.getElementById("header").innerHTML = renderHeader("products");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -354,80 +355,36 @@
         });
       }
 
-      // ===== Wishlist (requires login) =====
+      // ===== Wishlist =====
+      // NOTE: We use the shared wishlist helpers in assets/wishlist.js.
+      // This fixes the old mismatch where product.html used "wishlist_items"
+      // but the wishlist page used a different table.
       const wishBtn = document.getElementById("wishBtn");
 
       async function syncWishlistButton() {
         if (!wishBtn) return;
-
-        const { data: sess } = await supabase.auth.getSession();
-        const user = sess?.session?.user;
-
-        // Not logged in: show normal button
-        if (!user) {
-          wishBtn.textContent = "♡ Wishlist";
-          wishBtn.dataset.inWishlist = "0";
-          return;
-        }
-
-        const { data: wRow, error: wErr } = await supabase
-          .from("wishlist_items")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("product_id", data.id)
-          .maybeSingle();
-
-        if (wErr) {
-          console.warn("Wishlist check failed:", wErr.message);
-          wishBtn.textContent = "♡ Wishlist";
-          wishBtn.dataset.inWishlist = "0";
-          return;
-        }
-
-        if (wRow?.id) {
-          wishBtn.textContent = "♥ In wishlist";
-          wishBtn.dataset.inWishlist = "1";
-        } else {
-          wishBtn.textContent = "♡ Wishlist";
-          wishBtn.dataset.inWishlist = "0";
-        }
+        const inWish = await isInWishlist(data.id);
+        wishBtn.textContent = inWish ? "♥ In wishlist" : "♡ Wishlist";
+        wishBtn.dataset.inWishlist = inWish ? "1" : "0";
       }
 
       if (wishBtn) {
         wishBtn.addEventListener("click", async () => {
-          const { data: sess } = await supabase.auth.getSession();
-          const user = sess?.session?.user;
-
-          if (!user) {
-            const next = encodeURIComponent(location.pathname + location.search);
-            location.href = `login.html?next=${next}`;
-            return;
-          }
-
-          const inWishlist = wishBtn.dataset.inWishlist === "1";
-
-          if (inWishlist) {
-            const { error: delErr } = await supabase
-              .from("wishlist_items")
-              .delete()
-              .eq("user_id", user.id)
-              .eq("product_id", data.id);
-
-            if (delErr) {
+          const inWish = wishBtn.dataset.inWishlist === "1";
+          if (inWish) {
+            const res = await removeFromWishlist(data.id);
+            if (!res?.success) {
               alert("Could not remove from wishlist. Please try again.");
-              console.error(delErr);
-              return;
             }
           } else {
-            const { error: insErr } = await supabase
-              .from("wishlist_items")
-              .insert({ user_id: user.id, product_id: data.id });
-
-            if (insErr) {
-              console.warn(insErr);
+            const res = await addToWishlist(data.id);
+            if (!res?.success) {
+              // Duplicate is not a hard error; still refresh UI
+              if (res?.message && res.message !== "Already in wishlist") {
+                alert(res.message);
+              }
             }
           }
-
           await syncWishlistButton();
         });
 
