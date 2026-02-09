@@ -12,18 +12,22 @@ function updateHeaderOffset(){
   document.documentElement.style.setProperty("--header-offset", h + "px");
 }
 function initHeaderOffset(){
-  if (_headerOffsetInitDone) return;
-  _headerOffsetInitDone = true;
-
+  // Always run (important if the header HTML is re-rendered, e.g. cart page)
   const run = () => {
     updateHeaderOffset();
     // run again after layout settles (fonts/images)
     requestAnimationFrame(updateHeaderOffset);
   };
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
-  else run();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run, { once: true });
+  } else {
+    run();
+  }
 
+  // Add the resize listener only once
+  if (_headerOffsetInitDone) return;
+  _headerOffsetInitDone = true;
   window.addEventListener("resize", updateHeaderOffset);
 }
 
@@ -225,16 +229,27 @@ export function renderFooter() {
 }
 
 let _authHeaderListenerSet = false;
-let _menuInitDone = false;
+let _escListenerSet = false;
+
+function closeMobileDrawerIfOpen() {
+  const drawer = document.getElementById("mobileDrawer");
+  if (!drawer) return;
+  drawer.classList.remove("open");
+  drawer.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("no-scroll");
+}
 
 function initMobileMenu() {
   const drawer = document.getElementById("mobileDrawer");
   const openBtn = document.querySelector(".mobile-menu-btn");
   const closeBtn = document.querySelector(".mobile-drawer-close");
 
-  if (_menuInitDone) return;
   if (!drawer || !openBtn || !closeBtn) return;
-  _menuInitDone = true;
+
+  // Prevent double-binding for the same DOM instance.
+  // (We can't use a global flag because some pages re-render the header.)
+  if (drawer.dataset.menuInit === "1") return;
+  drawer.dataset.menuInit = "1";
 
   function open() {
     drawer.classList.add("open");
@@ -262,9 +277,13 @@ function initMobileMenu() {
   });
 
   // Close on ESC
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") close();
-  });
+  // Add a single ESC listener for the whole page (avoids duplicates when header re-renders)
+  if (!_escListenerSet) {
+    _escListenerSet = true;
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMobileDrawerIfOpen();
+    });
+  }
 }
 
 function iconHamburger() {

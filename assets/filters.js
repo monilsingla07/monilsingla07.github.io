@@ -5,14 +5,18 @@ import { supabase } from "./supabase.js";
  * Load products with filters
  */
 export async function loadFilteredProducts(filters = {}) {
-  let query = supabase.from('products').select('*');
+  // NOTE: match the schema used by products.html / product.html
+  let query = supabase
+    .from('products')
+    .select('id,title,price_inr,sale_price_inr,inventory_qty,is_active,created_at,fabric, product_images(image_url, sort_order)')
+    .eq('is_active', true);
 
   // Price range filter
   if (filters.minPrice) {
-    query = query.gte('price', filters.minPrice);
+    query = query.gte('price_inr', filters.minPrice);
   }
   if (filters.maxPrice) {
-    query = query.lte('price', filters.maxPrice);
+    query = query.lte('price_inr', filters.maxPrice);
   }
 
   // Fabric filter
@@ -22,19 +26,20 @@ export async function loadFilteredProducts(filters = {}) {
 
   // Availability filter
   if (filters.inStockOnly) {
-    query = query.eq('in_stock', true);
+    // inventory_qty > 0 means in stock
+    query = query.gt('inventory_qty', 0);
   }
 
   // Sorting
   switch (filters.sortBy) {
     case 'price_low':
-      query = query.order('price', { ascending: true });
+      query = query.order('price_inr', { ascending: true });
       break;
     case 'price_high':
-      query = query.order('price', { ascending: false });
+      query = query.order('price_inr', { ascending: false });
       break;
     case 'name':
-      query = query.order('name', { ascending: true });
+      query = query.order('title', { ascending: true });
       break;
     case 'newest':
     default:
