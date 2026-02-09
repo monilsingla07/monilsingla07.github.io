@@ -14,10 +14,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Products — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css" />
-  
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -65,6 +63,29 @@
         <div id="collectionList" class="filter-list small">Loading…</div>
       </div>
 
+      <!-- NEW: Fabric Type Filter -->
+      <div class="filter-block">
+        <div class="filter-title">Fabric Type</div>
+        <div class="filter-list">
+          <label class="filter-option">
+            <input type="checkbox" name="fabric" value="silk" />
+            <span>Silk</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" name="fabric" value="cotton" />
+            <span>Cotton</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" name="fabric" value="banarasi" />
+            <span>Banarasi</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" name="fabric" value="kanjivaram" />
+            <span>Kanjivaram</span>
+          </label>
+        </div>
+      </div>
+
       <div class="filter-block">
         <div class="filter-title">Price (₹)</div>
         <div class="price-row">
@@ -72,6 +93,15 @@
           <input id="maxPrice" class="input" placeholder="Max" inputmode="numeric" />
         </div>
         <div class="small" style="margin-top:10px; opacity:.75;">Tip: leave blank to ignore.</div>
+      </div>
+
+      <!-- NEW: In Stock Only Filter -->
+      <div class="filter-block">
+        <div class="filter-title">Availability</div>
+        <label class="filter-option">
+          <input type="checkbox" id="inStockOnly" />
+          <span>In Stock Only</span>
+        </label>
       </div>
 
       <button id="clearAll" class="btn secondary" style="margin-top:12px;width:100%;">Clear all</button>
@@ -193,6 +223,10 @@
     const min = numOrNull(params.get("min"));
     const max = numOrNull(params.get("max"));
     const sort = params.get("sort") || "newest";
+    
+    // NEW: Get fabric filters
+    const selectedFabrics = params.get("fabrics")?.split(',').filter(Boolean) || [];
+    const inStockOnly = params.get("inStock") === "true";
 
     let productIds = null;
 
@@ -239,12 +273,22 @@
 
     let query = supabase
       .from("products")
-      .select("id,title,price_inr,inventory_qty,is_active,created_at,view_count, product_images(image_url, sort_order)")
+      .select("id,title,price_inr,inventory_qty,is_active,created_at,view_count,fabric, product_images(image_url, sort_order)")
       .eq("is_active", true);
 
     if (productIds) query = query.in("id", productIds);
     if (min !== null) query = query.gte("price_inr", min);
     if (max !== null) query = query.lte("price_inr", max);
+    
+    // NEW: Apply fabric filters (if your database has a 'fabric' column)
+    if (selectedFabrics.length > 0) {
+      query = query.in("fabric", selectedFabrics);
+    }
+    
+    // NEW: Apply stock filter
+    if (inStockOnly) {
+      query = query.gt("inventory_qty", 0);
+    }
 
     if (sort === "mostLoved") query = query.order("view_count", { ascending: false }).order("created_at", { ascending: false });
     else if (sort === "priceLow") query = query.order("price_inr", { ascending: true });
@@ -289,6 +333,16 @@
   document.getElementById("minPrice").value = params.get("min") || "";
   document.getElementById("maxPrice").value = params.get("max") || "";
   document.getElementById("sortBy").value = params.get("sort") || "newest";
+  
+  // NEW: Init fabric checkboxes from URL
+  const savedFabrics = params.get("fabrics")?.split(',').filter(Boolean) || [];
+  savedFabrics.forEach(fabric => {
+    const checkbox = document.querySelector(`input[name="fabric"][value="${fabric}"]`);
+    if (checkbox) checkbox.checked = true;
+  });
+  
+  // NEW: Init stock checkbox from URL
+  document.getElementById("inStockOnly").checked = params.get("inStock") === "true";
 
   // Sort applies immediately (like Nalli)
   document.getElementById("sortBy").addEventListener("change", (e) => {
@@ -300,18 +354,38 @@
   applyFiltersBtn.addEventListener("click", () => {
     setParam("min", document.getElementById("minPrice").value.trim());
     setParam("max", document.getElementById("maxPrice").value.trim());
+    
+    // NEW: Save fabric selections
+    const fabricCheckboxes = document.querySelectorAll('input[name="fabric"]:checked');
+    const selectedFabrics = Array.from(fabricCheckboxes).map(cb => cb.value);
+    setParam("fabrics", selectedFabrics.join(','));
+    
+    // NEW: Save stock filter
+    setParam("inStock", document.getElementById("inStockOnly").checked ? "true" : "");
+    
     loadProducts();
     closeDrawer();
   });
 
   // Clear all resets everything
   document.getElementById("clearAll").addEventListener("click", () => {
-    params.delete("collection"); params.delete("min"); params.delete("max"); params.delete("sort");
+    params.delete("collection"); 
+    params.delete("min"); 
+    params.delete("max"); 
+    params.delete("sort");
+    params.delete("fabrics");  // NEW
+    params.delete("inStock");  // NEW
     history.replaceState({}, "", url.pathname);
 
     document.getElementById("minPrice").value = "";
     document.getElementById("maxPrice").value = "";
     document.getElementById("sortBy").value = "newest";
+    
+    // NEW: Clear fabric checkboxes
+    document.querySelectorAll('input[name="fabric"]').forEach(cb => cb.checked = false);
+    
+    // NEW: Clear stock checkbox
+    document.getElementById("inStockOnly").checked = false;
 
     loadCollections();
     loadProducts();
