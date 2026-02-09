@@ -1,0 +1,180 @@
+// assets/filters.js
+import { supabase } from "./supabase.js";
+
+/**
+ * Load products with filters
+ */
+export async function loadFilteredProducts(filters = {}) {
+  let query = supabase.from('products').select('*');
+
+  // Price range filter
+  if (filters.minPrice) {
+    query = query.gte('price', filters.minPrice);
+  }
+  if (filters.maxPrice) {
+    query = query.lte('price', filters.maxPrice);
+  }
+
+  // Fabric filter
+  if (filters.fabric && filters.fabric.length > 0) {
+    query = query.in('fabric', filters.fabric);
+  }
+
+  // Availability filter
+  if (filters.inStockOnly) {
+    query = query.eq('in_stock', true);
+  }
+
+  // Sorting
+  switch (filters.sortBy) {
+    case 'price_low':
+      query = query.order('price', { ascending: true });
+      break;
+    case 'price_high':
+      query = query.order('price', { ascending: false });
+      break;
+    case 'name':
+      query = query.order('name', { ascending: true });
+      break;
+    case 'newest':
+    default:
+      query = query.order('created_at', { ascending: false });
+      break;
+  }
+
+  const { data, error } = await query;
+  return { data: data || [], error };
+}
+
+/**
+ * Render filter drawer
+ */
+export function renderFilterDrawer() {
+  return `
+    <div class="filter-drawer-overlay" id="filterOverlay"></div>
+    <div class="filter-drawer" id="filterDrawer">
+      <div class="filter-drawer-head">
+        <div class="filter-drawer-title">Filters</div>
+        <button class="icon-btn" id="closeFilters" type="button">×</button>
+      </div>
+
+      <div class="filter-drawer-body">
+        <!-- Price Range -->
+        <div class="filter-block">
+          <div class="filter-title">Price Range</div>
+          <div class="price-row">
+            <input type="number" id="minPrice" class="input" placeholder="Min" />
+            <input type="number" id="maxPrice" class="input" placeholder="Max" />
+          </div>
+        </div>
+
+        <!-- Fabric Type -->
+        <div class="filter-block">
+          <div class="filter-title">Fabric Type</div>
+          <div class="filter-list">
+            <label class="filter-option">
+              <input type="checkbox" name="fabric" value="silk" />
+              <span>Silk</span>
+            </label>
+            <label class="filter-option">
+              <input type="checkbox" name="fabric" value="cotton" />
+              <span>Cotton</span>
+            </label>
+            <label class="filter-option">
+              <input type="checkbox" name="fabric" value="banarasi" />
+              <span>Banarasi</span>
+            </label>
+            <label class="filter-option">
+              <input type="checkbox" name="fabric" value="kanjivaram" />
+              <span>Kanjivaram</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Availability -->
+        <div class="filter-block">
+          <div class="filter-title">Availability</div>
+          <label class="filter-option">
+            <input type="checkbox" id="inStockOnly" />
+            <span>In Stock Only</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="filter-drawer-foot">
+        <button class="btn secondary" id="clearFilters" style="flex: 1;">Clear</button>
+        <button class="btn" id="applyFilters" style="flex: 1;">Apply</button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Initialize filter functionality
+ */
+export function initFilters(onApplyCallback) {
+  const overlay = document.getElementById('filterOverlay');
+  const drawer = document.getElementById('filterDrawer');
+  const closeBtn = document.getElementById('closeFilters');
+  const clearBtn = document.getElementById('clearFilters');
+  const applyBtn = document.getElementById('applyFilters');
+  const openBtn = document.getElementById('openFilters');
+
+  function openDrawer() {
+    overlay.classList.add('open');
+    drawer.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    overlay.classList.remove('open');
+    drawer.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function getFilters() {
+    const fabricCheckboxes = document.querySelectorAll('input[name="fabric"]:checked');
+    const fabric = Array.from(fabricCheckboxes).map(cb => cb.value);
+
+    return {
+      minPrice: parseInt(document.getElementById('minPrice').value) || null,
+      maxPrice: parseInt(document.getElementById('maxPrice').value) || null,
+      fabric: fabric,
+      inStockOnly: document.getElementById('inStockOnly').checked,
+      sortBy: document.getElementById('sortSelect')?.value || 'newest'
+    };
+  }
+
+  function clearFilters() {
+    document.getElementById('minPrice').value = '';
+    document.getElementById('maxPrice').value = '';
+    document.querySelectorAll('input[name="fabric"]').forEach(cb => cb.checked = false);
+    document.getElementById('inStockOnly').checked = false;
+  }
+
+  // Event listeners
+  if (openBtn) openBtn.addEventListener('click', openDrawer);
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  if (overlay) overlay.addEventListener('click', closeDrawer);
+  
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      clearFilters();
+      if (onApplyCallback) {
+        onApplyCallback(getFilters());
+      }
+      closeDrawer();
+    });
+  }
+
+  if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+      if (onApplyCallback) {
+        onApplyCallback(getFilters());
+      }
+      closeDrawer();
+    });
+  }
+
+  return { openDrawer, closeDrawer, getFilters, clearFilters };
+}
