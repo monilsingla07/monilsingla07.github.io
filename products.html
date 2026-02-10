@@ -273,7 +273,7 @@
 
     let query = supabase
       .from("products")
-      .select("id,title,price_inr,inventory_qty,is_active,created_at,view_count,fabric, product_images(image_url, sort_order)")
+      .select("id,title,price_inr,inventory_qty,is_active,created_at,view_count,product_images(image_url, sort_order)")
       .eq("is_active", true);
 
     if (productIds) query = query.in("id", productIds);
