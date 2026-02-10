@@ -46,7 +46,7 @@ export async function searchProducts(query) {
     )
     .eq("is_active", true)
     .or(
-      `title.ilike.%${term}%,description.ilike.%${term}%,fabric.ilike.%${term}%`
+      `title.ilike.%${term}%,description.ilike.%${term}%`
     )
     .order("created_at", { ascending: false })
     .limit(20);
