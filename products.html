@@ -280,10 +280,6 @@
     if (min !== null) query = query.gte("price_inr", min);
     if (max !== null) query = query.lte("price_inr", max);
     
-    // NEW: Apply fabric filters (if your database has a 'fabric' column)
-    if (selectedFabrics.length > 0) {
-      query = query.in("fabric", selectedFabrics);
-    }
     
     // NEW: Apply stock filter
     if (inStockOnly) {
