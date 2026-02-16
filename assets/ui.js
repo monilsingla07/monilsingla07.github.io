@@ -100,13 +100,9 @@ export function renderHeader(active = "") {
                 <a href="blogs.html">Blogs</a>
               </nav>
 
-              <div class="mobile-drawer-section">
-                <div class="mobile-drawer-section-title">Shop by</div>
-                <a href="products.html#silk">Silk</a>
-                <a href="products.html#cotton">Cotton</a>
-                <a href="products.html#cotton">Silk-Cotton</a>
-              </div>
-
+              
+              
+             
               <div class="mobile-drawer-section">
                 <div class="mobile-drawer-section-title">Help</div>
                 <a href="about.html">About</a>
@@ -142,13 +138,6 @@ export function renderHeader(active = "") {
     </header>
 
     <!-- Secondary category bar (optional, very Taneira-like feel) -->
-    <div class="subnav">
-      <div class="container subnav-inner">
-        <a href="products.html#silk">Silk</a>
-        <a href="products.html#cotton">Cotton</a>
-        <a href="products.html#cotton">Silk-Cotton</a>
-      </div>
-    </div>
     </div>
   `;
 }
