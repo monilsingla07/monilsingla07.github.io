@@ -391,15 +391,20 @@ hr { border: none; border-top: 1px solid var(--border-light); margin: 20px 0; }
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.45);
   display: none; z-index: 200;
-  backdrop-filter: blur(2px);
+  /* Force full visual viewport coverage: */
+  min-height: 100dvh; /* dvh = dynamic viewport height, accounts for browser chrome */
+  min-height: -webkit-fill-available;
 }
 .mobile-drawer.open { display: block; }
 .mobile-drawer-panel {
-  height: 100%; width: 84%; max-width: 340px;
-  background: var(--surface);
-  box-shadow: 0 24px 80px rgba(0,0,0,0.25);
-  padding: 16px;
-  overflow: auto;
+  height: 100dvh; /* same here */
+  min-height: -webkit-fill-available;
+  width: 84%; max-width: 340px;
+}
+body.no-scroll {
+  overflow: hidden;
+  position: fixed; /* required for iOS Safari to actually stop scroll */
+  width: 100%;
 }
 .mobile-drawer-head {
   display: flex; align-items: center; justify-content: space-between;
