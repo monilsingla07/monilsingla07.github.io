@@ -1,5 +1,6 @@
 // assets/search.js
 import { supabase } from "./supabase.js";
+import { escapeHtml, escapeAttr, safeSrc } from "./safe.js";
 
 /**
  * IMPORTANT
@@ -37,12 +38,17 @@ export async function searchProducts(query) {
   if (q.length < 2) return { data: [], error: null };
 
   // NOTE: We don't force lowercasing because Postgres ILIKE is already case-insensitive.
-  const term = q.replace(/%/g, ""); // basic safety: avoid accidental wildcard injection
+  // Basic safety:
+  // - avoid wildcard injection (%)
+  // - avoid breaking PostgREST OR syntax with commas/parentheses
+  const term = q.replace(/[%,()]/g, "");
 
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,title,description,price_inr,sale_price_inr,inventory_qty,is_active,fabric,created_at, product_images(image_url, sort_order)"
+      // NOTE: Your current schema does NOT have a `fabric` column.
+      // If you add it later, you can include it again.
+      "id,title,description,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
     )
     .eq("is_active", true)
     .or(
@@ -88,7 +94,7 @@ export function renderSearchResults(products) {
         : `<span style="font-weight:900;">${moneyINR(price)}</span>`;
 
       const imgHtml = p.image_url
-        ? `<img src="${p.image_url}" alt="${p.title || "Product"}" loading="lazy">`
+        ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title || "Product")}" loading="lazy">`
         : `<div style="height:260px;background:#fafafa;border-radius:12px;"></div>`;
 
       return `
@@ -97,10 +103,15 @@ export function renderSearchResults(products) {
         )}" class="card product-card" style="text-decoration:none;color:inherit;">
           ${imgHtml}
           <div class="p">
-            <div class="product-title">${p.title || ""}</div>
+            <div class="product-title">${escapeHtml(p.title || "")}</div>
             <div class="product-price" style="margin-top:6px;">${priceHtml}</div>
             <div class="small" style="margin-top:6px; opacity:.75;">
-              ${(Number(p.inventory_qty || 0) > 0) ? "In stock" : "Sold out"}
+              ${(() => {
+                const inv = Number(p.inventory_qty || 0);
+                const res = Number(p.reserved_qty || 0);
+                const avail = Math.max(0, inv - res);
+                return (avail > 0) ? "In stock" : "Sold out";
+              })()}
             </div>
           </div>
         </a>

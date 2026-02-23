@@ -8,7 +8,7 @@ export async function loadFilteredProducts(filters = {}) {
   // NOTE: match the schema used by products.html / product.html
   let query = supabase
     .from('products')
-    .select('id,title,price_inr,sale_price_inr,inventory_qty,is_active,created_at,product_images(image_url, sort_order)')
+    .select('id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,product_images(image_url, sort_order)')
     .eq('is_active', true);
 
   // Price range filter
@@ -69,29 +69,6 @@ export function renderFilterDrawer() {
           </div>
         </div>
 
-        <!-- Fabric Type -->
-        <div class="filter-block">
-          <div class="filter-title">Fabric Type</div>
-          <div class="filter-list">
-            <label class="filter-option">
-              <input type="checkbox" name="fabric" value="silk" />
-              <span>Silk</span>
-            </label>
-            <label class="filter-option">
-              <input type="checkbox" name="fabric" value="cotton" />
-              <span>Cotton</span>
-            </label>
-            <label class="filter-option">
-              <input type="checkbox" name="fabric" value="banarasi" />
-              <span>Banarasi</span>
-            </label>
-            <label class="filter-option">
-              <input type="checkbox" name="fabric" value="kanjivaram" />
-              <span>Kanjivaram</span>
-            </label>
-          </div>
-        </div>
-
         <!-- Availability -->
         <div class="filter-block">
           <div class="filter-title">Availability</div>
@@ -134,13 +111,9 @@ export function initFilters(onApplyCallback) {
   }
 
   function getFilters() {
-    const fabricCheckboxes = document.querySelectorAll('input[name="fabric"]:checked');
-    const fabric = Array.from(fabricCheckboxes).map(cb => cb.value);
-
     return {
       minPrice: parseInt(document.getElementById('minPrice').value) || null,
       maxPrice: parseInt(document.getElementById('maxPrice').value) || null,
-      fabric: fabric,
       inStockOnly: document.getElementById('inStockOnly').checked,
       sortBy: document.getElementById('sortSelect')?.value || 'newest'
     };
@@ -149,7 +122,6 @@ export function initFilters(onApplyCallback) {
   function clearFilters() {
     document.getElementById('minPrice').value = '';
     document.getElementById('maxPrice').value = '';
-    document.querySelectorAll('input[name="fabric"]').forEach(cb => cb.checked = false);
     document.getElementById('inStockOnly').checked = false;
   }
 
