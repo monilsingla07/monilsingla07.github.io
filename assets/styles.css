@@ -6,7 +6,7 @@
   /* Fonts */
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-heading: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-
+--header-offset: 120px; /* desktop default */
   /* Core palette — warm ivory luxury */
   --bg: #faf8f4;
   --bg-warm: #f5f0e8;
@@ -77,7 +77,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 img, video, canvas, svg { max-width: 100%; }
-
+@media (max-width: 820px) {
+  :root {
+    --header-offset: 86px; /* mobile default — JS will fine-tune */
+  }
+}
 /* ═══════════════════════════
    FIXED HEADER
 ═══════════════════════════ */
