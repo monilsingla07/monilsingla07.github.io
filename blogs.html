@@ -7,27 +7,448 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-CKQ1EXBHY6');
 </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Blogs — Ahamstree</title>
+  <title>Journal — Ahamstree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    /* ── Blog Journal Page ── */
+
+    .journal-hero {
+      background: var(--bg-warm);
+      border-bottom: 1px solid var(--border-light);
+      padding: 48px 0 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .journal-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 80% at 50% 110%, rgba(110,34,54,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .journal-kicker {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .journal-kicker::before,
+    .journal-kicker::after {
+      content: "";
+      width: 40px;
+      height: 1px;
+      background: var(--brand);
+      opacity: 0.4;
+    }
+    .journal-hero h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(42px, 6vw, 72px);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 0 0 12px;
+      line-height: 1.05;
+    }
+    .journal-hero h1 em {
+      font-style: italic;
+      color: var(--brand);
+    }
+    .journal-hero-sub {
+      font-size: 15px;
+      color: var(--text-light);
+      max-width: 420px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Page Body ── */
+    .journal-body {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 48px 16px 64px;
+    }
+
+    /* ── Featured Article (first post) ── */
+    .featured-article {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 48px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+    }
+    .featured-article:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+    }
+    .featured-article-img {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-warm);
+      min-height: 360px;
+    }
+    .featured-article-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+    }
+    .featured-article:hover .featured-article-img img {
+      transform: scale(1.05);
+    }
+    .featured-article-img-placeholder {
+      width: 100%;
+      height: 100%;
+      min-height: 360px;
+      background: linear-gradient(135deg, var(--bg-warm) 0%, var(--border-light) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .featured-article-img-placeholder svg {
+      opacity: 0.2;
+    }
+    .featured-badge {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 40px;
+    }
+    .featured-article-body {
+      padding: 40px 40px 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .article-tag {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--brand);
+      background: var(--brand-light);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .article-date {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .article-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+    .article-read-time {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .featured-article-body h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 600;
+      line-height: 1.15;
+      margin: 0 0 14px;
+      color: var(--text);
+    }
+    .featured-article-body .excerpt {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-light);
+      margin: 0 0 28px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .read-more {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--brand);
+      letter-spacing: 0.04em;
+      transition: gap 0.2s ease;
+    }
+    .read-more svg {
+      transition: transform 0.2s ease;
+    }
+    .featured-article:hover .read-more svg,
+    .blog-card:hover .read-more svg {
+      transform: translateX(4px);
+    }
+    .featured-article:hover .read-more {
+      gap: 12px;
+    }
+
+    /* ── Section Divider ── */
+    .journal-section-head {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .journal-section-head h2 {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+      white-space: nowrap;
+      color: var(--text);
+    }
+    .journal-section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-light);
+    }
+
+    /* ── Blog Card Grid ── */
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .blog-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: var(--shadow-xs);
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.2s ease;
+    }
+    .blog-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border);
+    }
+    .blog-card-img {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-warm);
+      height: 200px;
+      flex-shrink: 0;
+    }
+    .blog-card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    .blog-card:hover .blog-card-img img {
+      transform: scale(1.07);
+    }
+    .blog-card-img-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--bg-warm) 0%, var(--border-light) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .blog-card-body {
+      padding: 20px 20px 22px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .blog-card-body h3 {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.2;
+      margin: 0 0 10px;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .blog-card-body .excerpt {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-light);
+      margin: 0 0 auto;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      padding-bottom: 16px;
+    }
+    .blog-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    /* ── Empty / Loading ── */
+    .journal-empty {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-light);
+    }
+    .journal-empty svg {
+      margin-bottom: 16px;
+      opacity: 0.25;
+    }
+    .journal-empty p {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      margin: 0 0 8px;
+      color: var(--text);
+    }
+    .journal-empty span {
+      font-size: 13px;
+    }
+
+    .journal-loading {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .skeleton {
+      border-radius: var(--radius-md);
+      background: linear-gradient(90deg, var(--bg-warm) 25%, var(--border-light) 50%, var(--bg-warm) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skeleton-card { height: 320px; }
+    .skeleton-featured {
+      height: 360px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 48px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 820px) {
+      .featured-article {
+        grid-template-columns: 1fr;
+      }
+      .featured-article-img {
+        min-height: 240px;
+      }
+      .featured-article-body {
+        padding: 28px 24px 28px;
+      }
+      .blog-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+    }
+    @media (max-width: 540px) {
+      .journal-hero {
+        padding: 36px 0 28px;
+      }
+      .blog-grid {
+        grid-template-columns: 1fr;
+      }
+      .journal-loading {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Staggered entrance ── */
+    .blog-card, .featured-article {
+      animation: fadeUp 0.45s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
   <div id="header"></div>
 
-  <div class="container">
-    <h2 style="margin-top:0;">Blogs</h2>
-    <div class="small">Stories, styling, care & craft</div>
-    <hr />
-    <div id="status" class="small">Loading…</div>
-    <div id="list" style="margin-top:12px;display:grid;gap:12px;"></div>
+  <!-- Hero -->
+  <section class="journal-hero">
+    <div class="journal-kicker">The AhamStree Journal</div>
+    <h1>Stories of <em>Craft</em><br>& Cloth</h1>
+    <p class="journal-hero-sub">Styling guides, weave origins, care rituals and the women behind every thread.</p>
+  </section>
+
+  <div class="journal-body">
+    <!-- Featured post slot -->
+    <div id="featuredSlot"></div>
+
+    <!-- More articles -->
+    <div id="moreSection" style="display:none;">
+      <div class="journal-section-head">
+        <h2>More from the Journal</h2>
+        <div class="journal-section-line"></div>
+      </div>
+      <div id="blogGrid" class="blog-grid"></div>
+    </div>
+
+    <!-- Loading skeletons -->
+    <div id="loadingState">
+      <div class="skeleton skeleton-featured"></div>
+      <div class="journal-section-head">
+        <h2>More from the Journal</h2>
+        <div class="journal-section-line"></div>
+      </div>
+      <div class="journal-loading">
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+      </div>
+    </div>
+
+    <div id="errorState" style="display:none;" class="journal-empty">
+      <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <p>Couldn't load articles</p>
+      <span>Please refresh the page to try again.</span>
+    </div>
   </div>
 
   <div id="footer"></div>
@@ -35,39 +456,130 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
 
-    async function loadBlogs() {
-      const status = document.getElementById("status");
-      const list = document.getElementById("list");
+    const arrowIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+    const placeholderIcon = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9l5-5 4 4 4-6 5 7"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg>`;
 
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("title,slug,excerpt,cover_image_url,published_at,is_published")
-        .eq("is_published", true)
-        .order("published_at", { ascending: false });
+    function formatDate(iso) {
+      if (!iso) return "";
+      return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+    }
 
-      if (error) { status.textContent = "Error: " + error.message; return; }
-      status.textContent = "";
+    function readTime(excerpt) {
+      const words = (excerpt ?? "").split(/\s+/).filter(Boolean).length;
+      const mins = Math.max(1, Math.ceil((words * 8) / 200)); // assume excerpt ~1/8 of article
+      return `${mins} min read`;
+    }
 
-      list.innerHTML = (data ?? []).map(p => `
-        <a class="card" href="blog.html?slug=${encodeURIComponent(p.slug)}" style="text-decoration:none;color:inherit;">
-          <div style="display:flex;gap:14px;align-items:center;">
-            ${p.cover_image_url ? `<img src="${p.cover_image_url}" alt="${p.title}" style="width:110px;height:80px;object-fit:cover;border-radius:12px;">` : ``}
-            <div class="small" style="margin-top:6px;opacity:.7;">
-  ${p.published_at ? new Date(p.published_at).toDateString() : ""}
-</div>
+    function tagFromTitle(title) {
+      const t = (title ?? "").toLowerCase();
+      if (t.includes("care") || t.includes("wash")) return "Care Guide";
+      if (t.includes("style") || t.includes("drape") || t.includes("wear")) return "Styling";
+      if (t.includes("silk") || t.includes("cotton") || t.includes("banarasi") || t.includes("kanjivaram")) return "Craft";
+      if (t.includes("gift")) return "Gifting";
+      return "Journal";
+    }
 
-            <div>
-              <div style="font-weight:900;">${p.title}</div>
-              <div class="small" style="margin-top:6px;opacity:.85;">${p.excerpt ?? ""}</div>
+    function featuredCard(p, idx) {
+      const imgHtml = p.cover_image_url
+        ? `<img src="${safeSrc(p.cover_image_url)}" alt="${escapeAttr(p.title)}" loading="eager">`
+        : `<div class="featured-article-img-placeholder">${placeholderIcon}</div>`;
+
+      return `
+        <a class="featured-article" href="blog.html?slug=${encodeURIComponent(p.slug)}" style="animation-delay:${idx * 80}ms">
+          <div class="featured-article-img">
+            ${imgHtml}
+            <div class="featured-badge">Featured</div>
+          </div>
+          <div class="featured-article-body">
+            <div class="article-meta">
+              <span class="article-tag">${escapeHtml(tagFromTitle(p.title))}</span>
+              <div class="article-dot"></div>
+              <span class="article-date">${escapeHtml(formatDate(p.published_at))}</span>
+              <div class="article-dot"></div>
+              <span class="article-read-time">${escapeHtml(readTime(p.excerpt))}</span>
+            </div>
+            <h2>${escapeHtml(p.title)}</h2>
+            <p class="excerpt">${escapeHtml(p.excerpt ?? "")}</p>
+            <span class="read-more">Read article ${arrowIcon}</span>
+          </div>
+        </a>
+      `;
+    }
+
+    function blogCard(p, idx) {
+      const imgHtml = p.cover_image_url
+        ? `<img src="${safeSrc(p.cover_image_url)}" alt="${escapeAttr(p.title)}" loading="lazy">`
+        : `<div class="blog-card-img-placeholder">${placeholderIcon}</div>`;
+
+      return `
+        <a class="blog-card" href="blog.html?slug=${encodeURIComponent(p.slug)}" style="animation-delay:${idx * 70}ms">
+          <div class="blog-card-img">${imgHtml}</div>
+          <div class="blog-card-body">
+            <div class="article-meta" style="margin-bottom:10px;">
+              <span class="article-tag">${escapeHtml(tagFromTitle(p.title))}</span>
+            </div>
+            <h3>${escapeHtml(p.title)}</h3>
+            <p class="excerpt">${escapeHtml(p.excerpt ?? "")}</p>
+            <div class="blog-card-footer">
+              <span class="article-date">${escapeHtml(formatDate(p.published_at))}</span>
+              <span class="read-more" style="font-size:12px;">Read ${arrowIcon}</span>
             </div>
           </div>
         </a>
-      `).join("");
+      `;
+    }
+
+    async function loadBlogs() {
+      const loadingState  = document.getElementById("loadingState");
+      const featuredSlot  = document.getElementById("featuredSlot");
+      const moreSection   = document.getElementById("moreSection");
+      const blogGrid      = document.getElementById("blogGrid");
+      const errorState    = document.getElementById("errorState");
+
+      try {
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .select("title,slug,excerpt,cover_image_url,published_at,is_published")
+          .eq("is_published", true)
+          .order("published_at", { ascending: false });
+
+        loadingState.style.display = "none";
+
+        if (error) throw error;
+
+        const posts = data ?? [];
+
+        if (posts.length === 0) {
+          featuredSlot.innerHTML = `
+            <div class="journal-empty">
+              <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <p>No articles yet</p>
+              <span>Check back soon — stories are on their way.</span>
+            </div>
+          `;
+          return;
+        }
+
+        // First post → featured hero
+        featuredSlot.innerHTML = featuredCard(posts[0], 0);
+
+        // Rest → grid
+        if (posts.length > 1) {
+          moreSection.style.display = "block";
+          blogGrid.innerHTML = posts.slice(1).map((p, i) => blogCard(p, i)).join("");
+        }
+
+      } catch (e) {
+        loadingState.style.display = "none";
+        errorState.style.display = "block";
+        console.error("Blog load error:", e);
+      }
     }
 
     loadBlogs();

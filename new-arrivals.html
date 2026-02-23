@@ -7,27 +7,254 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-CKQ1EXBHY6');
 </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>New Arrivals — Ahamstree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    /* ── New Arrivals Hero ── */
+    .na-hero {
+      background: linear-gradient(160deg, #faf8f4 0%, #f3ede2 60%, #ecddd0 100%);
+      border-bottom: 1px solid var(--border-light);
+      padding: 52px 16px 44px;
+      position: relative;
+      overflow: hidden;
+    }
+    .na-hero::after {
+      content: "NEW";
+      position: absolute;
+      right: -40px;
+      top: 50%;
+      transform: translateY(-50%) rotate(12deg);
+      font-family: var(--font-heading);
+      font-size: clamp(100px, 18vw, 200px);
+      font-weight: 700;
+      color: rgba(110,34,54,0.05);
+      letter-spacing: -0.04em;
+      pointer-events: none;
+      line-height: 1;
+      user-select: none;
+    }
+    .na-hero-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .na-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 40px;
+      margin-bottom: 18px;
+    }
+    .na-badge-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #ffd700;
+    }
+    .na-hero h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(38px, 6vw, 68px);
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 10px;
+      line-height: 1.05;
+    }
+    .na-hero h1 em { font-style: italic; color: var(--brand); }
+    .na-hero-sub {
+      font-size: 14px;
+      color: var(--text-light);
+      margin: 0;
+    }
+
+    /* ── Page body ── */
+    .page-body {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 36px 16px 64px;
+    }
+    .page-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .page-count { font-size: 13px; color: var(--text-light); }
+
+    /* ── Product cards ── */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    .p-card {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: var(--shadow-xs);
+      transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease, border-color 0.2s ease;
+      animation: fadeUp 0.4s ease both;
+    }
+    .p-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border);
+    }
+    .p-card a { text-decoration: none; color: inherit; display: block; }
+    .p-card-img {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-warm);
+    }
+    .p-card-img img {
+      width: 100%;
+      height: 260px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    .p-card:hover .p-card-img img { transform: scale(1.06); }
+    .p-card-img-empty {
+      height: 260px;
+      background: linear-gradient(135deg, var(--bg-warm) 0%, var(--border-light) 100%);
+    }
+    /* NEW badge — only on items added in last 14 days */
+    .p-card-new-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 4px 9px;
+      border-radius: 20px;
+      z-index: 2;
+    }
+    .p-card-sale-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--gold);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 20px;
+      z-index: 2;
+    }
+    .p-card-sold-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(250,248,244,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+    }
+    .p-card-sold-label {
+      background: var(--text);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 4px;
+    }
+    .p-card-body { padding: 14px 14px 16px; }
+    .p-card-title {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--text);
+      margin: 0 0 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .p-card-pricing { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+    .p-card-price { font-size: 15px; font-weight: 700; color: var(--text); }
+    .p-card-original { font-size: 12px; text-decoration: line-through; color: var(--text-light); }
+    .p-card-sale-price { font-size: 15px; font-weight: 700; color: var(--brand); }
+    .p-card-stock { font-size: 11px; color: var(--text-light); margin-top: 5px; }
+    .p-card-stock.low { color: #c0540a; font-weight: 500; }
+
+    /* Skeleton */
+    .skeleton-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .skeleton {
+      border-radius: var(--radius-md);
+      background: linear-gradient(90deg, var(--bg-warm) 25%, var(--border-light) 50%, var(--bg-warm) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skeleton-card { height: 320px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      .product-grid, .skeleton-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .product-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .p-card-img img, .p-card-img-empty { height: 200px; }
+    }
+  </style>
 </head>
 <body>
   <div id="header"></div>
 
-  <div class="container">
-    <h2 style="margin-top:0;">New Arrivals</h2>
-    <div class="small">Latest launches</div>
-    <hr />
-    <div id="status" class="small">Loading…</div>
-    <div id="grid" class="grid" style="margin-top:12px;"></div>
+  <section class="na-hero">
+    <div class="na-hero-inner">
+      <div class="na-badge"><span class="na-badge-dot"></span> Just Dropped</div>
+      <h1>New <em>Arrivals</em></h1>
+      <p class="na-hero-sub">Fresh weaves, just added — be the first to discover them.</p>
+    </div>
+  </section>
+
+  <div class="page-body">
+    <div class="page-toolbar">
+      <div id="status" class="page-count"></div>
+    </div>
+
+    <div id="skeletonState" class="skeleton-grid">
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+    </div>
+
+    <div id="grid" class="product-grid"></div>
   </div>
 
   <div id="footer"></div>
@@ -35,52 +262,82 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
 
+    function money(n) {
+      return "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+    }
+
+    function isNew(createdAt) {
+      if (!createdAt) return false;
+      return (Date.now() - new Date(createdAt).getTime()) < 14 * 24 * 60 * 60 * 1000;
+    }
+
+    function productCard(p, idx) {
+      const inv = Math.max(0, Number(p.inventory_qty||0) - Number(p.reserved_qty||0));
+      const soldOut = inv <= 0;
+      const hasNewBadge = isNew(p.created_at);
+      const base = Number(p.price_inr || 0);
+      const sale = p.sale_price_inr != null ? Number(p.sale_price_inr) : null;
+      const pctOff = (sale && base) ? Math.round((1 - sale/base) * 100) : 0;
+
+      const imgHtml = p.image_url
+        ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title)}" loading="${idx < 4 ? 'eager' : 'lazy'}">`
+        : `<div class="p-card-img-empty"></div>`;
+
+      const priceHtml = (sale && sale < base)
+        ? `<span class="p-card-original">${money(base)}</span><span class="p-card-sale-price">${money(sale)}</span>`
+        : `<span class="p-card-price">${money(base)}</span>`;
+
+      return `
+        <div class="p-card" style="animation-delay:${(idx % 8) * 60}ms">
+          <a href="product.html?id=${encodeURIComponent(p.id)}">
+            <div class="p-card-img">
+              ${imgHtml}
+              ${hasNewBadge ? `<div class="p-card-new-badge">New</div>` : ""}
+              ${pctOff > 0 ? `<div class="p-card-sale-badge">${pctOff}% off</div>` : ""}
+              ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
+            </div>
+            <div class="p-card-body">
+              <div class="p-card-title">${escapeHtml(p.title)}</div>
+              <div class="p-card-pricing">${priceHtml}</div>
+              ${!soldOut && inv <= 3 ? `<div class="p-card-stock low">Only ${inv} left</div>` : ""}
+              ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
+            </div>
+          </a>
+        </div>`;
+    }
+
     async function loadNewArrivals() {
       const status = document.getElementById("status");
       const grid = document.getElementById("grid");
+      const skeleton = document.getElementById("skeletonState");
 
       const { data, error } = await supabase
         .from("products")
-        .select("id,title,price_inr,inventory_qty,is_active,created_at, product_images(image_url, sort_order)")
+        .select("id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(24);
 
-      if (error) {
-        status.textContent = "Error: " + error.message;
-        return;
-      }
+      skeleton.style.display = "none";
 
-      status.textContent = "";
+      if (error) { status.textContent = "Error: " + error.message; return; }
 
-      const normalized = (data ?? []).map(p => {
+      const rows = (data ?? []).map(p => {
         const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
         return { ...p, image_url: imgs[0]?.image_url ?? "" };
       });
 
-      grid.innerHTML = normalized.map(p => `
-        <div class="card">
-          <a href="product.html?id=${encodeURIComponent(p.id)}" style="text-decoration:none;color:inherit;">
-            ${p.image_url ? `<img src="${p.image_url}" alt="${p.title}" loading="lazy">` : `<div style="height:280px;background:#fafafa;"></div>`}
-            <div class="p">
-              <div style="font-weight:900;">${p.title}</div>
-              <div style="margin-top:6px;opacity:.85;">₹${p.price_inr}</div>
-              <div class="small" style="margin-top:6px;">
-                ${p.inventory_qty > 0 ? `${p.inventory_qty} in stock` : "Sold out"}
-              </div>
-            </div>
-          </a>
-        </div>
-      `).join("");
+      status.textContent = `${rows.length} new arrivals`;
+      grid.innerHTML = rows.map((p, i) => productCard(p, i)).join("");
     }
 
     loadNewArrivals();
   </script>
 </body>
 </html>
-

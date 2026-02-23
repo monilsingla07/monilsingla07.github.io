@@ -15,9 +15,8 @@
   <title>Product — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css" />
-  <link rel="stylesheet" href="assets/styles.css" />
 </head>
 
 <body>
@@ -36,7 +35,7 @@
             <div id="thumbs" class="pd-thumbs"></div>
 
             <div class="pd-main">
-              <img id="mainImg" alt="" />
+              <img id="mainImg" alt="" loading="eager" decoding="async" />
             </div>
           </div>
           <div class="small" style="margin-top:10px; opacity:.7;">Click image to zoom</div>
@@ -85,6 +84,22 @@
           <div class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
             <div id="sections"></div>
           </div>
+
+          <!-- Return request (new) -->
+          <div class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
+            <div style="font-weight:900;font-size:16px;">Returns / Exchange</div>
+            <div class="small" style="margin-top:6px;opacity:.8;">
+              If you have already received this product and want to request a return, you can submit a request here.
+              Please keep your Order ID handy.
+            </div>
+
+            <div id="returnBox" style="margin-top:12px;"></div>
+
+            <div class="small" style="margin-top:10px;opacity:.75;">
+              Read our policy: <a href="returns.html">Returns</a>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -93,7 +108,7 @@
   <!-- Lightbox -->
   <div id="lightbox" aria-hidden="true">
     <div id="lightboxInner">
-      <img id="lightboxImg" alt="Product image enlarged" />
+      <img id="lightboxImg" alt="Product image enlarged" loading="lazy" decoding="async" />
       <button id="lbClose" class="lb-btn" type="button">✕</button>
       <button id="lbPrev" class="lb-btn" type="button">‹</button>
       <button id="lbNext" class="lb-btn" type="button">›</button>
@@ -107,6 +122,7 @@
     import { supabase } from "./assets/supabase.js";
     import { addToCart } from "./assets/cart.js";
     import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
+	    import { escapeHtml, escapeAttr, safeSrc, safeUrl } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("products");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -133,7 +149,7 @@
       // 1) Product + images (you already had this)
       const { data, error } = await supabase
         .from("products")
-        .select("id,title,description,price_inr,sale_price_inr,sku,inventory_qty,is_active, product_images(image_url, sort_order, alt_text)")
+        .select("id,title,description,price_inr,sale_price_inr,sku,inventory_qty,reserved_qty,is_active, product_images(image_url, sort_order, alt_text)")
         .eq("id", id)
         .maybeSingle();
 
@@ -147,6 +163,7 @@
         .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
       const main = images[0]?.image_url ?? "";
+      const safeMain = safeUrl(main, { type: "src" });
 
       // Show page
       document.getElementById("status").style.display = "none";
@@ -160,8 +177,10 @@
       skuEl.textContent = data.sku ? `SKU: ${data.sku}` : "";
 
       const inv = safeNum(data.inventory_qty, 0);
+      const reserved = safeNum(data.reserved_qty, 0);
+      const available = Math.max(0, inv - reserved);
       const stockEl = document.getElementById("stock");
-      stockEl.textContent = inv > 0 ? `${inv} available` : "Sold out";
+      stockEl.textContent = available > 0 ? `${available} available` : "Sold out";
 
       // Price: show sale if present
       const priceEl = document.getElementById("price");
@@ -176,15 +195,20 @@
 
       // Images
       const mainImg = document.getElementById("mainImg");
-      mainImg.src = main;
+      mainImg.src = safeMain || "";
       mainImg.alt = data.title ?? "Product image";
+      mainImg.dataset.idx = "0";
 
       const thumbs = document.getElementById("thumbs");
-      thumbs.innerHTML = images.map((img, idx) => `
-        <button class="pd-thumb" data-idx="${idx}" type="button" aria-label="View image ${idx + 1}">
-          <img src="${img.image_url}" alt="${img.alt_text ?? data.title ?? ""}">
-        </button>
-      `).join("");
+      thumbs.innerHTML = images.map((img, idx) => {
+        const thumbSrc = safeSrc(img.image_url);
+        const thumbAlt = escapeAttr(img.alt_text ?? data.title ?? "");
+        return `
+          <button class="pd-thumb" data-idx="${idx}" type="button" aria-label="View image ${idx + 1}">
+            <img src="${thumbSrc}" alt="${thumbAlt}" loading="lazy" decoding="async">
+          </button>
+        `;
+      }).join("");
 
       // ===== Lightbox logic =====
       let currentIndex = 0;
@@ -198,7 +222,7 @@
       function openLightbox(idx) {
         if (!images.length) return;
         currentIndex = clamp(idx, 0, images.length - 1);
-        lightboxImg.src = images[currentIndex].image_url;
+        lightboxImg.src = safeUrl(images[currentIndex].image_url, { type: "src" }) || "";
         lightbox.classList.add("open");
         lightbox.setAttribute("aria-hidden", "false");
         document.body.style.overflow = "hidden";
@@ -213,26 +237,28 @@
       function showNext() {
         if (!images.length) return;
         currentIndex = (currentIndex + 1) % images.length;
-        lightboxImg.src = images[currentIndex].image_url;
+        lightboxImg.src = safeUrl(images[currentIndex].image_url, { type: "src" }) || "";
       }
 
       function showPrev() {
         if (!images.length) return;
         currentIndex = (currentIndex - 1 + images.length) % images.length;
-        lightboxImg.src = images[currentIndex].image_url;
+        lightboxImg.src = safeUrl(images[currentIndex].image_url, { type: "src" }) || "";
       }
 
       // Clicking main image opens lightbox
       mainImg.addEventListener("click", () => {
-        const idx = images.findIndex(x => x.image_url === mainImg.src);
-        openLightbox(idx >= 0 ? idx : 0);
+        const idx = Number(mainImg.dataset.idx || "0");
+        openLightbox(idx);
       });
 
       // Clicking thumbs switches main image (Nalli-like)
       Array.from(thumbs.querySelectorAll("button")).forEach((btn) => {
         btn.addEventListener("click", () => {
           const idx = Number(btn.getAttribute("data-idx") || "0");
-          mainImg.src = images[idx].image_url;
+          mainImg.src = safeUrl(images[idx].image_url, { type: "src" }) || "";
+          mainImg.alt = images[idx].alt_text ?? data.title ?? "Product image";
+          mainImg.dataset.idx = String(idx);
         });
 
         // Optional: double-click thumb to open zoom
@@ -266,17 +292,25 @@
       function getQty() {
         const v = safeNum(qtyInput.value, 1);
         // Limit qty to available stock (if stock is 0, keep at 1 but button disabled anyway)
-        const max = inv > 0 ? inv : 1;
+        const max = available > 0 ? available : 1;
         return clamp(Math.floor(v), 1, max);
       }
 
       function setQty(n) {
-        qtyInput.value = String(getQty() === n ? n : clamp(n, 1, inv > 0 ? inv : 1));
+        qtyInput.value = String(getQty() === n ? n : clamp(n, 1, available > 0 ? available : 1));
       }
 
       qtyInput.addEventListener("input", () => setQty(getQty()));
       qtyMinus.addEventListener("click", () => setQty(getQty() - 1));
       qtyPlus.addEventListener("click", () => setQty(getQty() + 1));
+
+      // If sold out, disable qty controls completely
+      if (available <= 0) {
+        qtyInput.disabled = true;
+        qtyMinus.disabled = true;
+        qtyPlus.disabled = true;
+      }
+
 
       // ===== Fetch & render specs =====
       const { data: specs, error: specsErr } = await supabase
@@ -294,8 +328,8 @@
         specsDiv.innerHTML = `
           <div class="spec-grid">
             ${specs.map(s => `
-              <div class="spec-k">${s.label}</div>
-              <div class="spec-v">${s.value}</div>
+              <div class="spec-k">${escapeHtml(s.label)}</div>
+              <div class="spec-v">${escapeHtml(s.value)}</div>
             `).join("")}
           </div>
         `;
@@ -316,16 +350,20 @@
       } else {
         sectionsDiv.innerHTML = sections.map((sec, idx) => {
           const isBullets = (sec.content_type || "text") === "bullets";
-          const content = (sec.content || "").trim();
+          const raw = String(sec.content || "");
+          const lines = raw
+            .split(/\r?\n/)
+            .map(s => s.trim())
+            .filter(Boolean);
 
           const contentHtml = isBullets
-            ? `<ul class="bullets">${content.split("\n").filter(Boolean).map(li => `<li>${li}</li>`).join("")}</ul>`
-            : `<div>${content.replace(/\n/g, "<br>")}</div>`;
+            ? `<ul class="bullets">${lines.map(li => `<li>${escapeHtml(li)}</li>`).join("")}</ul>`
+            : `<div>${escapeHtml(raw).replace(/\r?\n/g, "<br>")}</div>`;
 
           return `
             <div class="ac-item ${idx === 0 ? "open" : ""}">
               <button class="ac-btn" type="button">
-                <span>${sec.title}</span>
+                <span>${escapeHtml(sec.title)}</span>
                 <span class="ac-chevron">▾</span>
               </button>
               <div class="ac-content">${contentHtml}</div>
@@ -341,7 +379,7 @@
 
       // ===== Add to cart (uses qty) =====
       const addBtn = document.getElementById("addBtn");
-      if (inv <= 0) {
+      if (available <= 0) {
         addBtn.disabled = true;
         addBtn.textContent = "Sold out";
         addBtn.style.background = "#ddd";
@@ -350,7 +388,7 @@
       } else {
         addBtn.addEventListener("click", () => {
           const qty = getQty();
-          addToCart({ ...data, image_url: main }, qty);
+          addToCart({ ...data, image_url: safeMain || "" }, qty);
           location.href = "cart.html";
         });
       }
@@ -388,8 +426,62 @@
           await syncWishlistButton();
         });
 
-        // initial state
-        await syncWishlistButton();
+      }
+
+      // Initial state
+      await syncWishlistButton();
+
+      // ===== Return request (simple) =====
+      const returnBox = document.getElementById("returnBox");
+      if (returnBox) {
+        const { data: sess } = await supabase.auth.getSession();
+        const user = sess?.session?.user;
+
+        if (!user) {
+          const next = encodeURIComponent(`product.html?id=${data.id}`);
+          returnBox.innerHTML = `
+            <div class="small">
+              Please <a href="login.html?next=${next}">log in</a> to request a return.
+            </div>
+          `;
+        } else {
+          returnBox.innerHTML = `
+            <div style="display:grid;gap:10px;">
+              <input id="retOrderId" class="input" placeholder="Your Order ID (required)" />
+              <textarea id="retReason" class="input" rows="3" placeholder="Reason (required)"></textarea>
+              <button id="retSubmit" class="btn secondary" type="button">Submit return request</button>
+              <div id="retStatus" class="small"></div>
+            </div>
+          `;
+
+          const retStatus = document.getElementById("retStatus");
+          document.getElementById("retSubmit").onclick = async () => {
+            retStatus.textContent = "";
+            const orderId = String(document.getElementById("retOrderId").value || "").trim();
+            const reason = String(document.getElementById("retReason").value || "").trim();
+
+            if (!orderId) return (retStatus.textContent = "Please enter your Order ID.");
+            if (!reason || reason.length < 5) return (retStatus.textContent = "Please add a short reason (min 5 chars).");
+
+            retStatus.textContent = "Submitting…";
+
+            // NOTE: You will create the return_requests table + RLS policy (SQL shared in my response).
+            const { error: retErr } = await supabase.from("return_requests").insert({
+              order_id: orderId,
+              product_id: data.id,
+              reason,
+              status: "requested"
+            });
+
+            if (retErr) {
+              retStatus.textContent = "Error: " + retErr.message;
+            } else {
+              retStatus.textContent = "Return request submitted ✅ We will contact you soon.";
+              document.getElementById("retOrderId").value = "";
+              document.getElementById("retReason").value = "";
+            }
+          };
+        }
       }
 
     }

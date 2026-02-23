@@ -1,35 +1,60 @@
 <!doctype html>
 <html>
 <head>
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);} 
+    function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-CKQ1EXBHY6');
   </script>
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Orders — AhamStree</title>
+  <title>My Orders — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800;
+    }
+    .status-badge.paid      { background: #dcfce7; color: #166534; }
+    .status-badge.confirmed { background: #dcfce7; color: #166534; }
+    .status-badge.shipped   { background: #dbeafe; color: #1e40af; }
+    .status-badge.delivered { background: #f0fdf4; color: #14532d; border:1px solid #86efac; }
+    .status-badge.pending   { background: #fef9c3; color: #854d0e; }
+    .status-badge.failed    { background: #fee2e2; color: #991b1b; }
+    .status-badge.cancelled { background: #f3f4f6; color: #6b7280; }
+    .payment-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      background: #f3f4f6; color: #374151;
+    }
+    .payment-pill.cod    { background: #fff7ed; color: #9a3412; }
+    .payment-pill.online { background: #eff6ff; color: #1d4ed8; }
+
+    /* Pulsing border for urgent pending orders */
+    @keyframes urgentPulse {
+      0%, 100% { border-color: var(--brand); }
+      50%       { border-color: crimson; }
+    }
+    .pending-urgent { animation: urgentPulse 1.5s ease-in-out infinite; }
+  </style>
 </head>
 
 <body>
   <div id="header"></div>
 
-  <div class="container" style="max-width:980px;">
-    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+  <div class="container" style="max-width:860px;">
+    <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;">
       <div>
         <h2 style="margin:0;">My Orders</h2>
-        <div class="small" style="margin-top:6px;">Your recent orders and payment status.</div>
+        <div class="small" style="margin-top:6px; opacity:.75;">Your orders and delivery status.</div>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <a class="btn secondary" href="account.html">Account</a>
         <a class="btn secondary" href="profile.html">Profile</a>
       </div>
@@ -37,8 +62,8 @@
 
     <hr />
 
-    <div id="status" class="small">Loading…</div>
-    <div id="list" style="display:grid;gap:12px;margin-top:12px;"></div>
+    <div id="statusMsg" class="small" style="margin-bottom:12px;">Loading…</div>
+    <div id="list" style="display:grid; gap:14px;"></div>
   </div>
 
   <div id="footer"></div>
@@ -46,89 +71,275 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
+    import { escapeHtml, safeHref } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("account");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
 
-    const status = document.getElementById("status");
-    const list = document.getElementById("list");
+    const statusMsg = document.getElementById("statusMsg");
+    const list      = document.getElementById("list");
+
+    // Track all active countdown timers so we can clear them on re-render
+    const activeTimers = [];
 
     function money(v) {
       return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
     }
 
-    function badge(st) {
+    function statusBadge(st) {
       const map = {
-        paid: "Paid",
-        payment_link_created: "Payment pending",
-        payment_failed: "Payment failed",
-        expired: "Payment expired",
-        cancelled: "Cancelled",
-        fulfilled: "Fulfilled",
-        shipped: "Shipped",
-        delivered: "Delivered",
+        paid:                  { label: "Paid",             cls: "paid"      },
+        confirmed:             { label: "Confirmed",        cls: "confirmed" },
+        payment_link_created:  { label: "Payment pending",  cls: "pending"   },
+        payment_link_failed:   { label: "Link failed",      cls: "failed"    },
+        created:               { label: "Payment pending",  cls: "pending"   },
+        failed:                { label: "Payment failed",   cls: "failed"    },
+        expired:               { label: "Link expired",     cls: "failed"    },
+        cancelled:             { label: "Cancelled",        cls: "cancelled" },
+        shipped:               { label: "Shipped",          cls: "shipped"   },
+        delivered:             { label: "Delivered",        cls: "delivered" },
       };
-      return map[st] || (st || "-");
+      const s = map[st] || { label: st || "Unknown", cls: "pending" };
+      return `<span class="status-badge ${s.cls}">${s.label}</span>`;
+    }
+
+    function paymentPill(method) {
+      if (method === "cod") return `<span class="payment-pill cod">💵 Cash on Delivery</span>`;
+      return `<span class="payment-pill online">💳 Online Payment</span>`;
+    }
+
+    function formatDate(iso) {
+      if (!iso) return "—";
+      return new Date(iso).toLocaleString("en-IN", {
+        day: "numeric", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    // Determine how much time is left on a payment_link_created order.
+    // The reservation TTL is 10 minutes from order created_at.
+    const RESERVATION_TTL_MS = 10 * 60 * 1000;
+
+    function getExpiryMs(order) {
+      if (!order.created_at) return 0;
+      return new Date(order.created_at).getTime() + RESERVATION_TTL_MS;
     }
 
     function renderOrder(o) {
+      const isCod    = o.payment_method === "cod";
+      const isOnline = !isCod;
+
+      const payLink     = o.razorpay_payment_link_url;
+      const safePayHref = safeHref(payLink);
+
+      // Only show "Pay now" for payment_link_created orders that haven't expired
+      const isPendingPayment = isOnline && o.status === "payment_link_created" && !!safePayHref;
+      const expiryMs         = isPendingPayment ? getExpiryMs(o) : 0;
+      const isStillActive    = isPendingPayment && (expiryMs - Date.now() > 0);
+
+      // "Retry" for failed/expired links (no countdown — link may still work or
+      // the user can go back to checkout to create a new one)
+      const canRetryFailed = isOnline &&
+        ["payment_link_failed", "failed"].includes(o.status) &&
+        !!safePayHref;
+
+      const awb      = o.shiprocket_awb;
+      const canTrack = !!awb && ["shipped", "delivered"].includes(o.status);
+
       const items = (o.order_items || [])
-        .map(it => `<div class="small">${it.qty} × ${it.title} — ${money(it.price_inr)}</div>`)
+        .map(it => `
+          <div style="display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-light);">
+            <div class="small" style="flex:1;">${Number(it.qty || 0)} × ${escapeHtml(it.title)}</div>
+            <div class="small" style="font-weight:700; flex-shrink:0;">${money(it.price_inr)}</div>
+          </div>`)
         .join("");
 
-      const payLink = o.razorpay_payment_link_url;
-      const canPay = (o.status === "payment_link_created" || o.status === "payment_failed" || o.status === "expired") && payLink;
+      const shortId    = escapeHtml(o.id.slice(0, 8).toUpperCase());
+      const countdownId = `countdown-${o.id}`;
+      const cardId      = `order-card-${o.id}`;
 
-      return `
-        <div class="card">
-          <div class="p" style="padding:16px;">
-            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
-              <div>
-                <div style="font-weight:900;">Order ${o.id}</div>
-                <div class="small" style="margin-top:6px;">
-                  Status: <b>${badge(o.status)}</b> • Total: <b>${money(o.total_inr)}</b>
-                </div>
-                <div class="small">Placed: ${o.created_at ? new Date(o.created_at).toLocaleString("en-IN") : "-"}</div>
+      const discountRow = (Number(o.discount_inr) > 0)
+        ? `<div style="display:flex;justify-content:space-between;gap:8px;margin-top:4px;">
+             <div class="small" style="opacity:.7;">Discount</div>
+             <div class="small" style="color:green; font-weight:700;">−${money(o.discount_inr)}</div>
+           </div>`
+        : "";
+
+      // ── Pending payment banner (with countdown) ───────────────────────────
+      const pendingBanner = isPendingPayment ? `
+        <div style="padding:14px 16px; background:var(--brand-light); border-top:2px solid var(--brand);">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:900; font-size:14px; margin-bottom:4px;">⚡ Payment not completed</div>
+              <div class="small" style="opacity:.8; margin-bottom:8px;">
+                Your items are reserved. Complete payment before the timer runs out.
               </div>
-
-              <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                ${canPay ? `<a class="btn" href="${payLink}" target="_blank" rel="noopener">Pay now</a>` : ``}
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div class="small" style="opacity:.7;">Time left:</div>
+                <div id="${countdownId}" style="font-size:20px; font-weight:900; color:var(--brand); letter-spacing:1px; min-width:60px;">--:--</div>
               </div>
             </div>
-            <hr />
-            ${items || `<div class="small" style="opacity:.75;">No items found for this order.</div>`}
+            <div style="display:flex; gap:8px; flex-wrap:wrap; flex-shrink:0;">
+              <a class="btn" href="${safePayHref}" style="padding:10px 18px; font-size:14px;">
+                Complete payment →
+              </a>
+            </div>
           </div>
+        </div>` : "";
+
+      return `
+        <div class="card" id="${cardId}" style="border-radius:16px; overflow:hidden;${isStillActive ? " border:2px solid var(--brand);" : ""}">
+
+          <!-- Header row -->
+          <div style="padding:14px 16px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; border-bottom:1px solid var(--border-light);">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+                <span style="font-weight:900; font-size:15px;">Order #${shortId}</span>
+                ${statusBadge(o.status)}
+                ${paymentPill(o.payment_method)}
+              </div>
+              <div class="small" style="opacity:.65;">${formatDate(o.created_at)}</div>
+            </div>
+
+            <!-- Action buttons (non-pending states) -->
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+              ${canRetryFailed
+                ? `<a class="btn secondary" style="padding:8px 14px; font-size:13px;"
+                     href="${safePayHref}">
+                     Retry payment →
+                   </a>`
+                : ""}
+              ${canTrack
+                ? `<a class="btn secondary" style="padding:8px 14px; font-size:13px;"
+                     href="track.html?awb=${encodeURIComponent(awb)}">
+                     Track order
+                   </a>`
+                : ""}
+            </div>
+          </div>
+
+          <!-- Items -->
+          <div style="padding:12px 16px;">
+            ${items || `<div class="small" style="opacity:.6;">No items found.</div>`}
+          </div>
+
+          <!-- Totals -->
+          <div style="padding:12px 16px; border-top:1px solid var(--border-light); background:#fafafa;">
+            ${discountRow}
+            <div style="display:flex; justify-content:space-between; gap:8px; margin-top:4px;">
+              <div class="small" style="opacity:.7;">Shipping</div>
+              <div class="small">${money(o.shipping_inr)}</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:8px; margin-top:8px; font-weight:900;">
+              <div>Total</div>
+              <div>${money(o.total_inr)}</div>
+            </div>
+          </div>
+
+          <!-- Pending payment banner with countdown -->
+          ${pendingBanner}
+
+          <!-- COD pending note -->
+          ${(isCod && o.status === "confirmed")
+            ? `<div style="padding:10px 16px; background:#fff7ed; border-top:1px solid #fed7aa;">
+                 <div class="small" style="color:#9a3412;">
+                   📦 COD order — our team will contact you to confirm dispatch.
+                 </div>
+               </div>`
+            : ""}
+
+          <!-- Shipping info -->
+          ${awb
+            ? `<div style="padding:10px 16px; background:#eff6ff; border-top:1px solid #bfdbfe;">
+                 <div class="small" style="color:#1e40af;">
+                   🚚 AWB: <strong>${escapeHtml(awb)}</strong>
+                   ${canTrack ? `— <a href="track.html?awb=${encodeURIComponent(awb)}" style="color:inherit;">Track →</a>` : ""}
+                 </div>
+               </div>`
+            : ""}
         </div>
       `;
+    }
+
+    // ── Start countdown timers after HTML is rendered ────────────────────────
+    function startCountdowns(orders) {
+      // Clear any previous timers
+      activeTimers.forEach(clearInterval);
+      activeTimers.length = 0;
+
+      const RESERVATION_TTL_MS = 10 * 60 * 1000;
+
+      orders.forEach(o => {
+        if (o.status !== "payment_link_created" || !o.razorpay_payment_link_url) return;
+
+        const el = document.getElementById(`countdown-${o.id}`);
+        if (!el) return;
+
+        const expiryMs = new Date(o.created_at).getTime() + RESERVATION_TTL_MS;
+
+        function tick() {
+          const remaining = expiryMs - Date.now();
+
+          if (remaining <= 0) {
+            el.textContent = "Expired";
+            el.style.color = "#6b7280";
+            // Dim the card — reservation has released
+            const card = document.getElementById(`order-card-${o.id}`);
+            if (card) card.style.borderColor = "var(--border)";
+            clearInterval(timer);
+            return;
+          }
+
+          const mins = Math.floor(remaining / 60000);
+          const secs = Math.floor((remaining % 60000) / 1000);
+          el.textContent = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+
+          // Turn red in last 2 minutes
+          if (remaining < 120000) {
+            el.style.color = "crimson";
+            const card = document.getElementById(`order-card-${o.id}`);
+            if (card) card.classList.add("pending-urgent");
+          }
+        }
+
+        tick(); // Run immediately
+        const timer = setInterval(tick, 1000);
+        activeTimers.push(timer);
+      });
     }
 
     async function loadOrders() {
       const { data: sess } = await supabase.auth.getSession();
       const user = sess?.session?.user;
       if (!user) {
-        window.location.href = "login.html";
+        window.location.href = "login.html?next=orders.html";
         return;
       }
 
-      // IMPORTANT:
-      // This assumes your `orders` table has a `user_id` column.
-      // If your column name differs (e.g., customer_id), tell me and I will adjust.
       const { data, error } = await supabase
         .from("orders")
-        .select("id,status,total_inr,created_at,razorpay_payment_link_url, order_items(qty,title,price_inr)")
+        .select(`
+          id, status, payment_method,
+          subtotal_inr, shipping_inr, discount_inr, total_inr,
+          razorpay_payment_link_url, shiprocket_awb,
+          created_at,
+          order_items(qty, title, price_inr)
+        `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) {
-        status.textContent = "Could not load orders: " + error.message;
-        list.innerHTML = "";
+        statusMsg.textContent = "Could not load orders: " + error.message;
         return;
       }
 
       const orders = data ?? [];
-      status.textContent = orders.length ? "" : "You have no orders yet.";
+      statusMsg.textContent = orders.length ? "" : "You have no orders yet.";
       list.innerHTML = orders.map(renderOrder).join("");
+
+      // Start live countdown timers for payment_link_created orders
+      startCountdowns(orders);
     }
 
     loadOrders();

@@ -15,9 +15,8 @@
   <title>Track Order — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css" />
-  <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <div id="header"></div>
@@ -25,8 +24,23 @@
   <div class="container">
     <div class="card" style="padding:22px;border-radius:18px;">
       <h2 style="margin-top:0;">Track Order</h2>
-      <p class="small" style="max-width:72ch;">Track order placeholder. If you store orders in Supabase, you can look up by order id / email and show status here.</p>
-      <div style="margin-top:12px;"><input id="order" placeholder="Order ID" style="width:100%;max-width:320px;padding:12px;border-radius:12px;border:1px solid #eee;" /></div>
+      <p class="small" style="max-width:72ch;">Enter your Shiprocket AWB to see the latest tracking updates.</p>
+
+      <div class="form-grid" style="max-width:520px;margin-top:12px;">
+        <div class="field">
+          <label for="awb">AWB number</label>
+          <input id="awb" class="input" placeholder="e.g., 788830567028" inputmode="numeric" />
+          <div class="help-text">You can find the AWB in your Shiprocket panel or shipping label.</div>
+        </div>
+
+        <div class="row" style="gap:10px;">
+          <button id="btnTrack" class="btn" type="button">Track</button>
+          <a class="btn secondary" href="account.html?view=orders">Back to account</a>
+        </div>
+      </div>
+
+      <div id="status" class="small" style="margin-top:14px;"></div>
+      <div id="result" style="margin-top:12px;"></div>
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <a class="btn" href="products.html">Browse Sarees</a>
         <a class="btn ghost" href="cart.html">Go to Cart</a>
@@ -39,9 +53,86 @@
 
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+    import { escapeHtml } from "./assets/safe.js";
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+
+    const elAwb = document.getElementById("awb");
+    const btn = document.getElementById("btnTrack");
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
+
+    function getAwbFromUrl() {
+      const p = new URLSearchParams(location.search);
+      const v = (p.get("awb") || "").trim();
+      return v;
+    }
+
+    function renderTimeline(acts = []) {
+      if (!acts.length) return `<div class="small nav-muted">No tracking events yet.</div>`;
+      const rows = acts
+        .slice()
+        .sort((a,b) => (new Date(b.date || 0)) - (new Date(a.date || 0)))
+        .map(a => `
+          <div class="card" style="padding:12px;border-radius:14px;">
+            <div style="font-weight:900;">${escapeHtml(a.activity || a.status || "Update")}</div>
+            <div class="small" style="margin-top:6px;">${escapeHtml(a.location || "")}</div>
+            <div class="small" style="opacity:.8;">${escapeHtml(a.date || "")}</div>
+          </div>
+        `)
+        .join("");
+      return `<div style="display:grid;gap:10px;">${rows}</div>`;
+    }
+
+    async function doTrack(awb) {
+      const clean = String(awb || "").trim();
+      if (!clean) {
+        status.textContent = "Please enter an AWB number.";
+        result.innerHTML = "";
+        return;
+      }
+
+      status.textContent = "Fetching tracking…";
+      result.innerHTML = "";
+      btn.disabled = true;
+
+      // Requires the Supabase Edge Function: shiprocket-track
+      const { data, error } = await supabase.functions.invoke("shiprocket-track", {
+        body: { awb: clean }
+      });
+
+      btn.disabled = false;
+
+      if (error) {
+        status.textContent = "Could not fetch tracking: " + (error.message || "Unknown error");
+        return;
+      }
+
+      const tracking = data?.tracking_data;
+      const shipmentTrack = tracking?.shipment_track?.[0];
+      const current = shipmentTrack?.current_status || "";
+      const trackUrl = tracking?.track_url || "";
+      const safeUrl = trackUrl && /^https?:\/\//i.test(trackUrl) ? trackUrl : "";
+
+      status.textContent = current ? ("Current status: " + current) : "Tracking loaded.";
+      result.innerHTML = `
+        ${safeUrl ? `<div class="small" style="margin-bottom:10px;"><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open Shiprocket tracking link</a></div>` : ``}
+        ${renderTimeline(tracking?.shipment_track_activities || [])}
+      `;
+    }
+
+    btn.addEventListener("click", () => doTrack(elAwb.value));
+    elAwb.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") doTrack(elAwb.value);
+    });
+
+    const awbFromUrl = getAwbFromUrl();
+    if (awbFromUrl) {
+      elAwb.value = awbFromUrl;
+      doTrack(awbFromUrl);
+    }
   </script>
 </body>
 </html>

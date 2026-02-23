@@ -5,50 +5,298 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);} 
+    function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-CKQ1EXBHY6');
   </script>
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Products — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    /* ── Products Page Hero ── */
+    .products-hero {
+      background: linear-gradient(160deg, var(--bg-warm) 0%, #ede5d8 100%);
+      border-bottom: 1px solid var(--border-light);
+      padding: 44px 16px 38px;
+      position: relative;
+      overflow: hidden;
+    }
+    .products-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 100% at 100% 50%, rgba(110,34,54,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .products-hero-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .products-hero-kicker {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 10px;
+      opacity: 0.8;
+    }
+    .products-hero h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 8px;
+      line-height: 1.08;
+    }
+    .products-hero h1 em { font-style: italic; color: var(--brand); }
+    .products-hero-sub {
+      font-size: 14px;
+      color: var(--text-light);
+      margin: 0;
+    }
+
+    /* ── Listing Layout ── */
+    .listing-body {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 28px 16px 64px;
+    }
+
+    /* ── Improved Toolbar ── */
+    .listing-toolbar-v2 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-xs);
+    }
+    .toolbar-filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+    .toolbar-filter-btn:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+      background: var(--brand-lighter);
+    }
+    .toolbar-filter-icon { font-size: 15px; line-height: 1; }
+    .toolbar-count-v2 {
+      flex: 1;
+      font-size: 13px;
+      color: var(--text-light);
+      text-align: center;
+    }
+    .toolbar-sort-v2 {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      padding: 9px 12px;
+      font-size: 13px;
+      color: var(--text);
+      min-width: 180px;
+      cursor: pointer;
+    }
+
+    /* ── Product Grid ── */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    .p-card {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: var(--shadow-xs);
+      transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease, border-color 0.2s ease;
+      animation: fadeUp 0.4s ease both;
+    }
+    .p-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border);
+    }
+    .p-card a { text-decoration: none; color: inherit; display: block; }
+    .p-card-img {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-warm);
+    }
+    .p-card-img img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    .p-card:hover .p-card-img img { transform: scale(1.06); }
+    .p-card-img-empty {
+      height: 280px;
+      background: linear-gradient(135deg, var(--bg-warm) 0%, var(--border-light) 100%);
+    }
+    .p-card-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 9px;
+      border-radius: 20px;
+      z-index: 2;
+    }
+    .p-card-badge.gold { background: var(--gold); }
+    .p-card-sold-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(250,248,244,0.72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+    }
+    .p-card-sold-label {
+      background: var(--text);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 4px;
+    }
+    .p-card-body { padding: 14px 14px 16px; }
+    .p-card-title {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--text);
+      margin: 0 0 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .p-card-pricing { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+    .p-card-price { font-size: 15px; font-weight: 700; color: var(--text); }
+    .p-card-original { font-size: 12px; text-decoration: line-through; color: var(--text-light); }
+    .p-card-sale-price { font-size: 15px; font-weight: 700; color: var(--brand); }
+    .p-card-stock { font-size: 11px; color: var(--text-light); margin-top: 5px; }
+    .p-card-stock.low { color: #c0540a; font-weight: 500; }
+
+    .load-more-wrap { text-align: center; margin-top: 40px; }
+
+    /* Skeleton */
+    .skeleton-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+    .skeleton {
+      border-radius: var(--radius-md);
+      background: linear-gradient(90deg, var(--bg-warm) 25%, var(--border-light) 50%, var(--bg-warm) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skeleton-card { height: 360px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      .product-grid, .skeleton-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 700px) {
+      .listing-toolbar-v2 { flex-wrap: wrap; }
+      .toolbar-count-v2 { order: 3; flex-basis: 100%; text-align: left; }
+      .toolbar-sort-v2 { min-width: 0; flex: 1; }
+    }
+    @media (max-width: 640px) {
+      .product-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .p-card-img img, .p-card-img-empty { height: 210px; }
+    }
+  </style>
 </head>
 <body>
   <div id="header"></div>
 
-  <div class="container">
-    <h2 id="pageTitle" style="margin-top:0;">Sarees</h2>
-    <div class="small">Click a product to view details</div>
+  <!-- Dynamic hero -->
+  <section class="products-hero">
+    <div class="products-hero-inner">
+      <div class="products-hero-kicker">AhamStree</div>
+      <h1 id="pageTitle">Handloom <em>Sarees</em></h1>
+      <p class="products-hero-sub" id="pageSubtitle">Woven with care, made to last a lifetime.</p>
+    </div>
+  </section>
 
-    <!-- Nalli-like toolbar row -->
-    <div class="listing-toolbar" style="margin-top:12px;">
-      <button id="openFilters" class="toolbar-btn" type="button">
-        <span class="toolbar-btn-icon" aria-hidden="true">☰</span>
-        <span>Show Filters</span>
+  <div class="listing-body">
+
+    <!-- Improved toolbar -->
+    <div class="listing-toolbar-v2">
+      <button id="openFilters" class="toolbar-filter-btn" type="button">
+        <span class="toolbar-filter-icon" aria-hidden="true">⊞</span>
+        <span>Filter</span>
       </button>
-
-      <div id="itemsCount" class="toolbar-count small">&nbsp;</div>
-
-      <select id="sortBy" class="input toolbar-sort" aria-label="Sort">
-        <option value="newest">Newest</option>
+      <div id="itemsCount" class="toolbar-count-v2">&nbsp;</div>
+      <select id="sortBy" class="toolbar-sort-v2 input" aria-label="Sort">
+        <option value="newest">Newest first</option>
         <option value="mostLoved">Most loved</option>
         <option value="priceLow">Price: Low to High</option>
         <option value="priceHigh">Price: High to Low</option>
       </select>
     </div>
 
-    <hr />
+    <div id="status" class="small" style="margin-bottom:12px;"></div>
 
-    <div id="status" class="small">Loading…</div>
-    <div id="grid" class="grid" style="margin-top:12px;"></div>
+    <!-- Skeletons shown on first load -->
+    <div id="skeletonState" class="skeleton-grid">
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+    </div>
+
+    <div id="grid" class="product-grid"></div>
+
+    <div id="loadMoreRow" class="load-more-wrap" style="display:none;">
+      <button id="loadMore" class="btn secondary" type="button">Load more</button>
+    </div>
+    <div id="scrollSentinel" style="height:1px;"></div>
   </div>
 
-  <!-- Filter drawer (Nalli-like) -->
+  <!-- Filter drawer (unchanged) -->
   <div id="filterOverlay" class="drawer-overlay" aria-hidden="true"></div>
 
   <aside id="filterDrawer" class="filter-drawer" aria-hidden="true" aria-label="Filter">
@@ -63,27 +311,9 @@
         <div id="collectionList" class="filter-list small">Loading…</div>
       </div>
 
-      <!-- NEW: Fabric Type Filter -->
-      <div class="filter-block">
-        <div class="filter-title">Fabric Type</div>
-        <div class="filter-list">
-          <label class="filter-option">
-            <input type="checkbox" name="fabric" value="silk" />
-            <span>Silk</span>
-          </label>
-          <label class="filter-option">
-            <input type="checkbox" name="fabric" value="cotton" />
-            <span>Cotton</span>
-          </label>
-          <label class="filter-option">
-            <input type="checkbox" name="fabric" value="banarasi" />
-            <span>Banarasi</span>
-          </label>
-          <label class="filter-option">
-            <input type="checkbox" name="fabric" value="kanjivaram" />
-            <span>Kanjivaram</span>
-          </label>
-        </div>
+      <div class="filter-block" id="fabricBlock">
+        <div class="filter-title">Category</div>
+        <div id="fabricList" class="filter-list small">Loading…</div>
       </div>
 
       <div class="filter-block">
@@ -95,7 +325,6 @@
         <div class="small" style="margin-top:10px; opacity:.75;">Tip: leave blank to ignore.</div>
       </div>
 
-      <!-- NEW: In Stock Only Filter -->
       <div class="filter-block">
         <div class="filter-title">Availability</div>
         <label class="filter-option">
@@ -112,14 +341,15 @@
     </div>
   </aside>
 
-
   <div id="footer"></div>
 
 <script type="module">
   import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
   import { supabase } from "./assets/supabase.js";
+  import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
 
-  document.getElementById("header").innerHTML = renderHeader("products");
+  const _typeForHeader = (new URL(location.href)).searchParams.get("type");
+  document.getElementById("header").innerHTML = renderHeader((_typeForHeader && _typeForHeader.toLowerCase()==="suit") ? "suits" : "products");
   document.getElementById("footer").innerHTML = renderFooter();
   hydrateHeaderAuth();
 
@@ -127,6 +357,7 @@
   const grid = document.getElementById("grid");
   const itemsCount = document.getElementById("itemsCount");
   const applyFiltersBtn = document.getElementById("applyFilters");
+  const skeleton = document.getElementById("skeletonState");
 
   const url = new URL(location.href);
   const params = url.searchParams;
@@ -142,7 +373,6 @@
   function setParam(k, v){
     if (v === null || v === undefined || v === "") params.delete(k);
     else params.set(k, String(v));
-
     const qs = params.toString();
     history.replaceState({}, "", qs ? (url.pathname + "?" + qs) : url.pathname);
   }
@@ -153,7 +383,7 @@
     return "₹" + n.toLocaleString("en-IN");
   }
 
-  // ===== Drawer open/close (Nalli-like) =====
+  // Drawer open/close
   const overlay = document.getElementById("filterOverlay");
   const drawer = document.getElementById("filterDrawer");
   const openBtn = document.getElementById("openFilters");
@@ -166,7 +396,6 @@
     drawer.setAttribute("aria-hidden", "false");
     document.body.classList.add("no-scroll");
   }
-
   function closeDrawer(){
     overlay.classList.remove("open");
     drawer.classList.remove("open");
@@ -183,18 +412,12 @@
   async function loadCollections(){
     const box = document.getElementById("collectionList");
     const selected = params.get("collection") || "";
-
     const { data, error } = await supabase
       .from("collections")
       .select("id,name,slug")
       .eq("is_active", true)
       .order("created_at", { ascending: false });
-
-    if (error){
-      box.textContent = "Could not load collections.";
-      return;
-    }
-
+    if (error){ box.textContent = "Could not load collections."; return; }
     box.innerHTML = `
       <label class="filter-option">
         <input type="radio" name="col" value="" ${selected ? "" : "checked"} />
@@ -202,195 +425,309 @@
       </label>
     ` + (data ?? []).map(c => `
       <label class="filter-option">
-        <input type="radio" name="col" value="${c.slug}" ${c.slug === selected ? "checked" : ""} />
-        <span>${c.name}</span>
+        <input type="radio" name="col" value="${escapeAttr(c.slug)}" ${c.slug === selected ? "checked" : ""} />
+        <span>${escapeHtml(c.name)}</span>
       </label>
     `).join("");
-
-    // Nalli-like: changes are applied when user taps "See items"
     Array.from(box.querySelectorAll("input[name='col']")).forEach(r => {
-      r.addEventListener("change", () => {
-        setParam("collection", r.value);
-      });
+      r.addEventListener("change", () => { setParam("collection", r.value); });
     });
   }
 
-  async function loadProducts(){
-    status.textContent = "Loading…";
-    grid.innerHTML = "";
+  async function loadFabrics(){
+    const box = document.getElementById("fabricList");
+    const selected = params.get("fabric") || "";
+    try{
+      const { data, error } = await supabase
+        .from("fabrics")
+        .select("id,name,slug,description,sort_order,is_active")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("name", { ascending: true });
+      if (error) throw error;
+      const rows = data ?? [];
+      if (rows.length === 0){ document.getElementById("fabricBlock")?.classList.add("hidden"); return; }
+      box.innerHTML = `
+        <label class="filter-option">
+          <input type="radio" name="fab" value="" ${selected === "" ? "checked" : ""} />
+          <span>All</span>
+        </label>
+        ${rows.map(f => `
+          <label class="filter-option">
+            <input type="radio" name="fab" value="${escapeAttr(f.slug)}" ${selected === f.slug ? "checked" : ""} />
+            <span>${escapeHtml(f.name)}</span>
+          </label>
+        `).join("")}
+      `;
+      Array.from(box.querySelectorAll("input[name='fab']")).forEach(r => {
+        r.addEventListener("change", () => setParam("fabric", r.value));
+      });
+    } catch(e){ document.getElementById("fabricBlock")?.classList.add("hidden"); }
+  }
+
+  const PAGE_SIZE = 24;
+  let offset = 0;
+  let hasMore = true;
+  let isLoading = false;
+
+  const loadMoreRow = document.getElementById("loadMoreRow");
+  const loadMoreBtn = document.getElementById("loadMore");
+  const sentinel = document.getElementById("scrollSentinel");
+
+  const cache = {
+    collectionSlug: null, collectionId: null, collectionName: null, productIds: null,
+    fabricSlug: null, fabricId: null, fabricName: null
+  };
+
+  async function resolveCollection(slug){
+    if (!slug) { cache.collectionSlug = null; cache.collectionId = null; cache.collectionName = null; cache.productIds = null; return null; }
+    if (cache.collectionSlug === slug && cache.collectionId) return cache;
+    const { data: col, error: colErr } = await supabase.from("collections").select("id,name").eq("slug", slug).maybeSingle();
+    if (colErr || !col) return null;
+    const { data: links, error: linkErr } = await supabase.from("collection_products").select("product_id").eq("collection_id", col.id);
+    if (linkErr) return null;
+    cache.collectionSlug = slug; cache.collectionId = col.id; cache.collectionName = col.name;
+    cache.productIds = (links ?? []).map(x => x.product_id);
+    return cache;
+  }
+
+  async function resolveFabric(slug){
+    if (!slug) { cache.fabricSlug = null; cache.fabricId = null; cache.fabricName = null; return null; }
+    if (cache.fabricSlug === slug && cache.fabricId) return cache;
+    try{
+      const { data: fab, error: fabErr } = await supabase.from("fabrics").select("id,name").eq("slug", slug).maybeSingle();
+      if (fabErr || !fab) return null;
+      cache.fabricSlug = slug; cache.fabricId = fab.id; cache.fabricName = fab.name;
+      return cache;
+    } catch(e){ return null; }
+  }
+
+  function setPageTitle(){
+    const type = (params.get("type") || "saree").toLowerCase();
+    const collection = params.get("collection") || "";
+    const titleEl = document.getElementById("pageTitle");
+    const subEl = document.getElementById("pageSubtitle");
+
+    if (collection && cache.collectionName){
+      titleEl.innerHTML = escapeHtml(cache.collectionName);
+      subEl.textContent = "A handpicked edit from our collection.";
+    } else if (type === "suit") {
+      titleEl.innerHTML = `Handloom <em>Suits</em>`;
+      subEl.textContent = "Crafted for everyday grace — from weave to wear.";
+    } else {
+      titleEl.innerHTML = `Handloom <em>Sarees</em>`;
+      subEl.textContent = "Woven with care, made to last a lifetime.";
+    }
+  }
+
+  function normalize(rows = []){
+    return (rows ?? []).map(p => {
+      const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
+      const inv = Number(p.inventory_qty || 0);
+      const res = Number(p.reserved_qty || 0);
+      const available_qty = Math.max(0, inv - res);
+      const original_price = Number(p.price_inr || 0);
+      const sale_price = (p.sale_price_inr === null || p.sale_price_inr === undefined) ? null : Number(p.sale_price_inr);
+      const effective_price = (sale_price && sale_price > 0) ? sale_price : original_price;
+      return { ...p, image_url: imgs[0]?.image_url ?? "", available_qty, _original_price_inr: original_price, _effective_price_inr: effective_price };
+    });
+  }
+
+  function productCard(p, idx){
+    const base = Number(p.price_inr || 0);
+    const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
+    const hasSale = sale != null && sale > 0 && sale < base;
+    const pctOff = hasSale ? Math.round((1 - sale/base) * 100) : 0;
+    const soldOut = Number(p.available_qty || 0) <= 0;
+    const stockCount = Number(p.available_qty || 0);
+
+    const priceHtml = hasSale
+      ? `<span class="p-card-original">${moneyINR(base)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
+      : `<span class="p-card-price">${moneyINR(base)}</span>`;
+
+    const imgHtml = p.image_url
+      ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title)}" loading="lazy" decoding="async">`
+      : `<div class="p-card-img-empty"></div>`;
+
+    return `
+      <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
+        <a class="product-link" href="product.html?id=${encodeURIComponent(p.id)}">
+          <div class="p-card-img">
+            ${imgHtml}
+            ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
+            ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
+          </div>
+          <div class="p-card-body">
+            <div class="p-card-title">${escapeHtml(p.title)}</div>
+            <div class="p-card-pricing">${priceHtml}</div>
+            ${!soldOut && stockCount <= 3 ? `<div class="p-card-stock low">Only ${stockCount} left</div>` : ""}
+            ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
+          </div>
+        </a>
+      </div>`;
+  }
+
+  function updateLoadMoreUI(){
+    if (hasMore) {
+      loadMoreRow.style.display = "block";
+      loadMoreBtn.disabled = false;
+      loadMoreBtn.textContent = "Load more";
+    } else {
+      loadMoreRow.style.display = "none";
+    }
+  }
+
+  async function loadNextPage(isFirst = false){
+    if (isLoading || !hasMore) return;
+    isLoading = true;
+
+    if (isFirst){
+      status.textContent = "";
+      grid.innerHTML = "";
+      offset = 0;
+      hasMore = true;
+      skeleton.style.display = "grid";
+    } else {
+      loadMoreBtn.textContent = "Loading…";
+      loadMoreBtn.disabled = true;
+    }
 
     const selectedSlug = params.get("collection") || "";
+    const selectedFabricSlug = params.get("fabric") || "";
     const min = numOrNull(params.get("min"));
     const max = numOrNull(params.get("max"));
     const sort = params.get("sort") || "newest";
-    
-    // NEW: Get fabric filters
-    const selectedFabrics = params.get("fabrics")?.split(',').filter(Boolean) || [];
     const inStockOnly = params.get("inStock") === "true";
+    const type = (params.get("type") || "saree").toLowerCase();
 
-    let productIds = null;
+    const col = await resolveCollection(selectedSlug);
+    const fab = await resolveFabric(selectedFabricSlug);
+    setPageTitle();
 
     if (selectedSlug){
-      const { data: col, error: colErr } = await supabase
-        .from("collections")
-        .select("id,name")
-        .eq("slug", selectedSlug)
-        .maybeSingle();
-
-      if (colErr || !col){
-        status.textContent = "Collection not found.";
-        return;
-      }
-
-      document.getElementById("pageTitle").textContent = col.name;
-
-      const { data: links, error: linkErr } = await supabase
-        .from("collection_products")
-        .select("product_id")
-        .eq("collection_id", col.id);
-
-      if (linkErr){
-        status.textContent = "Could not load collection products.";
-        return;
-      }
-
-      productIds = (links ?? []).map(x => x.product_id);
-
-      if (productIds.length === 0){
+      if (!col){ status.textContent = "Collection not found."; itemsCount.textContent = ""; skeleton.style.display = "none"; isLoading = false; return; }
+      if (!cache.productIds || cache.productIds.length === 0){
         status.textContent = "No products in this collection yet.";
         itemsCount.textContent = "0 items";
-        applyFiltersBtn.textContent = "See items";
-        return;
+        skeleton.style.display = "none";
+        hasMore = false; updateLoadMoreUI(); isLoading = false; return;
       }
-    } else {
-      document.getElementById("pageTitle").textContent = "Sarees";
     }
 
     if (min !== null && max !== null && min > max) {
       status.textContent = "Min price cannot be greater than Max price.";
-      return;
+      skeleton.style.display = "none";
+      isLoading = false; return;
+    }
+
+    if (isFirst){
+      try{
+        let countQ = supabase.from("products").select("id", { count: "exact", head: true }).eq("is_active", true).eq("category", type);
+        if (selectedSlug) countQ = countQ.in("id", cache.productIds);
+        if (fab && cache.fabricId) countQ = countQ.eq("fabric_id", cache.fabricId);
+        if (min !== null) countQ = countQ.gte("price_inr", min);
+        if (max !== null) countQ = countQ.lte("price_inr", max);
+        if (inStockOnly) countQ = countQ.gt("inventory_qty", 0);
+        const { count } = await countQ;
+        if (typeof count === "number"){
+          itemsCount.textContent = `${count} item${count !== 1 ? "s" : ""}`;
+          applyFiltersBtn.textContent = count ? `See ${count} items` : "See items";
+        } else {
+          itemsCount.textContent = "";
+          applyFiltersBtn.textContent = "See items";
+        }
+      } catch(e){ itemsCount.textContent = ""; applyFiltersBtn.textContent = "See items"; }
     }
 
     let query = supabase
       .from("products")
-      .select("id,title,price_inr,inventory_qty,is_active,created_at,view_count,product_images(image_url, sort_order)")
-      .eq("is_active", true);
+      .select("id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,product_images(image_url, sort_order)")
+      .eq("is_active", true)
+      .eq("category", type);
 
-    if (productIds) query = query.in("id", productIds);
+    if (selectedSlug) query = query.in("id", cache.productIds);
+    if (fab && cache.fabricId) query = query.eq("fabric_id", cache.fabricId);
     if (min !== null) query = query.gte("price_inr", min);
     if (max !== null) query = query.lte("price_inr", max);
-    
-    
-    // NEW: Apply stock filter
-    if (inStockOnly) {
-      query = query.gt("inventory_qty", 0);
-    }
+    if (inStockOnly) query = query.gt("inventory_qty", 0);
 
     if (sort === "mostLoved") query = query.order("view_count", { ascending: false }).order("created_at", { ascending: false });
     else if (sort === "priceLow") query = query.order("price_inr", { ascending: true });
     else if (sort === "priceHigh") query = query.order("price_inr", { ascending: false });
     else query = query.order("created_at", { ascending: false });
 
-    const { data, error } = await query;
+    query = query.range(offset, offset + PAGE_SIZE);
 
-    if (error){
-      status.textContent = "Error: " + error.message;
-      return;
+    const { data, error } = await query;
+    skeleton.style.display = "none";
+
+    if (error){ status.textContent = "Error: " + error.message; isLoading = false; return; }
+
+    const rows = data ?? [];
+    hasMore = rows.length > PAGE_SIZE;
+    const slice = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
+    const normalized = normalize(slice);
+
+    if (isFirst && normalized.length === 0){
+      status.textContent = "No products found.";
+      hasMore = false; updateLoadMoreUI(); isLoading = false; return;
     }
 
-    const normalized = (data ?? []).map(p => {
-      const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
-      return { ...p, image_url: imgs[0]?.image_url ?? "" };
-    });
+    grid.insertAdjacentHTML("beforeend", normalized.map((p, i) => productCard(p, offset + i)).join(""));
+    offset += slice.length;
+    updateLoadMoreUI();
+    isLoading = false;
+  }
 
-    status.textContent = normalized.length ? "" : "No products found.";
-
-    // Update Nalli-like counts / CTA
-    itemsCount.textContent = `${normalized.length} items`;
-    applyFiltersBtn.textContent = normalized.length ? `See ${normalized.length} items` : "See items";
-
-    grid.innerHTML = normalized.map(p => `
-      <div class="card product-card">
-        <a class="product-link" href="product.html?id=${encodeURIComponent(p.id)}">
-          ${p.image_url ? `<img src="${p.image_url}" alt="${p.title}" loading="lazy">` : `<div style="height:280px;background:#fafafa;"></div>`}
-          <div class="p">
-            <div class="product-title">${p.title}</div>
-            <div style="margin-top:6px;opacity:.85;">${moneyINR(p.price_inr)}</div>
-            <div class="small" style="margin-top:6px;">
-              ${p.inventory_qty > 0 ? `${p.inventory_qty} in stock` : "Sold out"}
-            </div>
-          </div>
-        </a>
-      </div>
-    `).join("");
+  function resetAndLoad(){
+    hasMore = true;
+    offset = 0;
+    loadNextPage(true);
   }
 
   // Init control values from URL
   document.getElementById("minPrice").value = params.get("min") || "";
   document.getElementById("maxPrice").value = params.get("max") || "";
   document.getElementById("sortBy").value = params.get("sort") || "newest";
-  
-  // NEW: Init fabric checkboxes from URL
-  const savedFabrics = params.get("fabrics")?.split(',').filter(Boolean) || [];
-  savedFabrics.forEach(fabric => {
-    const checkbox = document.querySelector(`input[name="fabric"][value="${fabric}"]`);
-    if (checkbox) checkbox.checked = true;
-  });
-  
-  // NEW: Init stock checkbox from URL
   document.getElementById("inStockOnly").checked = params.get("inStock") === "true";
 
-  // Sort applies immediately (like Nalli)
   document.getElementById("sortBy").addEventListener("change", (e) => {
     setParam("sort", e.target.value);
-    loadProducts();
+    resetAndLoad();
   });
 
-  // Apply button applies price + refreshes products, then closes drawer
   applyFiltersBtn.addEventListener("click", () => {
     setParam("min", document.getElementById("minPrice").value.trim());
     setParam("max", document.getElementById("maxPrice").value.trim());
-    
-    // NEW: Save fabric selections
-    const fabricCheckboxes = document.querySelectorAll('input[name="fabric"]:checked');
-    const selectedFabrics = Array.from(fabricCheckboxes).map(cb => cb.value);
-    setParam("fabrics", selectedFabrics.join(','));
-    
-    // NEW: Save stock filter
     setParam("inStock", document.getElementById("inStockOnly").checked ? "true" : "");
-    
-    loadProducts();
+    resetAndLoad();
     closeDrawer();
   });
 
-  // Clear all resets everything
   document.getElementById("clearAll").addEventListener("click", () => {
-    params.delete("collection"); 
-    params.delete("min"); 
-    params.delete("max"); 
-    params.delete("sort");
-    params.delete("fabrics");  // NEW
-    params.delete("inStock");  // NEW
+    params.delete("collection"); params.delete("fabric"); params.delete("min"); params.delete("max"); params.delete("sort"); params.delete("inStock");
     history.replaceState({}, "", url.pathname);
-
     document.getElementById("minPrice").value = "";
     document.getElementById("maxPrice").value = "";
     document.getElementById("sortBy").value = "newest";
-    
-    // NEW: Clear fabric checkboxes
-    document.querySelectorAll('input[name="fabric"]').forEach(cb => cb.checked = false);
-    
-    // NEW: Clear stock checkbox
     document.getElementById("inStockOnly").checked = false;
-
     loadCollections();
-    loadProducts();
+    resetAndLoad();
     closeDrawer();
   });
 
-  // Init
   loadCollections();
-  loadProducts();
+  loadFabrics();
+  resetAndLoad();
+
+  loadMoreBtn.addEventListener("click", () => loadNextPage(false));
+
+  if ("IntersectionObserver" in window) {
+    const obs = new IntersectionObserver((entries) => {
+      if (entries.some(e => e.isIntersecting)) loadNextPage(false);
+    }, { rootMargin: "600px" });
+    obs.observe(sentinel);
+  }
 </script>
 
 </body>

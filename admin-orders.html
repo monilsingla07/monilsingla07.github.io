@@ -1,192 +1,626 @@
 <!doctype html>
 <html>
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
 
-  gtag('config', 'G-CKQ1EXBHY6');
-</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Orders — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .sbadge { display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;gap:4px; }
+    .sbadge.cod_pending  { background:#fff7ed;color:#9a3412;border:1px solid #fed7aa; }
+    .sbadge.confirmed    { background:#dcfce7;color:#166534; }
+    .sbadge.paid         { background:#dcfce7;color:#166534; }
+    .sbadge.shipped      { background:#dbeafe;color:#1e40af; }
+    .sbadge.delivered    { background:#f0fdf4;color:#14532d;border:1px solid #86efac; }
+    .sbadge.pending      { background:#fef9c3;color:#854d0e; }
+    .sbadge.failed       { background:#fee2e2;color:#991b1b; }
+    .sbadge.cancelled    { background:#f3f4f6;color:#6b7280; }
+    .sbadge.refunded     { background:#f5f3ff;color:#5b21b6; }
+
+    .pm-pill { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700; }
+    .pm-pill.cod    { background:#fff7ed;color:#9a3412; }
+    .pm-pill.online { background:#eff6ff;color:#1d4ed8; }
+
+    .action-bar { padding:12px 16px;border-top:1px solid var(--border-light,#f3f4f6); }
+    .action-bar.cod-confirm { background:#fff7ed;border-top-color:#fed7aa; }
+    .action-bar.ship-bar    { background:#f0f9ff;border-top-color:#bae6fd; }
+
+    .awb-row { display:flex;gap:8px;align-items:center;margin-top:8px; }
+    .awb-row input { flex:1;min-width:0; }
+
+    #toast {
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+      background:#111;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;
+      font-weight:700;opacity:0;transition:all .25s ease;pointer-events:none;z-index:9999;
+      white-space:nowrap;
+    }
+    #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+
+    .status-row { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+    .order-card { border-radius:16px;overflow:hidden;border:1px solid var(--border,#e5e7eb);background:#fff; }
+    .order-card + .order-card { margin-top:0; }
+
+    .filters-bar { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center; }
+    .filters-bar .input { height:40px;font-size:13px; }
+
+    .section-lbl { font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.5;margin-bottom:4px; }
+
+    .pager { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:14px; justify-content:space-between; }
+    .pager .small { opacity:.7; }
+  </style>
 </head>
+
 <body>
   <div id="header"></div>
 
-  <div class="container">
-    <h2 style="margin-top:0;">Orders</h2>
+  <div class="container" style="max-width:1000px;">
+    <div id="loadingState" style="text-align:center;padding:48px;opacity:.6;font-size:14px;">Verifying admin access…</div>
 
-    <div class="row" style="margin-bottom:12px;">
-      <select id="statusFilter" class="input" style="max-width:260px;">
-        <option value="">All</option>
-        <option value="payment_link_created">Pending</option>
-        <option value="payment_failed">Failed</option>
-        <option value="expired">Expired</option>
-        <option value="paid">Paid</option>
-      </select>
+    <div id="mainContent" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+        <div>
+          <h2 style="margin:0;">Admin — Orders</h2>
+          <div class="small" style="opacity:.65;margin-top:4px;">Manage all orders. Status updates are reflected on the customer's orders page immediately.</div>
+        </div>
+        <a class="btn secondary" href="admin.html" style="padding:8px 14px;font-size:13px;">← Dashboard</a>
+      </div>
 
-      <input id="search" class="input" placeholder="Search by phone or order id…" style="max-width:320px;" />
-      <button id="load" class="btn">Load</button>
-      <a class="btn secondary" href="admin.html">Back</a>
+      <div class="filters-bar">
+        <select id="statusFilter" class="input" style="max-width:260px;">
+          <option value="">All statuses</option>
+          <option value="cod_pending">COD Pending (confirm first)</option>
+          <option value="confirmed">COD Confirmed (ship now)</option>
+          <option value="paid">Paid Online (ship now)</option>
+          <option value="payment_pending_all">Payment pending (all)</option>
+          <option value="payment_link_created">Payment link created</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="failed">Failed / Expired</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+
+        <select id="methodFilter" class="input" style="max-width:180px;">
+          <option value="">All payment types</option>
+          <option value="cod">Cash on Delivery</option>
+          <option value="razorpay">Online (Razorpay)</option>
+        </select>
+
+        <input id="search" class="input" placeholder="Search phone or order ID…" style="max-width:260px;" />
+        <button id="btnLoad" class="btn" style="padding:8px 16px;font-size:13px;">Refresh</button>
+      </div>
+
+      <div id="statusMsg" class="small" style="margin-bottom:12px;opacity:.6;"></div>
+      <div id="list" style="display:grid;gap:14px;"></div>
+
+      <div class="pager">
+        <div class="small" id="pagerInfo"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button id="btnPrev" class="btn secondary" style="padding:8px 14px;font-size:13px;">← Prev</button>
+          <button id="btnNext" class="btn secondary" style="padding:8px 14px;font-size:13px;">Next →</button>
+        </div>
+      </div>
     </div>
-
-    <div id="status" class="small"></div>
-    <div id="list" style="margin-top:12px;display:grid;gap:12px;"></div>
   </div>
 
+  <div id="toast"></div>
   <div id="footer"></div>
 
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr, safeHref, safeUrl } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
 
-    const statusEl = document.getElementById("status");
-    const list = document.getElementById("list");
+    var loadingState = document.getElementById("loadingState");
+    var mainContent  = document.getElementById("mainContent");
+    var statusMsg    = document.getElementById("statusMsg");
+    var list         = document.getElementById("list");
+    var pagerInfo    = document.getElementById("pagerInfo");
+    var btnPrev      = document.getElementById("btnPrev");
+    var btnNext      = document.getElementById("btnNext");
 
-    const { data: sess } = await supabase.auth.getSession();
-    if (!sess?.session) window.location.href = "login.html";
+    // Pagination state
+    let page = 1;
+    const limit = 50;
+    let lastTotal = 0;
+    let lastShown = 0;
 
-    const statusFilter = document.getElementById("statusFilter");
-    const search = document.getElementById("search");
-    document.getElementById("load").onclick = load;
-
-    function waLink(phone, text) {
-      const p = String(phone || "").replace(/\D/g, "");
-      const msg = encodeURIComponent(text);
-      return `https://wa.me/${p}?text=${msg}`;
+    function showAdminError(emoji, title, message) {
+      loadingState.style.display = "block";
+      mainContent.style.display = "none";
+      loadingState.innerHTML =
+        '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
     }
 
-    function renderOrder(o) {
-      const items = (o.order_items || []).map(it =>
-        `<div class="small">${it.qty} × ${it.title} — ₹${it.price_inr}</div>`
-      ).join("");
+    async function initAdmin() {
+      try {
+        var sessResult = await supabase.auth.getSession();
+        if (sessResult.error) { showAdminError("⚠️", "Auth Error", sessResult.error.message); return; }
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
 
-      const total = "₹" + Number(o.total_inr||0).toLocaleString("en-IN");
-      const phone = o.customer_phone || "";
-
-      const reminderMsg = `Hi ${o.customer_name||"there"}, your AhamStree order (${o.id}) is pending. Please complete payment here: ${o.razorpay_payment_link_url || ""}`;
-      const invoiceMsg = `Hi ${o.customer_name||"there"}, thanks for your order (${o.id}). Here is your invoice: (link will be generated by admin)`;
-
-      return `
-        <div class="card">
-          <div class="p">
-            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-              <div>
-                <div style="font-weight:900;">Order ${o.id}</div>
-                <div class="small">Status: <b>${o.status}</b> • Total: <b>${total}</b></div>
-                <div class="small">Customer: ${o.customer_name||"-"} • ${o.customer_phone||"-"}</div>
-              </div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;">
-                ${o.razorpay_payment_link_url ? `<a class="btn secondary" target="_blank" href="${o.razorpay_payment_link_url}">Payment Link</a>` : ""}
-                <button class="btn secondary" data-action="regen" data-id="${o.id}">Regenerate Link</button>
-                <button class="btn" data-action="invoice" data-id="${o.id}">Generate Invoice PDF</button>
-              </div>
-            </div>
-
-            <hr/>
-            ${items}
-
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-              ${phone ? `<a class="btn secondary" target="_blank" href="${waLink(phone, reminderMsg)}">WhatsApp Reminder</a>` : ""}
-              ${phone ? `<a class="btn secondary" target="_blank" data-wa="invoice" data-phone="${phone}" data-id="${o.id}">Send Invoice on WhatsApp</a>` : ""}
-            </div>
-
-            <div class="small" style="margin-top:8px;">
-              Created: ${new Date(o.created_at).toLocaleString("en-IN")}
-            </div>
-          </div>
-        </div>
-      `;
+        loadingState.style.display = "none";
+        mainContent.style.display  = "block";
+        setupPage();
+      } catch (e) {
+        console.error("Admin page error:", e);
+        showAdminError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
     }
 
-    async function load() {
-      statusEl.textContent = "Loading…";
-      list.innerHTML = "";
+    function setupPage() {
 
-      const st = statusFilter.value;
-      const q = search.value.trim();
+      async function callFn(name, body) {
+        const { data, error } = await supabase.functions.invoke(name, { body: body || {} });
 
-      const url = `admin-orders?status=${encodeURIComponent(st)}&q=${encodeURIComponent(q)}`;
-      const { data, error } = await supabase.functions.invoke(url);
+        if (error) {
+          if (error.status === 401) {
+            window.location.href = "login.html";
+            return { ok: false, handled: true };
+          }
+          if (error.status === 403) {
+            showAdminError("🔒", "Access Denied", "Your account does not have admin access.");
+            return { ok: false, handled: true };
+          }
+          throw new Error(error.message || "Function error");
+        }
 
-      if (error) {
-        statusEl.textContent = "Error / Access denied: " + error.message;
-        return;
+        return { ok: true, data };
       }
 
-      statusEl.textContent = "";
-      const orders = data.orders || [];
-      list.innerHTML = orders.map(renderOrder).join("");
+      function money(v) {
+        return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+      }
 
-      // wire buttons
-      list.querySelectorAll("button[data-action='invoice']").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const id = btn.getAttribute("data-id");
-          btn.disabled = true;
-          btn.textContent = "Generating…";
+      function toast(msg, color = "#111") {
+        const el = document.getElementById("toast");
+        el.textContent  = msg;
+        el.style.background = color;
+        el.classList.add("show");
+        setTimeout(() => el.classList.remove("show"), 3500);
+      }
 
-          const { data: inv, error: invErr } = await supabase.functions.invoke("admin-generate-invoice", {
-            body: { order_id: id }
+      function statusBadge(st) {
+        const map = {
+          cod_pending:          { label: "💵 COD Pending",     cls: "cod_pending" },
+          confirmed:            { label: "✅ COD Confirmed",   cls: "confirmed"   },
+          paid:                 { label: "✅ Paid",            cls: "paid"        },
+          payment_link_created: { label: "⏳ Payment pending", cls: "pending"     },
+          payment_pending:      { label: "⏳ Payment pending", cls: "pending"     },
+          created:              { label: "⏳ Payment pending", cls: "pending"     },
+          payment_link_failed:  { label: "❌ Link failed",     cls: "failed"      },
+          failed:               { label: "❌ Failed",          cls: "failed"      },
+          expired:              { label: "❌ Expired",         cls: "failed"      },
+          shipped:              { label: "🚚 Shipped",         cls: "shipped"     },
+          delivered:            { label: "📬 Delivered",       cls: "delivered"   },
+          cancelled:            { label: "🚫 Cancelled",       cls: "cancelled"   },
+          refunded:             { label: "↩️ Refunded",        cls: "refunded"    },
+        };
+        const s = map[st] || { label: st || "Unknown", cls: "pending" };
+        return `<span class="sbadge ${s.cls}">${s.label}</span>`;
+      }
+
+      function paymentPill(method) {
+        if (method === "cod") return `<span class="pm-pill cod">💵 COD</span>`;
+        return `<span class="pm-pill online">💳 Online</span>`;
+      }
+
+      function waLink(phone, text) {
+        const p    = String(phone || "").replace(/\D/g, "");
+        const full = p.length === 10 ? "91" + p : p;
+        return `https://wa.me/${full}?text=${encodeURIComponent(text)}`;
+      }
+
+      function renderOrder(o) {
+        const isCod         = o.payment_method === "cod";
+        const isOnline      = !isCod;
+        const shortId       = (o.id || "").slice(0, 8).toUpperCase();
+        const phone         = o.customer_phone || "";
+        const addr          = o.shipping_address;
+
+        const addrText      = addr
+          ? [addr.full_name, addr.address_line1, addr.address_line2, addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")
+          : "—";
+
+        const isCodPending  = o.status === "cod_pending";
+        const needsShipping = ["confirmed", "paid"].includes(o.status) && !o.shiprocket_awb;
+        const isShipped     = ["shipped", "delivered"].includes(o.status) || !!o.shiprocket_awb;
+
+        const canRegen      = isOnline && ["payment_link_created", "payment_link_failed", "created", "failed", "payment_pending"].includes(o.status);
+        const payHref       = o.razorpay_payment_link_url ? safeHref(o.razorpay_payment_link_url) : "";
+
+        const siteRoot      = window.location.origin;
+        const confirmMsg    = `Hi ${o.customer_name || "there"}, your AhamStree Cash on Delivery order #${shortId} is confirmed! Total: ${money(o.total_inr)}. We'll dispatch it soon. 🙏`;
+        const shippedMsg    = `Hi ${o.customer_name || "there"}, your AhamStree order #${shortId} has been shipped! 🎉 Track here: ${siteRoot}/track.html?awb=${encodeURIComponent(o.shiprocket_awb || "")}`;
+        const reminderMsg   = `Hi ${o.customer_name || "there"}, your AhamStree order #${shortId} payment is pending. Complete it here: ${o.razorpay_payment_link_url || ""}`;
+
+        const itemsHtml = (o.order_items || []).map(it =>
+          `<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6;">
+             <span class="small">${Number(it.qty)}× ${escapeHtml(it.title)}</span>
+             <span class="small" style="font-weight:700;white-space:nowrap;">${money(it.price_inr)}</span>
+           </div>`
+        ).join("");
+
+        const discountRow = Number(o.discount_inr) > 0
+          ? `<div style="display:flex;justify-content:space-between;gap:8px;margin-top:4px;">
+               <span class="small" style="opacity:.7;">Discount</span>
+               <span class="small" style="color:green;font-weight:700;">−${money(o.discount_inr)}</span>
+             </div>` : "";
+
+        return `
+          <div class="order-card" data-order-id="${escapeAttr(o.id)}">
+
+            <div style="padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                  <span style="font-weight:900;font-size:15px;">Order #${shortId}</span>
+                  ${statusBadge(o.status)}
+                  ${paymentPill(o.payment_method)}
+                  ${isCodPending  ? `<span style="background:#fef3c7;color:#b45309;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;">⚠ Needs confirmation</span>` : ""}
+                  ${needsShipping ? `<span style="background:#dbeafe;color:#1e40af;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;">📦 Ready to ship</span>` : ""}
+                </div>
+                <div class="small" style="opacity:.6;">${new Date(o.created_at).toLocaleString("en-IN", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" })}</div>
+              </div>
+
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                ${payHref ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${payHref}" target="_blank" rel="noopener noreferrer">View payment link</a>` : ""}
+                ${canRegen ? `<button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="regen" data-id="${escapeAttr(o.id)}">Regenerate link</button>` : ""}
+                <button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="invoice" data-id="${escapeAttr(o.id)}">Generate invoice</button>
+              </div>
+            </div>
+
+            <div style="padding:0 16px 12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <div class="section-lbl">Customer</div>
+                <div style="font-weight:700;">${escapeHtml(o.customer_name || "—")}</div>
+                <div class="small">${escapeHtml(phone || "—")}</div>
+                ${o.customer_email ? `<div class="small" style="opacity:.6;">${escapeHtml(o.customer_email)}</div>` : ""}
+              </div>
+              <div>
+                <div class="section-lbl">Ship to</div>
+                <div class="small" style="line-height:1.5;">${escapeHtml(addrText)}</div>
+              </div>
+            </div>
+
+            <div style="padding:0 16px 10px;">
+              <div class="section-lbl">Items</div>
+              ${itemsHtml || `<div class="small" style="opacity:.5;">No items recorded.</div>`}
+            </div>
+
+            <div style="padding:10px 16px;border-top:1px solid #f3f4f6;background:#fafafa;font-size:13px;">
+              ${discountRow}
+              <div style="display:flex;justify-content:space-between;gap:8px;margin-top:4px;">
+                <span style="opacity:.7;">Shipping</span><span>${money(o.shipping_inr)}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;gap:8px;margin-top:6px;font-weight:900;">
+                <span>Total</span><span>${money(o.total_inr)}</span>
+              </div>
+            </div>
+
+            ${isCodPending ? `
+            <div class="action-bar cod-confirm">
+              <div style="font-weight:800;font-size:13px;margin-bottom:6px;">💵 Confirm this COD order</div>
+              <div class="small" style="color:#92400e;margin-bottom:10px;">
+                Confirm you've spoken to the customer and the order is valid. This changes status to "Confirmed".
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn" style="padding:9px 16px;font-size:13px;" data-action="confirm-cod" data-id="${escapeAttr(o.id)}">
+                  ✅ Confirm COD order
+                </button>
+                <button class="btn secondary" style="padding:9px 16px;font-size:13px;color:crimson;border-color:crimson;" data-action="update-status" data-id="${escapeAttr(o.id)}" data-status="cancelled">
+                  Cancel order
+                </button>
+              </div>
+            </div>` : ""}
+
+            ${needsShipping ? `
+            <div class="action-bar ship-bar">
+              <div style="font-weight:800;font-size:13px;margin-bottom:6px;">📦 Mark as shipped</div>
+              <div class="small" style="color:#1e40af;margin-bottom:10px;">
+                Once dispatched via Shiprocket, enter the AWB to update tracking.
+              </div>
+              <div class="awb-row">
+                <input class="input awb-input" placeholder="Shiprocket AWB number"
+                      data-id="${escapeAttr(o.id)}" style="font-size:13px;" />
+                <button class="btn" style="padding:10px 16px;font-size:13px;white-space:nowrap;"
+                        data-action="ship" data-id="${escapeAttr(o.id)}">
+                  Mark shipped →
+                </button>
+              </div>
+            </div>` : ""}
+
+            ${isShipped && o.shiprocket_awb ? `
+            <div style="padding:10px 16px;background:#eff6ff;border-top:1px solid #bfdbfe;">
+              <div class="small" style="color:#1e40af;">
+                🚚 AWB: <strong>${escapeHtml(o.shiprocket_awb)}</strong>
+                &nbsp;•&nbsp;
+                <a href="track.html?awb=${encodeURIComponent(o.shiprocket_awb)}" target="_blank" style="color:inherit;font-weight:700;">View tracking →</a>
+              </div>
+            </div>` : ""}
+
+            ${o.status === "shipped" ? `
+            <div class="action-bar">
+              <div class="section-lbl" style="margin-bottom:8px;">Update status</div>
+              <div class="status-row">
+                <button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="update-status" data-id="${escapeAttr(o.id)}" data-status="delivered">
+                  ✅ Mark delivered
+                </button>
+                <button class="btn secondary" style="padding:7px 12px;font-size:12px;color:crimson;border-color:crimson;" data-action="update-status" data-id="${escapeAttr(o.id)}" data-status="cancelled">
+                  Cancel order
+                </button>
+              </div>
+            </div>` : ""}
+
+            ${o.status === "confirmed" ? `
+            <div class="action-bar">
+              <div class="status-row">
+                <button class="btn secondary" style="padding:7px 12px;font-size:12px;color:crimson;border-color:crimson;" data-action="update-status" data-id="${escapeAttr(o.id)}" data-status="cancelled">
+                  Cancel order
+                </button>
+              </div>
+            </div>` : ""}
+
+            ${phone ? `
+            <div style="padding:10px 16px;border-top:1px solid #f3f4f6;display:flex;gap:8px;flex-wrap:wrap;">
+              <div class="section-lbl" style="width:100%;margin-bottom:2px;">WhatsApp</div>
+              ${isCod ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${safeHref(waLink(phone, confirmMsg))}" target="_blank" rel="noopener noreferrer">✅ Confirm COD</a>` : ""}
+              ${o.shiprocket_awb ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${safeHref(waLink(phone, shippedMsg))}" target="_blank" rel="noopener noreferrer">🚚 Share tracking</a>` : ""}
+              ${isOnline && canRegen ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${safeHref(waLink(phone, reminderMsg))}" target="_blank" rel="noopener noreferrer">🔔 Payment reminder</a>` : ""}
+              <a class="btn secondary" data-wa-invoice href="#" style="padding:7px 12px;font-size:12px;opacity:.5;" data-phone="${escapeAttr(phone)}" data-id="${escapeAttr(o.id)}">📄 Send invoice</a>
+            </div>` : ""}
+
+          </div>
+        `;
+      }
+
+      async function load(opts = {}) {
+        const reset = !!opts.reset;
+        if (reset) page = 1;
+
+        statusMsg.textContent = "Loading…";
+        list.innerHTML = "";
+
+        const st     = document.getElementById("statusFilter").value;
+        const method = document.getElementById("methodFilter").value;
+        const q      = document.getElementById("search").value.trim();
+
+        // Special client-side filter for "payment_pending_all"
+        let statusToSend = st || null;
+        if (st === "payment_pending_all") statusToSend = null;
+
+        let r;
+        try {
+          r = await callFn("admin-orders", { status: statusToSend, q: q || null, page, limit });
+          if (!r.ok) return;
+        } catch (e) {
+          statusMsg.textContent = "Error loading orders: " + e.message;
+          pagerInfo.textContent = "";
+          return;
+        }
+
+        let orders = r.data?.orders || [];
+
+        // Apply "payment pending (all)" filter client-side
+        if (st === "payment_pending_all") {
+          orders = orders.filter(o => ["payment_link_created", "payment_pending", "created"].includes(o.status));
+        }
+
+        // Apply payment method filter client-side
+        if (method) orders = orders.filter(o => (o.payment_method || "razorpay") === method);
+
+        lastTotal = Number(r.data?.total || orders.length);
+        lastShown = orders.length;
+
+        statusMsg.textContent = orders.length
+          ? `Showing ${orders.length} order${orders.length !== 1 ? "s" : ""}`
+          : "No orders found.";
+
+        // Pager info + enable/disable buttons
+        const start = (page - 1) * limit + 1;
+        const end = (page - 1) * limit + orders.length;
+        pagerInfo.textContent = orders.length ? `Page ${page} • Showing ${start}-${end} of ${lastTotal}` : "";
+
+        btnPrev.disabled = page <= 1;
+        // If we got less than limit items, likely last page
+        btnNext.disabled = orders.length < limit;
+
+        list.innerHTML = orders.map(renderOrder).join("");
+        wireEvents();
+      }
+
+      async function updateStatus(orderId, newStatus, extra = {}) {
+        const r = await callFn("admin-update-order-status", { order_id: orderId, status: newStatus, ...extra });
+        if (!r.ok) throw new Error("Update failed");
+        return r.data;
+      }
+
+      function wireEvents() {
+        // Confirm COD
+        list.querySelectorAll("button[data-action='confirm-cod']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Confirming…";
+            try {
+              await updateStatus(id, "confirmed");
+              toast("COD order confirmed ✅", "#166534");
+              load();
+            } catch (e) {
+              toast("Error: " + e.message, "#dc2626");
+              btn.disabled = false;
+            } finally {
+              btn.textContent = oldText;
+            }
           });
-
-          btn.disabled = false;
-          btn.textContent = "Generate Invoice PDF";
-
-          if (invErr) {
-            alert("Invoice error: " + invErr.message);
-            return;
-          }
-
-          // open invoice URL
-          window.open(inv.invoice_url, "_blank");
-
-          // update the WhatsApp invoice link button (if exists)
-          const waBtn = list.querySelector(`a[data-wa='invoice'][data-id='${id}']`);
-          if (waBtn) {
-            const phone = waBtn.getAttribute("data-phone");
-            const msg = `Hi, thanks for your AhamStree order (${id}). Here is your invoice: ${inv.invoice_url}`;
-            waBtn.href = waLink(phone, msg);
-          }
         });
+
+        // Mark shipped
+        list.querySelectorAll("button[data-action='ship']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id       = btn.dataset.id;
+            const card     = btn.closest("[data-order-id]");
+            const awbInput = card?.querySelector(".awb-input");
+            const awb      = (awbInput?.value || "").trim();
+
+            if (!awb) { toast("Please enter the AWB number first", "#dc2626"); return; }
+
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Saving…";
+            try {
+              await updateStatus(id, "shipped", { shiprocket_awb: awb });
+              toast("Order marked as shipped 🚚", "#166534");
+              load();
+            } catch (e) {
+              toast("Error: " + e.message, "#dc2626");
+              btn.disabled = false;
+            } finally {
+              btn.textContent = oldText;
+            }
+          });
+        });
+
+        // Generic status update (delivered/cancelled)
+        list.querySelectorAll("button[data-action='update-status']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id        = btn.dataset.id;
+            const newStatus = btn.dataset.status;
+            const label     = newStatus === "cancelled" ? "Cancel" : `Mark as "${newStatus}"`;
+
+            if (!confirm(`${label} order ${id.slice(0,8).toUpperCase()}?\n\nThis will update the customer's orders page immediately.`)) return;
+
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Saving…";
+            try {
+              await updateStatus(id, newStatus);
+              toast(`Order ${newStatus} ✅`, "#166534");
+              load();
+            } catch (e) {
+              toast("Error: " + e.message, "#dc2626");
+              btn.disabled = false;
+            } finally {
+              btn.textContent = oldText;
+            }
+          });
+        });
+
+        // Regenerate payment link
+        list.querySelectorAll("button[data-action='regen']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Working…";
+
+            try {
+              const r = await callFn("admin-regenerate-payment-link", { order_id: id });
+              if (!r.ok) return;
+              toast("New payment link created ✅", "#166534");
+              load();
+            } catch (e) {
+              toast("Error: " + e.message, "#dc2626");
+            } finally {
+              btn.disabled = false;
+              btn.textContent = oldText;
+            }
+          });
+        });
+
+        // Generate invoice
+        list.querySelectorAll("button[data-action='invoice']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Generating…";
+
+            try {
+              const r = await callFn("admin-generate-invoice", { order_id: id });
+              if (!r.ok) return;
+
+              const inv = r.data || {};
+              const invUrl = safeUrl(inv.invoice_url, { type: "href" });
+              if (!invUrl) { toast("Invalid invoice URL", "#dc2626"); return; }
+
+              const w = window.open(invUrl, "_blank", "noopener,noreferrer");
+              if (w) w.opener = null;
+
+              // Activate WhatsApp "Send invoice" button with proper phone formatting
+              const card  = list.querySelector(`[data-order-id="${id}"]`);
+              const waBtn = card?.querySelector("a[data-wa-invoice]");
+              if (waBtn) {
+                const phone = waBtn.dataset.phone || "";
+                const raw = String(phone).replace(/\D/g, "");
+                const full = raw.length === 10 ? "91" + raw : raw;
+                const msg   = `Hi, your AhamStree invoice is ready: ${inv.invoice_url}`;
+                waBtn.href  = `https://wa.me/${full}?text=${encodeURIComponent(msg)}`;
+                waBtn.style.opacity = "1";
+              }
+
+              toast("Invoice generated ✅", "#166534");
+            } catch (e) {
+              toast("Invoice error: " + e.message, "#dc2626");
+            } finally {
+              btn.disabled = false;
+              btn.textContent = oldText;
+            }
+          });
+        });
+      }
+
+      // Controls
+      document.getElementById("btnLoad").onclick = () => load({ reset: true });
+      document.getElementById("statusFilter").onchange = () => load({ reset: true });
+      document.getElementById("methodFilter").onchange = () => load({ reset: true });
+
+      // Enter key support in search
+      document.getElementById("search").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") load({ reset: true });
       });
 
-      list.querySelectorAll("button[data-action='regen']").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const id = btn.getAttribute("data-id");
-          btn.disabled = true;
-          btn.textContent = "Working…";
-
-          const { data: r, error: rErr } = await supabase.functions.invoke("admin-regenerate-payment-link", {
-            body: { order_id: id }
-          });
-
-          btn.disabled = false;
-          btn.textContent = "Regenerate Link";
-
-          if (rErr) {
-            alert("Regenerate error: " + rErr.message);
-            return;
-          }
-          alert("New payment link created.");
-          load();
-        });
+      // Debounced typing search (optional but nice)
+      let searchTimer = null;
+      document.getElementById("search").addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => load({ reset: true }), 350);
       });
+
+      // Pagination buttons
+      btnPrev.onclick = () => { if (page > 1) { page -= 1; load(); } };
+      btnNext.onclick = () => { page += 1; load(); };
+
+      // Support URL ?status=...
+      var urlStatus = new URLSearchParams(window.location.search).get("status");
+      if (urlStatus) {
+        var sel = document.getElementById("statusFilter");
+        if ([...sel.options].some(o => o.value === urlStatus)) sel.value = urlStatus;
+      }
+
+      load({ reset: true });
     }
 
-    load();
+    initAdmin();
   </script>
 </body>
 </html>

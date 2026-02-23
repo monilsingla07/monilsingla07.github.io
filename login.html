@@ -15,9 +15,8 @@
   <title>Account — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css" />
-  <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <div id="header"></div>
@@ -34,7 +33,8 @@
 
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
-import { supabase } from "./assets/supabase.js";
+    import { supabase } from "./assets/supabase.js";
+    import { escapeHtml } from "./assets/safe.js";
 
 
     document.getElementById("header").innerHTML = renderHeader("login");
@@ -54,11 +54,23 @@ document.getElementById("footer").innerHTML = renderFooter();
       if (!__nextRaw) return null;
       let decoded = "";
       try { decoded = decodeURIComponent(__nextRaw); } catch { decoded = __nextRaw; }
+      decoded = String(decoded || "").trim();
 
-      // Allow only same-site relative paths to avoid open redirects
-      if (decoded.startsWith("/")) return decoded;
-      if (decoded.endsWith(".html") || decoded.includes(".html?")) return "/" + decoded.replace(/^\/+/, "");
-      return null;
+      // SECURITY: prevent open redirects.
+      // - Block absolute URLs like https://evil.com
+      // - Block protocol-relative URLs like //evil.com
+      if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(decoded)) return null;
+      if (decoded.startsWith("//")) return null;
+      if (decoded.includes("\n") || decoded.includes("\r")) return null;
+
+      // Normalize to a single-leading-slash path
+      decoded = "/" + decoded.replace(/^\/+/, "");
+
+      // Allow home or any *.html (+ optional query/hash)
+      if (decoded === "/") return decoded;
+      const pathOnly = decoded.split(/[?#]/)[0];
+      if (!pathOnly.endsWith(".html")) return null;
+      return decoded;
     }
 
     const NEXT_URL = getNextUrl();
@@ -88,16 +100,49 @@ document.getElementById("footer").innerHTML = renderFooter();
       "'": "&#039;",
     }[c]));
 
+  // Minimal inline icons (keeps this page self-contained)
+  const iconMail = () => `
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="2"/>
+      <path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>`;
+  const iconLock = () => `
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M6 11h12v10H6V11Z" stroke="currentColor" stroke-width="2"/>
+    </svg>`;
+  const iconPhone = () => `
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 3h8v18H8V3Z" stroke="currentColor" stroke-width="2"/>
+      <path d="M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>`;
+  const iconUser = () => `
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 21a8 8 0 1 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
+    </svg>`;
+
   function renderLogin() {
     panel.innerHTML = `
-      <div style="display:grid;gap:10px;">
-        <input id="loginEmail" class="input" type="email" placeholder="Email address" required />
-        <div style="position:relative;">
-          <input id="loginPassword" class="input" type="password" placeholder="Password" required />
-          <button id="toggleLoginPw" type="button" class="btn secondary"
-            style="position:absolute;right:8px;top:8px;padding:6px 10px;">
-            Show
-          </button>
+      <div class="form-grid">
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <div class="input-wrap">
+            <span class="input-icon" aria-hidden="true">${iconMail()}</span>
+            <input id="loginEmail" class="input has-icon" type="email" autocomplete="email" placeholder="name@example.com" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon" aria-hidden="true">${iconLock()}</span>
+            <input id="loginPassword" class="input has-icon" type="password" autocomplete="current-password" placeholder="Your password" required />
+            <button id="toggleLoginPw" type="button" class="btn secondary"
+              style="position:absolute;right:8px;top:8px;padding:6px 10px;">
+              Show
+            </button>
+          </div>
         </div>
       </div>
 
@@ -121,7 +166,9 @@ document.getElementById("footer").innerHTML = renderFooter();
       const email = document.getElementById("loginEmail").value.trim();
       const password = document.getElementById("loginPassword").value;
 
+      const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(String(v || "").trim());
       if (!email) return (status.textContent = "Please enter your email.");
+      if (!emailOk(email)) return (status.textContent = "Please enter a valid email.");
       if (!password) return (status.textContent = "Please enter your password.");
 
       status.textContent = "Logging in…";
@@ -153,25 +200,70 @@ if (error) {
         All fields are required. Password must be at least 8 characters.
       </div>
 
-      <div style="margin-top:14px;display:grid;gap:10px;">
-        <input id="fullName" class="input" type="text" placeholder="Full name" required />
-        <input id="phone" class="input" type="tel" placeholder="Phone number" required />
-        <input id="signupEmail" class="input" type="email" placeholder="Email address" required />
+      <div style="margin-top:14px;" class="form-grid">
+        <div class="row" style="gap:12px;">
+          <div class="field" style="flex:1;min-width:0;">
+            <label for="firstName">First name</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">${iconUser()}</span>
+              <input id="firstName" class="input has-icon" type="text" autocomplete="given-name" placeholder="e.g., Monil" required />
+            </div>
+            <div id="errFirstName" class="error-text" style="display:none;"></div>
+          </div>
 
-        <div style="position:relative;">
-          <input id="signupPassword" class="input" type="password" placeholder="Password (min 8 chars)" required />
-          <button id="toggleSignupPw" type="button" class="btn secondary"
-            style="position:absolute;right:8px;top:8px;padding:6px 10px;">
-            Show
-          </button>
+          <div class="field" style="flex:1;min-width:0;">
+            <label for="lastName">Last name</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">${iconUser()}</span>
+              <input id="lastName" class="input has-icon" type="text" autocomplete="family-name" placeholder="e.g., Gupta" required />
+            </div>
+            <div id="errLastName" class="error-text" style="display:none;"></div>
+          </div>
         </div>
 
-        <div style="position:relative;">
-          <input id="signupPassword2" class="input" type="password" placeholder="Confirm password" required />
-          <button id="toggleSignupPw2" type="button" class="btn secondary"
-            style="position:absolute;right:8px;top:8px;padding:6px 10px;">
-            Show
-          </button>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <div class="input-wrap">
+            <span class="input-icon" aria-hidden="true">${iconPhone()}</span>
+            <input id="phone" class="input has-icon" type="tel" autocomplete="tel" placeholder="10-digit mobile number" inputmode="numeric" required />
+          </div>
+          <div class="help-text">We’ll only use this for delivery updates.</div>
+          <div id="errPhone" class="error-text" style="display:none;"></div>
+        </div>
+
+        <div class="field">
+          <label for="signupEmail">Email</label>
+          <div class="input-wrap">
+            <span class="input-icon" aria-hidden="true">${iconMail()}</span>
+            <input id="signupEmail" class="input has-icon" type="email" autocomplete="email" placeholder="name@example.com" required />
+          </div>
+          <div id="errEmail" class="error-text" style="display:none;"></div>
+        </div>
+
+        <div class="field">
+          <label for="signupPassword">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon" aria-hidden="true">${iconLock()}</span>
+            <input id="signupPassword" class="input has-icon" type="password" autocomplete="new-password" placeholder="Min 8 characters" required />
+            <button id="toggleSignupPw" type="button" class="btn secondary"
+              style="position:absolute;right:8px;top:8px;padding:6px 10px;">
+              Show
+            </button>
+          </div>
+          <div id="errPassword" class="error-text" style="display:none;"></div>
+        </div>
+
+        <div class="field">
+          <label for="signupPassword2">Confirm password</label>
+          <div class="input-wrap">
+            <span class="input-icon" aria-hidden="true">${iconLock()}</span>
+            <input id="signupPassword2" class="input has-icon" type="password" autocomplete="new-password" placeholder="Re-enter password" required />
+            <button id="toggleSignupPw2" type="button" class="btn secondary"
+              style="position:absolute;right:8px;top:8px;padding:6px 10px;">
+              Show
+            </button>
+          </div>
+          <div id="errPassword2" class="error-text" style="display:none;"></div>
         </div>
       </div>
 
@@ -195,21 +287,57 @@ if (error) {
     toggle("signupPassword", "toggleSignupPw");
     toggle("signupPassword2", "toggleSignupPw2");
 
+    const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(String(v || "").trim());
+    const phoneOk = (v) => {
+      const digits = String(v || "").replace(/\D/g, "");
+      // India mobile: 10 digits starting 6-9 (allow +91 etc.)
+      if (digits.length === 12 && digits.startsWith("91")) return /^[6-9]\d{9}$/.test(digits.slice(2));
+      return /^[6-9]\d{9}$/.test(digits);
+    };
+
+    const setFieldState = (inputId, ok, errId, msg) => {
+      const el = document.getElementById(inputId);
+      const err = document.getElementById(errId);
+      if (!el) return;
+      el.classList.toggle("is-valid", !!ok);
+      el.classList.toggle("is-invalid", ok === false);
+      if (err) {
+        err.style.display = ok === false ? "block" : "none";
+        err.textContent = ok === false ? (msg || "Invalid value") : "";
+      }
+    };
+
     const validateSignup = () => {
-      const full_name = document.getElementById("fullName").value.trim();
+      const first = document.getElementById("firstName").value.trim();
+      const last = document.getElementById("lastName").value.trim();
       const phone = document.getElementById("phone").value.trim();
       const email = document.getElementById("signupEmail").value.trim();
       const password = document.getElementById("signupPassword").value;
       const confirm = document.getElementById("signupPassword2").value;
 
-      if (!full_name) return "Please enter your full name.";
-      if (!phone) return "Please enter your phone number.";
-      if (!email) return "Please enter your email.";
-      if (!password) return "Please enter a password.";
-      if (password.length < 8) return "Password must be at least 8 characters.";
-      if (!confirm) return "Please confirm your password.";
-      if (password !== confirm) return "Passwords do not match.";
-      return null;
+      let ok = true;
+
+      if (!first || first.length < 2) { ok = false; setFieldState("firstName", false, "errFirstName", "Enter your first name (min 2 letters)."); }
+      else setFieldState("firstName", true, "errFirstName");
+
+      if (!last || last.length < 2) { ok = false; setFieldState("lastName", false, "errLastName", "Enter your last name (min 2 letters)."); }
+      else setFieldState("lastName", true, "errLastName");
+
+      if (!phoneOk(phone)) { ok = false; setFieldState("phone", false, "errPhone", "Enter a valid 10-digit Indian mobile number."); }
+      else setFieldState("phone", true, "errPhone");
+
+      if (!emailOk(email)) { ok = false; setFieldState("signupEmail", false, "errEmail", "Enter a valid email address."); }
+      else setFieldState("signupEmail", true, "errEmail");
+
+      if (!password) { ok = false; setFieldState("signupPassword", false, "errPassword", "Enter a password."); }
+      else if (password.length < 8) { ok = false; setFieldState("signupPassword", false, "errPassword", "Password must be at least 8 characters."); }
+      else setFieldState("signupPassword", true, "errPassword");
+
+      if (!confirm) { ok = false; setFieldState("signupPassword2", false, "errPassword2", "Please confirm your password."); }
+      else if (password !== confirm) { ok = false; setFieldState("signupPassword2", false, "errPassword2", "Passwords do not match."); }
+      else setFieldState("signupPassword2", true, "errPassword2");
+
+      return ok ? null : "Please fix the highlighted fields.";
     };
 
     document.getElementById("doSignup").onclick = async () => {
@@ -218,7 +346,9 @@ if (error) {
       const err = validateSignup();
       if (err) return (status.textContent = err);
 
-      const full_name = document.getElementById("fullName").value.trim();
+      const first_name = document.getElementById("firstName").value.trim();
+      const last_name = document.getElementById("lastName").value.trim();
+      const full_name = `${first_name} ${last_name}`.trim();
       const phone = document.getElementById("phone").value.trim();
       const email = document.getElementById("signupEmail").value.trim();
       const password = document.getElementById("signupPassword").value;
@@ -226,7 +356,7 @@ if (error) {
       status.textContent = "Creating account… please check your email to verify.";
 
       // Save profile info temporarily so we can write it after login
-      localStorage.setItem("pending_profile", JSON.stringify({ full_name, phone }));
+      localStorage.setItem("pending_profile", JSON.stringify({ full_name, phone, first_name, last_name }));
 
       const { error } = await supabase.auth.signUp({
         email,
@@ -258,17 +388,18 @@ function renderLoggedIn(email) {
 
   app.innerHTML = `
     <div style="font-weight:900;">My Account</div>
-    <div class="small" style="margin-top:6px;">Signed in as ${email}</div>
+    <div class="small" style="margin-top:6px;">Signed in as ${escapeHtml(email)}</div>
 
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
-      <a class="btn secondary" href="orders.html">Orders</a>
-      <a class="btn secondary" href="profile.html">Profile</a>
+      <a class="btn secondary" href="account.html?view=orders">Orders</a>
+      <a class="btn secondary" href="account.html?view=profile">Profile</a>
       <button id="logout" class="btn">Log out</button>
     </div>
   `;
 
   document.getElementById("logout").onclick = async () => {
     await supabase.auth.signOut();
+    renderLoggedOut(); // Switch UI immediately — don't wait for onAuthStateChange
   };
 }
 

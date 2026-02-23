@@ -7,19 +7,73 @@
   </url>
 
   <url>
-    <loc>https://www.ahamstree.com/products.html</loc>
+    <loc>https://ahamstree.com/products.html</loc>
     <priority>0.9</priority>
   </url>
 
-  <!-- Example product pages -->
   <url>
-    <loc>https://www.ahamstree.com/collections.html</loc>
+    <loc>https://ahamstree.com/collections.html</loc>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.ahamstree.com/products.html#silk</loc>
+    <loc>https://ahamstree.com/new-arrivals.html</loc>
     <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/sale.html</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/blogs.html</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/about.html</loc>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/contact.html</loc>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/help.html</loc>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/shipping.html</loc>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/returns.html</loc>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/privacy.html</loc>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/terms.html</loc>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/cookies.html</loc>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://ahamstree.com/track.html</loc>
+    <priority>0.4</priority>
   </url>
 
 </urlset>

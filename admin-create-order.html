@@ -1,0 +1,875 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Create Order — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    /* ── Layout ── */
+    .create-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 820px) {
+      .create-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Section cards ── */
+    .section-card {
+      background: #fff;
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .section-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border, #e5e7eb);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .section-header h3 { margin: 0; font-size: 15px; font-weight: 800; }
+    .section-body { padding: 16px; }
+
+    /* ── Product search ── */
+    .search-wrap { position: relative; }
+    #productSearch { width: 100%; }
+    #searchDropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: #fff;
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      z-index: 100;
+      max-height: 280px;
+      overflow-y: auto;
+      display: none;
+    }
+    .search-result {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #f3f4f6;
+      transition: background .1s;
+    }
+    .search-result:last-child { border-bottom: none; }
+    .search-result:hover { background: var(--brand-light, #fdf2f2); }
+    .search-result img {
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+      background: #f3f4f6;
+    }
+    .search-result-info { flex: 1; min-width: 0; }
+    .search-result-title { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .search-result-price { font-size: 12px; opacity: .65; margin-top: 2px; }
+
+    /* ── Cart items ── */
+    .cart-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item-name { font-weight: 700; font-size: 13px; }
+    .cart-item-sku  { font-size: 11px; opacity: .5; margin-top: 2px; }
+    .cart-item input[type="number"] { width: 60px; text-align: center; }
+    .cart-item-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: .4;
+      font-size: 18px;
+      line-height: 1;
+      padding: 4px;
+      transition: opacity .15s;
+    }
+    .cart-item-remove:hover { opacity: 1; }
+
+    /* Price override */
+    .price-override-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .price-override-row label { font-size: 11px; opacity: .6; white-space: nowrap; }
+    .price-override-row input { width: 90px; font-size: 13px; }
+    .original-price { font-size: 11px; opacity: .5; text-decoration: line-through; }
+
+    /* ── Payment method selector ── */
+    .pm-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 2px solid var(--border, #e5e7eb);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all .15s;
+      margin-bottom: 8px;
+    }
+    .pm-option:last-child { margin-bottom: 0; }
+    .pm-option.selected {
+      border-color: var(--brand, #7c1c1c);
+      background: var(--brand-light, #fdf2f2);
+    }
+    .pm-option input[type="radio"] { accent-color: var(--brand, #7c1c1c); flex-shrink: 0; }
+    .pm-option-text { flex: 1; }
+    .pm-option-title { font-weight: 800; font-size: 14px; }
+    .pm-option-sub { font-size: 12px; opacity: .65; margin-top: 2px; }
+
+    /* ── Order summary sidebar ── */
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .summary-row.total {
+      font-weight: 900;
+      font-size: 16px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 2px solid var(--border, #e5e7eb);
+    }
+
+    /* ── Result panel ── */
+    #resultPanel {
+      display: none;
+      padding: 20px;
+      border-radius: 16px;
+      border: 2px solid #86efac;
+      background: #f0fdf4;
+      margin-top: 16px;
+    }
+    #resultPanel.error {
+      border-color: #fca5a5;
+      background: #fef2f2;
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #111; color: #fff;
+      padding: 10px 20px; border-radius: 12px;
+      font-size: 13px; font-weight: 700;
+      opacity: 0; transition: all .25s ease;
+      pointer-events: none; z-index: 9999;
+      white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Field label ── */
+    .field-label { font-size: 12px; font-weight: 700; opacity: .6; margin-bottom: 4px; display: block; }
+
+    /* ── Empty cart ── */
+    .empty-cart { text-align: center; padding: 24px; opacity: .5; font-size: 13px; }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width: 1040px;">
+
+    <!-- Loading / gate -->
+    <div id="loadingState" style="text-align:center;padding:48px;opacity:.6;font-size:14px;">Verifying admin access…</div>
+
+    <!-- Main content -->
+    <div id="mainContent" style="display:none;">
+
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+        <div>
+          <h2 style="margin:0;">Create Order</h2>
+          <div class="small" style="opacity:.65; margin-top:4px;">
+            Place an order on behalf of an offline customer. Choose COD or generate a Razorpay payment link.
+          </div>
+        </div>
+        <a class="btn secondary" href="admin-orders.html" style="padding:8px 14px; font-size:13px;">← Back to orders</a>
+      </div>
+
+      <div class="create-grid">
+
+        <!-- ── LEFT: Product + Customer ── -->
+        <div>
+
+          <!-- Product search -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3>🛍 Products</h3>
+              <span class="small" id="cartCount" style="opacity:.6;">0 items</span>
+            </div>
+            <div class="section-body">
+              <label class="field-label">Search product by name or SKU</label>
+              <div class="search-wrap">
+                <input class="input" id="productSearch" placeholder="Type to search…" autocomplete="off" />
+                <div id="searchDropdown"></div>
+              </div>
+              <div id="searchMsg" class="small" style="margin-top:6px; min-height:14px; opacity:.6;"></div>
+
+              <!-- Cart items -->
+              <div id="cartItems" style="margin-top:14px;"></div>
+            </div>
+          </div>
+
+          <!-- Customer details -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3>👤 Customer Details</h3>
+            </div>
+            <div class="section-body" style="display:grid; gap:12px;">
+              <div>
+                <label class="field-label">Full name *</label>
+                <input class="input" id="cName" placeholder="e.g. Priya Sharma" autocapitalize="words" />
+              </div>
+              <div>
+                <label class="field-label">Phone *</label>
+                <input class="input" id="cPhone" type="tel" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" />
+              </div>
+              <div>
+                <label class="field-label">Email (optional — needed for Razorpay notification)</label>
+                <input class="input" id="cEmail" type="email" placeholder="name@email.com" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping address -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3>📍 Shipping Address</h3>
+            </div>
+            <div class="section-body" style="display:grid; gap:12px;">
+              <div>
+                <label class="field-label">Address line 1 *</label>
+                <input class="input" id="aLine1" placeholder="House / street" autocapitalize="words" />
+              </div>
+              <div>
+                <label class="field-label">Address line 2 (optional)</label>
+                <input class="input" id="aLine2" placeholder="Landmark, apartment" autocapitalize="words" />
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                  <label class="field-label">City *</label>
+                  <input class="input" id="aCity" autocapitalize="words" />
+                </div>
+                <div>
+                  <label class="field-label">State *</label>
+                  <input class="input" id="aState" autocapitalize="words" />
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                  <label class="field-label">Pincode *</label>
+                  <input class="input" id="aPincode" maxlength="6" inputmode="numeric" placeholder="560001" />
+                </div>
+                <div>
+                  <label class="field-label">Shipping charge (₹)</label>
+                  <input class="input" id="shippingInr" type="number" value="0" min="0" step="1" />
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Admin note (optional — internal only)</label>
+                <input class="input" id="adminNote" placeholder="e.g. Customer called on WhatsApp" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── RIGHT: Summary + Payment + Submit ── -->
+        <div style="position: sticky; top: 80px;">
+
+          <!-- Order summary -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3>💰 Order Summary</h3>
+            </div>
+            <div class="section-body">
+              <div id="summaryItems" style="margin-bottom:10px; min-height:20px;">
+                <div class="small" style="opacity:.4;">No items added yet.</div>
+              </div>
+              <div id="summaryTotals" style="display:none;">
+                <div class="summary-row"><span style="opacity:.7;">Subtotal</span><span id="sSubtotal">₹0</span></div>
+                <div class="summary-row"><span style="opacity:.7;">Shipping</span><span id="sShipping">₹0</span></div>
+                <div class="summary-row"><span style="opacity:.7;" id="sGstLabel">GST</span><span id="sGst">₹0</span></div>
+                <div class="summary-row total"><span>Total</span><span id="sTotal">₹0</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment method -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3>💳 Payment Method</h3>
+            </div>
+            <div class="section-body">
+
+              <label class="pm-option selected" id="pmCodLabel">
+                <input type="radio" name="pm" value="cod" id="pmCod" checked />
+                <div class="pm-option-text">
+                  <div class="pm-option-title">Cash on Delivery</div>
+                  <div class="pm-option-sub">Order placed immediately. Customer pays on delivery.</div>
+                </div>
+                <span style="font-size:20px;">💵</span>
+              </label>
+
+              <label class="pm-option" id="pmRazorpayLabel">
+                <input type="radio" name="pm" value="razorpay" id="pmRazorpay" />
+                <div class="pm-option-text">
+                  <div class="pm-option-title">Send Payment Link</div>
+                  <div class="pm-option-sub">Generate a Razorpay link to share with the customer.</div>
+                </div>
+                <span style="font-size:20px;">💳</span>
+              </label>
+
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button class="btn" id="submitBtn" style="width:100%; padding:14px; font-size:15px; font-weight:900;">
+            Place COD Order
+          </button>
+          <div id="submitMsg" class="small" style="margin-top:8px; text-align:center; min-height:16px; opacity:.7;"></div>
+
+          <!-- Result panel -->
+          <div id="resultPanel">
+            <div id="resultContent"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr, safeHref } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    var loadingState = document.getElementById("loadingState");
+    var mainContent  = document.getElementById("mainContent");
+
+    function showAdminError(emoji, title, message) {
+      loadingState.style.display = "block";
+      mainContent.style.display = "none";
+      loadingState.innerHTML =
+        '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    // ── State ─────────────────────────────────────────────────────────────
+    const cart = [];   // { product_id, title, qty, unit_price, price_override }
+    let searchTimeout = null;
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+    function money(v) {
+      return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+    }
+
+    function toast(msg, color = "#111") {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.style.background = color;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 3500);
+    }
+
+    function getPaymentMethod() {
+      return document.querySelector("input[name='pm']:checked")?.value || "cod";
+    }
+
+    // ── Product search ────────────────────────────────────────────────────
+    const searchInput    = document.getElementById("productSearch");
+    const searchDropdown = document.getElementById("searchDropdown");
+    const searchMsg      = document.getElementById("searchMsg");
+
+    searchInput.addEventListener("input", () => {
+      clearTimeout(searchTimeout);
+      const q = searchInput.value.trim();
+      if (!q || q.length < 2) { searchDropdown.style.display = "none"; return; }
+      searchTimeout = setTimeout(() => doSearch(q), 280);
+    });
+
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") searchDropdown.style.display = "none";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".search-wrap")) searchDropdown.style.display = "none";
+    });
+
+    async function doSearch(q) {
+      searchMsg.textContent = "Searching…";
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("id, title, price_inr, sale_price_inr, inventory_qty, reserved_qty, is_active")
+          .or(`title.ilike.%${q}%,sku.ilike.%${q}%`)
+          .eq("is_active", true)
+          .order("title")
+          .limit(12);
+
+        if (error) { searchMsg.textContent = "Search error: " + error.message; return; }
+
+        const results = data || [];
+        searchMsg.textContent = results.length ? "" : "No products found.";
+
+        if (!results.length) { searchDropdown.style.display = "none"; return; }
+
+        searchDropdown.innerHTML = results.map(p => {
+          const price   = p.sale_price_inr ?? p.price_inr;
+          const avail   = Math.max((p.inventory_qty || 0) - (p.reserved_qty || 0), 0);
+          const inCart  = cart.find(c => c.product_id === p.id);
+          return `
+            <div class="search-result" data-product-id="${escapeAttr(p.id)}"
+                 data-title="${escapeAttr(p.title)}"
+                 data-price="${price}"
+                 data-orig-price="${p.price_inr}">
+              <div class="search-result-info">
+                <div class="search-result-title">${escapeHtml(p.title)}</div>
+                <div class="search-result-price">
+                  ${money(price)}
+                  ${p.sale_price_inr ? `<span class="original-price">${money(p.price_inr)}</span>` : ""}
+                  · Stock: ${avail}
+                  ${inCart ? "· <strong>In cart</strong>" : ""}
+                </div>
+              </div>
+              <span style="font-size:20px;">${avail > 0 ? "＋" : "⊘"}</span>
+            </div>`;
+        }).join("");
+
+        searchDropdown.querySelectorAll(".search-result").forEach(row => {
+          row.addEventListener("click", () => {
+            const pid   = row.dataset.productId;
+            const title = row.dataset.title;
+            const price = parseInt(row.dataset.price, 10);
+            addToCart(pid, title, price);
+            searchDropdown.style.display = "none";
+            searchInput.value = "";
+            searchMsg.textContent = "";
+          });
+        });
+
+        searchDropdown.style.display = "block";
+      } catch (e) {
+        searchMsg.textContent = "Error: " + e.message;
+      }
+    }
+
+    // ── Cart management ───────────────────────────────────────────────────
+    function addToCart(productId, title, unitPrice) {
+      const existing = cart.find(c => c.product_id === productId);
+      if (existing) {
+        existing.qty++;
+        toast(`${title} qty increased`, "#166534");
+      } else {
+        cart.push({ product_id: productId, title, qty: 1, unit_price: unitPrice, price_override: null });
+        toast(`${title} added`, "#166534");
+      }
+      renderCart();
+    }
+
+    function removeFromCart(productId) {
+      const idx = cart.findIndex(c => c.product_id === productId);
+      if (idx >= 0) cart.splice(idx, 1);
+      renderCart();
+    }
+
+    function renderCart() {
+      const cartItems = document.getElementById("cartItems");
+      const cartCount = document.getElementById("cartCount");
+
+      const total = cart.reduce((s, c) => s + c.qty, 0);
+      cartCount.textContent = `${total} item${total !== 1 ? "s" : ""}`;
+
+      if (!cart.length) {
+        cartItems.innerHTML = `<div class="empty-cart">No products added yet.<br>Search above to add items.</div>`;
+        renderSummary();
+        return;
+      }
+
+      cartItems.innerHTML = cart.map(c => `
+        <div class="cart-item" data-pid="${escapeAttr(c.product_id)}">
+          <div>
+            <div class="cart-item-name">${escapeHtml(c.title)}</div>
+            <div class="cart-item-sku">Unit: ${money(c.price_override ?? c.unit_price)}</div>
+          </div>
+          <input type="number" class="input qty-input" value="${c.qty}" min="1" max="999"
+                 data-pid="${escapeAttr(c.product_id)}" style="width:64px;text-align:center;" />
+          <div>
+            <div class="small" style="font-weight:700;">${money((c.price_override ?? c.unit_price) * c.qty)}</div>
+          </div>
+          <button class="cart-item-remove" data-pid="${escapeAttr(c.product_id)}" title="Remove">✕</button>
+
+          <!-- Price override row -->
+          <div class="price-override-row">
+            <label>Custom price (₹)</label>
+            <input type="number" class="input override-input" placeholder="${c.unit_price}"
+                   value="${c.price_override ?? ""}" min="0" step="1"
+                   data-pid="${escapeAttr(c.product_id)}"
+                   style="width:90px;font-size:13px;" />
+            <span class="small" style="opacity:.5;">leave blank for default ${money(c.unit_price)}</span>
+          </div>
+        </div>
+      `).join("");
+
+      // Qty changes
+      cartItems.querySelectorAll(".qty-input").forEach(inp => {
+        inp.addEventListener("change", () => {
+          const item = cart.find(c => c.product_id === inp.dataset.pid);
+          if (item) { item.qty = Math.max(1, parseInt(inp.value) || 1); renderCart(); }
+        });
+      });
+
+      // Price override changes
+      cartItems.querySelectorAll(".override-input").forEach(inp => {
+        inp.addEventListener("change", () => {
+          const item = cart.find(c => c.product_id === inp.dataset.pid);
+          if (item) {
+            const v = inp.value.trim();
+            item.price_override = v === "" ? null : Math.max(0, parseInt(v) || 0);
+            renderCart();
+          }
+        });
+      });
+
+      // Remove buttons
+      cartItems.querySelectorAll(".cart-item-remove").forEach(btn => {
+        btn.addEventListener("click", () => removeFromCart(btn.dataset.pid));
+      });
+
+      renderSummary();
+    }
+
+    // ── Summary ───────────────────────────────────────────────────────────
+    function renderSummary() {
+      const summaryItems  = document.getElementById("summaryItems");
+      const summaryTotals = document.getElementById("summaryTotals");
+
+      if (!cart.length) {
+        summaryItems.innerHTML  = `<div class="small" style="opacity:.4;">No items added yet.</div>`;
+        summaryTotals.style.display = "none";
+        return;
+      }
+
+      const shipping = parseInt(document.getElementById("shippingInr").value) || 0;
+      let subtotal   = 0;
+
+      summaryItems.innerHTML = cart.map(c => {
+        const unitPrice = c.price_override ?? c.unit_price;
+        const lineTotal = unitPrice * c.qty;
+        subtotal += lineTotal;
+        return `<div class="summary-row">
+          <span style="opacity:.8;">${escapeHtml(c.title)} × ${c.qty}</span>
+          <span style="font-weight:700;">${money(lineTotal)}</span>
+        </div>`;
+      }).join("");
+
+      // Client-side GST estimate (edge function does authoritative calculation)
+      const GST_RATE     = 0.05;  // Match your env — just for preview
+      const GST_INCLUDED = true;
+      const net          = subtotal + shipping;
+      const gst          = GST_INCLUDED
+        ? Math.round(net - net / (1 + GST_RATE))
+        : Math.round(net * GST_RATE);
+      const total = GST_INCLUDED ? net : net + gst;
+
+      document.getElementById("sSubtotal").textContent = money(subtotal);
+      document.getElementById("sShipping").textContent = money(shipping);
+      document.getElementById("sGst").textContent      = money(gst);
+      document.getElementById("sTotal").textContent    = money(total);
+      summaryTotals.style.display = "block";
+    }
+
+    document.getElementById("shippingInr").addEventListener("input", renderSummary);
+
+    // ── Payment method UI ─────────────────────────────────────────────────
+    const pmCodLabel      = document.getElementById("pmCodLabel");
+    const pmRazorpayLabel = document.getElementById("pmRazorpayLabel");
+    const submitBtn       = document.getElementById("submitBtn");
+
+    function updatePaymentUI() {
+      const method = getPaymentMethod();
+      pmCodLabel.classList.toggle("selected",      method === "cod");
+      pmRazorpayLabel.classList.toggle("selected", method === "razorpay");
+      submitBtn.textContent = method === "cod"
+        ? "Place COD Order"
+        : "Generate Payment Link";
+    }
+
+    document.querySelectorAll("input[name='pm']").forEach(r =>
+      r.addEventListener("change", updatePaymentUI)
+    );
+
+    // ── Validate form ─────────────────────────────────────────────────────
+    function validate() {
+      if (!cart.length)                                      return "Add at least one product.";
+      if (!document.getElementById("cName").value.trim())   return "Customer name is required.";
+      if (!document.getElementById("cPhone").value.trim())  return "Customer phone is required.";
+      const ph = document.getElementById("cPhone").value.replace(/\D/g, "");
+      if (ph.length !== 10)                                  return "Enter a valid 10-digit phone number.";
+      if (!document.getElementById("aLine1").value.trim())  return "Address line 1 is required.";
+      if (!document.getElementById("aCity").value.trim())   return "City is required.";
+      if (!document.getElementById("aState").value.trim())  return "State is required.";
+      const pin = document.getElementById("aPincode").value.replace(/\D/g, "");
+      if (pin.length !== 6)                                  return "Enter a valid 6-digit pincode.";
+      return null;
+    }
+
+    // ── Submit ────────────────────────────────────────────────────────────
+    submitBtn.addEventListener("click", async () => {
+      const validationError = validate();
+      if (validationError) { toast(validationError, "#dc2626"); return; }
+
+      const method    = getPaymentMethod();
+      const submitMsg = document.getElementById("submitMsg");
+      const result    = document.getElementById("resultPanel");
+      const resultContent = document.getElementById("resultContent");
+
+      submitBtn.disabled    = true;
+      submitMsg.textContent = method === "cod" ? "Placing COD order…" : "Generating payment link…";
+      result.style.display  = "none";
+
+      try {
+        const shippingAddress = {
+          full_name:    document.getElementById("cName").value.trim(),
+          address_line1: document.getElementById("aLine1").value.trim(),
+          address_line2: document.getElementById("aLine2").value.trim() || null,
+          city:          document.getElementById("aCity").value.trim(),
+          state:         document.getElementById("aState").value.trim(),
+          pincode:       document.getElementById("aPincode").value.replace(/\D/g, ""),
+        };
+
+        const payload = {
+          payment_method:   method,
+          customer_name:    document.getElementById("cName").value.trim(),
+          customer_phone:   document.getElementById("cPhone").value.replace(/\D/g, ""),
+          customer_email:   document.getElementById("cEmail").value.trim() || null,
+          shipping_address: shippingAddress,
+          shipping_inr:     parseInt(document.getElementById("shippingInr").value) || 0,
+          note:             document.getElementById("adminNote").value.trim() || null,
+          items: cart.map(c => ({
+            product_id:           c.product_id,
+            qty:                  c.qty,
+            price_override_inr:   c.price_override,
+          })),
+        };
+
+        const { data: _sessC } = await supabase.auth.getSession();
+        const _tokC = _sessC?.session?.access_token || "";
+        const _respC = await fetch("https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-create-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + _tokC,
+            "apikey": SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await _respC.json();
+        const error = _respC.ok ? null : { message: data.error || ("HTTP " + _respC.status) };
+
+        if (error) throw new Error(error.message);
+        if (!data?.ok) throw new Error(data?.error || "Unknown error");
+
+        submitMsg.textContent = "";
+        const shortId         = data.order_id?.slice(0, 8).toUpperCase() || "—";
+
+        if (method === "cod") {
+          result.className = "";
+          resultContent.innerHTML = `
+            <div style="font-weight:900; font-size:16px; color:#166534; margin-bottom:8px;">✅ COD Order Placed!</div>
+            <div class="small" style="margin-bottom:12px;">
+              <strong>Order #${shortId}</strong> — Total: <strong>${money(data.total_inr)}</strong><br>
+              Status: <em>cod_pending</em> — go to orders to confirm and ship.
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <a class="btn secondary" href="admin-orders.html?status=cod_pending" style="padding:8px 14px; font-size:13px;">View COD orders →</a>
+              <button class="btn secondary" id="newOrderBtn" style="padding:8px 14px; font-size:13px;">Create another order</button>
+              <button class="btn secondary" id="invoiceBtn" style="padding:8px 14px; font-size:13px;">📄 Generate Invoice</button>
+            </div>`;
+          result.style.display = "block";
+          document.getElementById("newOrderBtn")?.addEventListener("click", resetForm);
+          document.getElementById("invoiceBtn")?.addEventListener("click", function() {
+            generateInvoice(data.order_id, this);
+          });
+          toast("COD order placed! ✅", "#166534");
+
+        } else {
+          const link = data.payment_link_url;
+          const phone = document.getElementById("cPhone").value.replace(/\D/g, "");
+          const phone91 = phone.length === 10 ? "91" + phone : phone;
+          const waMsg  = `Hi ${document.getElementById("cName").value.trim()}, your AhamStree order #${shortId} is ready! Total: ${money(data.total_inr)}. Pay here: ${link}`;
+          const waLink = `https://wa.me/${phone91}?text=${encodeURIComponent(waMsg)}`;
+
+          result.className = "";
+          resultContent.innerHTML = `
+            <div style="font-weight:900; font-size:16px; color:#166534; margin-bottom:8px;">💳 Payment Link Created!</div>
+            <div class="small" style="margin-bottom:10px;">
+              <strong>Order #${shortId}</strong> — Total: <strong>${money(data.total_inr)}</strong>
+            </div>
+            <div style="background:#fff; border:1px solid #d1fae5; border-radius:10px; padding:12px; margin-bottom:12px; word-break:break-all;">
+              <div class="small" style="font-weight:700; margin-bottom:4px;">Payment Link:</div>
+              <a href="${safeHref(link)}" target="_blank" rel="noopener noreferrer" style="color:var(--brand); font-size:13px;">${escapeHtml(link)}</a>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <a class="btn" href="${safeHref(waLink)}" target="_blank" rel="noopener noreferrer" style="padding:8px 14px; font-size:13px; background:#25d366; border-color:#25d366;">
+                📲 Send via WhatsApp
+              </a>
+              <button class="btn secondary" id="copyLinkBtn" style="padding:8px 14px; font-size:13px;">Copy link</button>
+              <button class="btn secondary" id="newOrderBtn2" style="padding:8px 14px; font-size:13px;">Create another</button>
+              <button class="btn secondary" id="invoiceBtn2" style="padding:8px 14px; font-size:13px;">📄 Generate Invoice</button>
+            </div>`;
+          result.style.display = "block";
+
+          document.getElementById("copyLinkBtn")?.addEventListener("click", () => {
+            navigator.clipboard.writeText(link).then(() => toast("Link copied! ✅", "#166534"));
+          });
+          document.getElementById("newOrderBtn2")?.addEventListener("click", resetForm);
+          document.getElementById("invoiceBtn2")?.addEventListener("click", function() {
+            generateInvoice(data.order_id, this);
+          });
+          toast("Payment link generated! Share it via WhatsApp ✅", "#166534");
+        }
+
+      } catch (e) {
+        submitMsg.textContent = "";
+        result.className = "error";
+        resultContent.innerHTML = `
+          <div style="font-weight:900; color:#991b1b; margin-bottom:6px;">❌ Failed to create order</div>
+          <div class="small" style="color:#7f1d1d;">${escapeHtml(e.message)}</div>`;
+        result.style.display = "block";
+        toast("Error: " + e.message, "#dc2626");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+
+    // ── Generate invoice for a just-created order ────────────────────────
+    async function generateInvoice(orderId, btn) {
+      if (!orderId) { toast("No order ID — cannot generate invoice", "#dc2626"); return; }
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Generating…";
+      try {
+        const { data: _sessI } = await supabase.auth.getSession();
+        const _tokI = _sessI?.session?.access_token || "";
+        const _respI = await fetch("https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-generate-invoice", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + _tokI,
+            "apikey": SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({ order_id: orderId })
+        });
+        const inv = await _respI.json();
+        if (!_respI.ok) { toast("Invoice error: " + (inv.error || "HTTP " + _respI.status), "#dc2626"); return; }
+        const invUrl = inv.invoice_url;
+        if (!invUrl) { toast("Invalid invoice URL", "#dc2626"); return; }
+        const w = window.open(invUrl, "_blank", "noopener,noreferrer");
+        if (w) w.opener = null;
+        btn.textContent = "Open Invoice ↗";
+        btn.onclick = function() { const w2 = window.open(invUrl, "_blank", "noopener,noreferrer"); if (w2) w2.opener = null; };
+        toast("Invoice generated ✅  — " + (inv.invoice_number || ""), "#166534");
+      } catch (e) {
+        toast("Invoice error: " + e.message, "#dc2626");
+        btn.textContent = originalText;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ── Reset form for next order ─────────────────────────────────────────
+    function resetForm() {
+      cart.length = 0;
+      renderCart();
+      document.getElementById("cName").value      = "";
+      document.getElementById("cPhone").value     = "";
+      document.getElementById("cEmail").value     = "";
+      document.getElementById("aLine1").value     = "";
+      document.getElementById("aLine2").value     = "";
+      document.getElementById("aCity").value      = "";
+      document.getElementById("aState").value     = "";
+      document.getElementById("aPincode").value   = "";
+      document.getElementById("shippingInr").value = "0";
+      document.getElementById("adminNote").value  = "";
+      document.getElementById("resultPanel").style.display = "none";
+      document.getElementById("submitMsg").textContent = "";
+      document.getElementById("pmCod").checked = true;
+      updatePaymentUI();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Init
+    async function initAdmin() {
+      try {
+        var sessResult = await supabase.auth.getSession();
+        if (sessResult.error) { showAdminError("⚠️", "Auth Error", sessResult.error.message); return; }
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+        var session = sessResult.data.session;
+
+        var adminResult = await supabase
+          .from("admin_users")
+          .select("email")
+          .eq("email", session.user.email.toLowerCase())
+          .maybeSingle();
+
+        if (adminResult.error) { showAdminError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message); return; }
+        if (!adminResult.data) { showAdminError("🔒", "Access Denied", "Your account does not have admin access."); return; }
+
+        loadingState.style.display = "none";
+        mainContent.style.display  = "block";
+        renderCart();
+      } catch (e) {
+        console.error("Admin page error:", e);
+        showAdminError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

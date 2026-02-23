@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page not found • AhamStree</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <meta name="robots" content="noindex" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <main class="container" style="padding:24px 0 60px;">
+    <div class="card" style="padding:24px; border-radius:18px;">
+      <h1 style="margin:0 0 6px 0; font-size:40px;">404</h1>
+      <p class="small" style="opacity:.8; margin:0 0 16px 0;">We couldn’t find that page. Try one of these:</p>
+
+      <div class="row" style="flex-wrap:wrap; gap:10px;">
+        <a class="btn" href="index.html">Home</a>
+        <a class="btn secondary" href="products.html">Shop products</a>
+        <a class="btn secondary" href="collections.html">Collections</a>
+        <a class="btn secondary" href="blogs.html">Blogs</a>
+      </div>
+
+      <div class="small" style="margin-top:16px; opacity:.75;">
+        If you think this is a mistake, please <a href="contact.html">contact us</a>.
+      </div>
+    </div>
+  </main>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    document.getElementById("header").innerHTML = renderHeader("");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+  </script>
+</body>
+</html>

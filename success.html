@@ -1,36 +1,260 @@
 <!doctype html>
 <html>
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-CKQ1EXBHY6');
-</script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Payment Success — AhamStree</title>
+  <title>Order Confirmed — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 
-  <script type="module">
-  import { clearCart } from "./assets/cart.js";
-  clearCart();
-</script>
-
 <body>
-  <div class="container" style="padding-top:30px;">
-    <h2>Thank you!</h2>
-    <p>Your payment is completed (or processing). We’ll confirm your order shortly.</p>
-    <a class="btn" href="index.html">Back to Home</a>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:560px; padding-top:40px; padding-bottom:60px;">
+    <div class="card" style="padding:32px 24px; border-radius:20px; text-align:center;" id="mainCard">
+
+      <!-- Loading state while we determine outcome -->
+      <div id="loadingState">
+        <div style="font-size:36px; margin-bottom:16px;">⏳</div>
+        <h2 style="margin:0 0 10px;">Verifying your payment…</h2>
+        <p style="opacity:.8; line-height:1.6; margin:0 0 24px;">Please wait a moment.</p>
+      </div>
+
+      <!-- Success state -->
+      <div id="successState" style="display:none;">
+        <div id="successIcon" style="font-size:52px; line-height:1; margin-bottom:16px;">✅</div>
+        <h2 id="successTitle" style="margin:0 0 10px;">Payment successful!</h2>
+        <p id="successBody" style="opacity:.8; line-height:1.6; margin:0 0 24px;"></p>
+        <div id="orderIdBox" style="display:none; margin-bottom:20px; padding:10px 14px; border-radius:12px; background:#f5f3f0; font-size:13px;">
+          Order ID: <strong id="orderIdText"></strong>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <a class="btn" href="products.html">Continue shopping</a>
+          <a class="btn secondary" href="orders.html">View my orders</a>
+        </div>
+      </div>
+
+      <!-- Cancelled / failed state -->
+      <div id="cancelledState" style="display:none;">
+        <div style="font-size:52px; line-height:1; margin-bottom:16px;">❌</div>
+        <h2 style="margin:0 0 10px;">Payment not completed</h2>
+        <p id="cancelledBody" style="opacity:.8; line-height:1.6; margin:0 0 24px;">
+          Your payment was not completed. Don't worry — your cart is still saved and no money was charged.
+        </p>
+        <div id="retryBox" style="display:none; margin-bottom:20px; padding:10px 14px; border-radius:12px; background:#f5f3f0; font-size:13px;">
+          <div style="margin-bottom:8px;">You can retry this order directly:</div>
+          <a id="retryPayLink" href="#" class="btn" style="display:inline-block;">Retry payment →</a>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <a class="btn" href="checkout.html">Try again</a>
+          <a class="btn secondary" href="cart.html">Back to cart</a>
+        </div>
+      </div>
+
+      <!-- Pending / ambiguous state (payment initiated but outcome unclear) -->
+      <div id="pendingState" style="display:none;">
+        <div style="font-size:52px; line-height:1; margin-bottom:16px;">🕐</div>
+        <h2 style="margin:0 0 10px;">Payment pending</h2>
+        <p style="opacity:.8; line-height:1.6; margin:0 0 24px;">
+          Your payment is being processed. This can take a few minutes.<br>
+          Check <strong>My Orders</strong> for the latest status, or wait for a confirmation SMS/email from Razorpay.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <a class="btn" href="orders.html">Check my orders</a>
+          <a class="btn secondary" href="products.html">Continue shopping</a>
+        </div>
+      </div>
+
+    </div>
   </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { clearCart } from "./assets/cart.js";
+    import { supabase } from "./assets/supabase.js";
+
+    document.getElementById("header").innerHTML = renderHeader("");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    // ─── Read URL params ───────────────────────────────────────────────────────
+    // Razorpay (callback_method: "get") appends these on redirect:
+    //   razorpay_payment_id           — set when paid
+    //   razorpay_payment_link_id      — always
+    //   razorpay_payment_link_reference_id — the order_id we set as reference_id
+    //   razorpay_payment_link_status  — "paid" | "cancelled"
+    //   razorpay_signature            — HMAC for client-side verification (optional)
+    //
+    // COD flow sets: ?order_id=xxx&method=cod
+
+    const params     = new URLSearchParams(location.search);
+    const method     = params.get("method");                            // "cod" for COD orders
+    const rpStatus   = params.get("razorpay_payment_link_status");      // "paid" | "cancelled"
+    const rpOrderId  = params.get("razorpay_payment_link_reference_id"); // = our order_id
+    const rpPayId    = params.get("razorpay_payment_id");
+    const rpLinkId   = params.get("razorpay_payment_link_id");
+    const codOrderId = params.get("order_id");                          // COD flow
+
+    // UI helpers
+    const show = (id) => document.getElementById(id).style.display = "";
+    const hide = (id) => document.getElementById(id).style.display = "none";
+
+    function showSuccess({ orderId, isCod = false }) {
+      hide("loadingState");
+      hide("cancelledState");
+      hide("pendingState");
+      show("successState");
+      clearCart(); // Only clear cart on confirmed success
+
+      // Also clear any pending payment stored from checkout
+      try { localStorage.removeItem("ahamstree_pending_payment"); } catch (_) {}
+
+      const icon  = document.getElementById("successIcon");
+      const title = document.getElementById("successTitle");
+      const body  = document.getElementById("successBody");
+      const idBox = document.getElementById("orderIdBox");
+      const idText = document.getElementById("orderIdText");
+
+      if (isCod) {
+        icon.textContent  = "📦";
+        title.textContent = "Order placed successfully!";
+        body.innerHTML    = "Your <strong>Cash on Delivery</strong> order has been received.<br>Our team will confirm it via <strong>WhatsApp or call within 2 hours</strong>. Please keep your phone reachable.";
+      } else {
+        icon.textContent  = "✅";
+        title.textContent = "Payment successful!";
+        body.textContent  = "Your payment is complete and your order is being processed. We'll send you updates shortly.";
+      }
+
+      const oid = orderId || rpOrderId || codOrderId;
+      if (oid) {
+        idBox.style.display = "block";
+        idText.textContent  = oid;
+      }
+
+      // Fire GA purchase event
+      if (typeof gtag === "function" && oid) {
+        gtag("event", "purchase", {
+          transaction_id: oid,
+          payment_type: isCod ? "cod" : "razorpay",
+        });
+      }
+    }
+
+    function showCancelled({ pendingPaymentLink } = {}) {
+      hide("loadingState");
+      hide("successState");
+      hide("pendingState");
+      show("cancelledState");
+
+      // Do NOT clear cart — user may want to retry
+      // Keep pending_payment in localStorage so checkout.html can resume
+
+      // Show retry button if we still have the payment link
+      const stored = (() => {
+        try { return JSON.parse(localStorage.getItem("ahamstree_pending_payment") || ""); } catch { return null; }
+      })();
+      const retryUrl = pendingPaymentLink || stored?.payment_link_url;
+
+      if (retryUrl) {
+        const retryBox = document.getElementById("retryBox");
+        const retryLink = document.getElementById("retryPayLink");
+        retryBox.style.display = "block";
+        retryLink.href = retryUrl;
+      }
+    }
+
+    function showPending() {
+      hide("loadingState");
+      hide("successState");
+      hide("cancelledState");
+      show("pendingState");
+    }
+
+    // ─── Main logic ────────────────────────────────────────────────────────────
+
+    async function init() {
+      // ── Scenario 1: COD order ─────────────────────────────────────────────
+      if (method === "cod") {
+        showSuccess({ orderId: codOrderId, isCod: true });
+        return;
+      }
+
+      // ── Scenario 2: Razorpay callback with explicit status ─────────────────
+      // Razorpay sends ?razorpay_payment_link_status=paid OR =cancelled
+      if (rpStatus === "paid") {
+        // The webhook will also fire and update the DB — trust Razorpay's param
+        // for the UI. If signature verification is critical, do it server-side.
+        showSuccess({ orderId: rpOrderId });
+        return;
+      }
+
+      if (rpStatus === "cancelled") {
+        showCancelled();
+        return;
+      }
+
+      // ── Scenario 3: No Razorpay params — user navigated here directly,
+      //    OR they hit browser back from Razorpay before completing.
+      //    Check if there's a pending order in DB or localStorage.
+      if (!rpStatus && !method) {
+        const stored = (() => {
+          try { return JSON.parse(localStorage.getItem("ahamstree_pending_payment") || ""); } catch { return null; }
+        })();
+
+        if (stored?.order_id) {
+          // Poll the DB for the actual order status
+          try {
+            const { data: order, error } = await supabase
+              .from("orders")
+              .select("id, status")
+              .eq("id", stored.order_id)
+              .maybeSingle();
+
+            if (!error && order) {
+              if (order.status === "paid") {
+                showSuccess({ orderId: order.id });
+                return;
+              }
+              if (order.status === "failed" || order.status === "cancelled") {
+                showCancelled({ pendingPaymentLink: stored.payment_link_url });
+                return;
+              }
+              if (order.status === "payment_link_created" || order.status === "created") {
+                // Still pending — maybe they navigated here too early
+                showPending();
+                return;
+              }
+            }
+          } catch (_) {
+            // DB check failed — fall through to pending
+          }
+        }
+
+        // No stored order or DB lookup failed — show pending state
+        showPending();
+        return;
+      }
+
+      // ── Fallback: unknown state ────────────────────────────────────────────
+      showPending();
+    }
+
+    init().catch((e) => {
+      console.error("success.html init error:", e);
+      showPending(); // safe fallback — never show a false success
+    });
+  </script>
 </body>
 </html>
-

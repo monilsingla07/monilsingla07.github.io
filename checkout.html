@@ -2,22 +2,21 @@
 <html>
 <head>
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
 
-  gtag('config', 'G-CKQ1EXBHY6');
-</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Checkout — AhamStree</title>
   <meta name="description" content="Secure checkout. Shipping details and Razorpay payment." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 
@@ -43,65 +42,112 @@
       <div class="small" id="authText"></div>
     </div>
 
+    <!-- Saved address banner (shown for logged-in users with a saved address) -->
+    <div id="savedAddressBanner" style="display:none; margin-bottom:12px; padding:14px 16px; border-radius:16px; border:1.5px solid var(--brand); background:var(--brand-light);">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:800; font-size:14px;">📍 Use your saved address?</div>
+          <div class="small" style="margin-top:4px; opacity:.8;" id="savedAddressPreview"></div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" id="useSavedAddress" class="btn" style="padding:8px 14px; font-size:13px;">Use this address</button>
+          <button type="button" id="dismissSavedAddress" class="btn secondary" style="padding:8px 14px; font-size:13px;">Enter new</button>
+        </div>
+      </div>
+    </div>
+
     <div id="warn" class="card" style="padding:12px 14px; border-radius:16px; display:none; border:1px solid rgba(220,20,60,.22); margin-bottom:12px;">
       <div class="small" style="color:crimson;" id="warnText"></div>
     </div>
 
-    <div style="display:grid; grid-template-columns: 1.4fr .9fr; gap:16px; align-items:start;" class="checkout-grid">
+    <div class="checkout-grid">
 
       <!-- LEFT: Shipping -->
       <form id="form" class="card" style="padding:16px; border-radius:16px;">
         <h3 style="margin:0 0 8px 0;">Shipping details</h3>
-        <div class="small" style="opacity:.8; margin-bottom:12px;">Used for delivery updates and invoice.</div>
+        <div class="small" style="opacity:.8; margin-bottom:12px;">Used for delivery updates and invoice. <span id="loginHint"></span></div>
 
         <label class="small">Full name</label>
-        <input class="input" name="full_name" required placeholder="e.g., Monil Gupta" />
+        <input class="input" name="full_name" required placeholder="e.g., Monil Gupta" autocomplete="name" autocapitalize="words" />
 
         <div style="height:10px;"></div>
 
         <label class="small">Phone</label>
-        <input class="input" name="phone" required maxlength="10" placeholder="10-digit mobile" inputmode="numeric" />
+        <input class="input" type="tel" name="phone" required maxlength="10" placeholder="10-digit mobile" inputmode="numeric" autocomplete="tel" />
 
         <div style="height:10px;"></div>
 
         <label class="small">Email (optional)</label>
-        <input class="input" name="email" placeholder="name@email.com" inputmode="email" />
+        <input class="input" type="email" name="email" placeholder="name@email.com" inputmode="email" autocomplete="email" />
 
         <div style="height:10px;"></div>
 
         <label class="small">Address line 1</label>
-        <input class="input" name="address_line1" required placeholder="House / street" />
+        <input class="input" name="address_line1" required placeholder="House / street" autocomplete="shipping address-line1" autocapitalize="words" />
 
         <div style="height:10px;"></div>
 
         <label class="small">Address line 2 (optional)</label>
-        <input class="input" name="address_line2" placeholder="Landmark" />
+        <input class="input" name="address_line2" placeholder="Landmark" autocomplete="shipping address-line2" autocapitalize="words" />
 
         <div style="height:10px;"></div>
 
-        <div class="row">
+        <div class="row city-state-row">
           <div style="flex:1;">
             <label class="small">City</label>
-            <input class="input" name="city" required />
+            <input class="input" name="city" required autocomplete="shipping address-level2" autocapitalize="words" />
           </div>
           <div style="flex:1;">
             <label class="small">State</label>
-            <input class="input" name="state" required />
+            <input class="input" name="state" required autocomplete="shipping address-level1" autocapitalize="words" />
           </div>
         </div>
 
         <div style="height:10px;"></div>
 
         <label class="small">Pincode</label>
-        <input class="input" name="pincode" required maxlength="6" placeholder="e.g., 560001" inputmode="numeric" />
+        <input class="input" name="pincode" required maxlength="6" placeholder="e.g., 560001" inputmode="numeric" autocomplete="shipping postal-code" />
+
+        <div style="height:18px;"></div>
+
+        <!-- Payment Method Selector -->
+        <div style="margin-bottom:14px;">
+          <div class="small" style="font-weight:800; margin-bottom:8px;">Payment method</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+
+            <label id="pmRazorpayLabel" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid var(--brand);border-radius:12px;cursor:pointer;background:var(--brand-light);transition:all .15s;">
+              <input type="radio" name="payment_method" value="razorpay" id="pmRazorpay" checked style="accent-color:var(--brand);width:16px;height:16px;flex-shrink:0;" />
+              <div style="flex:1;">
+                <div style="font-weight:800;font-size:14px;">Pay Online</div>
+                <div class="small" style="opacity:.75;margin-top:2px;">Cards, UPI, Net Banking via Razorpay</div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.55;flex-shrink:0;"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            </label>
+
+            <label id="pmCodLabel" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid var(--border);border-radius:12px;cursor:pointer;background:#fff;transition:all .15s;">
+              <input type="radio" name="payment_method" value="cod" id="pmCod" style="accent-color:var(--brand);width:16px;height:16px;flex-shrink:0;" />
+              <div style="flex:1;">
+                <div style="font-weight:800;font-size:14px;">Cash on Delivery</div>
+                <div class="small" style="opacity:.75;margin-top:2px;">Pay in cash when your order arrives</div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.55;flex-shrink:0;"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+            </label>
+
+          </div>
+
+          <!-- COD note -->
+          <div id="codNote" style="display:none;margin-top:8px;padding:10px 12px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;">
+            <div class="small" style="color:#92400e;">&#x1F4E6; COD orders are confirmed manually. You'll receive a WhatsApp / call confirmation within 2 hours.</div>
+          </div>
+        </div>
 
         <div style="height:14px;"></div>
 
         <button class="btn" type="button" id="payBtn" style="width:100%;">Pay with Razorpay</button>
         <div id="status" class="small" style="margin-top:10px;"></div>
 
-        <div class="small" style="margin-top:12px; opacity:.8;">
-          Note: Payments are processed by Razorpay. You’ll be redirected to a secure payment page.
+        <div id="payNote" class="small" style="margin-top:12px; opacity:.8;">
+          Note: Payments are processed by Razorpay. You'll be redirected to a secure payment page.
         </div>
       </form>
 
@@ -112,12 +158,43 @@
 
         <div id="summaryItems" style="display:flex; flex-direction:column; gap:10px;"></div>
 
+        <!-- Coupon -->
+        <div id="couponBox" style="margin-top:14px;">
+          <button id="couponToggle" type="button" style="display:flex;align-items:center;gap:8px;background:var(--brand-light);border:1.5px dashed var(--brand);border-radius:12px;padding:10px 14px;width:100%;cursor:pointer;color:var(--brand);font-weight:700;font-size:14px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            <span id="couponToggleLabel">Have a coupon? Tap to apply</span>
+          </button>
+
+          <!-- Coupon Panel (hidden by default) -->
+          <div id="couponPanel" style="display:none; margin-top:10px; border:1px solid var(--border); border-radius:14px; padding:14px; background:#fff;">
+            <div style="font-weight:800; font-size:13px; margin-bottom:10px;">Available coupons</div>
+
+            <div id="couponOptions" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
+
+            <div style="font-weight:700; font-size:12px; opacity:.7; margin-bottom:6px;">Or enter a code manually</div>
+            <div style="display:flex; gap:8px;">
+              <input id="couponInput" class="input" placeholder="e.g. WELCOME10" style="flex:1; font-size:14px;" autocapitalize="characters" />
+              <button id="applyCoupon" type="button" class="btn" style="height:42px; padding:0 16px; flex-shrink:0;">Apply</button>
+            </div>
+            <div id="couponMsg" class="small" style="margin-top:8px; min-height:18px;"></div>
+          </div>
+        </div>
+
         <div style="height:12px;"></div>
         <div style="border-top:1px solid rgba(255,255,255,.08); padding-top:12px;">
           <div style="display:flex; justify-content:space-between; gap:10px;">
             <div class="small">Subtotal</div>
             <div class="small" id="subtotal">₹0</div>
           </div>
+          <div id="discountRow" style="display:none; justify-content:space-between; gap:10px; margin-top:6px;">
+            <div class="small">Discount</div>
+            <div class="small" id="discount">-₹0</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; gap:10px; margin-top:6px;">
+            <div class="small" id="gstLabel">GST</div>
+            <div class="small" id="gst">₹0</div>
+          </div>
+
           <div style="display:flex; justify-content:space-between; gap:10px; margin-top:6px;">
             <div class="small">Shipping</div>
             <div class="small" id="shipping">₹0</div>
@@ -139,151 +216,291 @@
   <div id="footer"></div>
 
   <script type="module">
-    const statusEl = document.getElementById("status");
-    const warnBox = document.getElementById("warn");
-    const warnText = document.getElementById("warnText");
-    const payBtn = document.getElementById("payBtn");
-    const form = document.getElementById("form");
+    import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
 
-    const showError = (msg) => {
-      warnBox.style.display = "block";
-      warnText.textContent = msg;
-    };
-    const clearError = () => {
-      warnBox.style.display = "none";
-      warnText.textContent = "";
-    };
+    const statusEl = document.getElementById("status");
+    const warnBox  = document.getElementById("warn");
+    const warnText = document.getElementById("warnText");
+    const payBtn   = document.getElementById("payBtn");
+    const form     = document.getElementById("form");
+
+    const showError  = (msg) => { warnBox.style.display = "block"; warnText.textContent = msg; };
+    const clearError = ()    => { warnBox.style.display = "none";  warnText.textContent = ""; };
 
     // ---------- Money / Summary ----------
+    const GST_RATE              = 0.05;   // fallback only — server is source of truth
+    const GST_INCLUDED_IN_PRICE = true;
+
+    let cartOk        = true;
+    let appliedCoupon = localStorage.getItem("ahamstree_coupon") || "";
+
     function money(n) {
-      return "₹" + Number(n || 0);
+      return "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
     }
 
-    async function renderOrderSummary() {
+    function calcGST(net) {
+      const rate = Number(GST_RATE || 0);
+      net = Number(net || 0);
+      if (!rate || rate <= 0) return { gst: 0 };
+      if (GST_INCLUDED_IN_PRICE) return { gst: net - net / (1 + rate) };
+      return { gst: net * rate };
+    }
+
+    // ── Server quote for order summary preview ───────────────────────────────
+    // NOTE: This is READ-ONLY for display purposes — it does NOT create an order.
+    // We pass dummy customer info so the edge fn doesn't reject on missing fields.
+    // The real order is created only when the user clicks Pay / Place Order.
+    async function tryServerQuote({ cart, coupon_code }) {
+      try {
+        const sbMod = await import("./assets/supabase.js");
+
+        // ✅ FIX: Do NOT pass a custom Authorization header.
+        //    supabase.functions.invoke() automatically attaches:
+        //      - the user's session JWT if logged in
+        //      - the anon key if guest
+        //    Overriding it manually caused "Bearer undefined" → 401.
+        const { data, error } = await sbMod.supabase.functions.invoke("quote-order", {
+          body: {
+            cart,
+            coupon_code:      coupon_code || null,
+            // Minimal valid fields so the function doesn't 400 on missing name/phone
+            customer_name:    "Preview",
+            customer_phone:   "9999999999",
+            customer_email:   null,
+            shipping_address: null,
+            shipping_inr:     0,
+            payment_method:   "cod",
+            // user_id resolved server-side from JWT (or null for guest)
+          }
+        });
+
+        if (error) return { ok: false, error: error.message || "Quote error" };
+        if (!data)  return { ok: false, error: "No data returned" };
+        return { ok: true, data };
+      } catch (e) {
+        return { ok: false, error: String(e?.message ?? e) };
+      }
+    }
+
+    async function renderOrderSummary({ coupon_code = "" } = {}) {
       const summaryItems = document.getElementById("summaryItems");
-      const subtotalEl = document.getElementById("subtotal");
-      const shippingEl = document.getElementById("shipping");
-      const totalEl = document.getElementById("total");
+      const subtotalEl   = document.getElementById("subtotal");
+      const shippingEl   = document.getElementById("shipping");
+      const totalEl      = document.getElementById("total");
+      const discountRow  = document.getElementById("discountRow");
+      const discountEl   = document.getElementById("discount");
+      const gstEl        = document.getElementById("gst");
+      const gstLabel     = document.getElementById("gstLabel");
+      const couponInput  = document.getElementById("couponInput");
+      const couponMsg    = document.getElementById("couponMsg");
 
       if (!summaryItems || !subtotalEl || !shippingEl || !totalEl) return;
 
       const cartMod = await import("./assets/cart.js");
+      const sbMod   = await import("./assets/supabase.js");
+
       const items = cartMod.getCart?.() || [];
+      cartOk = true;
+
+      if (couponInput && coupon_code !== undefined) {
+        couponInput.value = String(coupon_code || "");
+      }
 
       if (!items.length) {
         summaryItems.innerHTML = `<div class="small" style="opacity:.75;">Your cart is empty.</div>`;
         subtotalEl.textContent = money(0);
         shippingEl.textContent = money(0);
-        totalEl.textContent = money(0);
+        totalEl.textContent    = money(0);
+        if (discountRow) discountRow.style.display = "none";
+        if (gstEl)       gstEl.textContent  = money(0);
+        if (gstLabel)    gstLabel.textContent = GST_INCLUDED_IN_PRICE ? "GST (included)" : "GST";
+        if (couponMsg)   couponMsg.textContent = "";
+        cartOk = false;
+        validateAll({ showErrors: false });
         return;
       }
 
-      let subtotal = 0;
+      // Fetch latest product info (stock + price)
+      const ids = Array.from(new Set(items.map(i => String(i.product_id))));
+      const { data: products, error: prodErr } = await sbMod.supabase
+        .from("products")
+        .select("id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,product_images(image_url,sort_order)")
+        .in("id", ids);
+
+      if (prodErr) {
+        cartOk = false;
+        showError("Could not verify product stock. Please refresh and try again.");
+      }
+
+      const pMap = new Map((products || []).map(p => [String(p.id), p]));
+
+      let subtotal       = 0;
+      let hasStockIssue  = false;
 
       summaryItems.innerHTML = items.map((i) => {
-        const lineTotal = (i.price_inr || 0) * (i.qty || 1);
-        subtotal += lineTotal;
+        const pid       = String(i.product_id);
+        const p         = pMap.get(pid);
+        const active    = p?.is_active !== false;
+        const inv       = Number(p?.inventory_qty ?? 0);
+        const reserved  = Number(p?.reserved_qty  ?? 0);
+        const available = Math.max(inv - reserved, 0);
+        const qty       = Number(i.qty || 1);
+
+        const okStock = !!p && active && available > 0 && qty <= available;
+        if (!okStock) hasStockIssue = true;
+
+        const basePrice  = Number(p?.price_inr ?? i.price_inr ?? 0);
+        const hasSale    = p?.sale_price_inr != null && Number(p.sale_price_inr) > 0 && Number(p.sale_price_inr) < basePrice;
+        const unitPrice  = hasSale ? Number(p.sale_price_inr) : basePrice;
+        const lineTotal  = unitPrice * qty;
+        subtotal        += lineTotal;
+
+        const imgs    = (p?.product_images ?? []).slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+        const imgUrl  = imgs[0]?.image_url || i.image_url || "";
+        const title   = p?.title || i.title || "Item";
+
+        let stockText = "";
+        if (!p)                          stockText = "Unavailable";
+        else if (!active || available <= 0) stockText = "Sold out";
+        else if (qty > available)         stockText = `Only ${available} left`;
+
+        const safeImg   = safeSrc(imgUrl);
+        const safeAlt   = escapeAttr(title);
+        const safeTitle = escapeHtml(title);
 
         return `
           <div style="display:flex; gap:10px; align-items:center;">
             <div style="width:54px;height:64px;border-radius:12px;overflow:hidden;background:#fafafa;flex:0 0 auto;">
-              ${i.image_url ? `<img src="${i.image_url}" alt="${i.title || ""}" style="width:100%;height:100%;object-fit:cover;">` : ""}
+              ${safeImg ? `<img src="${safeImg}" alt="${safeAlt}" style="width:100%;height:100%;object-fit:cover;">` : ""}
             </div>
-
             <div style="flex:1; min-width:0;">
-              <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                ${i.title || "Item"}
+              <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeTitle}</div>
+              <div class="small" style="opacity:.75;">
+                ${hasSale
+                  ? `<span style="text-decoration:line-through;opacity:.55;margin-right:5px;">${money(basePrice)}</span><span style="color:var(--brand);font-weight:700;">${money(unitPrice)}</span>`
+                  : money(unitPrice)
+                } × ${qty}
               </div>
-              <div class="small" style="opacity:.75;">₹${i.price_inr} × ${i.qty}</div>
+              ${stockText ? `<div class="small" style="color:crimson; margin-top:2px;">${stockText}</div>` : ""}
             </div>
-
             <div style="font-weight:900; flex:0 0 auto;">${money(lineTotal)}</div>
-          </div>
-        `;
+          </div>`;
       }).join("");
 
-      const shipping = 0; // keep free for now
-      const total = subtotal + shipping;
+      if (hasStockIssue) {
+        cartOk = false;
+        showError("Some items are sold out / exceed available stock. Please go back and edit your cart.");
+      } else {
+        clearError();
+      }
+
+      // Fallback local calculation
+      let shipping = 0;
+      let discount = 0;
+      let gst      = calcGST(subtotal - discount + shipping).gst;
+      let total    = GST_INCLUDED_IN_PRICE
+        ? (subtotal - discount + shipping)
+        : (subtotal - discount + shipping + gst);
+
+      const code        = String(coupon_code || "").trim().toUpperCase();
+      // ✅ FIX: payloadCart was previously referenced inside tryServerQuote (out of scope)
+      const payloadCart = items.map(i => ({ product_id: i.product_id, qty: i.qty }));
+
+      const q = await tryServerQuote({ cart: payloadCart, coupon_code: code || null });
+
+      if (q.ok && q.data) {
+        subtotal = Number(q.data.subtotal_inr ?? subtotal);
+        discount = Number(q.data.discount_inr ?? 0);
+        shipping = Number(q.data.shipping_inr ?? shipping);
+        gst      = Number(q.data.gst_inr      ?? gst);
+        total    = Number(q.data.total_inr     ?? total);
+
+        if (gstLabel) gstLabel.textContent = q.data.gst_included ? "GST (included)" : "GST";
+
+        if (couponMsg) {
+          if (code) {
+            const c = q.data.coupon;
+            couponMsg.textContent = c?.ok ? `Applied: ${code}` : (c?.message || "Coupon not applied");
+          } else {
+            couponMsg.textContent = "";
+          }
+        }
+
+        if (Array.isArray(q.data.issues) && q.data.issues.length) {
+          cartOk = false;
+          showError(q.data.issues.join(" • "));
+        }
+      } else {
+        if (gstLabel) gstLabel.textContent = GST_INCLUDED_IN_PRICE ? "GST (included)" : "GST";
+        if (couponMsg) {
+          couponMsg.textContent = code ? `Coupon preview unavailable (${q.error || "quote error"})` : "";
+        }
+      }
+
+      if (gstEl)  gstEl.textContent = money(gst);
+
+      if (discountRow && discountEl) {
+        discountRow.style.display = discount > 0 ? "flex" : "none";
+        discountEl.textContent    = "-" + money(discount);
+      }
 
       subtotalEl.textContent = money(subtotal);
       shippingEl.textContent = money(shipping);
-      totalEl.textContent = money(total);
+      totalEl.textContent    = money(total);
+
+      validateAll({ showErrors: false });
     }
 
     // ---------- Validation ----------
-    const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
-    const sanitizeText = (s) => String(s || "").trim().replace(/\s+/g, " ");
-
-    const normalizePhone10 = (raw) => {
-      let digits = String(raw || "").replace(/\D/g, "");
-      if (digits.startsWith("91") && digits.length === 12) digits = digits.slice(2);
-      if (digits.startsWith("0") && digits.length === 11) digits = digits.slice(1);
-      return digits;
+    const isValidEmail      = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(e);
+    const sanitizeText      = (s) => String(s || "").trim().replace(/\s+/g, " ");
+    const normalizePhone10  = (raw) => {
+      let d = String(raw || "").replace(/\D/g, "");
+      if (d.startsWith("91") && d.length === 12) d = d.slice(2);
+      if (d.startsWith("0")  && d.length === 11) d = d.slice(1);
+      return d;
     };
-
     const normalizePincode6 = (raw) => String(raw || "").replace(/\D/g, "");
-
-    const markInvalid = (inputEl, msg) => {
-      inputEl.classList.add("is-invalid");
-      inputEl.dataset.error = msg;
-    };
-    const markValid = (inputEl) => {
-      inputEl.classList.remove("is-invalid");
-      delete inputEl.dataset.error;
-    };
-    const clearMarks = (inputEl) => {
-      inputEl.classList.remove("is-invalid");
-      delete inputEl.dataset.error;
-    };
+    const markInvalid  = (el, msg) => { el.classList.add("is-invalid"); el.dataset.error = msg; };
+    const markValid    = (el)      => { el.classList.remove("is-invalid"); delete el.dataset.error; };
+    const clearMarks   = (el)      => { el.classList.remove("is-invalid"); delete el.dataset.error; };
 
     const validateField = (name, valueRaw) => {
-      const v = valueRaw;
-
       if (name === "full_name") {
-        const full = sanitizeText(v);
-        if (!full || full.length < 3) return { ok: false, message: "Enter a valid full name (min 3 chars)." };
+        const v = sanitizeText(valueRaw);
+        if (!v || v.length < 3) return { ok: false, message: "Enter a valid full name (min 3 chars)." };
         return { ok: true };
       }
-
       if (name === "phone") {
-        const phone10 = normalizePhone10(v);
-        if (!phone10 || phone10.length !== 10 || !/^[6-9]\d{9}$/.test(phone10)) {
+        const p = normalizePhone10(valueRaw);
+        if (!p || p.length !== 10 || !/^[6-9]\d{9}$/.test(p))
           return { ok: false, message: "Enter a valid 10-digit Indian mobile (starts 6–9)." };
-        }
         return { ok: true };
       }
-
       if (name === "email") {
-        const email = sanitizeText(v).toLowerCase();
-        if (!email) return { ok: true };
-        if (!isValidEmail(email)) return { ok: false, message: "Enter a valid email or leave blank." };
+        const e = sanitizeText(valueRaw).toLowerCase();
+        if (!e) return { ok: true };
+        if (!isValidEmail(e)) return { ok: false, message: "Enter a valid email or leave blank." };
         return { ok: true };
       }
-
       if (name === "address_line1") {
-        const a1 = sanitizeText(v);
-        if (!a1 || a1.length < 5) return { ok: false, message: "Enter Address line 1 (min 5 chars)." };
+        const v = sanitizeText(valueRaw);
+        if (!v || v.length < 5) return { ok: false, message: "Enter Address line 1 (min 5 chars)." };
         return { ok: true };
       }
-
       if (name === "city") {
-        const city = sanitizeText(v);
-        if (!city) return { ok: false, message: "Enter your city." };
+        if (!sanitizeText(valueRaw)) return { ok: false, message: "Enter your city." };
         return { ok: true };
       }
-
       if (name === "state") {
-        const state = sanitizeText(v);
-        if (!state) return { ok: false, message: "Enter your state." };
+        if (!sanitizeText(valueRaw)) return { ok: false, message: "Enter your state." };
         return { ok: true };
       }
-
       if (name === "pincode") {
-        const pin = normalizePincode6(v);
-        if (!pin || pin.length !== 6) return { ok: false, message: "Enter a valid 6-digit pincode." };
+        const p = normalizePincode6(valueRaw);
+        if (!p || p.length !== 6) return { ok: false, message: "Enter a valid 6-digit pincode." };
         return { ok: true };
       }
-
       return { ok: true };
     };
 
@@ -293,57 +510,46 @@
       let allOk = true;
       let firstError = null;
 
-      const inputs = form.querySelectorAll("input[name]");
-      inputs.forEach((input) => {
+      form.querySelectorAll("input[name]").forEach((input) => {
         const name = input.name;
-        const res = validateField(name, input.value);
+        const res  = validateField(name, input.value);
         const isRequired = requiredFields.includes(name);
 
         if ((isRequired || name === "email") && !res.ok) {
           allOk = false;
-
-          if (showErrors || input.dataset.touched === "1") {
-            markInvalid(input, res.message);
-          } else {
-            clearMarks(input);
-          }
-
+          if (showErrors || input.dataset.touched === "1") markInvalid(input, res.message);
+          else clearMarks(input);
           if (!firstError) firstError = res.message;
         } else {
-          // valid or empty optional
           if (!isRequired && name !== "email" && input.value.trim() === "") clearMarks(input);
-          else if (name === "email" && input.value.trim() === "") clearMarks(input);
+          else if (name === "email" && input.value.trim() === "")           clearMarks(input);
           else markValid(input);
         }
       });
 
-      payBtn.disabled = !allOk;
-      payBtn.style.opacity = allOk ? "1" : "0.6";
-      payBtn.style.cursor = allOk ? "pointer" : "not-allowed";
+      const canPay = allOk && cartOk;
+      payBtn.disabled      = !canPay;
+      payBtn.style.opacity = canPay ? "1" : "0.6";
+      payBtn.style.cursor  = canPay ? "pointer" : "not-allowed";
 
       if (showErrors) {
         if (!allOk && firstError) showError(firstError);
         else clearError();
       }
-
-      return allOk;
+      return allOk && cartOk;
     };
 
     const attachLiveValidation = () => {
-      const inputs = form.querySelectorAll("input[name]");
-      inputs.forEach((input) => {
+      form.querySelectorAll("input[name]").forEach((input) => {
         const name = input.name;
-
         input.addEventListener("input", () => {
-          if (name === "phone") input.value = String(input.value || "").replace(/\D/g, "").slice(0, 10);
+          if (name === "phone")   input.value = String(input.value || "").replace(/\D/g, "").slice(0, 10);
           if (name === "pincode") input.value = String(input.value || "").replace(/\D/g, "").slice(0, 6);
           validateAll({ showErrors: false });
         });
-
         input.addEventListener("blur", () => {
           input.dataset.touched = "1";
           validateAll({ showErrors: false });
-
           const res = validateField(name, input.value);
           const isRequired = requiredFields.includes(name);
           if ((isRequired || name === "email") && !res.ok) showError(res.message);
@@ -353,95 +559,446 @@
     };
 
     // ---------- Build payload ----------
-    const buildShippingAndCustomer = () => {
-      const fd = new FormData(form);
-      const raw = Object.fromEntries(fd.entries());
-
-      const full_name = sanitizeText(raw.full_name);
-      const phone10 = normalizePhone10(raw.phone);
-      const email = sanitizeText(raw.email).toLowerCase();
-      const address_line1 = sanitizeText(raw.address_line1);
-      const address_line2 = sanitizeText(raw.address_line2);
-      const city = sanitizeText(raw.city);
-      const state = sanitizeText(raw.state);
-      const pincode = normalizePincode6(raw.pincode);
-
+    const buildShipping = () => {
+      const raw = Object.fromEntries(new FormData(form).entries());
       return {
-        shipping: {
-          full_name,
-          phone: phone10,
-          email: email || null,
-          address_line1,
-          address_line2: address_line2 || null,
-          city,
-          state,
-          pincode
-        },
-        customer: {
-          name: full_name,
-          contact: `+91${phone10}`,
-          email: email || undefined
-        }
+        full_name:    sanitizeText(raw.full_name),
+        phone:        normalizePhone10(raw.phone),
+        email:        sanitizeText(raw.email).toLowerCase() || null,
+        address_line1: sanitizeText(raw.address_line1),
+        address_line2: sanitizeText(raw.address_line2) || null,
+        city:         sanitizeText(raw.city),
+        state:        sanitizeText(raw.state),
+        pincode:      normalizePincode6(raw.pincode),
       };
     };
 
-    // ---------- Init ----------
-    statusEl.textContent = "✅ Checkout JS loaded";
-    renderOrderSummary();
+// ---------- Init ----------
+    statusEl.textContent = "";
+    localStorage.removeItem("ahamstree_coupon");
+    appliedCoupon = "";
+
+    // ── Pending payment detection (browser back button scenario) ─────────
+    // If the user went to Razorpay and hit back, we already have an order in DB.
+    // Show a banner so they can resume that payment link instead of creating a new order.
+    (function checkPendingPayment() {
+      try {
+        const raw = localStorage.getItem("ahamstree_pending_payment");
+        if (!raw) return;
+        const pending = JSON.parse(raw);
+        if (!pending?.order_id || !pending?.payment_link_url) return;
+
+        // Show the banner only if the stored link is less than 20 minutes old
+        const ageMs = Date.now() - (pending.stored_at || 0);
+        if (ageMs > 20 * 60 * 1000) {
+          localStorage.removeItem("ahamstree_pending_payment");
+          return;
+        }
+
+        // Inject a resume banner above the form
+        const banner = document.createElement("div");
+        banner.id = "pendingPaymentBanner";
+        banner.style.cssText = "margin-bottom:14px;padding:14px 16px;border-radius:16px;border:1.5px solid var(--brand);background:var(--brand-light);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;";
+        banner.innerHTML = `
+          <div>
+            <div style="font-weight:800;font-size:14px;">⚡ You have an incomplete payment</div>
+            <div class="small" style="margin-top:4px;opacity:.8;">Order #${pending.order_id.slice(-8).toUpperCase()} is waiting. Resume your Razorpay session instead of starting over.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button type="button" id="resumePayBtn" class="btn" style="padding:8px 14px;font-size:13px;">Resume payment</button>
+            <button type="button" id="dismissPendingBtn" class="btn secondary" style="padding:8px 14px;font-size:13px;">Start fresh</button>
+          </div>`;
+
+        // Insert before the checkout grid
+        const grid = document.querySelector(".checkout-grid");
+        if (grid) grid.parentNode.insertBefore(banner, grid);
+
+        document.getElementById("resumePayBtn")?.addEventListener("click", () => {
+          window.location.href = pending.payment_link_url;
+        });
+
+        document.getElementById("dismissPendingBtn")?.addEventListener("click", () => {
+          localStorage.removeItem("ahamstree_pending_payment");
+          banner.remove();
+        });
+      } catch (_) {
+        localStorage.removeItem("ahamstree_pending_payment");
+      }
+    })();
+
+    // ---------- Coupon UI ----------
+    const AVAILABLE_COUPONS = [
+      { code: "WELCOME10", label: "10% off",  description: "10% off your first order • No minimum spend" },
+      { code: "AHAM15",    label: "15% off",  description: "15% off on orders above ₹2,000" },
+      { code: "SAREE5",    label: "₹500 off", description: "Flat ₹500 off on sarees above ₹3,000" },
+    ];
+
+    const couponToggle      = document.getElementById("couponToggle");
+    const couponPanel       = document.getElementById("couponPanel");
+    const couponInput       = document.getElementById("couponInput");
+    const applyCouponBtn    = document.getElementById("applyCoupon");
+    const couponOptions     = document.getElementById("couponOptions");
+    const couponMsg         = document.getElementById("couponMsg");
+    const couponToggleLabel = document.getElementById("couponToggleLabel");
+
+    if (couponOptions) {
+      couponOptions.innerHTML = AVAILABLE_COUPONS.map(c => `
+        <button type="button" class="coupon-chip" data-code="${c.code}"
+          style="display:flex;align-items:center;justify-content:space-between;gap:10px;
+                 border:1.5px dashed var(--border);border-radius:10px;padding:10px 12px;
+                 background:#fafafa;cursor:pointer;text-align:left;width:100%;
+                 transition:border-color .15s,background .15s;">
+          <div>
+            <span style="font-weight:800;font-size:13px;color:var(--brand);">${c.code}</span>
+            <span style="margin-left:8px;font-size:12px;font-weight:700;background:var(--brand);color:#fff;padding:2px 7px;border-radius:999px;">${c.label}</span>
+            <div style="font-size:12px;opacity:.7;margin-top:3px;">${c.description}</div>
+          </div>
+          <span style="font-size:12px;font-weight:800;color:var(--brand);white-space:nowrap;">Tap to apply →</span>
+        </button>
+      `).join("");
+
+      couponOptions.querySelectorAll(".coupon-chip").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (couponInput) couponInput.value = btn.dataset.code;
+          applyCouponNow(btn.dataset.code);
+        });
+      });
+    }
+
+    couponToggle?.addEventListener("click", () => {
+      const isOpen = couponPanel.style.display !== "none";
+      couponPanel.style.display    = isOpen ? "none" : "block";
+      couponToggle.style.borderStyle = isOpen ? "dashed" : "solid";
+    });
+
+    const applyCouponNow = async (code) => {
+      code = String(code ?? couponInput?.value ?? "").trim().toUpperCase();
+      appliedCoupon = code;
+      if (code) {
+        localStorage.setItem("ahamstree_coupon", code);
+        if (couponToggleLabel) couponToggleLabel.textContent = `Coupon: ${code} ✓`;
+        couponToggle.style.background   = "rgba(34,197,94,0.08)";
+        couponToggle.style.borderColor  = "rgba(34,197,94,0.5)";
+        couponToggle.style.color        = "#166534";
+      } else {
+        localStorage.removeItem("ahamstree_coupon");
+        if (couponToggleLabel) couponToggleLabel.textContent = "Have a coupon? Tap to apply";
+        couponToggle.style.background  = "";
+        couponToggle.style.borderColor = "";
+        couponToggle.style.color       = "";
+      }
+      await renderOrderSummary({ coupon_code: code });
+    };
+
+    applyCouponBtn?.addEventListener("click", () => applyCouponNow());
+    couponInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); applyCouponNow(); }
+    });
+
+    // ── Saved address + login state ─────────────────────────────────────────
+    (async () => {
+      const sbMod  = await import("./assets/supabase.js");
+      const { data: sess } = await sbMod.supabase.auth.getSession();
+      const user   = sess?.session?.user;
+      const loginHint = document.getElementById("loginHint");
+
+      if (!user) {
+        if (loginHint) {
+          loginHint.innerHTML = `<a href="login.html?next=checkout.html" style="color:var(--brand);font-weight:700;">Log in</a> to use your saved address.`;
+        }
+        return;
+      }
+
+      const { data: profile } = await sbMod.supabase
+        .from("profiles")
+        .select("full_name,phone,address_line1,address_line2,city,state,pincode")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!profile?.address_line1) return;
+
+      const banner  = document.getElementById("savedAddressBanner");
+      const preview = document.getElementById("savedAddressPreview");
+      if (!banner || !preview) return;
+
+      const parts = [profile.address_line1, profile.address_line2, profile.city, profile.state, profile.pincode].filter(Boolean);
+      preview.textContent = `${profile.full_name || ""} • ${parts.join(", ")}`;
+      banner.style.display = "block";
+
+      document.getElementById("useSavedAddress")?.addEventListener("click", () => {
+        const set = (name, val) => {
+          const el = form.querySelector(`[name="${name}"]`);
+          if (el && val) { el.value = val; el.dataset.touched = "1"; }
+        };
+        set("full_name",     profile.full_name);
+        set("phone",         profile.phone);
+        set("address_line1", profile.address_line1);
+        set("address_line2", profile.address_line2);
+        set("city",          profile.city);
+        set("state",         profile.state);
+        set("pincode",       profile.pincode);
+        banner.style.display = "none";
+        validateAll({ showErrors: false });
+      });
+
+      document.getElementById("dismissSavedAddress")?.addEventListener("click", () => {
+        banner.style.display = "none";
+      });
+    })();
+
+    renderOrderSummary({ coupon_code: "" });
     attachLiveValidation();
     validateAll({ showErrors: false });
 
-    // ---------- Pay ----------
+    // ---------- Payment method toggle UI ----------
+    const pmRazorpay    = document.getElementById("pmRazorpay");
+    const pmCod         = document.getElementById("pmCod");
+    const pmRazorpayLbl = document.getElementById("pmRazorpayLabel");
+    const pmCodLbl      = document.getElementById("pmCodLabel");
+    const codNote       = document.getElementById("codNote");
+    const payNote       = document.getElementById("payNote");
+
+    function getPaymentMethod() {
+      return document.querySelector('input[name="payment_method"]:checked')?.value || "razorpay";
+    }
+
+    function updatePaymentUI() {
+      const isRazorpay = getPaymentMethod() === "razorpay";
+      pmRazorpayLbl.style.border     = isRazorpay ? "2px solid var(--brand)" : "2px solid var(--border)";
+      pmRazorpayLbl.style.background = isRazorpay ? "var(--brand-light)" : "#fff";
+      pmCodLbl.style.border          = !isRazorpay ? "2px solid var(--brand)" : "2px solid var(--border)";
+      pmCodLbl.style.background      = !isRazorpay ? "var(--brand-light)" : "#fff";
+      payBtn.textContent             = isRazorpay ? "Pay with Razorpay" : "Place COD Order";
+      codNote.style.display          = isRazorpay ? "none" : "block";
+      if (payNote) payNote.textContent = isRazorpay
+        ? "Note: Payments are processed by Razorpay. You'll be redirected to a secure payment page."
+        : "No payment needed now. Your order will be confirmed via WhatsApp / call.";
+    }
+
+    pmRazorpay?.addEventListener("change", updatePaymentUI);
+    pmCod?.addEventListener("change", updatePaymentUI);
+    updatePaymentUI();
+// ── Resume checkout banner ────────────────────────────────────────────────
+    // Shown when the edge fn returns an existing pending order (back-button scenario).
+    // Replaces the pay button area with a countdown + redirect.
+    function showResumeCheckoutBanner({ orderId, paymentLinkUrl, expiresAt, msRemaining, totalInr }) {
+      // Remove any existing banner
+      document.getElementById("resumeCheckoutBanner")?.remove();
+
+      const money = (n) => "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+      const shortId = (orderId || "").slice(-8).toUpperCase();
+
+      const banner = document.createElement("div");
+      banner.id = "resumeCheckoutBanner";
+      banner.style.cssText = [
+        "margin-top:16px;padding:16px;border-radius:16px;",
+        "border:2px solid var(--brand);background:var(--brand-light);",
+        "display:flex;flex-direction:column;gap:12px;"
+      ].join("");
+
+      banner.innerHTML = `
+        <div>
+          <div style="font-weight:900;font-size:15px;margin-bottom:4px;">⚡ You have a pending payment</div>
+          <div class="small" style="opacity:.8;">
+            Order #${shortId} for ${money(totalInr)} was already created and stock is reserved for you.
+            Complete payment before the timer runs out, or the items will be released back.
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div>
+            <div class="small" style="opacity:.7;margin-bottom:2px;">Time remaining to complete payment:</div>
+            <div id="resumeCountdown" style="font-size:22px;font-weight:900;color:var(--brand);letter-spacing:1px;">--:--</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a id="resumeToOrdersBtn" href="orders.html" class="btn secondary" style="padding:10px 16px;font-size:14px;">
+              View in My Orders
+            </a>
+            <a id="resumePayDirectBtn" href="${paymentLinkUrl}" class="btn" style="padding:10px 16px;font-size:14px;">
+              Complete payment →
+            </a>
+          </div>
+        </div>
+        <div class="small" style="opacity:.65;">
+          Prefer to start fresh? Wait for the timer to expire, then return to checkout.
+        </div>
+      `;
+
+      // Insert after the pay button
+      payBtn.parentNode.insertBefore(banner, payBtn.nextSibling);
+
+      // Hide the pay button while the banner is showing
+      payBtn.style.display = "none";
+      statusEl.textContent = "";
+
+      // Save to localStorage so the orders page and success page can also use it
+      try {
+        localStorage.setItem("ahamstree_pending_payment", JSON.stringify({
+          order_id:         orderId,
+          payment_link_url: paymentLinkUrl,
+          expires_at:       expiresAt,
+          stored_at:        Date.now(),
+        }));
+      } catch (_) {}
+
+      // Countdown timer
+      const countdownEl = document.getElementById("resumeCountdown");
+      const endTime = expiresAt ? new Date(expiresAt).getTime() : (Date.now() + (msRemaining || 0));
+
+      function tick() {
+        const remaining = endTime - Date.now();
+        if (remaining <= 0) {
+          if (countdownEl) countdownEl.textContent = "Expired";
+          // Remove banner and show the pay button again
+          banner.remove();
+          payBtn.style.display = "";
+          try { localStorage.removeItem("ahamstree_pending_payment"); } catch (_) {}
+          clearError();
+          showError("Your reservation has expired. You can now start a fresh checkout.");
+          return;
+        }
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        if (countdownEl) {
+          countdownEl.textContent = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+          // Turn red in last 2 minutes
+          countdownEl.style.color = remaining < 120000 ? "crimson" : "var(--brand)";
+        }
+        setTimeout(tick, 1000);
+      }
+      tick();
+    }
+    // ---------- Pay / Place Order ----------
     let isProcessing = false;
 
     payBtn.addEventListener("click", async () => {
-      // mark all fields touched and show errors (if any)
       form.querySelectorAll("input[name]").forEach(i => (i.dataset.touched = "1"));
-      const ok = validateAll({ showErrors: true });
-      if (!ok) return;
-
+      if (!validateAll({ showErrors: true })) return;
       if (isProcessing) return;
 
+      const method = getPaymentMethod();
+
       try {
-        isProcessing = true;
-        payBtn.disabled = true;
-        payBtn.textContent = "Processing…";
+        isProcessing      = true;
+        payBtn.disabled   = true;
         clearError();
-        statusEl.textContent = "Creating payment…";
 
         const cartMod = await import("./assets/cart.js");
-        const sbMod = await import("./assets/supabase.js");
+        const sbMod   = await import("./assets/supabase.js");
 
         const cart = cartMod.getCart?.() || [];
-        if (!cart.length) {
-          showError("Your cart is empty. Please add products first.");
-          statusEl.textContent = "";
-          return;
-        }
+        if (!cart.length) { showError("Your cart is empty. Please add products first."); return; }
 
         const { data: sess } = await sbMod.supabase.auth.getSession();
-        const session = sess?.session;
-        if (!session?.access_token) {
-          showError("You are not logged in. Please login before paying.");
-          statusEl.textContent = "";
-          return;
-        }
+        const session        = sess?.session;
+        const userId         = session?.user?.id ?? null;
 
-        const { shipping, customer } = buildShippingAndCustomer();
+        const shipping    = buildShipping();
         const payloadCart = cart.map(i => ({ product_id: i.product_id, qty: i.qty }));
 
-        const { data, error } = await sbMod.supabase.functions.invoke("create-payment-link", {
-          body: { cart: payloadCart, shipping, customer }
-        });
+        // ── Razorpay (online payment) ────────────────────────────────────────
+        // ── Razorpay (online payment) ────────────────────────────────────────
+        if (method === "razorpay") {
+          // Online payment requires login — our schema has orders.user_id NOT NULL.
+          // COD is still available to guests.
+          if (!userId) {
+            showError("Please log in to pay online. You can still place a Cash on Delivery order without an account.");
+            updatePaymentUI();
+            return;
+          }
 
-        if (error || !data?.payment_link_url) {
-          showError("Payment setup failed. Please try again.");
-          statusEl.textContent = "";
-          return;
+          payBtn.textContent   = "Processing…";
+          statusEl.textContent = "Creating payment link…";
+
+          const razorBody = {
+            cart:             payloadCart,
+            coupon_code:      appliedCoupon || null,
+            customer_name:    shipping.full_name,
+            customer_phone:   shipping.phone,
+            customer_email:   shipping.email || null,
+            shipping_address: shipping,
+            shipping_inr:     0,
+          };
+
+          const { data, error } = await sbMod.supabase.functions.invoke("create-payment-link", {
+            body: razorBody
+          });
+
+          // The edge fn returns error.message on 4xx/5xx
+          if (error) {
+            // Surface the structured message from the edge fn if available
+            const msg = error?.context?.json?.message || error?.context?.json?.error || error.message || "Payment setup failed.";
+            showError(msg);
+            return;
+          }
+
+          if (!data?.payment_link_url) {
+            showError(data?.error || "Payment setup failed.");
+            return;
+          }
+
+          // ── Resumed existing order ────────────────────────────────────────
+          // Edge fn found a pending order for the same items within the TTL window.
+          // Show a resume banner with a countdown instead of creating a new order.
+          if (data.resumed) {
+            statusEl.textContent = "";
+            showResumeCheckoutBanner({
+              orderId:        data.order_id,
+              paymentLinkUrl: data.payment_link_url,
+              expiresAt:      data.expires_at,
+              msRemaining:    data.ms_remaining,
+              totalInr:       data.total_inr,
+            });
+            return;
+          }
+
+          // ── New order — redirect immediately ─────────────────────────────
+          statusEl.textContent = "Redirecting to Razorpay…";
+
+          // Persist so checkout.html can detect the back-button scenario
+          try {
+            localStorage.setItem("ahamstree_pending_payment", JSON.stringify({
+              order_id:         data.order_id,
+              payment_link_id:  data.payment_link_id,
+              payment_link_url: data.payment_link_url,
+              expires_at:       data.expires_at,
+              stored_at:        Date.now(),
+            }));
+          } catch (_) {}
+
+          window.location.href = data.payment_link_url;
+        // ── Cash on Delivery ────────────────────────────────────────────────
+        } else {
+          payBtn.textContent  = "Placing order…";
+          statusEl.textContent = "Placing your COD order…";
+
+          const codBody = {
+            cart:             payloadCart,
+            coupon_code:      appliedCoupon || null,
+            customer_name:    shipping.full_name,
+            customer_phone:   shipping.phone,
+            customer_email:   shipping.email || null,
+            shipping_address: shipping,
+            shipping_inr:     0,
+            payment_method:   "cod",
+            user_id:          userId,   // null for guests — edge fn handles both
+          };
+
+          // ✅ FIX: No manual Authorization header — Supabase client attaches the
+          //    correct token automatically (session JWT for logged-in, anon key for guest).
+          //    Manually passing "Bearer undefined" was causing the 401 Invalid JWT error.
+          const { data, error } = await sbMod.supabase.functions.invoke("create-cod-order", {
+            body: codBody
+          });
+
+          if (error) { showError(error.message || "Could not place COD order. Please try again."); return; }
+
+          const orderId = data?.order_id || data?.id || "";
+          cartMod.clearCart?.();
+          statusEl.textContent = "Order placed! Redirecting…";
+          window.location.href = "success.html" + (orderId
+            ? `?order_id=${encodeURIComponent(orderId)}&method=cod`
+            : "?method=cod");
         }
-
-        statusEl.textContent = "Redirecting to Razorpay…";
-        window.location.href = data.payment_link_url;
 
       } catch (e) {
         showError(String(e?.message ?? e));
@@ -449,11 +1006,14 @@
         console.error(e);
       } finally {
         isProcessing = false;
-        payBtn.textContent = "Pay with Razorpay";
-        // re-check validity (keeps disabled if invalid)
+        payBtn.disabled = false;
+        updatePaymentUI();
         validateAll({ showErrors: false });
       }
     });
   </script>
+
 </body>
 </html>
+
+

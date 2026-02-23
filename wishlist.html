@@ -6,7 +6,8 @@
   <title>My Wishlist — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 
@@ -28,6 +29,7 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { getWishlist, removeFromWishlist } from "./assets/wishlist.js";
+    import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("wishlist");
     hydrateHeaderAuth();
@@ -81,7 +83,7 @@
           : `<span style="font-weight:900;">${moneyINR(price)}</span>`;
 
         const imgHtml = product.image_url
-          ? `<img src="${product.image_url}" alt="${product.title || 'Product'}" loading="lazy">`
+          ? `<img src="${safeSrc(product.image_url)}" alt="${escapeAttr(product.title || 'Product')}" loading="lazy">`
           : `<div style="height:260px;background:#fafafa;border-radius:12px;"></div>`;
 
         return `
@@ -91,13 +93,13 @@
             </a>
             <div class="p">
               <a href="product.html?id=${encodeURIComponent(product.id)}" style="text-decoration: none; color: inherit;">
-                <div class="product-title">${product.title || ''}</div>
+                <div class="product-title">${escapeHtml(product.title || '')}</div>
                 <div class="product-price" style="margin-top:6px;">${priceHtml}</div>
               </a>
               <button
                 class="btn secondary js-remove"
                 style="width: 100%; margin-top: 12px;"
-                data-id="${product.id}">
+                data-id="${escapeAttr(product.id)}">
                 Remove
               </button>
             </div>

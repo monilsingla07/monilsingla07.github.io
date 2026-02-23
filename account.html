@@ -15,9 +15,8 @@
   <title>My Account — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css" />
-  <link rel="stylesheet" href="assets/styles.css" />
 
   <!-- Page-only styles (keeps global CSS untouched) -->
   <style>
@@ -67,6 +66,8 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
+    import { escapeHtml, safeHref } from "./assets/safe.js";
+    import { getWishlist, removeFromWishlist } from "./assets/wishlist.js";
 
     document.getElementById("header").innerHTML = renderHeader("account");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -94,7 +95,9 @@
     }
 
     function safeText(v) {
-      return (v === null || v === undefined || String(v).trim() === "") ? "—" : String(v);
+      const s = (v === null || v === undefined) ? "" : String(v);
+      const t = s.trim();
+      return t ? escapeHtml(t) : "—";
     }
 
     async function loadProfile(userId) {
@@ -114,7 +117,7 @@
           <aside class="card acct-nav">
             <div class="nav-title">Account</div>
             <div class="small nav-muted">Signed in as</div>
-            <div style="margin-top:4px;font-weight:900;word-break:break-word;">${email}</div>
+            <div style="margin-top:4px;font-weight:900;word-break:break-word;">${escapeHtml(email)}</div>
 
             <div style="margin-top:12px;">
               ${navButton("profile", "Profile")}
@@ -138,7 +141,7 @@
 
       document.getElementById("logout").onclick = async () => {
         await supabase.auth.signOut();
-        window.location.href = "index.html";
+        window.location.href = "login.html";
       };
     }
 
@@ -149,7 +152,7 @@
 
       const { error, profile } = await loadProfile(user.id);
       if (error) {
-        body.innerHTML = `<div class="small">Could not load profile: ${error.message}</div>`;
+        body.innerHTML = `<div class="small">Could not load profile: ${escapeHtml(error.message)}</div>`;
         return;
       }
 
@@ -169,19 +172,84 @@
 
         <div class="acct-row">
           <a class="btn secondary" href="profile.html">Edit profile</a>
-          <a class="btn secondary" href="orders.html">View orders</a>
+          <a class="btn secondary" href="account.html?view=orders">View orders</a>
         </div>
       `;
     }
 
     function renderOrdersPanel() {
       document.getElementById("panelTitle").textContent = "Orders";
-      document.getElementById("panelBody").innerHTML = `
-        <div class="small nav-muted">View your past orders and status.</div>
-        <div class="acct-row">
-          <a class="btn" href="orders.html">Go to orders</a>
-        </div>
-      `;
+      const body = document.getElementById("panelBody");
+      body.innerHTML = `<div class="small">Loading…</div>`;
+
+      const money = (v) => "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+      const badge = (st) => {
+        const map = {
+          paid: "Paid",
+          payment_link_created: "Payment pending",
+          payment_failed: "Payment failed",
+          expired: "Payment expired",
+          cancelled: "Cancelled",
+          fulfilled: "Fulfilled",
+          shipped: "Shipped",
+          delivered: "Delivered",
+        };
+        return map[st] || (st || "-");
+      };
+
+      const renderOrder = (o) => {
+        const items = (o.order_items || [])
+          .map(it => `<div class="small">${Number(it.qty || 0)} × ${escapeHtml(it.title)} — ${money(it.price_inr)}</div>`)
+          .join("");
+
+        const payLink = safeHref(o.razorpay_payment_link_url);
+        const canPay = (o.status === "payment_link_created" || o.status === "payment_failed" || o.status === "expired") && !!payLink;
+
+        // Optional: if you add shiprocket_awb in your orders table, we show a Track button.
+        const trackHref = o.shiprocket_awb ? `track.html?awb=${encodeURIComponent(o.shiprocket_awb)}` : "";
+
+        return `
+          <div class="acct-card" style="padding:14px;">
+            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+              <div>
+                <div style="font-weight:900;">Order ${escapeHtml(o.id)}</div>
+                <div class="small" style="margin-top:6px;">Status: <b>${escapeHtml(badge(o.status))}</b> • Total: <b>${money(o.total_inr)}</b></div>
+                <div class="small">Placed: ${o.created_at ? new Date(o.created_at).toLocaleString("en-IN") : "-"}</div>
+              </div>
+
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                ${canPay ? `<a class="btn" href="${payLink}" target="_blank" rel="noopener noreferrer">Pay now</a>` : ``}
+                ${trackHref ? `<a class="btn secondary" href="${trackHref}">Track</a>` : ``}
+              </div>
+            </div>
+            <hr />
+            ${items || `<div class="small" style="opacity:.75;">No items found for this order.</div>`}
+          </div>
+        `;
+      };
+
+      (async () => {
+        const { data: sess } = await supabase.auth.getSession();
+        const user = sess?.session?.user;
+        if (!user) return redirectToLogin();
+
+        const { data, error } = await supabase
+          .from("orders")
+          // If you add a tracking column (e.g. shiprocket_awb) in Supabase, you can include it in this select.
+          .select("id,status,total_inr,created_at,razorpay_payment_link_url, order_items(qty,title,price_inr)")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          body.innerHTML = `<div class="small">Could not load orders: ${escapeHtml(error.message)}</div>`;
+          return;
+        }
+
+        const orders = data ?? [];
+        body.innerHTML = orders.length
+          ? `<div style="display:grid;gap:12px;">${orders.map(renderOrder).join("")}</div>`
+          : `<div class="small nav-muted">You have no orders yet.</div>`;
+      })();
     }
 
     async function renderAddressesPanel(user) {
@@ -191,7 +259,7 @@
 
       const { error, profile } = await loadProfile(user.id);
       if (error) {
-        body.innerHTML = `<div class="small">Could not load address: ${error.message}</div>`;
+        body.innerHTML = `<div class="small">Could not load address: ${escapeHtml(error.message)}</div>`;
         return;
       }
 
@@ -223,15 +291,58 @@
 
     function renderWishlistPanel() {
       document.getElementById("panelTitle").textContent = "Wishlist";
-      document.getElementById("panelBody").innerHTML = `
-        <div class="small nav-muted">Save items you love and buy later.</div>
-        <div class="acct-row">
-          <a class="btn" href="wishlist.html">Open wishlist</a>
-        </div>
-        <div class="small nav-muted" style="margin-top:12px;">
-          Tip: You can add items from the product page (we’ll add a “♡ Wishlist” button there next).
+      const body = document.getElementById("panelBody");
+      body.innerHTML = `<div class="small">Loading…</div>`;
+
+      const money = (p) => {
+        const v = (p.sale_price_inr ?? p.price_inr ?? 0);
+        return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+      };
+
+      const renderItem = (p) => `
+        <div class="acct-card" style="display:flex;gap:12px;align-items:center;">
+          <a href="product.html?id=${encodeURIComponent(p.id)}" style="display:block;flex:0 0 86px;">
+            <img src="${escapeHtml(p.image_url || "")}" alt="${escapeHtml(p.title || "")}" style="width:86px;height:110px;object-fit:cover;border-radius:12px;border:1px solid #eee;background:#fafafa;" />
+          </a>
+          <div style="flex:1;min-width:180px;">
+            <div style="font-weight:900;">${escapeHtml(p.title || "")}</div>
+            <div class="small" style="margin-top:4px;">${money(p)}</div>
+            <div class="acct-row" style="margin-top:10px;">
+              <a class="btn secondary" href="product.html?id=${encodeURIComponent(p.id)}">View</a>
+              <button class="btn" data-remove="${escapeHtml(p.id)}" type="button">Remove</button>
+            </div>
+          </div>
         </div>
       `;
+
+      (async () => {
+        const { data, error } = await getWishlist();
+        if (error) {
+          body.innerHTML = `<div class="small">Could not load wishlist: ${escapeHtml(error.message || "")}</div>`;
+          return;
+        }
+
+        const items = data || [];
+        if (!items.length) {
+          body.innerHTML = `
+            <div class="small nav-muted">Your wishlist is empty.</div>
+            <div class="acct-row"><a class="btn" href="products.html?type=saree">Browse sarees</a></div>
+          `;
+          return;
+        }
+
+        body.innerHTML = `<div style="display:grid;gap:12px;">${items.map(renderItem).join("")}</div>`;
+
+        body.querySelectorAll("button[data-remove]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const pid = btn.getAttribute("data-remove");
+            btn.disabled = true;
+            btn.textContent = "Removing…";
+            await removeFromWishlist(pid);
+            renderWishlistPanel();
+          });
+        });
+      })();
     }
 
     function renderSupportPanel() {
@@ -253,8 +364,13 @@
       `;
     }
 
-    async function renderView(viewId, user) {
+    async function renderView(viewId, user, pushUrl = true) {
       setActive(viewId);
+      if (pushUrl) {
+        const u = new URL(window.location.href);
+        u.searchParams.set("view", viewId);
+        history.replaceState({}, "", u.toString());
+      }
       if (viewId === "orders") return renderOrdersPanel();
       if (viewId === "addresses") return renderAddressesPanel(user);
       if (viewId === "wishlist") return renderWishlistPanel();
@@ -270,8 +386,11 @@
     } else {
       renderShell(user.email || "");
 
-      // Default: Profile open
-      await renderView("profile", user);
+      // Default: open based on URL (?view=orders|wishlist|...)
+      const params = new URLSearchParams(window.location.search);
+      const initialView = (params.get("view") || "profile").toLowerCase();
+      const allowed = new Set(["profile","orders","addresses","wishlist","support"]);
+      await renderView(allowed.has(initialView) ? initialView : "profile", user, false);
 
       document.querySelectorAll(".nav-item").forEach(btn => {
         btn.addEventListener("click", async () => {

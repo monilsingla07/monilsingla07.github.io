@@ -15,9 +15,8 @@
   <title>Profile — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css" />
-  <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <div id="header"></div>
@@ -35,6 +34,7 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("account");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -54,7 +54,7 @@
         <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
           <div>
             <div style="font-weight:900;">My Details</div>
-            <div class="small" style="margin-top:6px;">Email: ${user.email ?? "-"}</div>
+            <div class="small" style="margin-top:6px;">Email: ${escapeHtml(user.email ?? "-")}</div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
             <a class="btn secondary" href="orders.html">Orders</a>
@@ -67,37 +67,37 @@
         <div style="display:grid;gap:10px;grid-template-columns: 1fr 1fr;">
           <div style="grid-column: 1 / -1;">
             <label class="small">Full name</label>
-            <input id="full_name" class="input" value="${p.full_name ?? ""}" />
+            <input id="full_name" class="input" value="${escapeAttr(p.full_name ?? "")}" autocomplete="name" />
           </div>
 
           <div>
             <label class="small">Phone</label>
-            <input id="phone" class="input" value="${p.phone ?? ""}" />
+            <input id="phone" class="input" value="${escapeAttr(p.phone ?? "")}" inputmode="numeric" autocomplete="tel" />
           </div>
 
           <div>
             <label class="small">Pincode</label>
-            <input id="pincode" class="input" value="${p.pincode ?? ""}" />
+            <input id="pincode" class="input" value="${escapeAttr(p.pincode ?? "")}" inputmode="numeric" autocomplete="postal-code" />
           </div>
 
           <div style="grid-column: 1 / -1;">
             <label class="small">Address line 1</label>
-            <input id="address_line1" class="input" value="${p.address_line1 ?? ""}" />
+            <input id="address_line1" class="input" value="${escapeAttr(p.address_line1 ?? "")}" autocomplete="address-line1" />
           </div>
 
           <div style="grid-column: 1 / -1;">
             <label class="small">Address line 2</label>
-            <input id="address_line2" class="input" value="${p.address_line2 ?? ""}" />
+            <input id="address_line2" class="input" value="${escapeAttr(p.address_line2 ?? "")}" autocomplete="address-line2" />
           </div>
 
           <div>
             <label class="small">City</label>
-            <input id="city" class="input" value="${p.city ?? ""}" />
+            <input id="city" class="input" value="${escapeAttr(p.city ?? "")}" autocomplete="address-level2" />
           </div>
 
           <div>
             <label class="small">State</label>
-            <input id="state" class="input" value="${p.state ?? ""}" />
+            <input id="state" class="input" value="${escapeAttr(p.state ?? "")}" autocomplete="address-level1" />
           </div>
         </div>
 
@@ -109,7 +109,7 @@
 
       document.getElementById("logout").onclick = async () => {
         await supabase.auth.signOut();
-        window.location.href = "index.html";
+        window.location.href = "login.html";
       };
 
       document.getElementById("save").onclick = async () => {
@@ -141,7 +141,7 @@
       .maybeSingle();
 
     if (pe) {
-      app.innerHTML = `<div class="small">Error loading profile: ${pe.message}</div>`;
+      app.innerHTML = `<div class="small">Error loading profile: ${escapeHtml(pe.message)}</div>`;
     } else {
       renderForm(prof ?? {});
     }
