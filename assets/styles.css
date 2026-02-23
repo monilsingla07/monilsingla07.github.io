@@ -1173,6 +1173,15 @@ hr { border: none; border-top: 1px solid var(--border-light); margin: 20px 0; }
   #summary .row .btn, #summary .row a { width: 100%; text-align: center; }
 }
 
+@media (max-width: 768px) {
+  .input,
+  input.input,
+  select.input,
+  textarea.input {
+    font-size: 16px; /* prevents iOS Safari auto-zoom */
+  }
+}
+
 /* ═══════════════════════════
    UTILITY
 ═══════════════════════════ */
