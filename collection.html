@@ -299,6 +299,7 @@
 
     const params = new URLSearchParams(location.search);
     const slug = params.get("slug");
+    let currentColName = ""; // set after col data loads
 
     function money(v) {
       return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
@@ -322,10 +323,7 @@
 
       return `
         <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
-          <a href="product.html?id=${encodeURIComponent(p.id)}">
-            <div class="p-card-img">
-              ${imgHtml}
-              ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
+          <a href="product.html?id=${encodeURIComponent(p.id)}&from=collection&col=${encodeURIComponent(slug || '')}&colName=${encodeURIComponent(currentColName)}">
               ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
             </div>
             <div class="p-card-body">
@@ -360,6 +358,7 @@
 
       // Render hero
       if (col) {
+        currentColName = col.name || "";
         document.title = `${col.name} — Ahamstree`;
         const breadcrumb = `<a href="collections.html">Collections</a><span>›</span>${escapeHtml(col.name)}`;
 
@@ -424,9 +423,27 @@
       }
 
       grid.innerHTML = normalized.map((p, i) => productCard(p, i)).join("");
+
+      // Restore scroll if user navigated back
+      const savedScroll = sessionStorage.getItem("scrollPos:" + location.href);
+      if (savedScroll) {
+        setTimeout(() => { window.scrollTo(0, Number(savedScroll)); }, 300);
+        sessionStorage.removeItem("scrollPos:" + location.href);
+      }
     }
 
     loadCollection();
   </script>
+
+<script>
+  history.scrollRestoration = "manual";
+  let _scrollSaveTimer;
+  window.addEventListener("scroll", () => {
+    clearTimeout(_scrollSaveTimer);
+    _scrollSaveTimer = setTimeout(() => {
+      sessionStorage.setItem("scrollPos:" + location.href, String(window.scrollY));
+    }, 200);
+  }, { passive: true });
+</script>
 </body>
 </html>

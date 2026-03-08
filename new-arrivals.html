@@ -295,7 +295,7 @@
 
       return `
         <div class="p-card" style="animation-delay:${(idx % 8) * 60}ms">
-          <a href="product.html?id=${encodeURIComponent(p.id)}">
+          <a href="product.html?id=${encodeURIComponent(p.id)}&from=new-arrivals">
             <div class="p-card-img">
               ${imgHtml}
               ${hasNewBadge ? `<div class="p-card-new-badge">New</div>` : ""}
@@ -335,9 +335,28 @@
 
       status.textContent = `${rows.length} new arrivals`;
       grid.innerHTML = rows.map((p, i) => productCard(p, i)).join("");
+
+      // Restore scroll — wait 300ms so images can start loading and page height settles
+      const savedScroll = sessionStorage.getItem("scrollPos:" + location.href);
+      if (savedScroll) {
+        setTimeout(() => { window.scrollTo(0, Number(savedScroll)); }, 300);
+        sessionStorage.removeItem("scrollPos:" + location.href);
+      }
     }
 
     loadNewArrivals();
   </script>
+
+<script>
+  // Save scroll position continuously (debounced) so it's always fresh
+  history.scrollRestoration = "manual";
+  let _scrollSaveTimer;
+  window.addEventListener("scroll", () => {
+    clearTimeout(_scrollSaveTimer);
+    _scrollSaveTimer = setTimeout(() => {
+      sessionStorage.setItem("scrollPos:" + location.href, String(window.scrollY));
+    }, 200);
+  }, { passive: true });
+</script>
 </body>
 </html>

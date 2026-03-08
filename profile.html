@@ -108,7 +108,7 @@
       `;
 
       document.getElementById("logout").onclick = async () => {
-        await supabase.auth.signOut();
+        try { await supabase.auth.signOut(); } catch (_) {}
         window.location.href = "login.html";
       };
 

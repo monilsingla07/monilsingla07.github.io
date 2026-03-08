@@ -551,7 +551,7 @@
 
     return `
       <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
-        <a class="product-link" href="product.html?id=${encodeURIComponent(p.id)}">
+        <a class="product-link" href="product.html?id=${encodeURIComponent(p.id)}&from=products&type=${encodeURIComponent(params.get('type') || 'saree')}${params.get('collection') ? '&col=' + encodeURIComponent(params.get('collection')) + '&colName=' + encodeURIComponent(cache.collectionName || '') : ''}">
           <div class="p-card-img">
             ${imgHtml}
             ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
@@ -656,16 +656,37 @@
     else if (sort === "priceHigh") query = query.order("price_inr", { ascending: false });
     else query = query.order("created_at", { ascending: false });
 
-    query = query.range(offset, offset + PAGE_SIZE);
+    // Check if we need to restore a previous pagination + scroll state
+    let restoreTarget = 0;
+    if (isFirst) {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem("scrollState:" + location.href) || "null");
+        if (saved && saved.offset > PAGE_SIZE) restoreTarget = saved.offset;
+      } catch(e) {}
+    }
+
+    if (restoreTarget > 0) {
+      // Load all previously-seen items in one shot, plus one to probe hasMore
+      query = query.range(0, restoreTarget);
+    } else {
+      query = query.range(offset, offset + PAGE_SIZE);
+    }
 
     const { data, error } = await query;
     skeleton.style.display = "none";
 
     if (error){ status.textContent = "Error: " + error.message; isLoading = false; return; }
 
-    const rows = data ?? [];
-    hasMore = rows.length > PAGE_SIZE;
-    const slice = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
+    let slice;
+    if (restoreTarget > 0) {
+      hasMore = (data ?? []).length > restoreTarget;
+      slice = hasMore ? (data ?? []).slice(0, restoreTarget) : (data ?? []);
+    } else {
+      const rows = data ?? [];
+      hasMore = rows.length > PAGE_SIZE;
+      slice = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
+    }
+
     const normalized = normalize(slice);
 
     if (isFirst && normalized.length === 0){
@@ -677,6 +698,17 @@
     offset += slice.length;
     updateLoadMoreUI();
     isLoading = false;
+
+    // Restore scroll position after content renders
+    if (isFirst) {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem("scrollState:" + location.href) || "null");
+        if (saved && saved.scrollY) {
+          setTimeout(() => { window.scrollTo(0, saved.scrollY); }, 300);
+          sessionStorage.removeItem("scrollState:" + location.href);
+        }
+      } catch(e) {}
+    }
   }
 
   function resetAndLoad(){
@@ -728,6 +760,20 @@
     }, { rootMargin: "600px" });
     obs.observe(sentinel);
   }
+</script>
+
+<script>
+  // Save scroll + offset state continuously so it's always up to date
+  history.scrollRestoration = "manual";
+  let _scrollSaveTimer;
+  window.addEventListener("scroll", () => {
+    clearTimeout(_scrollSaveTimer);
+    _scrollSaveTimer = setTimeout(() => {
+      try {
+        sessionStorage.setItem("scrollState:" + location.href, JSON.stringify({ scrollY: window.scrollY, offset }));
+      } catch(e) {}
+    }, 200);
+  }, { passive: true });
 </script>
 
 </body>

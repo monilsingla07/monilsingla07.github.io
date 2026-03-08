@@ -23,7 +23,7 @@
   <div id="header"></div>
 
   <div class="container">
-    <a href="products.html">← Back to products</a>
+    <div id="breadcrumb-slot"></div>
     <div id="status" class="small" style="margin-top:12px;">Loading…</div>
 
     <div id="content" style="display:none;">
@@ -85,19 +85,36 @@
             <div id="sections"></div>
           </div>
 
-          <!-- Return request (new) -->
+          <!-- Available Offers -->
           <div class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
-            <div style="font-weight:900;font-size:16px;">Returns / Exchange</div>
-            <div class="small" style="margin-top:6px;opacity:.8;">
-              If you have already received this product and want to request a return, you can submit a request here.
-              Please keep your Order ID handy.
+            <div style="font-weight:900;font-size:15px;margin-bottom:10px;">🏷️ Available Offers</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg-warm);border-radius:10px;border:1px solid var(--border);">
+                <span style="font-size:18px;line-height:1;flex-shrink:0;">🎁</span>
+                <div>
+                  <span style="font-weight:800;font-size:13px;color:var(--brand);">WELCOME10</span>
+                  <span style="margin-left:6px;font-size:11px;font-weight:700;background:var(--brand);color:#fff;padding:2px 7px;border-radius:999px;">10% off</span>
+                  <div style="font-size:12px;opacity:.7;margin-top:2px;">10% off your first order · No minimum spend</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg-warm);border-radius:10px;border:1px solid var(--border);">
+                <span style="font-size:18px;line-height:1;flex-shrink:0;">✨</span>
+                <div>
+                  <span style="font-weight:800;font-size:13px;color:var(--brand);">AHAM15</span>
+                  <span style="margin-left:6px;font-size:11px;font-weight:700;background:var(--brand);color:#fff;padding:2px 7px;border-radius:999px;">15% off</span>
+                  <div style="font-size:12px;opacity:.7;margin-top:2px;">15% off on orders above ₹2,000</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg-warm);border-radius:10px;border:1px solid var(--border);">
+                <span style="font-size:18px;line-height:1;flex-shrink:0;">💸</span>
+                <div>
+                  <span style="font-weight:800;font-size:13px;color:var(--brand);">SAREE5</span>
+                  <span style="margin-left:6px;font-size:11px;font-weight:700;background:var(--brand);color:#fff;padding:2px 7px;border-radius:999px;">₹500 off</span>
+                  <div style="font-size:12px;opacity:.7;margin-top:2px;">Flat ₹500 off on sarees above ₹3,000</div>
+                </div>
+              </div>
             </div>
-
-            <div id="returnBox" style="margin-top:12px;"></div>
-
-            <div class="small" style="margin-top:10px;opacity:.75;">
-              Read our policy: <a href="returns.html">Returns</a>
-            </div>
+            <div class="small" style="margin-top:10px;opacity:.65;">Apply at checkout · One coupon per order</div>
           </div>
 
         </div>
@@ -112,6 +129,7 @@
       <button id="lbClose" class="lb-btn" type="button">✕</button>
       <button id="lbPrev" class="lb-btn" type="button">‹</button>
       <button id="lbNext" class="lb-btn" type="button">›</button>
+      <div id="lb-zoom-hint">Double-tap to zoom &nbsp;·&nbsp; Swipe to navigate</div>
     </div>
   </div>
 
@@ -219,16 +237,70 @@
       const lbPrev = document.getElementById("lbPrev");
       const lbNext = document.getElementById("lbNext");
 
+      const lbZoomHint = document.getElementById("lb-zoom-hint");
+
+      // ── Breadcrumb ──
+      (function renderBreadcrumb() {
+        const from = params.get("from") || "";
+        const type = (params.get("type") || "saree").toLowerCase();
+        const colSlug = params.get("col") || "";
+        const colName = params.get("colName") || "";
+        let href, label, trail;
+
+        if (from === "sale") {
+          href = "sale.html"; label = "Sale"; trail = "Sale";
+        } else if (from === "new-arrivals") {
+          href = "new-arrivals.html"; label = "New Arrivals"; trail = "New Arrivals";
+        } else if (from === "collection" && colName) {
+          href = `collection.html?slug=${encodeURIComponent(colSlug)}`; label = colName; trail = "Collection";
+        } else if (type === "suit") {
+          href = "products.html?type=suit"; label = "All Handloom Suits"; trail = "Suits";
+        } else {
+          href = "products.html?type=saree"; label = "All Handloom Sarees"; trail = "Sarees";
+        }
+
+        document.getElementById("breadcrumb-slot").innerHTML =
+          `<a class="page-breadcrumb" href="${href}">
+             <span class="bc-arrow">&#8592;</span>
+             <span class="bc-trail">${trail} /</span>
+             <span class="bc-label">${label}</span>
+           </a>`;
+      })();
+
+      // ── Lightbox zoom + drag-to-pan ──
+      let isZoomed = false;
+      let isDragging = false;
+      let dragStart = { x: 0, y: 0 };
+      let pan = { x: 0, y: 0 };
+      const ZOOM_SCALE = 2.4;
+
+      function applyTransform() {
+        if (isZoomed) {
+          lightboxImg.style.transform = `scale(${ZOOM_SCALE}) translate(${pan.x / ZOOM_SCALE}px, ${pan.y / ZOOM_SCALE}px)`;
+        } else {
+          lightboxImg.style.transform = "";
+        }
+      }
+
+      function resetZoom() {
+        isZoomed = false; isDragging = false; pan = { x: 0, y: 0 };
+        lightboxImg.classList.remove("lb-zoomed", "lb-dragging");
+        applyTransform();
+        if (lbZoomHint) lbZoomHint.style.opacity = "1";
+      }
+
       function openLightbox(idx) {
         if (!images.length) return;
         currentIndex = clamp(idx, 0, images.length - 1);
         lightboxImg.src = safeUrl(images[currentIndex].image_url, { type: "src" }) || "";
+        resetZoom();
         lightbox.classList.add("open");
         lightbox.setAttribute("aria-hidden", "false");
         document.body.style.overflow = "hidden";
       }
 
       function closeLightbox() {
+        resetZoom();
         lightbox.classList.remove("open");
         lightbox.setAttribute("aria-hidden", "true");
         document.body.style.overflow = "";
@@ -238,13 +310,102 @@
         if (!images.length) return;
         currentIndex = (currentIndex + 1) % images.length;
         lightboxImg.src = safeUrl(images[currentIndex].image_url, { type: "src" }) || "";
+        resetZoom();
       }
 
       function showPrev() {
         if (!images.length) return;
         currentIndex = (currentIndex - 1 + images.length) % images.length;
         lightboxImg.src = safeUrl(images[currentIndex].image_url, { type: "src" }) || "";
+        resetZoom();
       }
+
+      // Double-click (desktop) to toggle zoom
+      lightboxImg.addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        isZoomed = !isZoomed;
+        pan = { x: 0, y: 0 };
+        lightboxImg.classList.toggle("lb-zoomed", isZoomed);
+        applyTransform();
+        if (lbZoomHint) lbZoomHint.style.opacity = "0";
+      });
+
+      // Mouse drag-to-pan when zoomed
+      lightboxImg.addEventListener("mousedown", (e) => {
+        if (!isZoomed) return;
+        isDragging = true;
+        dragStart = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+        lightboxImg.classList.add("lb-dragging");
+        e.preventDefault();
+      });
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        pan = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y };
+        applyTransform();
+      });
+      document.addEventListener("mouseup", () => {
+        if (!isDragging) return;
+        isDragging = false;
+        lightboxImg.classList.remove("lb-dragging");
+      });
+
+      // ── Touch: double-tap to zoom, drag-to-pan when zoomed, swipe to navigate when not zoomed ──
+      let lastTapTime = 0;
+      let touchStartX = 0, touchStartY = 0;
+      let touchMoved = false;
+
+      lightboxImg.addEventListener("touchstart", (e) => {
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        touchMoved = false;
+
+        // Double-tap detection
+        const now = Date.now();
+        if (now - lastTapTime < 300) {
+          // Double tap
+          isZoomed = !isZoomed;
+          pan = { x: 0, y: 0 };
+          lightboxImg.classList.toggle("lb-zoomed", isZoomed);
+          applyTransform();
+          if (lbZoomHint) lbZoomHint.style.opacity = "0";
+          lastTapTime = 0;
+          e.preventDefault();
+          return;
+        }
+        lastTapTime = now;
+
+        if (isZoomed && e.touches.length === 1) {
+          isDragging = true;
+          dragStart = { x: touch.clientX - pan.x, y: touch.clientY - pan.y };
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      document.addEventListener("touchmove", (e) => {
+        if (e.touches.length !== 1) return;
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) touchMoved = true;
+
+        if (isDragging && isZoomed) {
+          pan = { x: e.touches[0].clientX - dragStart.x, y: e.touches[0].clientY - dragStart.y };
+          applyTransform();
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      document.addEventListener("touchend", (e) => {
+        if (!isZoomed && touchMoved) {
+          // Swipe left/right to navigate images
+          const dx = (e.changedTouches[0]?.clientX ?? touchStartX) - touchStartX;
+          if (Math.abs(dx) > 50) {
+            dx < 0 ? showNext() : showPrev();
+          }
+        }
+        isDragging = false;
+        lightboxImg.classList.remove("lb-dragging");
+      });
 
       // Clicking main image opens lightbox
       mainImg.addEventListener("click", () => {
@@ -430,59 +591,6 @@
 
       // Initial state
       await syncWishlistButton();
-
-      // ===== Return request (simple) =====
-      const returnBox = document.getElementById("returnBox");
-      if (returnBox) {
-        const { data: sess } = await supabase.auth.getSession();
-        const user = sess?.session?.user;
-
-        if (!user) {
-          const next = encodeURIComponent(`product.html?id=${data.id}`);
-          returnBox.innerHTML = `
-            <div class="small">
-              Please <a href="login.html?next=${next}">log in</a> to request a return.
-            </div>
-          `;
-        } else {
-          returnBox.innerHTML = `
-            <div style="display:grid;gap:10px;">
-              <input id="retOrderId" class="input" placeholder="Your Order ID (required)" />
-              <textarea id="retReason" class="input" rows="3" placeholder="Reason (required)"></textarea>
-              <button id="retSubmit" class="btn secondary" type="button">Submit return request</button>
-              <div id="retStatus" class="small"></div>
-            </div>
-          `;
-
-          const retStatus = document.getElementById("retStatus");
-          document.getElementById("retSubmit").onclick = async () => {
-            retStatus.textContent = "";
-            const orderId = String(document.getElementById("retOrderId").value || "").trim();
-            const reason = String(document.getElementById("retReason").value || "").trim();
-
-            if (!orderId) return (retStatus.textContent = "Please enter your Order ID.");
-            if (!reason || reason.length < 5) return (retStatus.textContent = "Please add a short reason (min 5 chars).");
-
-            retStatus.textContent = "Submitting…";
-
-            // NOTE: You will create the return_requests table + RLS policy (SQL shared in my response).
-            const { error: retErr } = await supabase.from("return_requests").insert({
-              order_id: orderId,
-              product_id: data.id,
-              reason,
-              status: "requested"
-            });
-
-            if (retErr) {
-              retStatus.textContent = "Error: " + retErr.message;
-            } else {
-              retStatus.textContent = "Return request submitted ✅ We will contact you soon.";
-              document.getElementById("retOrderId").value = "";
-              document.getElementById("retReason").value = "";
-            }
-          };
-        }
-      }
 
     }
 

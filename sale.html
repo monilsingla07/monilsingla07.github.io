@@ -315,10 +315,7 @@
 
       return `
         <div class="p-card" style="animation-delay:${(idx % 8) * 60}ms">
-          <a href="product.html?id=${encodeURIComponent(p.id)}">
-            <div class="p-card-img">
-              ${imgHtml}
-              ${badge ? `<div class="p-card-badge sale-badge">${escapeHtml(badge)}</div>` : ""}
+          <a href="product.html?id=${encodeURIComponent(p.id)}&from=sale">
               ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
             </div>
             <div class="p-card-body">
@@ -406,6 +403,15 @@
       updateUI();
       st.isLoading = false;
 
+      // Restore scroll on back navigation (first load only)
+      if (st.offset === slice.length) {
+        const savedScroll = sessionStorage.getItem("scrollPos:" + location.href);
+        if (savedScroll) {
+          setTimeout(() => { window.scrollTo(0, Number(savedScroll)); }, 300);
+          sessionStorage.removeItem("scrollPos:" + location.href);
+        }
+      }
+
       if (!window.__saleBound){
         window.__saleBound = true;
         loadMoreBtn.addEventListener("click", () => loadSale(false));
@@ -420,5 +426,16 @@
 
     loadSale(true);
   </script>
+
+<script>
+  history.scrollRestoration = "manual";
+  let _scrollSaveTimer;
+  window.addEventListener("scroll", () => {
+    clearTimeout(_scrollSaveTimer);
+    _scrollSaveTimer = setTimeout(() => {
+      sessionStorage.setItem("scrollPos:" + location.href, String(window.scrollY));
+    }, 200);
+  }, { passive: true });
+</script>
 </body>
 </html>

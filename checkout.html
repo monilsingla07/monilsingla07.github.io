@@ -16,7 +16,7 @@
   <meta name="description" content="Secure checkout. Shipping details and Razorpay payment." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 
@@ -109,6 +109,45 @@
         <input class="input" name="pincode" required maxlength="6" placeholder="e.g., 560001" inputmode="numeric" autocomplete="shipping postal-code" />
 
         <div style="height:18px;"></div>
+
+        <!-- Account Panel (shown only for guests) -->
+        <div id="accountPanel" style="display:none; margin-bottom:18px; border:1.5px solid var(--border); border-radius:14px; overflow:hidden;">
+          <div style="background:var(--bg-warm); padding:12px 14px; border-bottom:1px solid var(--border);">
+            <div style="font-weight:800; font-size:13px;">Save your details for next time</div>
+            <div class="small" style="opacity:.7; margin-top:2px;">Required to pay online. Optional for Cash on Delivery.</div>
+          </div>
+          <div style="padding:14px; display:flex; flex-direction:column; gap:8px;">
+            <label id="acctGuestLabel" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:2px solid var(--border); border-radius:10px; cursor:pointer; background:#fff; transition:all .15s;">
+              <input type="radio" name="acct_mode" value="guest" id="acctGuest" checked style="margin-top:2px; accent-color:var(--brand);" />
+              <div>
+                <div style="font-weight:800; font-size:13px;">Continue as Guest</div>
+                <div class="small" style="opacity:.7; margin-top:1px;">Cash on Delivery only. Your details won't be saved.</div>
+              </div>
+            </label>
+            <label id="acctLoginLabel" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:2px solid var(--border); border-radius:10px; cursor:pointer; background:#fff; transition:all .15s;">
+              <input type="radio" name="acct_mode" value="login" id="acctLogin" style="margin-top:2px; accent-color:var(--brand);" />
+              <div>
+                <div style="font-weight:800; font-size:13px;">Log into existing account</div>
+                <div class="small" style="opacity:.7; margin-top:1px;">Access saved address and pay online or COD.</div>
+              </div>
+            </label>
+            <label id="acctCreateLabel" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:2px solid var(--border); border-radius:10px; cursor:pointer; background:#fff; transition:all .15s;">
+              <input type="radio" name="acct_mode" value="create" id="acctCreate" style="margin-top:2px; accent-color:var(--brand);" />
+              <div style="flex:1;">
+                <div style="font-weight:800; font-size:13px;">Create an account</div>
+                <div class="small" style="opacity:.7; margin-top:1px;">Save your details and pay online or COD.</div>
+                <div id="acctCreateFields" style="display:none; margin-top:10px;">
+                  <input class="input" id="acctPassword" type="password" placeholder="Choose a password (min 8 chars)" autocomplete="new-password" style="margin-bottom:6px;" />
+                  <div id="acctCreateMsg" class="small" style="min-height:16px;color:crimson;"></div>
+                </div>
+              </div>
+            </label>
+          </div>
+          <div id="acctActionRow" style="display:none; padding:0 14px 14px;">
+            <button type="button" id="acctActionBtn" class="btn" style="width:100%;">Continue</button>
+            <div id="acctActionMsg" class="small" style="margin-top:8px;min-height:16px;"></div>
+          </div>
+        </div>
 
         <!-- Payment Method Selector -->
         <div style="margin-bottom:14px;">
@@ -588,25 +627,30 @@
         const pending = JSON.parse(raw);
         if (!pending?.order_id || !pending?.payment_link_url) return;
 
-        // Show the banner only if the stored link is less than 20 minutes old
+        // Use the same 10-minute TTL as orders.html so they are consistent
+        const RESERVATION_TTL_MS = 10 * 60 * 1000;
         const ageMs = Date.now() - (pending.stored_at || 0);
-        if (ageMs > 20 * 60 * 1000) {
+        if (ageMs > RESERVATION_TTL_MS) {
           localStorage.removeItem("ahamstree_pending_payment");
           return;
         }
 
+        const msRemaining = RESERVATION_TTL_MS - ageMs;
+        const mins = Math.ceil(msRemaining / 60000);
+
         // Inject a resume banner above the form
         const banner = document.createElement("div");
         banner.id = "pendingPaymentBanner";
-        banner.style.cssText = "margin-bottom:14px;padding:14px 16px;border-radius:16px;border:1.5px solid var(--brand);background:var(--brand-light);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;";
+        banner.style.cssText = "margin-bottom:14px;padding:14px 16px;border-radius:16px;border:1.5px solid var(--brand);background:var(--brand-light);";
         banner.innerHTML = `
-          <div>
-            <div style="font-weight:800;font-size:14px;">⚡ You have an incomplete payment</div>
-            <div class="small" style="margin-top:4px;opacity:.8;">Order #${pending.order_id.slice(-8).toUpperCase()} is waiting. Resume your Razorpay session instead of starting over.</div>
+          <div style="font-weight:800;font-size:14px;margin-bottom:6px;">⚡ You have an incomplete payment</div>
+          <div class="small" style="opacity:.8;margin-bottom:12px;">
+            Order #${pending.order_id.slice(-8).toUpperCase()} is waiting. Your items are reserved for ~${mins} more minute${mins !== 1 ? "s" : ""}.
+            Complete that payment instead of starting over.
           </div>
-          <div style="display:flex;gap:8px;flex-shrink:0;">
-            <button type="button" id="resumePayBtn" class="btn" style="padding:8px 14px;font-size:13px;">Resume payment</button>
-            <button type="button" id="dismissPendingBtn" class="btn secondary" style="padding:8px 14px;font-size:13px;">Start fresh</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" id="resumePayBtn" class="btn" style="padding:8px 16px;font-size:13px;">Complete payment →</button>
+            <button type="button" id="dismissPendingBtn" class="btn secondary" style="padding:8px 16px;font-size:13px;">Dismiss</button>
           </div>`;
 
         // Insert before the checkout grid
@@ -705,6 +749,76 @@
       if (!user) {
         if (loginHint) {
           loginHint.innerHTML = `<a href="login.html?next=checkout.html" style="color:var(--brand);font-weight:700;">Log in</a> to use your saved address.`;
+        }
+
+        // Show account panel for guests
+        const panel = document.getElementById("accountPanel");
+        if (panel) {
+          panel.style.display = "block";
+
+          const radios = panel.querySelectorAll("input[name='acct_mode']");
+          const labels = { guest: document.getElementById("acctGuestLabel"), login: document.getElementById("acctLoginLabel"), create: document.getElementById("acctCreateLabel") };
+          const createFields = document.getElementById("acctCreateFields");
+          const acctActionRow = document.getElementById("acctActionRow");
+          const acctActionBtn = document.getElementById("acctActionBtn");
+          const acctActionMsg = document.getElementById("acctActionMsg");
+          const pmRazorpayEl  = document.getElementById("pmRazorpay");
+          const pmRazorpayLbl = document.getElementById("pmRazorpayLabel");
+
+          function updateAccountUI() {
+            const val = panel.querySelector("input[name='acct_mode']:checked")?.value || "guest";
+            Object.values(labels).forEach(l => { if (l) { l.style.border = "2px solid var(--border)"; l.style.background = "#fff"; } });
+            if (labels[val]) { labels[val].style.border = "2px solid var(--brand)"; labels[val].style.background = "var(--brand-light)"; }
+
+            if (createFields) createFields.style.display = val === "create" ? "block" : "none";
+            acctActionRow.style.display = val !== "guest" ? "block" : "none";
+            acctActionBtn.textContent   = val === "login" ? "Log in →" : "Create account →";
+
+            // Disable online payment for guests
+            if (pmRazorpayEl) pmRazorpayEl.disabled = val === "guest";
+            if (pmRazorpayLbl) pmRazorpayLbl.style.opacity = val === "guest" ? ".45" : "1";
+            if (val === "guest") {
+              document.getElementById("pmCod")?.click();
+            }
+          }
+
+          radios.forEach(r => r.addEventListener("change", updateAccountUI));
+          updateAccountUI();
+
+          acctActionBtn?.addEventListener("click", async () => {
+            const val  = panel.querySelector("input[name='acct_mode']:checked")?.value;
+            if (val === "login") {
+              sessionStorage.setItem("ahamstree_checkout_return", "1");
+              window.location.href = "login.html?next=checkout.html";
+              return;
+            }
+            if (val === "create") {
+              const pw = document.getElementById("acctPassword")?.value || "";
+              const msg = document.getElementById("acctCreateMsg");
+              if (pw.length < 8) { if (msg) msg.textContent = "Password must be at least 8 characters."; return; }
+              const emailEl = document.querySelector("[name='email']");
+              const email   = emailEl?.value?.trim() || "";
+              if (!email) { if (msg) msg.textContent = "Please enter your email above first."; return; }
+              if (msg) msg.textContent = "";
+              acctActionBtn.disabled = true;
+              acctActionBtn.textContent = "Creating…";
+              acctActionMsg.textContent = "";
+              try {
+                const sbM = await import("./assets/supabase.js");
+                const { error: signUpErr } = await sbM.supabase.auth.signUp({ email, password: pw });
+                if (signUpErr) { acctActionMsg.textContent = signUpErr.message; return; }
+                acctActionMsg.textContent = "✅ Account created. You can now pay online or COD.";
+                panel.style.display = "none";
+                if (pmRazorpayEl) pmRazorpayEl.disabled = false;
+                if (pmRazorpayLbl) pmRazorpayLbl.style.opacity = "1";
+              } catch(e) {
+                acctActionMsg.textContent = e.message || "Could not create account.";
+              } finally {
+                acctActionBtn.disabled = false;
+                acctActionBtn.textContent = "Create account →";
+              }
+            }
+          });
         }
         return;
       }
@@ -993,6 +1107,29 @@
           if (error) { showError(error.message || "Could not place COD order. Please try again."); return; }
 
           const orderId = data?.order_id || data?.id || "";
+          
+          // Save full order snapshot so success page can show provisional invoice
+          try {
+            const cartMod2 = await import("./assets/cart.js");
+            const cartItems = cartMod2.getCart?.() || [];
+            const snapshot = {
+              order_id:    orderId,
+              method:      "cod",
+              name:        shipping.full_name,
+              phone:       shipping.phone,
+              email:       shipping.email || "",
+              address:     [shipping.address_line1, shipping.address_line2, shipping.city, shipping.state, shipping.pincode].filter(Boolean).join(", "),
+              coupon:      appliedCoupon || "",
+              subtotal:    document.getElementById("subtotal")?.textContent || "",
+              discount:    document.getElementById("discount")?.textContent || "",
+              shipping_amt:document.getElementById("shipping")?.textContent || "",
+              total:       document.getElementById("total")?.textContent || "",
+              items:       cartItems.map(i => ({ product_id: i.product_id, title: i.title || "", qty: i.qty, price: i.price_inr || 0, image_url: i.image_url || "" })),
+              placed_at:   new Date().toISOString(),
+            };
+            sessionStorage.setItem("ahamstree_cod_snapshot", JSON.stringify(snapshot));
+          } catch(_) {}
+
           cartMod.clearCart?.();
           statusEl.textContent = "Order placed! Redirecting…";
           window.location.href = "success.html" + (orderId
@@ -1015,6 +1152,5 @@
 
 </body>
 </html>
-
 
 

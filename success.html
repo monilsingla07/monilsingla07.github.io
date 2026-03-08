@@ -15,6 +15,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    @media print {
+      #header, #footer, .btn, #printInvoiceBtn, #successIcon, #successTitle, #successBody { display: none !important; }
+      body, .container { background: #fff !important; padding: 0 !important; max-width: 100% !important; }
+      #provisionalInvoice { border: 1px solid #ccc !important; }
+    }
+  </style>
 </head>
 
 <body>
@@ -38,9 +45,50 @@
         <div id="orderIdBox" style="display:none; margin-bottom:20px; padding:10px 14px; border-radius:12px; background:#f5f3f0; font-size:13px;">
           Order ID: <strong id="orderIdText"></strong>
         </div>
+
+        <!-- Provisional Invoice (shown for COD orders) -->
+        <div id="provisionalInvoice" style="display:none; text-align:left; margin-bottom:20px; border:1.5px solid var(--border); border-radius:14px; overflow:hidden; font-size:13px;">
+          <div style="background:var(--bg-warm); padding:12px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div>
+              <div style="font-weight:900; font-size:15px;">AhamStree</div>
+              <div style="opacity:.65; font-size:11px; margin-top:2px;">ahamstree.com</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:800; color:var(--brand);">PROVISIONAL ORDER</div>
+              <div style="opacity:.65; font-size:11px; margin-top:2px;" id="inv-date"></div>
+            </div>
+          </div>
+          <div style="padding:12px 16px; border-bottom:1px solid var(--border); background:#fffbeb;">
+            <div style="font-size:11px; color:#92400e; font-weight:700;">⚠️ PENDING CONFIRMATION</div>
+            <div style="font-size:11px; color:#92400e; margin-top:2px; line-height:1.5;">This is a provisional order summary, not a final invoice. It becomes binding only after our team confirms your Cash on Delivery order (within 2 hours via WhatsApp/call).</div>
+          </div>
+          <div style="padding:12px 16px; border-bottom:1px solid var(--border);">
+            <div style="font-weight:800; margin-bottom:6px;">Deliver to</div>
+            <div id="inv-name" style="font-weight:700;"></div>
+            <div id="inv-address" style="opacity:.75; margin-top:2px; line-height:1.5;"></div>
+            <div id="inv-phone" style="opacity:.75; margin-top:2px;"></div>
+          </div>
+          <div style="padding:12px 16px; border-bottom:1px solid var(--border);">
+            <div style="font-weight:800; margin-bottom:8px;">Items ordered</div>
+            <div id="inv-items"></div>
+          </div>
+          <div style="padding:12px 16px; border-bottom:1px solid var(--border);">
+            <div id="inv-subtotal-row" style="display:flex; justify-content:space-between; padding:3px 0;"><span style="opacity:.7;">Subtotal</span><span id="inv-subtotal"></span></div>
+            <div id="inv-discount-row" style="display:none; justify-content:space-between; padding:3px 0; color:green;"><span>Discount</span><span id="inv-discount"></span></div>
+            <div style="display:flex; justify-content:space-between; padding:3px 0;"><span style="opacity:.7;">Shipping</span><span id="inv-shipping"></span></div>
+            <div style="display:flex; justify-content:space-between; padding:6px 0 0; border-top:1px solid var(--border); margin-top:4px; font-weight:900; font-size:15px;"><span>Total (Pay on Delivery)</span><span id="inv-total" style="color:var(--brand);"></span></div>
+          </div>
+          <div style="padding:12px 16px; background:var(--bg-warm);">
+            <div style="font-weight:800; margin-bottom:4px;">Order ID</div>
+            <div id="inv-order-id" style="font-family:monospace; font-size:12px; color:var(--brand); word-break:break-all;"></div>
+            <div style="margin-top:8px; font-size:11px; opacity:.65;">Please save this Order ID — you'll need it for order tracking and return requests.</div>
+          </div>
+        </div>
+
         <div style="display:flex; flex-direction:column; gap:10px;">
+          <button id="printInvoiceBtn" class="btn secondary" style="display:none;">🖨️ Save / Print this summary</button>
           <a class="btn" href="products.html">Continue shopping</a>
-          <a class="btn secondary" href="orders.html">View my orders</a>
+          <a id="viewOrdersLink" class="btn secondary" href="orders.html">View my orders</a>
         </div>
       </div>
 
@@ -121,16 +169,16 @@
       // Also clear any pending payment stored from checkout
       try { localStorage.removeItem("ahamstree_pending_payment"); } catch (_) {}
 
-      const icon  = document.getElementById("successIcon");
-      const title = document.getElementById("successTitle");
-      const body  = document.getElementById("successBody");
-      const idBox = document.getElementById("orderIdBox");
+      const icon   = document.getElementById("successIcon");
+      const title  = document.getElementById("successTitle");
+      const body   = document.getElementById("successBody");
+      const idBox  = document.getElementById("orderIdBox");
       const idText = document.getElementById("orderIdText");
 
       if (isCod) {
         icon.textContent  = "📦";
-        title.textContent = "Order placed successfully!";
-        body.innerHTML    = "Your <strong>Cash on Delivery</strong> order has been received.<br>Our team will confirm it via <strong>WhatsApp or call within 2 hours</strong>. Please keep your phone reachable.";
+        title.textContent = "Order placed!";
+        body.innerHTML    = "Your <strong>Cash on Delivery</strong> order has been received.<br>Our team will confirm it via <strong>WhatsApp or call within 2 hours</strong>.";
       } else {
         icon.textContent  = "✅";
         title.textContent = "Payment successful!";
@@ -141,6 +189,57 @@
       if (oid) {
         idBox.style.display = "block";
         idText.textContent  = oid;
+      }
+
+      // ── Provisional invoice for COD ────────────────────────────────────────
+      if (isCod) {
+        try {
+          const snap = JSON.parse(sessionStorage.getItem("ahamstree_cod_snapshot") || "null");
+          const invoice = document.getElementById("provisionalInvoice");
+          const printBtn = document.getElementById("printInvoiceBtn");
+          const viewOrdersLink = document.getElementById("viewOrdersLink");
+
+          if (snap && invoice) {
+            // Hide generic order ID box — invoice has it
+            idBox.style.display = "none";
+            invoice.style.display = "block";
+            if (printBtn) printBtn.style.display = "block";
+
+            document.getElementById("inv-date").textContent = new Date(snap.placed_at || Date.now()).toLocaleString("en-IN", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
+            document.getElementById("inv-name").textContent = snap.name || "";
+            document.getElementById("inv-address").textContent = snap.address || "";
+            document.getElementById("inv-phone").textContent = snap.phone ? "📞 " + snap.phone : "";
+            document.getElementById("inv-order-id").textContent = snap.order_id || oid || "";
+
+            const itemsEl = document.getElementById("inv-items");
+            if (itemsEl && snap.items?.length) {
+              itemsEl.innerHTML = snap.items.map(it => `
+                <div style="display:flex; justify-content:space-between; gap:8px; padding:5px 0; border-bottom:1px solid var(--border-light);">
+                  <div style="flex:1;">${it.qty} × ${it.title || "Item"}</div>
+                  <div style="font-weight:700; flex-shrink:0;">₹${Number((it.price || 0) * it.qty).toLocaleString("en-IN")}</div>
+                </div>`).join("");
+            }
+
+            document.getElementById("inv-subtotal").textContent = snap.subtotal || "";
+            document.getElementById("inv-shipping").textContent = snap.shipping_amt || "Free";
+            document.getElementById("inv-total").textContent = snap.total || "";
+
+            const discRow = document.getElementById("inv-discount-row");
+            if (snap.discount && snap.discount !== "-₹0" && snap.discount !== "₹0") {
+              discRow.style.display = "flex";
+              document.getElementById("inv-discount").textContent = snap.discount;
+            }
+
+            // Guest: hide "View my orders" (requires login), show save-order-id tip
+            const isGuest = !snap.email;
+            if (viewOrdersLink && isGuest) {
+              viewOrdersLink.style.display = "none";
+            }
+
+            printBtn?.addEventListener("click", () => window.print());
+            sessionStorage.removeItem("ahamstree_cod_snapshot");
+          }
+        } catch(_) {}
       }
 
       // Fire GA purchase event
