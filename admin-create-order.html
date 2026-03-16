@@ -267,39 +267,62 @@
           <div class="section-card">
             <div class="section-header">
               <h3>📍 Shipping Address</h3>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; font-weight:600; user-select:none;">
+                <input type="checkbox" id="hasAddressToggle" style="accent-color:var(--brand,#7c1c1c); width:15px; height:15px; cursor:pointer;" />
+                Ship to address
+              </label>
             </div>
-            <div class="section-body" style="display:grid; gap:12px;">
-              <div>
-                <label class="field-label">Address line 1 *</label>
-                <input class="input" id="aLine1" placeholder="House / street" autocapitalize="words" />
+
+            <!-- Walk-in notice (shown when no address) -->
+            <div id="noAddressNotice" class="section-body" style="padding-top:10px; padding-bottom:10px;">
+              <div style="background:var(--brand-light,#fdf2f2); border-radius:10px; padding:10px 12px; font-size:13px; color:#7c1c1c; font-weight:600;">
+                🏪 Walk-in / offline sale — no delivery address required.
               </div>
-              <div>
-                <label class="field-label">Address line 2 (optional)</label>
-                <input class="input" id="aLine2" placeholder="Landmark, apartment" autocapitalize="words" />
+            </div>
+
+            <!-- Address fields (hidden until checkbox ticked) -->
+            <div id="addressFields" style="display:none;">
+              <div class="section-body" style="display:grid; gap:12px;">
+                <div>
+                  <label class="field-label">Address line 1 *</label>
+                  <input class="input" id="aLine1" placeholder="House / street" autocapitalize="words" />
+                </div>
+                <div>
+                  <label class="field-label">Address line 2 (optional)</label>
+                  <input class="input" id="aLine2" placeholder="Landmark, apartment" autocapitalize="words" />
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <div>
+                    <label class="field-label">City *</label>
+                    <input class="input" id="aCity" autocapitalize="words" />
+                  </div>
+                  <div>
+                    <label class="field-label">State *</label>
+                    <input class="input" id="aState" autocapitalize="words" />
+                  </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <div>
+                    <label class="field-label">Pincode *</label>
+                    <input class="input" id="aPincode" maxlength="6" inputmode="numeric" placeholder="560001" />
+                  </div>
+                  <div>
+                    <label class="field-label">Shipping charge (₹)</label>
+                    <input class="input" id="shippingInr" type="number" value="0" min="0" step="1" />
+                  </div>
+                </div>
               </div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div>
-                  <label class="field-label">City *</label>
-                  <input class="input" id="aCity" autocapitalize="words" />
-                </div>
-                <div>
-                  <label class="field-label">State *</label>
-                  <input class="input" id="aState" autocapitalize="words" />
-                </div>
-              </div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div>
-                  <label class="field-label">Pincode *</label>
-                  <input class="input" id="aPincode" maxlength="6" inputmode="numeric" placeholder="560001" />
-                </div>
-                <div>
-                  <label class="field-label">Shipping charge (₹)</label>
-                  <input class="input" id="shippingInr" type="number" value="0" min="0" step="1" />
-                </div>
+            </div>
+
+            <!-- Always-visible bottom: shipping (no-address) + note -->
+            <div class="section-body" style="display:grid; gap:12px; padding-top:0; border-top: 1px solid var(--border,#e5e7eb);">
+              <div id="shippingNoAddrRow">
+                <label class="field-label">Shipping charge (₹)</label>
+                <input class="input" id="shippingInrNoAddr" type="number" value="0" min="0" step="1" />
               </div>
               <div>
                 <label class="field-label">Admin note (optional — internal only)</label>
-                <input class="input" id="adminNote" placeholder="e.g. Customer called on WhatsApp" />
+                <input class="input" id="adminNote" placeholder="e.g. Customer walked in, paid cash" />
               </div>
             </div>
           </div>
@@ -593,7 +616,10 @@
         return;
       }
 
-      const shipping = parseInt(document.getElementById("shippingInr").value) || 0;
+      const hasAddr = document.getElementById("hasAddressToggle").checked;
+      const shipping = parseInt((hasAddr
+        ? document.getElementById("shippingInr")
+        : document.getElementById("shippingInrNoAddr")).value) || 0;
       let subtotal   = 0;
 
       summaryItems.innerHTML = cart.map(c => {
@@ -623,6 +649,27 @@
     }
 
     document.getElementById("shippingInr").addEventListener("input", renderSummary);
+    document.getElementById("shippingInrNoAddr").addEventListener("input", renderSummary);
+
+    // ── Address toggle ────────────────────────────────────────────────────
+    const addrToggle     = document.getElementById("hasAddressToggle");
+    const addrFields     = document.getElementById("addressFields");
+    const noAddrNotice   = document.getElementById("noAddressNotice");
+    const shippingNoAddr = document.getElementById("shippingNoAddrRow");
+
+    function applyAddressToggle() {
+      const show = addrToggle.checked;
+      addrFields.style.display   = show ? "block" : "none";
+      noAddrNotice.style.display = show ? "none"  : "block";
+      // Keep only one shipping input visible below the fold
+      document.getElementById("shippingInr").closest("div.section-body") &&
+        (shippingNoAddr.style.display = show ? "none" : "block");
+      renderSummary();
+    }
+
+    addrToggle.addEventListener("change", applyAddressToggle);
+    // Run once on load so default state is correct
+    applyAddressToggle();
 
     // ── Payment method UI ─────────────────────────────────────────────────
     const pmCodLabel      = document.getElementById("pmCodLabel");
@@ -649,11 +696,13 @@
       if (!document.getElementById("cPhone").value.trim())  return "Customer phone is required.";
       const ph = document.getElementById("cPhone").value.replace(/\D/g, "");
       if (ph.length !== 10)                                  return "Enter a valid 10-digit phone number.";
-      if (!document.getElementById("aLine1").value.trim())  return "Address line 1 is required.";
-      if (!document.getElementById("aCity").value.trim())   return "City is required.";
-      if (!document.getElementById("aState").value.trim())  return "State is required.";
-      const pin = document.getElementById("aPincode").value.replace(/\D/g, "");
-      if (pin.length !== 6)                                  return "Enter a valid 6-digit pincode.";
+      if (document.getElementById("hasAddressToggle").checked) {
+        if (!document.getElementById("aLine1").value.trim())  return "Address line 1 is required.";
+        if (!document.getElementById("aCity").value.trim())   return "City is required.";
+        if (!document.getElementById("aState").value.trim())  return "State is required.";
+        const pin = document.getElementById("aPincode").value.replace(/\D/g, "");
+        if (pin.length !== 6)                                  return "Enter a valid 6-digit pincode.";
+      }
       return null;
     }
 
@@ -672,14 +721,21 @@
       result.style.display  = "none";
 
       try {
-        const shippingAddress = {
-          full_name:    document.getElementById("cName").value.trim(),
+        const hasAddress = document.getElementById("hasAddressToggle").checked;
+        const shippingInrVal = parseInt(
+          (hasAddress
+            ? document.getElementById("shippingInr")
+            : document.getElementById("shippingInrNoAddr")).value
+        ) || 0;
+
+        const shippingAddress = hasAddress ? {
+          full_name:     document.getElementById("cName").value.trim(),
           address_line1: document.getElementById("aLine1").value.trim(),
           address_line2: document.getElementById("aLine2").value.trim() || null,
           city:          document.getElementById("aCity").value.trim(),
           state:         document.getElementById("aState").value.trim(),
           pincode:       document.getElementById("aPincode").value.replace(/\D/g, ""),
-        };
+        } : null;
 
         const payload = {
           payment_method:   method,
@@ -687,7 +743,7 @@
           customer_phone:   document.getElementById("cPhone").value.replace(/\D/g, ""),
           customer_email:   document.getElementById("cEmail").value.trim() || null,
           shipping_address: shippingAddress,
-          shipping_inr:     parseInt(document.getElementById("shippingInr").value) || 0,
+          shipping_inr:     shippingInrVal,
           note:             document.getElementById("adminNote").value.trim() || null,
           items: cart.map(c => ({
             product_id:           c.product_id,
@@ -835,10 +891,13 @@
       document.getElementById("aState").value     = "";
       document.getElementById("aPincode").value   = "";
       document.getElementById("shippingInr").value = "0";
+      document.getElementById("shippingInrNoAddr").value = "0";
       document.getElementById("adminNote").value  = "";
       document.getElementById("resultPanel").style.display = "none";
       document.getElementById("submitMsg").textContent = "";
       document.getElementById("pmCod").checked = true;
+      document.getElementById("hasAddressToggle").checked = false;
+      applyAddressToggle();
       updatePaymentUI();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
