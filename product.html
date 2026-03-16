@@ -171,7 +171,11 @@
       document.getElementById("status").style.display = "none";
       document.getElementById("content").style.display = "block";
 // Increment view count — fire and forget, don't block page render
-supabase.rpc("increment_view_count", { p_id: id }).then(() => {}).catch(() => {});
+const viewKey = `viewed_${id}`;
+if (!sessionStorage.getItem(viewKey)) {
+  sessionStorage.setItem(viewKey, "1");
+  supabase.rpc("increment_view_count", { p_id: id }).then(() => {}).catch(() => {});
+}
 		
       // Basic fields
       document.getElementById("title").textContent = data.title ?? "";
