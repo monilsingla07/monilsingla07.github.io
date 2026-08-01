@@ -1,285 +1,241 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AhamStree — The New Weave Arrives Soon</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CKQ1EXBHY6');
+</script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AhamStree — Handloom Sarees</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:        #0e2b27;   /* deep peacock-teal, like a dyed silk before the loom */
-    --ink-2:      #143631;
-    --maroon:     #571c1f;   /* woven border shade, used sparingly */
-    --zari:       #c9a24b;   /* gold zari thread */
-    --zari-soft:  #e3c983;
-    --ivory:      #f4ecd8;
-    --ivory-dim:  rgba(244,236,216,.62);
-    --line:       rgba(201,162,75,.28);
-  }
-
-  *{box-sizing:border-box;}
-  html,body{height:100%;}
-  body{
-    margin:0;
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-family:'DM Sans', sans-serif;
-    color:var(--ivory);
-    background:
-      radial-gradient(ellipse 90% 60% at 50% -10%, rgba(201,162,75,.10), transparent 60%),
-      radial-gradient(ellipse 70% 50% at 85% 110%, rgba(87,28,31,.35), transparent 60%),
-      linear-gradient(160deg, var(--ink) 0%, var(--ink-2) 55%, #0a201d 100%);
-    overflow:hidden;
-    position:relative;
-  }
-
-  /* subtle woven texture over the whole page */
-  body::before{
-    content:"";
-    position:fixed; inset:0;
-    background-image:
-      repeating-linear-gradient(0deg, rgba(244,236,216,.025) 0px, rgba(244,236,216,.025) 1px, transparent 1px, transparent 3px),
-      repeating-linear-gradient(90deg, rgba(244,236,216,.025) 0px, rgba(244,236,216,.025) 1px, transparent 1px, transparent 3px);
-    pointer-events:none;
-    z-index:0;
-  }
-
-  /* ===== zari border strips, top & bottom — the saree pallu motif ===== */
-  .zari-border{
-    position:fixed; left:0; right:0; height:14px;
-    z-index:2;
-    background:
-      linear-gradient(90deg, transparent 0, var(--zari) 2px, transparent 2px) repeat-x,
-      linear-gradient(180deg, var(--maroon), #3d1315);
-    background-size: 22px 100%, auto;
-  }
-  .zari-border.top{ top:0; }
-  .zari-border.bottom{ bottom:0; }
-  .zari-border::after{
-    content:"";
-    position:absolute; inset:0;
-    background: repeating-linear-gradient(45deg, transparent 0 8px, rgba(201,162,75,.35) 8px 9px);
-    opacity:.5;
-  }
-
-  .stage{
-    position:relative;
-    z-index:1;
-    width:100%;
-    max-width:760px;
-    margin:0 auto;
-    padding:56px 28px;
-    text-align:center;
-  }
-
-  .mark{
-    font-family:'Cormorant Garamond', serif;
-    font-style:italic;
-    font-weight:500;
-    font-size:clamp(20px,3vw,24px);
-    letter-spacing:.14em;
-    color:var(--zari-soft);
-    margin:0 0 6px;
-  }
-  .mark span{ font-style:normal; letter-spacing:.3em; font-size:.6em; display:block; margin-top:6px; color:var(--ivory-dim); font-family:'DM Sans',sans-serif; }
-
-  .rule{
-    width:64px; height:1px;
-    margin:26px auto;
-    background:linear-gradient(90deg, transparent, var(--zari), transparent);
-    position:relative;
-  }
-  .rule::before{
-    content:"❖";
-    position:absolute; left:50%; top:50%;
-    transform:translate(-50%,-50%);
-    font-size:12px; color:var(--zari);
-    background:transparent;
-  }
-
-  h1{
-    font-family:'Cormorant Garamond', serif;
-    font-weight:500;
-    font-size:clamp(38px, 7vw, 68px);
-    line-height:1.08;
-    margin:0 0 18px;
-    color:var(--ivory);
-  }
-  h1 em{
-    font-style:italic;
-    color:var(--zari-soft);
-  }
-
-  .sub{
-    font-weight:300;
-    font-size:clamp(15px,2vw,17.5px);
-    line-height:1.7;
-    color:var(--ivory-dim);
-    max-width:480px;
-    margin:0 auto 42px;
-  }
-
-  /* ===== countdown — the signature: threads gathering into a loom ===== */
-  .loom{
-    display:flex;
-    justify-content:center;
-    gap:clamp(10px,3vw,26px);
-    margin:0 auto 40px;
-    flex-wrap:wrap;
-  }
-  .spindle{
-    width:clamp(70px,18vw,104px);
-    position:relative;
-  }
-  .spindle .frame{
-    border:1px solid var(--line);
-    border-radius:2px;
-    padding:16px 6px 12px;
-    background:linear-gradient(180deg, rgba(244,236,216,.05), rgba(244,236,216,.015));
-    position:relative;
-  }
-  .spindle .frame::before,
-  .spindle .frame::after{
-    content:"";
-    position:absolute; left:8px; right:8px; height:1px;
-    background:var(--line);
-  }
-  .spindle .frame::before{ top:5px; }
-  .spindle .frame::after{ bottom:5px; }
-
-  .num{
-    font-family:'Cormorant Garamond', serif;
-    font-weight:600;
-    font-size:clamp(30px,7vw,46px);
-    color:var(--zari-soft);
-    line-height:1;
-    font-variant-numeric: tabular-nums;
-  }
-  .lbl{
-    display:block;
-    margin-top:10px;
-    font-size:10.5px;
-    letter-spacing:.22em;
-    text-transform:uppercase;
-    color:var(--ivory-dim);
-  }
-  .sep{
-    align-self:center;
-    font-family:'Cormorant Garamond', serif;
-    font-style:italic;
-    font-size:clamp(20px,4vw,30px);
-    color:var(--line);
-    padding-bottom:22px;
-  }
-
-  .date-line{
-    font-family:'Cormorant Garamond', serif;
-    font-style:italic;
-    font-size:clamp(16px,2.4vw,19px);
-    color:var(--ivory);
-    letter-spacing:.03em;
-    margin-bottom:6px;
-  }
-  .date-line strong{ color:var(--zari-soft); font-weight:600; font-style:normal; }
-
-  .foot{
-    font-size:11px;
-    letter-spacing:.2em;
-    text-transform:uppercase;
-    color:rgba(244,236,216,.35);
-    margin-top:34px;
-  }
-
-  @media (prefers-reduced-motion:no-preference){
-    .stage{ animation:rise .9s cubic-bezier(.2,.7,.2,1) both; }
-    @keyframes rise{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
-    .spindle{ animation:settle .7s cubic-bezier(.2,.7,.2,1) both; }
-    .spindle:nth-child(1){animation-delay:.05s;}
-    .spindle:nth-child(2){animation-delay:.12s;}
-    .spindle:nth-child(3){animation-delay:.19s;}
-    .spindle:nth-child(4){animation-delay:.26s;}
-    @keyframes settle{ from{opacity:0; transform:translateY(10px) scale(.96);} to{opacity:1; transform:translateY(0) scale(1);} }
-  }
-
-  @media (max-width:420px){
-    .zari-border{height:10px;}
-    .loom{ gap:8px; }
-    .sep{ display:none; }
-  }
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css" />
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preload" as="image" href="assets/images/banners/hero-1-launch.svg" />
 </head>
 <body>
+  <div id="header"></div>
 
-  <div class="zari-border top" aria-hidden="true"></div>
-  <div class="zari-border bottom" aria-hidden="true"></div>
+  <!-- Hero banner -->
+  <section class="hero-banner">
+    <div class="hero-track" id="heroTrack" aria-label="Promotions">
 
-  <main class="stage">
-    <p class="mark">AhamStree<span>Handloom Sarees</span></p>
+      <article class="hero-slide" data-slide="1">
+        <picture class="hero-media">
+          <source media="(max-width: 768px)" srcset="assets/images/banners/hero-1-launch-m.svg">
+          <img src="assets/images/banners/hero-1-launch.svg" alt="New Saree Edit" loading="eager" fetchpriority="high">
+        </picture>
+        <div class="hero-deco" aria-hidden="true"></div>
+        <div class="hero-overlay">
+          <div class="hero-kicker">New Arrivals</div>
+          <h1 class="hero-title">A New Saree Edit</h1>
+          <p class="hero-subtitle">Handwoven &nbsp;·&nbsp; Limited pieces &nbsp;·&nbsp; Modern drapes</p>
+          <div class="hero-cta">
+            <a class="btn" href="products.html">Shop Now</a>
+          </div>
+        </div>
+      </article>
 
-    <div class="rule" aria-hidden="true"></div>
+      <article class="hero-slide" data-slide="2">
+        <picture class="hero-media">
+          <source media="(max-width: 768px)" srcset="assets/images/banners/hero-2-welcome10-m.svg">
+          <img src="assets/images/banners/hero-2-welcome10.svg" alt="10% Off for New Users" loading="lazy">
+        </picture>
+        <div class="hero-deco" aria-hidden="true"></div>
+        <div class="hero-overlay">
+          <div class="hero-kicker">Welcome Offer</div>
+          <h2 class="hero-title">Flat 10% Off</h2>
+          <p class="hero-subtitle">On your first order &nbsp;·&nbsp; No minimum spend</p>
+          <div class="hero-cta">
+            <a class="btn" href="products.html">Shop Now</a>
+            <span class="hero-note">Use code: <strong>WELCOME10</strong></span>
+          </div>
+        </div>
+      </article>
 
-    <h1>The loom is <em>threading</em><br>something new</h1>
-    <p class="sub">We're re-weaving the AhamStree experience from the ground up —
-      new drapes, a new collection, and a home that does justice to every handwoven thread. Back soon.</p>
+      <article class="hero-slide" data-slide="3">
+        <picture class="hero-media">
+          <source media="(max-width: 768px)" srcset="assets/images/banners/hero-3-collection-m.svg">
+          <img src="assets/images/banners/hero-3-collection.svg" alt="New Collection" loading="lazy">
+        </picture>
+        <div class="hero-deco" aria-hidden="true"></div>
+        <div class="hero-overlay">
+          <div class="hero-kicker">New Collection</div>
+          <h2 class="hero-title">Fresh arrivals, timeless weaves</h2>
+          <p class="hero-subtitle">Silk-Cotton &nbsp;·&nbsp; Cotton &nbsp;·&nbsp; Festive classics</p>
+          <div class="hero-cta">
+            <a class="btn" href="new-arrivals.html">Explore</a>
+          </div>
+        </div>
+      </article>
 
-    <div class="loom" id="countdown">
-      <div class="spindle"><div class="frame"><span class="num" id="dd">00</span><span class="lbl">Days</span></div></div>
-      <div class="sep">:</div>
-      <div class="spindle"><div class="frame"><span class="num" id="hh">00</span><span class="lbl">Hours</span></div></div>
-      <div class="sep">:</div>
-      <div class="spindle"><div class="frame"><span class="num" id="mm">00</span><span class="lbl">Mins</span></div></div>
-      <div class="sep">:</div>
-      <div class="spindle"><div class="frame"><span class="num" id="ss">00</span><span class="lbl">Secs</span></div></div>
     </div>
 
-    <p class="date-line">Launching <strong>29th August</strong></p>
-    <p class="foot">AhamStree &nbsp;·&nbsp; Woven with care</p>
-  </main>
+    <div class="hero-dots" role="tablist" aria-label="Hero carousel controls">
+      <button class="hero-dot" data-go="1" aria-label="Go to slide 1" aria-current="true"></button>
+      <button class="hero-dot" data-go="2" aria-label="Go to slide 2"></button>
+      <button class="hero-dot" data-go="3" aria-label="Go to slide 3"></button>
+    </div>
+  </section>
 
-<script>
-  // Set the launch target — 29 August, local time, midnight.
-  // Uses the current year, rolling to next year automatically if the date has passed.
-  function getLaunchDate(){
-    const now = new Date();
-    let year = now.getFullYear();
-    let target = new Date(year, 7, 29, 0, 0, 0); // month 7 = August
-    if (target.getTime() <= now.getTime()) {
-      target = new Date(year + 1, 7, 29, 0, 0, 0);
+  <div class="container" style="margin-top:22px;">
+
+    <!-- Category quick links -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Shop by Category</h2>
+        <a class="section-link" href="products.html?type=saree">View all</a>
+      </div>
+
+      <div id="homeCategoryTiles" class="category-tiles">
+        <div class="small">Loading categories…</div>
+      </div>
+    </section>
+
+    <!-- Curated collections (from backend) -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Curated Collections</h2>
+        <a class="section-link" href="collections.html">View all</a>
+      </div>
+
+      <div id="homeCollectionTiles" class="category-tiles">
+        <div class="small">Loading collections…</div>
+      </div>
+    </section>
+
+    <!-- Bestsellers -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Most loved</h2>
+        <a class="section-link" href="products.html">Shop all</a>
+      </div>
+
+      <div id="bestsellersStatus" class="small" style="margin-bottom:10px;"></div>
+      <div id="bestsellersGrid" class="grid grid-4"></div>
+    </section>
+
+    <!-- New Collection -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">New Collection</h2>
+        <a class="section-link" href="products.html?sort=newest">See more</a>
+      </div>
+
+      <div id="newCollectionStatus" class="small" style="margin-bottom:10px;"></div>
+      <div id="newCollectionGrid" class="grid grid-4"></div>
+    </section>
+
+
+    <!-- Testimonials -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Loved by customers across India</h2>
+      </div>
+
+      <div id="testimonialsGrid" class="t-compact-grid"></div>
+    </section>
+
+
+  </div>
+
+  <!-- Floating CTA (WhatsApp-like) -->
+  <a class="floating-cta" href="https://wa.me/919582297550?text=Hi%20Ahamstree%20team%2C%20I%20need%20help%20with%20my%20order." target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
+    <span class="floating-cta-dot" aria-hidden="true"></span>
+    Need help?
+  </a>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { hydrateHome } from "./assets/home.js";
+
+    document.getElementById("header").innerHTML = renderHeader("home");
+    hydrateHeaderAuth();
+    document.getElementById("footer").innerHTML = renderFooter();
+
+    // Home page dynamic sections
+    hydrateHome();
+
+    // Testimonials (static for now)
+    // Testimonials (static for now)
+const testimonials = [
+  { quote: "Beautiful weave and the saree looked even better in person. Packaging was premium.", name: "Babita", place: "Gurgaon", stars: 5, img: "assets/images/testimonials/babita.jpg" },
+  { quote: "Fast delivery and super helpful support on WhatsApp. Loved the fabric quality.", name: "Sudha", place: "Rewari", stars: 5, img: "assets/images/testimonials/babita.jpg" },
+  { quote: "Exactly as shown. The drape is gorgeous and the blouse piece was perfect.", name: "Neetu", place: "Jamalpur", stars: 5, img: "assets/images/testimonials/babita.jpg" },
+  { quote: "Great gifting experience. My mom loved it and asked for another one!", name: "Nisha", place: "Gurgaon", stars: 5, img: "assets/images/testimonials/babita.jpg" },
+  { quote: "Elegant and lightweight. Perfect for functions and easy to carry.", name: "Shikha", place: "Gurgaon", stars: 5, img: "assets/images/testimonials/babita.jpg" },
+  { quote: "The craftsmanship is excellent. Will definitely order again.", name: "Rachna", place: "Gurgaon", stars: 5, img: "assets/images/testimonials/babita.jpg" },
+];
+
+
+    const stars = (n) => "★★★★★".slice(0, Math.max(0, Math.min(5, Number(n || 0))));
+
+    const tGrid = document.getElementById("testimonialsGrid");
+    if (tGrid) {
+      tGrid.innerHTML = testimonials.map(t => `
+        <div class="card t-compact-card">
+          <div class="t-compact-stars">${stars(t.stars)}</div>
+          <div class="t-compact-quote">"${t.quote}"</div>
+          <div class="t-compact-foot">
+            <div class="t-compact-avatar">
+              <img src="${t.img}" alt="${t.name}" loading="lazy"
+                   onerror="this.style.display='none';this.parentElement.dataset.initial='${t.name.charAt(0)}'">
+            </div>
+            <div>
+              <div class="t-compact-name">${t.name}</div>
+              <div class="t-compact-place">${t.place}</div>
+            </div>
+          </div>
+        </div>
+      `).join("");
     }
-    return target;
-  }
 
-  const launch = getLaunchDate();
-  const $ = (id) => document.getElementById(id);
-  const pad = (n) => String(Math.max(0, n)).padStart(2, "0");
 
-  function tick(){
-    const diff = launch.getTime() - Date.now();
-    if (diff <= 0){
-      $("dd").textContent = "00";
-      $("hh").textContent = "00";
-      $("mm").textContent = "00";
-      $("ss").textContent = "00";
-      return;
+
+    // Hero carousel
+    const track = document.getElementById("heroTrack");
+    const dots = Array.from(document.querySelectorAll(".hero-dot"));
+    let current = 1;
+    let autoplayTimer;
+
+    function go(n) {
+      current = n;
+      const width = track?.clientWidth ?? 0;
+      if (track && width) track.scrollTo({ left: (n - 1) * width, behavior: "smooth" });
+      dots.forEach((d, i) => d.setAttribute("aria-current", String(i + 1 === n)));
     }
-    const days = Math.floor(diff / 86400000);
-    const hours = Math.floor((diff % 86400000) / 3600000);
-    const mins = Math.floor((diff % 3600000) / 60000);
-    const secs = Math.floor((diff % 60000) / 1000);
 
-    $("dd").textContent = pad(days);
-    $("hh").textContent = pad(hours);
-    $("mm").textContent = pad(mins);
-    $("ss").textContent = pad(secs);
-  }
+    function startAutoplay() {
+      clearInterval(autoplayTimer);
+      autoplayTimer = setInterval(() => go((current % 3) + 1), 6500);
+    }
 
-  tick();
-  setInterval(tick, 1000);
-</script>
+    dots.forEach(d => d.addEventListener("click", () => {
+      go(Number(d.dataset.go));
+      startAutoplay();
+    }));
 
+    // Sync dots on manual swipe
+    track?.addEventListener("scroll", () => {
+      const width = track.clientWidth || 1;
+      const idx = Math.round(track.scrollLeft / width) + 1;
+      if (idx !== current && idx >= 1 && idx <= 3) {
+        current = idx;
+        dots.forEach((d, i) => d.setAttribute("aria-current", String(i + 1 === current)));
+      }
+    }, { passive: true });
+
+    go(1);
+    startAutoplay();
+  </script>
 </body>
 </html>
