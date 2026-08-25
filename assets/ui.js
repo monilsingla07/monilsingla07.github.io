@@ -104,7 +104,7 @@ export function renderHeader(active = "") {
     <!-- Top bar -->
     <div class="topbar">
       <div class="container topbar-inner">
-        <div class="topbar-left">✦ Free shipping across India &nbsp;•&nbsp; Easy 7-day returns ✦</div>
+        <div class="topbar-left">Complimentary shipping across India &nbsp;·&nbsp; 7-day returns</div>
         <div class="topbar-right">
           <a href="about.html">About</a>
           <a href="shipping.html">Shipping</a>
@@ -210,6 +210,11 @@ export function renderFooter() {
   return `
     <footer class="footer">
       <div class="container footer-grid">
+
+        <div class="footer-monogram" style="grid-column:1/-1;">
+          <div class="wordmark">AhamStree</div>
+          <div class="tagline">Eternally Elegant</div>
+        </div>
 
         <div>
           <div class="footer-title">Quick Links</div>
