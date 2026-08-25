@@ -46,47 +46,7 @@
           Order ID: <strong id="orderIdText"></strong>
         </div>
 
-        <!-- Provisional Invoice (shown for COD orders) -->
-        <div id="provisionalInvoice" style="display:none; text-align:left; margin-bottom:20px; border:1.5px solid var(--border); border-radius:14px; overflow:hidden; font-size:13px;">
-          <div style="background:var(--bg-warm); padding:12px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-            <div>
-              <div style="font-weight:900; font-size:15px;">AhamStree</div>
-              <div style="opacity:.65; font-size:11px; margin-top:2px;">ahamstree.com</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-weight:800; color:var(--brand);">PROVISIONAL ORDER</div>
-              <div style="opacity:.65; font-size:11px; margin-top:2px;" id="inv-date"></div>
-            </div>
-          </div>
-          <div style="padding:12px 16px; border-bottom:1px solid var(--border); background:#fffbeb;">
-            <div style="font-size:11px; color:#92400e; font-weight:700;">⚠️ PENDING CONFIRMATION</div>
-            <div style="font-size:11px; color:#92400e; margin-top:2px; line-height:1.5;">This is a provisional order summary, not a final invoice. It becomes binding only after our team confirms your Cash on Delivery order (within 2 hours via WhatsApp/call).</div>
-          </div>
-          <div style="padding:12px 16px; border-bottom:1px solid var(--border);">
-            <div style="font-weight:800; margin-bottom:6px;">Deliver to</div>
-            <div id="inv-name" style="font-weight:700;"></div>
-            <div id="inv-address" style="opacity:.75; margin-top:2px; line-height:1.5;"></div>
-            <div id="inv-phone" style="opacity:.75; margin-top:2px;"></div>
-          </div>
-          <div style="padding:12px 16px; border-bottom:1px solid var(--border);">
-            <div style="font-weight:800; margin-bottom:8px;">Items ordered</div>
-            <div id="inv-items"></div>
-          </div>
-          <div style="padding:12px 16px; border-bottom:1px solid var(--border);">
-            <div id="inv-subtotal-row" style="display:flex; justify-content:space-between; padding:3px 0;"><span style="opacity:.7;">Subtotal</span><span id="inv-subtotal"></span></div>
-            <div id="inv-discount-row" style="display:none; justify-content:space-between; padding:3px 0; color:green;"><span>Discount</span><span id="inv-discount"></span></div>
-            <div style="display:flex; justify-content:space-between; padding:3px 0;"><span style="opacity:.7;">Shipping</span><span id="inv-shipping"></span></div>
-            <div style="display:flex; justify-content:space-between; padding:6px 0 0; border-top:1px solid var(--border); margin-top:4px; font-weight:900; font-size:15px;"><span>Total (Pay on Delivery)</span><span id="inv-total" style="color:var(--brand);"></span></div>
-          </div>
-          <div style="padding:12px 16px; background:var(--bg-warm);">
-            <div style="font-weight:800; margin-bottom:4px;">Order ID</div>
-            <div id="inv-order-id" style="font-family:monospace; font-size:12px; color:var(--brand); word-break:break-all;"></div>
-            <div style="margin-top:8px; font-size:11px; opacity:.65;">Please save this Order ID — you'll need it for order tracking and return requests.</div>
-          </div>
-        </div>
-
         <div style="display:flex; flex-direction:column; gap:10px;">
-          <button id="printInvoiceBtn" class="btn secondary" style="display:none;">🖨️ Save / Print this summary</button>
           <a class="btn" href="products.html">Continue shopping</a>
           <a id="viewOrdersLink" class="btn secondary" href="orders.html">View my orders</a>
         </div>
@@ -145,21 +105,22 @@
     //   razorpay_payment_link_status  — "paid" | "cancelled"
     //   razorpay_signature            — HMAC for client-side verification (optional)
     //
-    // COD flow sets: ?order_id=xxx&method=cod
+    // NOTE: this page previously also handled a COD flow (?order_id=xxx&method=cod).
+    // COD has been removed — Razorpay is the only checkout path now. A legacy
+    // ?method=cod link (e.g. from an old bookmark or email) will just fall through
+    // to the "pending" state below rather than a false success.
 
     const params     = new URLSearchParams(location.search);
-    const method     = params.get("method");                            // "cod" for COD orders
     const rpStatus   = params.get("razorpay_payment_link_status");      // "paid" | "cancelled"
     const rpOrderId  = params.get("razorpay_payment_link_reference_id"); // = our order_id
     const rpPayId    = params.get("razorpay_payment_id");
     const rpLinkId   = params.get("razorpay_payment_link_id");
-    const codOrderId = params.get("order_id");                          // COD flow
 
     // UI helpers
     const show = (id) => document.getElementById(id).style.display = "";
     const hide = (id) => document.getElementById(id).style.display = "none";
 
-    function showSuccess({ orderId, isCod = false }) {
+    function showSuccess({ orderId }) {
       hide("loadingState");
       hide("cancelledState");
       hide("pendingState");
@@ -175,78 +136,21 @@
       const idBox  = document.getElementById("orderIdBox");
       const idText = document.getElementById("orderIdText");
 
-      if (isCod) {
-        icon.textContent  = "📦";
-        title.textContent = "Order placed!";
-        body.innerHTML    = "Your <strong>Cash on Delivery</strong> order has been received.<br>Our team will confirm it via <strong>WhatsApp or call within 2 hours</strong>.";
-      } else {
-        icon.textContent  = "✅";
-        title.textContent = "Payment successful!";
-        body.textContent  = "Your payment is complete and your order is being processed. We'll send you updates shortly.";
-      }
+      icon.textContent  = "✅";
+      title.textContent = "Payment successful!";
+      body.textContent  = "Your payment is complete and your order is being processed. We'll send you updates shortly.";
 
-      const oid = orderId || rpOrderId || codOrderId;
+      const oid = orderId || rpOrderId;
       if (oid) {
         idBox.style.display = "block";
         idText.textContent  = oid;
-      }
-
-      // ── Provisional invoice for COD ────────────────────────────────────────
-      if (isCod) {
-        try {
-          const snap = JSON.parse(sessionStorage.getItem("ahamstree_cod_snapshot") || "null");
-          const invoice = document.getElementById("provisionalInvoice");
-          const printBtn = document.getElementById("printInvoiceBtn");
-          const viewOrdersLink = document.getElementById("viewOrdersLink");
-
-          if (snap && invoice) {
-            // Hide generic order ID box — invoice has it
-            idBox.style.display = "none";
-            invoice.style.display = "block";
-            if (printBtn) printBtn.style.display = "block";
-
-            document.getElementById("inv-date").textContent = new Date(snap.placed_at || Date.now()).toLocaleString("en-IN", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
-            document.getElementById("inv-name").textContent = snap.name || "";
-            document.getElementById("inv-address").textContent = snap.address || "";
-            document.getElementById("inv-phone").textContent = snap.phone ? "📞 " + snap.phone : "";
-            document.getElementById("inv-order-id").textContent = snap.order_id || oid || "";
-
-            const itemsEl = document.getElementById("inv-items");
-            if (itemsEl && snap.items?.length) {
-              itemsEl.innerHTML = snap.items.map(it => `
-                <div style="display:flex; justify-content:space-between; gap:8px; padding:5px 0; border-bottom:1px solid var(--border-light);">
-                  <div style="flex:1;">${it.qty} × ${it.title || "Item"}</div>
-                  <div style="font-weight:700; flex-shrink:0;">₹${Number((it.price || 0) * it.qty).toLocaleString("en-IN")}</div>
-                </div>`).join("");
-            }
-
-            document.getElementById("inv-subtotal").textContent = snap.subtotal || "";
-            document.getElementById("inv-shipping").textContent = snap.shipping_amt || "Free";
-            document.getElementById("inv-total").textContent = snap.total || "";
-
-            const discRow = document.getElementById("inv-discount-row");
-            if (snap.discount && snap.discount !== "-₹0" && snap.discount !== "₹0") {
-              discRow.style.display = "flex";
-              document.getElementById("inv-discount").textContent = snap.discount;
-            }
-
-            // Guest: hide "View my orders" (requires login), show save-order-id tip
-            const isGuest = !snap.email;
-            if (viewOrdersLink && isGuest) {
-              viewOrdersLink.style.display = "none";
-            }
-
-            printBtn?.addEventListener("click", () => window.print());
-            sessionStorage.removeItem("ahamstree_cod_snapshot");
-          }
-        } catch(_) {}
       }
 
       // Fire GA purchase event
       if (typeof gtag === "function" && oid) {
         gtag("event", "purchase", {
           transaction_id: oid,
-          payment_type: isCod ? "cod" : "razorpay",
+          payment_type: "razorpay",
         });
       }
     }
@@ -284,13 +188,7 @@
     // ─── Main logic ────────────────────────────────────────────────────────────
 
     async function init() {
-      // ── Scenario 1: COD order ─────────────────────────────────────────────
-      if (method === "cod") {
-        showSuccess({ orderId: codOrderId, isCod: true });
-        return;
-      }
-
-      // ── Scenario 2: Razorpay callback with explicit status ─────────────────
+      // ── Scenario: Razorpay callback with explicit status ────────────────────
       // Razorpay sends ?razorpay_payment_link_status=paid OR =cancelled
       if (rpStatus === "paid") {
         // The webhook will also fire and update the DB — trust Razorpay's param
@@ -304,10 +202,10 @@
         return;
       }
 
-      // ── Scenario 3: No Razorpay params — user navigated here directly,
+      // ── Scenario: No Razorpay params — user navigated here directly,
       //    OR they hit browser back from Razorpay before completing.
       //    Check if there's a pending order in DB or localStorage.
-      if (!rpStatus && !method) {
+      if (!rpStatus) {
         const stored = (() => {
           try { return JSON.parse(localStorage.getItem("ahamstree_pending_payment") || ""); } catch { return null; }
         })();
