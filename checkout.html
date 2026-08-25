@@ -23,7 +23,20 @@
 <body>
   <div id="header"></div>
 
-  <div class="container">
+  <!-- Login-required gate: shown until we confirm the shopper is authenticated.
+       Guest checkout has been removed — an order can no longer be placed without an account. -->
+  <div class="container" id="checkoutGate" style="display:none;">
+    <div style="max-width:420px; margin:60px auto; text-align:center; display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <h2 style="margin:0;">Please log in to checkout</h2>
+      <div class="small" style="opacity:.75;">
+        An AhamStree account keeps your order history, saved address and delivery updates in one place. Log in or create an account to continue.
+      </div>
+      <a class="btn" href="login.html?next=checkout.html" style="padding:10px 22px;">Log in / Create account →</a>
+      <a class="small" href="cart.html" style="opacity:.6;">← Back to cart</a>
+    </div>
+  </div>
+
+  <div class="container" id="checkoutMain" style="display:none;">
     <div class="breadcrumbs" aria-label="Breadcrumb">
       <a href="index.html">Home</a> <span class="sep">›</span>
       <a href="cart.html">Cart</a> <span class="sep">›</span>
@@ -65,7 +78,7 @@
       <!-- LEFT: Shipping -->
       <form id="form" class="card" style="padding:16px; border-radius:16px;">
         <h3 style="margin:0 0 8px 0;">Shipping details</h3>
-        <div class="small" style="opacity:.8; margin-bottom:12px;">Used for delivery updates and invoice. <span id="loginHint"></span></div>
+        <div class="small" style="opacity:.8; margin-bottom:12px;">Used for delivery updates and invoice.</div>
 
         <label class="small">Full name</label>
         <input class="input" name="full_name" required placeholder="e.g., Monil Gupta" autocomplete="name" autocapitalize="words" />
@@ -110,73 +123,15 @@
 
         <div style="height:18px;"></div>
 
-        <!-- Account Panel (shown only for guests) -->
-        <div id="accountPanel" style="display:none; margin-bottom:18px; border:1.5px solid var(--border); border-radius:14px; overflow:hidden;">
-          <div style="background:var(--bg-warm); padding:12px 14px; border-bottom:1px solid var(--border);">
-            <div style="font-weight:800; font-size:13px;">Save your details for next time</div>
-            <div class="small" style="opacity:.7; margin-top:2px;">Required to pay online. Optional for Cash on Delivery.</div>
-          </div>
-          <div style="padding:14px; display:flex; flex-direction:column; gap:8px;">
-            <label id="acctGuestLabel" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:2px solid var(--border); border-radius:10px; cursor:pointer; background:#fff; transition:all .15s;">
-              <input type="radio" name="acct_mode" value="guest" id="acctGuest" checked style="margin-top:2px; accent-color:var(--brand);" />
-              <div>
-                <div style="font-weight:800; font-size:13px;">Continue as Guest</div>
-                <div class="small" style="opacity:.7; margin-top:1px;">Cash on Delivery only. Your details won't be saved.</div>
-              </div>
-            </label>
-            <label id="acctLoginLabel" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:2px solid var(--border); border-radius:10px; cursor:pointer; background:#fff; transition:all .15s;">
-              <input type="radio" name="acct_mode" value="login" id="acctLogin" style="margin-top:2px; accent-color:var(--brand);" />
-              <div>
-                <div style="font-weight:800; font-size:13px;">Log into existing account</div>
-                <div class="small" style="opacity:.7; margin-top:1px;">Access saved address and pay online or COD.</div>
-              </div>
-            </label>
-            <label id="acctCreateLabel" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:2px solid var(--border); border-radius:10px; cursor:pointer; background:#fff; transition:all .15s;">
-              <input type="radio" name="acct_mode" value="create" id="acctCreate" style="margin-top:2px; accent-color:var(--brand);" />
-              <div style="flex:1;">
-                <div style="font-weight:800; font-size:13px;">Create an account</div>
-                <div class="small" style="opacity:.7; margin-top:1px;">Save your details and pay online or COD.</div>
-                <div id="acctCreateFields" style="display:none; margin-top:10px;">
-                  <input class="input" id="acctPassword" type="password" placeholder="Choose a password (min 8 chars)" autocomplete="new-password" style="margin-bottom:6px;" />
-                  <div id="acctCreateMsg" class="small" style="min-height:16px;color:crimson;"></div>
-                </div>
-              </div>
-            </label>
-          </div>
-          <div id="acctActionRow" style="display:none; padding:0 14px 14px;">
-            <button type="button" id="acctActionBtn" class="btn" style="width:100%;">Continue</button>
-            <div id="acctActionMsg" class="small" style="margin-top:8px;min-height:16px;"></div>
-          </div>
-        </div>
-
-        <!-- Payment Method Selector -->
+        <!-- Payment method: Razorpay only. COD has been removed. -->
         <div style="margin-bottom:14px;">
           <div class="small" style="font-weight:800; margin-bottom:8px;">Payment method</div>
-          <div style="display:flex; flex-direction:column; gap:8px;">
-
-            <label id="pmRazorpayLabel" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid var(--brand);border-radius:12px;cursor:pointer;background:var(--brand-light);transition:all .15s;">
-              <input type="radio" name="payment_method" value="razorpay" id="pmRazorpay" checked style="accent-color:var(--brand);width:16px;height:16px;flex-shrink:0;" />
-              <div style="flex:1;">
-                <div style="font-weight:800;font-size:14px;">Pay Online</div>
-                <div class="small" style="opacity:.75;margin-top:2px;">Cards, UPI, Net Banking via Razorpay</div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.55;flex-shrink:0;"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            </label>
-
-            <label id="pmCodLabel" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid var(--border);border-radius:12px;cursor:pointer;background:#fff;transition:all .15s;">
-              <input type="radio" name="payment_method" value="cod" id="pmCod" style="accent-color:var(--brand);width:16px;height:16px;flex-shrink:0;" />
-              <div style="flex:1;">
-                <div style="font-weight:800;font-size:14px;">Cash on Delivery</div>
-                <div class="small" style="opacity:.75;margin-top:2px;">Pay in cash when your order arrives</div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.55;flex-shrink:0;"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-            </label>
-
-          </div>
-
-          <!-- COD note -->
-          <div id="codNote" style="display:none;margin-top:8px;padding:10px 12px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;">
-            <div class="small" style="color:#92400e;">&#x1F4E6; COD orders are confirmed manually. You'll receive a WhatsApp / call confirmation within 2 hours.</div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid var(--brand);border-radius:12px;background:var(--brand-light);">
+            <div style="flex:1;">
+              <div style="font-weight:800;font-size:14px;">Pay Online</div>
+              <div class="small" style="opacity:.75;margin-top:2px;">Cards, UPI, Net Banking via Razorpay</div>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.55;flex-shrink:0;"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           </div>
         </div>
 
@@ -257,6 +212,21 @@
   <script type="module">
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
 
+    // ── Login required for checkout ─────────────────────────────────────────
+    // Guest checkout has been removed. Every order must be tied to an account,
+    // so we confirm a session exists before showing any of the checkout UI.
+    const sbModAuthGate = await import("./assets/supabase.js");
+    const { data: sessAuthGate } = await sbModAuthGate.supabase.auth.getSession();
+    const checkoutUser = sessAuthGate?.session?.user || null;
+
+    if (!checkoutUser) {
+      document.getElementById("checkoutGate").style.display = "block";
+      document.getElementById("checkoutMain").style.display = "none";
+      throw new Error("login_required_for_checkout");
+    }
+    document.getElementById("checkoutGate").style.display = "none";
+    document.getElementById("checkoutMain").style.display = "";
+
     const statusEl = document.getElementById("status");
     const warnBox  = document.getElementById("warn");
     const warnText = document.getElementById("warnText");
@@ -308,8 +278,8 @@
             customer_email:   null,
             shipping_address: null,
             shipping_inr:     0,
-            payment_method:   "cod",
-            // user_id resolved server-side from JWT (or null for guest)
+            payment_method:   "razorpay",
+            // user_id resolved server-side from the caller's JWT (login is required for checkout)
           }
         });
 
@@ -737,89 +707,10 @@
       if (e.key === "Enter") { e.preventDefault(); applyCouponNow(); }
     });
 
-    // ── Saved address + login state ─────────────────────────────────────────
+    // ── Saved address (login is guaranteed by the gate above) ────────────────
     (async () => {
-      const sbMod  = await import("./assets/supabase.js");
-      const { data: sess } = await sbMod.supabase.auth.getSession();
-      const user   = sess?.session?.user;
-      const loginHint = document.getElementById("loginHint");
-
-      if (!user) {
-        if (loginHint) {
-          loginHint.innerHTML = `<a href="login.html?next=checkout.html" style="color:var(--brand);font-weight:700;">Log in</a> to use your saved address.`;
-        }
-
-        // Show account panel for guests
-        const panel = document.getElementById("accountPanel");
-        if (panel) {
-          panel.style.display = "block";
-
-          const radios = panel.querySelectorAll("input[name='acct_mode']");
-          const labels = { guest: document.getElementById("acctGuestLabel"), login: document.getElementById("acctLoginLabel"), create: document.getElementById("acctCreateLabel") };
-          const createFields = document.getElementById("acctCreateFields");
-          const acctActionRow = document.getElementById("acctActionRow");
-          const acctActionBtn = document.getElementById("acctActionBtn");
-          const acctActionMsg = document.getElementById("acctActionMsg");
-          const pmRazorpayEl  = document.getElementById("pmRazorpay");
-          const pmRazorpayLbl = document.getElementById("pmRazorpayLabel");
-
-          function updateAccountUI() {
-            const val = panel.querySelector("input[name='acct_mode']:checked")?.value || "guest";
-            Object.values(labels).forEach(l => { if (l) { l.style.border = "2px solid var(--border)"; l.style.background = "#fff"; } });
-            if (labels[val]) { labels[val].style.border = "2px solid var(--brand)"; labels[val].style.background = "var(--brand-light)"; }
-
-            if (createFields) createFields.style.display = val === "create" ? "block" : "none";
-            acctActionRow.style.display = val !== "guest" ? "block" : "none";
-            acctActionBtn.textContent   = val === "login" ? "Log in →" : "Create account →";
-
-            // Disable online payment for guests
-            if (pmRazorpayEl) pmRazorpayEl.disabled = val === "guest";
-            if (pmRazorpayLbl) pmRazorpayLbl.style.opacity = val === "guest" ? ".45" : "1";
-            if (val === "guest") {
-              document.getElementById("pmCod")?.click();
-            }
-          }
-
-          radios.forEach(r => r.addEventListener("change", updateAccountUI));
-          updateAccountUI();
-
-          acctActionBtn?.addEventListener("click", async () => {
-            const val  = panel.querySelector("input[name='acct_mode']:checked")?.value;
-            if (val === "login") {
-              sessionStorage.setItem("ahamstree_checkout_return", "1");
-              window.location.href = "login.html?next=checkout.html";
-              return;
-            }
-            if (val === "create") {
-              const pw = document.getElementById("acctPassword")?.value || "";
-              const msg = document.getElementById("acctCreateMsg");
-              if (pw.length < 8) { if (msg) msg.textContent = "Password must be at least 8 characters."; return; }
-              const emailEl = document.querySelector("[name='email']");
-              const email   = emailEl?.value?.trim() || "";
-              if (!email) { if (msg) msg.textContent = "Please enter your email above first."; return; }
-              if (msg) msg.textContent = "";
-              acctActionBtn.disabled = true;
-              acctActionBtn.textContent = "Creating…";
-              acctActionMsg.textContent = "";
-              try {
-                const sbM = await import("./assets/supabase.js");
-                const { error: signUpErr } = await sbM.supabase.auth.signUp({ email, password: pw });
-                if (signUpErr) { acctActionMsg.textContent = signUpErr.message; return; }
-                acctActionMsg.textContent = "✅ Account created. You can now pay online or COD.";
-                panel.style.display = "none";
-                if (pmRazorpayEl) pmRazorpayEl.disabled = false;
-                if (pmRazorpayLbl) pmRazorpayLbl.style.opacity = "1";
-              } catch(e) {
-                acctActionMsg.textContent = e.message || "Could not create account.";
-              } finally {
-                acctActionBtn.disabled = false;
-                acctActionBtn.textContent = "Create account →";
-              }
-            }
-          });
-        }
-        return;
-      }
+      const sbMod = await import("./assets/supabase.js");
+      const user  = checkoutUser;
 
       const { data: profile } = await sbMod.supabase
         .from("profiles")
@@ -862,33 +753,18 @@
     attachLiveValidation();
     validateAll({ showErrors: false });
 
-    // ---------- Payment method toggle UI ----------
-    const pmRazorpay    = document.getElementById("pmRazorpay");
-    const pmCod         = document.getElementById("pmCod");
-    const pmRazorpayLbl = document.getElementById("pmRazorpayLabel");
-    const pmCodLbl      = document.getElementById("pmCodLabel");
-    const codNote       = document.getElementById("codNote");
-    const payNote       = document.getElementById("payNote");
+    // ---------- Payment method (Razorpay only — COD removed) ----------
+    const payNote = document.getElementById("payNote");
 
     function getPaymentMethod() {
-      return document.querySelector('input[name="payment_method"]:checked')?.value || "razorpay";
+      return "razorpay";
     }
 
     function updatePaymentUI() {
-      const isRazorpay = getPaymentMethod() === "razorpay";
-      pmRazorpayLbl.style.border     = isRazorpay ? "2px solid var(--brand)" : "2px solid var(--border)";
-      pmRazorpayLbl.style.background = isRazorpay ? "var(--brand-light)" : "#fff";
-      pmCodLbl.style.border          = !isRazorpay ? "2px solid var(--brand)" : "2px solid var(--border)";
-      pmCodLbl.style.background      = !isRazorpay ? "var(--brand-light)" : "#fff";
-      payBtn.textContent             = isRazorpay ? "Pay with Razorpay" : "Place COD Order";
-      codNote.style.display          = isRazorpay ? "none" : "block";
-      if (payNote) payNote.textContent = isRazorpay
-        ? "Note: Payments are processed by Razorpay. You'll be redirected to a secure payment page."
-        : "No payment needed now. Your order will be confirmed via WhatsApp / call.";
+      payBtn.textContent = "Pay with Razorpay";
+      if (payNote) payNote.textContent = "Note: Payments are processed by Razorpay. You'll be redirected to a secure payment page.";
     }
 
-    pmRazorpay?.addEventListener("change", updatePaymentUI);
-    pmCod?.addEventListener("change", updatePaymentUI);
     updatePaymentUI();
 // ── Resume checkout banner ────────────────────────────────────────────────
     // Shown when the edge fn returns an existing pending order (back-button scenario).
@@ -1000,24 +876,21 @@
         const cart = cartMod.getCart?.() || [];
         if (!cart.length) { showError("Your cart is empty. Please add products first."); return; }
 
+        // Login is guaranteed by the gate at the top of this page, but double-check
+        // defensively in case the session expired mid-checkout.
         const { data: sess } = await sbMod.supabase.auth.getSession();
-        const session        = sess?.session;
-        const userId         = session?.user?.id ?? null;
+        const userId = sess?.session?.user?.id ?? null;
+        if (!userId) {
+          showError("Your session has expired. Please log in again to continue.");
+          window.location.href = "login.html?next=checkout.html";
+          return;
+        }
 
         const shipping    = buildShipping();
         const payloadCart = cart.map(i => ({ product_id: i.product_id, qty: i.qty }));
 
-        // ── Razorpay (online payment) ────────────────────────────────────────
-        // ── Razorpay (online payment) ────────────────────────────────────────
-        if (method === "razorpay") {
-          // Online payment requires login — our schema has orders.user_id NOT NULL.
-          // COD is still available to guests.
-          if (!userId) {
-            showError("Please log in to pay online. You can still place a Cash on Delivery order without an account.");
-            updatePaymentUI();
-            return;
-          }
-
+        // ── Razorpay (online payment — the only payment method) ──────────────
+        {
           payBtn.textContent   = "Processing…";
           statusEl.textContent = "Creating payment link…";
 
@@ -1078,61 +951,6 @@
           } catch (_) {}
 
           window.location.href = data.payment_link_url;
-        // ── Cash on Delivery ────────────────────────────────────────────────
-        } else {
-          payBtn.textContent  = "Placing order…";
-          statusEl.textContent = "Placing your COD order…";
-
-          const codBody = {
-            cart:             payloadCart,
-            coupon_code:      appliedCoupon || null,
-            customer_name:    shipping.full_name,
-            customer_phone:   shipping.phone,
-            customer_email:   shipping.email || null,
-            shipping_address: shipping,
-            shipping_inr:     0,
-            payment_method:   "cod",
-            user_id:          userId,   // null for guests — edge fn handles both
-          };
-
-          // ✅ FIX: No manual Authorization header — Supabase client attaches the
-          //    correct token automatically (session JWT for logged-in, anon key for guest).
-          //    Manually passing "Bearer undefined" was causing the 401 Invalid JWT error.
-          const { data, error } = await sbMod.supabase.functions.invoke("create-cod-order", {
-            body: codBody
-          });
-
-          if (error) { showError(error.message || "Could not place COD order. Please try again."); return; }
-
-          const orderId = data?.order_id || data?.id || "";
-          
-          // Save full order snapshot so success page can show provisional invoice
-          try {
-            const cartMod2 = await import("./assets/cart.js");
-            const cartItems = cartMod2.getCart?.() || [];
-            const snapshot = {
-              order_id:    orderId,
-              method:      "cod",
-              name:        shipping.full_name,
-              phone:       shipping.phone,
-              email:       shipping.email || "",
-              address:     [shipping.address_line1, shipping.address_line2, shipping.city, shipping.state, shipping.pincode].filter(Boolean).join(", "),
-              coupon:      appliedCoupon || "",
-              subtotal:    document.getElementById("subtotal")?.textContent || "",
-              discount:    document.getElementById("discount")?.textContent || "",
-              shipping_amt:document.getElementById("shipping")?.textContent || "",
-              total:       document.getElementById("total")?.textContent || "",
-              items:       cartItems.map(i => ({ product_id: i.product_id, title: i.title || "", qty: i.qty, price: i.price_inr || 0, image_url: i.image_url || "" })),
-              placed_at:   new Date().toISOString(),
-            };
-            sessionStorage.setItem("ahamstree_cod_snapshot", JSON.stringify(snapshot));
-          } catch(_) {}
-
-          cartMod.clearCart?.();
-          statusEl.textContent = "Order placed! Redirecting…";
-          window.location.href = "success.html" + (orderId
-            ? `?order_id=${encodeURIComponent(orderId)}&method=cod`
-            : "?method=cod");
         }
 
       } catch (e) {
