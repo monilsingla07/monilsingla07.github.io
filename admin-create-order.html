@@ -212,7 +212,7 @@
         <div>
           <h2 style="margin:0;">Create Order</h2>
           <div class="small" style="opacity:.65; margin-top:4px;">
-            Place an order on behalf of an offline customer. Choose COD or generate a Razorpay payment link.
+            Place an order on behalf of an offline customer and generate a Razorpay payment link to share with them.
           </div>
         </div>
         <a class="btn secondary" href="admin-orders.html" style="padding:8px 14px; font-size:13px;">← Back to orders</a>
@@ -350,24 +350,15 @@
             </div>
           </div>
 
-          <!-- Payment method -->
+          <!-- Payment method: Razorpay only. COD has been removed. -->
           <div class="section-card">
             <div class="section-header">
               <h3>💳 Payment Method</h3>
             </div>
             <div class="section-body">
 
-              <label class="pm-option selected" id="pmCodLabel">
-                <input type="radio" name="pm" value="cod" id="pmCod" checked />
-                <div class="pm-option-text">
-                  <div class="pm-option-title">Cash on Delivery</div>
-                  <div class="pm-option-sub">Order placed immediately. Customer pays on delivery.</div>
-                </div>
-                <span style="font-size:20px;">💵</span>
-              </label>
-
-              <label class="pm-option" id="pmRazorpayLabel">
-                <input type="radio" name="pm" value="razorpay" id="pmRazorpay" />
+              <label class="pm-option selected" id="pmRazorpayLabel">
+                <input type="radio" name="pm" value="razorpay" id="pmRazorpay" checked />
                 <div class="pm-option-text">
                   <div class="pm-option-title">Send Payment Link</div>
                   <div class="pm-option-sub">Generate a Razorpay link to share with the customer.</div>
@@ -380,7 +371,7 @@
 
           <!-- Submit -->
           <button class="btn" id="submitBtn" style="width:100%; padding:14px; font-size:15px; font-weight:900;">
-            Place COD Order
+            Generate Payment Link
           </button>
           <div id="submitMsg" class="small" style="margin-top:8px; text-align:center; min-height:16px; opacity:.7;"></div>
 
@@ -439,7 +430,7 @@
     }
 
     function getPaymentMethod() {
-      return document.querySelector("input[name='pm']:checked")?.value || "cod";
+      return "razorpay"; // COD removed — Razorpay is the only method
     }
 
     // ── Product search ────────────────────────────────────────────────────
@@ -671,23 +662,14 @@
     // Run once on load so default state is correct
     applyAddressToggle();
 
-    // ── Payment method UI ─────────────────────────────────────────────────
-    const pmCodLabel      = document.getElementById("pmCodLabel");
+    // ── Payment method UI (Razorpay only — COD removed) ─────────────────────
     const pmRazorpayLabel = document.getElementById("pmRazorpayLabel");
     const submitBtn       = document.getElementById("submitBtn");
 
     function updatePaymentUI() {
-      const method = getPaymentMethod();
-      pmCodLabel.classList.toggle("selected",      method === "cod");
-      pmRazorpayLabel.classList.toggle("selected", method === "razorpay");
-      submitBtn.textContent = method === "cod"
-        ? "Place COD Order"
-        : "Generate Payment Link";
+      pmRazorpayLabel.classList.add("selected");
+      submitBtn.textContent = "Generate Payment Link";
     }
-
-    document.querySelectorAll("input[name='pm']").forEach(r =>
-      r.addEventListener("change", updatePaymentUI)
-    );
 
     // ── Validate form ─────────────────────────────────────────────────────
     function validate() {
@@ -717,7 +699,7 @@
       const resultContent = document.getElementById("resultContent");
 
       submitBtn.disabled    = true;
-      submitMsg.textContent = method === "cod" ? "Placing COD order…" : "Generating payment link…";
+      submitMsg.textContent = "Generating payment link…";
       result.style.display  = "none";
 
       try {
@@ -772,27 +754,7 @@
         submitMsg.textContent = "";
         const shortId         = data.order_id?.slice(0, 8).toUpperCase() || "—";
 
-        if (method === "cod") {
-          result.className = "";
-          resultContent.innerHTML = `
-            <div style="font-weight:900; font-size:16px; color:#166534; margin-bottom:8px;">✅ COD Order Placed!</div>
-            <div class="small" style="margin-bottom:12px;">
-              <strong>Order #${shortId}</strong> — Total: <strong>${money(data.total_inr)}</strong><br>
-              Status: <em>cod_pending</em> — go to orders to confirm and ship.
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <a class="btn secondary" href="admin-orders.html?status=cod_pending" style="padding:8px 14px; font-size:13px;">View COD orders →</a>
-              <button class="btn secondary" id="newOrderBtn" style="padding:8px 14px; font-size:13px;">Create another order</button>
-              <button class="btn secondary" id="invoiceBtn" style="padding:8px 14px; font-size:13px;">📄 Generate Invoice</button>
-            </div>`;
-          result.style.display = "block";
-          document.getElementById("newOrderBtn")?.addEventListener("click", resetForm);
-          document.getElementById("invoiceBtn")?.addEventListener("click", function() {
-            generateInvoice(data.order_id, this);
-          });
-          toast("COD order placed! ✅", "#166534");
-
-        } else {
+        {
           const link = data.payment_link_url;
           const phone = document.getElementById("cPhone").value.replace(/\D/g, "");
           const phone91 = phone.length === 10 ? "91" + phone : phone;
@@ -895,7 +857,7 @@
       document.getElementById("adminNote").value  = "";
       document.getElementById("resultPanel").style.display = "none";
       document.getElementById("submitMsg").textContent = "";
-      document.getElementById("pmCod").checked = true;
+      document.getElementById("pmRazorpay").checked = true;
       document.getElementById("hasAddressToggle").checked = false;
       applyAddressToggle();
       updatePaymentUI();
