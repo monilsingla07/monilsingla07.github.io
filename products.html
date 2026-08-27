@@ -360,7 +360,8 @@
 
   const cache = {
     collectionSlug: null, collectionId: null, collectionName: null, productIds: null,
-    fabricSlug: null, fabricId: null, fabricName: null
+    fabricSlug: null, fabricId: null, fabricName: null,
+    weaveSlug: null, weaveId: null, weaveName: null
   };
 
   async function resolveCollection(slug){
@@ -386,20 +387,38 @@
     } catch(e){ return null; }
   }
 
+  // FIX: this page used to silently ignore the ?weave= param entirely — a
+  // "Shop by Weave" tile on the homepage (e.g. "Chanderi Cotton") linked
+  // here with &weave=chanderi-cotton, but every saree in the store was
+  // shown regardless, with no filtering by weave at all. That meant the
+  // toolbar's item count and the grid below it both reflected the FULL
+  // category, not the specific weave the visitor actually clicked into.
+  async function resolveWeave(slug){
+    if (!slug) { cache.weaveSlug = null; cache.weaveId = null; cache.weaveName = null; return null; }
+    if (cache.weaveSlug === slug && cache.weaveId) return cache;
+    try{
+      const { data: wl, error: wlErr } = await supabase.from("weave_lines").select("id,name").eq("slug", slug).maybeSingle();
+      if (wlErr || !wl) return null;
+      cache.weaveSlug = slug; cache.weaveId = wl.id; cache.weaveName = wl.name;
+      return cache;
+    } catch(e){ return null; }
+  }
+
   function setPageTitle(){
     const type = (params.get("type") || "saree").toLowerCase();
     const collection = params.get("collection") || "";
     const titleEl = document.getElementById("pageTitle");
     const subEl = document.getElementById("pageSubtitle");
+    const weaveName = cache.weaveId ? cache.weaveName : "";
 
     if (collection && cache.collectionName){
       titleEl.innerHTML = escapeHtml(cache.collectionName);
       subEl.textContent = "A handpicked edit from our collection.";
     } else if (type === "suit") {
-      titleEl.innerHTML = `Handloom <em>Suits</em>`;
+      titleEl.innerHTML = weaveName ? `${escapeHtml(weaveName)} <em>Suits</em>` : `Handloom <em>Suits</em>`;
       subEl.textContent = "Crafted for everyday grace — from weave to wear.";
     } else {
-      titleEl.innerHTML = `Handloom <em>Sarees</em>`;
+      titleEl.innerHTML = weaveName ? `${escapeHtml(weaveName)} <em>Sarees</em>` : `Handloom <em>Sarees</em>`;
       subEl.textContent = "Woven with care, made to last a lifetime.";
     }
   }
@@ -478,6 +497,7 @@
 
     const selectedSlug = params.get("collection") || "";
     const selectedFabricSlug = params.get("fabric") || "";
+    const selectedWeaveSlug = params.get("weave") || "";
     const min = numOrNull(params.get("min"));
     const max = numOrNull(params.get("max"));
     const sort = params.get("sort") || "newest";
@@ -486,6 +506,7 @@
 
     const col = await resolveCollection(selectedSlug);
     const fab = await resolveFabric(selectedFabricSlug);
+    const weave = await resolveWeave(selectedWeaveSlug);
     setPageTitle();
 
     if (selectedSlug){
@@ -509,6 +530,7 @@
         let countQ = supabase.from("products").select("id", { count: "exact", head: true }).eq("is_active", true).eq("category", type);
         if (selectedSlug) countQ = countQ.in("id", cache.productIds);
         if (fab && cache.fabricId) countQ = countQ.eq("fabric_id", cache.fabricId);
+        if (weave && cache.weaveId) countQ = countQ.eq("weave_line_id", cache.weaveId);
         if (min !== null) countQ = countQ.gte("price_inr", min);
         if (max !== null) countQ = countQ.lte("price_inr", max);
         if (inStockOnly) countQ = countQ.gt("inventory_qty", 0);
@@ -531,6 +553,7 @@
 
     if (selectedSlug) query = query.in("id", cache.productIds);
     if (fab && cache.fabricId) query = query.eq("fabric_id", cache.fabricId);
+    if (weave && cache.weaveId) query = query.eq("weave_line_id", cache.weaveId);
     if (min !== null) query = query.gte("price_inr", min);
     if (max !== null) query = query.lte("price_inr", max);
     if (inStockOnly) query = query.gt("inventory_qty", 0);
