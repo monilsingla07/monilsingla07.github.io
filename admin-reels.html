@@ -59,8 +59,17 @@
           </div>
 
           <div class="full">
-            <label class="pm-label">Caption (optional — shown as the fallback link text if the embed doesn't load)</label>
+            <label class="pm-label">Caption (optional)</label>
             <input id="f_caption" class="input" placeholder="e.g. Behind the scenes: our Banarasi weave" />
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Video file</label>
+            <input id="f_video_file" type="file" accept="video/mp4,video/quicktime,video/webm" class="input" />
+            <div class="pm-hint">Download the video from Instagram (Share → Copy Link → Copy Link, then save it from the app, or use Instagram's "Save video") and upload the file here — MP4, MOV, or WEBM, up to 60MB. This plays right on your site, no click-through to Instagram needed. If you leave this empty, visitors will just see a "View this post on Instagram" link instead.</div>
+            <input type="hidden" id="f_video_url" />
+            <input type="hidden" id="f_video_path" />
+            <div id="videoPreviewBox" style="margin-top:10px;"></div>
           </div>
 
           <div>
@@ -130,12 +139,33 @@
       return json;
     }
 
+    function renderVideoPreview(videoUrl) {
+      const box = document.getElementById("videoPreviewBox");
+      if (!videoUrl) {
+        box.innerHTML = '<div class="small" style="opacity:.55;">No video uploaded yet.</div>';
+        return;
+      }
+      box.innerHTML =
+        '<video src="' + escapeAttr(videoUrl) + '" controls playsinline style="max-width:220px; max-height:340px; border-radius:10px; background:#000; display:block;"></video>' +
+        '<button type="button" id="btnRemoveVideo" class="btn secondary" style="margin-top:8px; padding:6px 12px; font-size:12px;">Remove video</button>';
+      document.getElementById("btnRemoveVideo").addEventListener("click", () => {
+        document.getElementById("f_video_url").value = "";
+        document.getElementById("f_video_path").value = "";
+        document.getElementById("f_video_file").value = "";
+        renderVideoPreview("");
+      });
+    }
+
     function clearForm() {
       document.getElementById("f_id").value = "";
       document.getElementById("f_reel_url").value = "";
       document.getElementById("f_caption").value = "";
       document.getElementById("f_sort_order").value = "0";
       document.getElementById("f_is_active").checked = false;
+      document.getElementById("f_video_url").value = "";
+      document.getElementById("f_video_path").value = "";
+      document.getElementById("f_video_file").value = "";
+      renderVideoPreview("");
       formTitle.textContent = "New reel";
       formStatus.textContent = "";
     }
@@ -146,6 +176,10 @@
       document.getElementById("f_caption").value = r.caption || "";
       document.getElementById("f_sort_order").value = String(r.sort_order ?? 0);
       document.getElementById("f_is_active").checked = !!r.is_active;
+      document.getElementById("f_video_url").value = r.video_url || "";
+      document.getElementById("f_video_path").value = r.video_path || "";
+      document.getElementById("f_video_file").value = "";
+      renderVideoPreview(r.video_url || "");
       formTitle.textContent = "Editing reel";
       formStatus.textContent = "";
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -162,6 +196,7 @@
           <div>
             <div style="font-weight:800;">${escapeHtml(r.caption || "Untitled reel")}
               <span class="pm-badge ${r.is_active ? "active" : "inactive"}" style="margin-left:8px;">${r.is_active ? "Active" : "Inactive"}</span>
+              <span class="pm-badge" style="margin-left:6px; background:${r.video_url ? "#dbeafe" : "#fef3c7"}; color:${r.video_url ? "#1e40af" : "#92400e"};">${r.video_url ? "🎬 Video attached" : "⚠ No video — link only"}</span>
             </div>
             <div class="small" style="opacity:.65; margin-top:4px; word-break:break-all;">
               <a href="${safeHref(r.reel_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(r.reel_url || "")} ↗</a>
@@ -201,9 +236,44 @@
 
     document.getElementById("btnReset").addEventListener("click", clearForm);
 
+    const MAX_VIDEO_BYTES = 60 * 1024 * 1024;
+
+    async function uploadSelectedVideoIfAny() {
+      const file = document.getElementById("f_video_file").files[0];
+      if (!file) {
+        // No new file chosen — keep whatever video_url/video_path is already
+        // on the form (unchanged, or cleared via "Remove video").
+        return {
+          video_url: document.getElementById("f_video_url").value || null,
+          video_path: document.getElementById("f_video_path").value || null,
+        };
+      }
+
+      if (file.size > MAX_VIDEO_BYTES) {
+        throw new Error("Video is too large — please keep it under 60MB.");
+      }
+
+      formStatus.textContent = "Requesting upload URL…";
+      const { path, token, publicUrl } = await authedFetch({
+        action: "get_upload_url",
+        content_type: file.type,
+      });
+
+      formStatus.textContent = "Uploading video…";
+      const { error: uploadErr } = await supabase.storage
+        .from("reel-videos")
+        .uploadToSignedUrl(path, token, file);
+
+      if (uploadErr) throw new Error("Video upload failed: " + uploadErr.message);
+
+      return { video_url: publicUrl, video_path: path };
+    }
+
     document.getElementById("btnSave").addEventListener("click", async () => {
       formStatus.textContent = "Saving…";
       try {
+        const { video_url, video_path } = await uploadSelectedVideoIfAny();
+
         const payload = {
           action: "save",
           id: document.getElementById("f_id").value || null,
@@ -211,7 +281,10 @@
           caption: document.getElementById("f_caption").value,
           sort_order: Number(document.getElementById("f_sort_order").value || 0),
           is_active: document.getElementById("f_is_active").checked,
+          video_url,
+          video_path,
         };
+        formStatus.textContent = "Saving…";
         const result = await authedFetch(payload);
         fillForm(result.reel);
         formStatus.textContent = "Saved ✅";
