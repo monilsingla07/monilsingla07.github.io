@@ -32,34 +32,32 @@ async function hydrateCategoryTiles(){
   const box = document.getElementById("homeCategoryTiles");
   if (!box) return;
 
-  // Fallback tiles (shown if the fabrics table doesn't exist yet)
+  // Fallback tiles (shown if the weave_lines table doesn't exist yet)
   const fallback = [
-    { name: "Silk", slug: "silk", description: "Wedding & festive" },
-    { name: "Cotton", slug: "cotton", description: "Everyday comfort" },
-    { name: "Banarasi", slug: "banarasi", description: "Classic zari" },
-    { name: "Kanjivaram", slug: "kanjivaram", description: "Iconic weaves" }
+    { name: "Chanderi Handloom", slug: "chanderi-handloom", description: "Cotton Silk & Silk" },
+    { name: "Chanderi Cotton", slug: "chanderi-cotton", description: "Hand block print" }
   ];
 
   try{
     const { data, error } = await supabase
-      .from("fabrics")
+      .from("weave_lines")
       .select("name,slug,description,sort_order,is_active")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .order("name", { ascending: true });
 
     const rows = (error || !data || data.length === 0) ? fallback : data;
-    box.innerHTML = rows.map(f => `
-      <a class="cat-tile" href="products.html?type=saree&fabric=${encodeURIComponent(f.slug)}">
-        <div class="cat-title">${escapeHtml(f.name)}</div>
-        <div class="cat-sub">${escapeHtml(f.description || "")}</div>
+    box.innerHTML = rows.map(w => `
+      <a class="cat-tile" href="products.html?type=saree&weave=${encodeURIComponent(w.slug)}">
+        <div class="cat-title">${escapeHtml(w.name)}</div>
+        <div class="cat-sub">${escapeHtml(w.description || "")}</div>
       </a>
     `).join("");
   } catch(e){
-    box.innerHTML = fallback.map(f => `
-      <a class="cat-tile" href="products.html?type=saree&fabric=${encodeURIComponent(f.slug)}">
-        <div class="cat-title">${escapeHtml(f.name)}</div>
-        <div class="cat-sub">${escapeHtml(f.description || "")}</div>
+    box.innerHTML = fallback.map(w => `
+      <a class="cat-tile" href="products.html?type=saree&weave=${encodeURIComponent(w.slug)}">
+        <div class="cat-title">${escapeHtml(w.name)}</div>
+        <div class="cat-sub">${escapeHtml(w.description || "")}</div>
       </a>
     `).join("");
   }
