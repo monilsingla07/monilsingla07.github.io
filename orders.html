@@ -144,35 +144,32 @@
     <div class="modal-box">
       <h3>🔄 Request a Return</h3>
       <p class="small" style="color:#64748b; margin:0 0 4px;">
-        Returns accepted within <strong>10 days</strong> of delivery.
-        Item must be unused, unwashed, with original tags and packaging.
+        We accept returns only in case of a genuine manufacturing defect, reported within <strong>48 hours</strong> of delivery.
       </p>
 
       <!-- Form body -->
       <div id="retFormBody">
         <div style="margin-top:14px;">
-          <div class="small" style="font-weight:700; margin-bottom:8px;">Why are you returning?</div>
+          <div class="small" style="font-weight:700; margin-bottom:8px;">What's the manufacturing defect?</div>
           <div class="chips" id="reasonChips">
-            <div class="chip" data-r="Wrong size / fit issue">Wrong size / fit</div>
-            <div class="chip" data-r="Colour different from images">Colour mismatch</div>
-            <div class="chip" data-r="Damaged / defective product">Damaged / defective</div>
-            <div class="chip" data-r="Not as described">Not as described</div>
-            <div class="chip" data-r="Changed my mind">Changed my mind</div>
-            <div class="chip" data-r="Other">Other</div>
+            <div class="chip" data-r="Manufacturing defect: weave/stitching fault">Weave / stitching fault</div>
+            <div class="chip" data-r="Manufacturing defect: fabric damage">Fabric damage</div>
+            <div class="chip" data-r="Other manufacturing defect">Other defect</div>
           </div>
         </div>
 
         <div id="otherWrap" style="display:none; margin-top:4px;">
           <textarea id="otherTxt" class="input" rows="2"
-            placeholder="Please describe your reason…"
+            placeholder="Please describe the defect…"
             style="width:100%; font-size:13px; resize:vertical;"></textarea>
         </div>
 
         <div style="margin-top:14px; padding:12px; background:#fff7ed; border-radius:12px; border:1px solid #fed7aa;">
           <div class="small" style="color:#9a3412; font-weight:700; margin-bottom:4px;">⚠️ Please note</div>
           <div class="small" style="color:#9a3412; line-height:1.5;">
-            Natural variation in colour, weave, or texture is not a defect in handloom sarees.
-            A quality check will be done after receipt before any refund is issued.
+            Natural variation in colour, weave, or texture is part of handloom fabric and is not a manufacturing defect.
+            We're unable to accept returns for sizing, change of mind, or personal preference — only genuine defects.
+            A quality check will be done after receipt before any refund or replacement is issued.
           </div>
         </div>
 
@@ -289,7 +286,7 @@
         reasonChips.forEach(c => c.classList.remove("sel"));
         chip.classList.add("sel");
         retReason = chip.dataset.r;
-        otherWrap.style.display = retReason === "Other" ? "block" : "none";
+        otherWrap.style.display = retReason === "Other manufacturing defect" ? "block" : "none";
       });
     });
 
@@ -316,8 +313,8 @@
     modal.addEventListener("click", e => { if (e.target === modal) closeReturnModal(); });
 
     retSubmitBtn.addEventListener("click", async () => {
-      const reason = retReason === "Other"
-        ? (otherTxt.value.trim() || "Other")
+      const reason = retReason === "Other manufacturing defect"
+        ? (otherTxt.value.trim() || "Other manufacturing defect")
         : retReason;
 
       if (!reason) {
@@ -657,7 +654,7 @@
           ${(isDelivered && !rs)
             ? `<div style="padding:8px 16px; background:#f8fafc; border-top:1px solid var(--border-light);">
                  <div class="small" style="color:#64748b;">
-                   Returns accepted within 10 days of delivery ·
+                   Returns accepted only for manufacturing defects, within 48 hours of delivery ·
                    <a href="returns.html" style="color:var(--brand,#7c3aed); font-weight:600;">Return policy →</a>
                  </div>
                </div>`
