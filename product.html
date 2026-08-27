@@ -9,827 +9,626 @@
     gtag('js', new Date());
     gtag('config', 'G-CKQ1EXBHY6');
   </script>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Products — AhamStree</title>
+  <title>Product — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/styles.css" />
-  <style>
-    /* ── Products Page Hero ── */
-    .products-hero {
-      background: linear-gradient(160deg, var(--bg-warm) 0%, #ede5d8 100%);
-      border-bottom: 1px solid var(--border-light);
-      padding: 44px 16px 38px;
-      position: relative;
-      overflow: hidden;
-    }
-    .products-hero::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 60% 100% at 100% 50%, rgba(110,34,54,0.06) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .products-hero-inner {
-      max-width: 1060px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
-    .products-hero-kicker {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--brand);
-      margin-bottom: 10px;
-      opacity: 0.8;
-    }
-    .products-hero h1 {
-      font-family: var(--font-heading);
-      font-size: clamp(32px, 5vw, 56px);
-      font-weight: 600;
-      color: var(--text);
-      margin: 0 0 8px;
-      line-height: 1.08;
-    }
-    .products-hero h1 em { font-style: italic; color: var(--brand); }
-    .products-hero-sub {
-      font-size: 14px;
-      color: var(--text-light);
-      margin: 0;
-    }
-
-    /* ── Listing Layout ── */
-    .listing-body {
-      max-width: 1060px;
-      margin: 0 auto;
-      padding: 28px 16px 64px;
-    }
-
-    /* ── Improved Toolbar ── */
-    .listing-toolbar-v2 {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 18px;
-      background: var(--surface);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-md);
-      margin-bottom: 24px;
-      box-shadow: var(--shadow-xs);
-    }
-    .toolbar-filter-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 16px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--surface);
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
-      white-space: nowrap;
-    }
-    .toolbar-filter-btn:hover {
-      border-color: var(--brand);
-      color: var(--brand);
-      background: var(--brand-lighter);
-    }
-    .toolbar-filter-icon { font-size: 15px; line-height: 1; }
-    .toolbar-count-v2 {
-      flex: 1;
-      font-size: 13px;
-      color: var(--text-light);
-      text-align: center;
-    }
-    .toolbar-sort-v2 {
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--surface);
-      padding: 9px 12px;
-      font-size: 13px;
-      color: var(--text);
-      min-width: 180px;
-      cursor: pointer;
-    }
-
-    /* ── Product Grid ── */
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-    }
-    .p-card {
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      background: var(--surface);
-      box-shadow: var(--shadow-xs);
-      transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease, border-color 0.2s ease;
-      animation: fadeUp 0.4s ease both;
-    }
-    .p-card:hover {
-      transform: translateY(-5px);
-      box-shadow: var(--shadow-lg);
-      border-color: var(--border);
-    }
-    .p-card a { text-decoration: none; color: inherit; display: block; }
-    .p-card-img {
-      position: relative;
-      overflow: hidden;
-      background: var(--bg-warm);
-    }
-    .p-card-img img {
-      width: 100%;
-      height: 280px;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
-    }
-    .p-card:hover .p-card-img img { transform: scale(1.06); }
-    .p-card-img-empty {
-      height: 280px;
-      background: linear-gradient(135deg, var(--bg-warm) 0%, var(--border-light) 100%);
-    }
-    .p-card-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: var(--brand);
-      color: #fff;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 4px 9px;
-      border-radius: 20px;
-      z-index: 2;
-    }
-    .p-card-badge.gold { background: var(--gold); }
-    .p-card-sold-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(250,248,244,0.72);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 3;
-    }
-    .p-card-sold-label {
-      background: var(--text);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 6px 14px;
-      border-radius: 4px;
-    }
-    .p-card-body { padding: 14px 14px 16px; }
-    .p-card-title {
-      font-size: 13px;
-      font-weight: 500;
-      line-height: 1.4;
-      color: var(--text);
-      margin: 0 0 8px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .p-card-pricing { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
-    .p-card-price { font-size: 15px; font-weight: 700; color: var(--text); }
-    .p-card-original { font-size: 12px; text-decoration: line-through; color: var(--text-light); }
-    .p-card-sale-price { font-size: 15px; font-weight: 700; color: var(--brand); }
-    .p-card-stock { font-size: 11px; color: var(--text-light); margin-top: 5px; }
-    .p-card-stock.low { color: #c0540a; font-weight: 500; }
-
-    .load-more-wrap { text-align: center; margin-top: 40px; }
-
-    /* Skeleton */
-    .skeleton-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
-    .skeleton {
-      border-radius: var(--radius-md);
-      background: linear-gradient(90deg, var(--bg-warm) 25%, var(--border-light) 50%, var(--bg-warm) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-    }
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    .skeleton-card { height: 360px; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 900px) {
-      .product-grid, .skeleton-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 700px) {
-      .listing-toolbar-v2 { flex-wrap: wrap; }
-      .toolbar-count-v2 { order: 3; flex-basis: 100%; text-align: left; }
-      .toolbar-sort-v2 { min-width: 0; flex: 1; }
-    }
-    @media (max-width: 640px) {
-      .product-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-      .p-card-img img, .p-card-img-empty { height: 210px; }
-    }
-  </style>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css" />
 </head>
+
 <body>
   <div id="header"></div>
 
-  <!-- Dynamic hero -->
-  <section class="products-hero">
-    <div class="products-hero-inner">
-      <div class="products-hero-kicker">AhamStree</div>
-      <h1 id="pageTitle">Handloom <em>Sarees</em></h1>
-      <p class="products-hero-sub" id="pageSubtitle">Woven with care, made to last a lifetime.</p>
+  <div class="container">
+    <div id="breadcrumb-slot"></div>
+    <div id="status" class="small" style="margin-top:12px;">Loading…</div>
+
+    <div id="content" style="display:none;">
+      <!-- Nalli-style: left gallery, right details -->
+      <div class="pd-wrap">
+        <!-- LEFT: Thumbs + main image -->
+        <div class="pd-left card" style="border-radius:16px; padding: 12px;">
+          <div class="pd-gallery">
+            <div id="thumbs" class="pd-thumbs"></div>
+
+            <div class="pd-main">
+              <img id="mainImg" alt="" loading="eager" decoding="async" />
+            </div>
+          </div>
+          <div class="small" style="margin-top:10px; opacity:.7;">Click image to zoom</div>
+        </div>
+
+        <!-- RIGHT: Details -->
+        <div class="pd-right">
+          <div class="card" style="padding:16px;border-radius:16px;">
+            <div id="title" class="pd-title"></div>
+
+            <div class="pd-meta">
+              <div id="sku" class="small"></div>
+              <div id="stock" class="small"></div>
+            </div>
+
+            <div class="pd-price-row">
+              <div id="price" class="pd-price"></div>
+              <div id="taxNote" class="pd-tax small">Inclusive of all taxes</div>
+            </div>
+
+            <div class="pd-actions">
+              <div class="pd-qty">
+                <span class="small">Qty</span>
+                <div class="pd-qty-box">
+                  <button id="qtyMinus" type="button" class="pd-qty-btn">−</button>
+                  <input id="qtyInput" class="pd-qty-input" value="1" inputmode="numeric" />
+                  <button id="qtyPlus" type="button" class="pd-qty-btn">+</button>
+                </div>
+              </div>
+
+              <button id="addBtn" class="btn pd-add">Add to cart</button>
+              <button id="wishBtn" type="button" class="btn secondary pd-wish">♡ Wishlist</button>
+              <a class="btn secondary pd-go" href="cart.html">Go to cart</a>
+            </div>
+
+            <div id="desc" class="pd-desc"></div>
+          </div>
+
+          <!-- Specs -->
+          <div id="specsCard" class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
+            <div style="font-weight:900;font-size:16px;">Specifications</div>
+            <div id="specs" style="margin-top:10px;"></div>
+          </div>
+
+          <!-- Sections / Accordion -->
+          <div id="sectionsCard" class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
+            <div id="sections"></div>
+          </div>
+
+          <!-- Available Offers -->
+          <div class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
+            <div style="font-weight:900;font-size:15px;margin-bottom:10px;">🏷️ Available Offers</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg-warm);border-radius:10px;border:1px solid var(--border);">
+                <span style="font-size:18px;line-height:1;flex-shrink:0;">🎁</span>
+                <div>
+                  <span style="font-weight:800;font-size:13px;color:var(--brand);">WELCOME10</span>
+                  <span style="margin-left:6px;font-size:11px;font-weight:700;background:var(--brand);color:#fff;padding:2px 7px;border-radius:999px;">10% off</span>
+                  <div style="font-size:12px;opacity:.7;margin-top:2px;">10% off your first order · No minimum spend</div>
+                </div>
+              </div>
+            </div>
+            <div class="small" style="margin-top:10px;opacity:.65;">Apply at checkout · One coupon per order</div>
+          </div>
+
+        </div>
+      </div>
     </div>
-  </section>
-
-  <div class="listing-body">
-
-    <!-- Improved toolbar -->
-    <div class="listing-toolbar-v2">
-      <button id="openFilters" class="toolbar-filter-btn" type="button">
-        <span class="toolbar-filter-icon" aria-hidden="true">⊞</span>
-        <span>Filter</span>
-      </button>
-      <div id="itemsCount" class="toolbar-count-v2">&nbsp;</div>
-      <select id="sortBy" class="toolbar-sort-v2 input" aria-label="Sort">
-        <option value="newest">Newest first</option>
-        <option value="mostLoved">Most loved</option>
-        <option value="priceLow">Price: Low to High</option>
-        <option value="priceHigh">Price: High to Low</option>
-      </select>
-    </div>
-
-    <div id="status" class="small" style="margin-bottom:12px;"></div>
-
-    <!-- Skeletons shown on first load -->
-    <div id="skeletonState" class="skeleton-grid">
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card"></div>
-    </div>
-
-    <div id="grid" class="product-grid"></div>
-
-    <div id="loadMoreRow" class="load-more-wrap" style="display:none;">
-      <button id="loadMore" class="btn secondary" type="button">Load more</button>
-    </div>
-    <div id="scrollSentinel" style="height:1px;"></div>
   </div>
 
-  <!-- Filter drawer (unchanged) -->
-  <div id="filterOverlay" class="drawer-overlay" aria-hidden="true"></div>
-
-  <aside id="filterDrawer" class="filter-drawer" aria-hidden="true" aria-label="Filter">
-    <div class="filter-drawer-head">
-      <div class="filter-drawer-title">Filter</div>
-      <button id="closeFilters" class="icon-btn" type="button" aria-label="Close filters">✕</button>
+  <!-- Lightbox -->
+  <div id="lightbox" aria-hidden="true">
+    <div id="lightboxInner">
+      <img id="lightboxImg" alt="Product image enlarged" loading="lazy" decoding="async" />
+      <button id="lbClose" class="lb-btn" type="button">✕</button>
+      <button id="lbPrev" class="lb-btn" type="button">‹</button>
+      <button id="lbNext" class="lb-btn" type="button">›</button>
+      <div id="lb-zoom-hint">Double-tap to zoom &nbsp;·&nbsp; Swipe to navigate</div>
     </div>
+  </div>
 
-    <div class="filter-drawer-body">
-      <div class="filter-block">
-        <div class="filter-title">Collection</div>
-        <div id="collectionList" class="filter-list small">Loading…</div>
-      </div>
-
-      <div class="filter-block" id="weaveBlock">
-        <div class="filter-title">Weave</div>
-        <div id="weaveList" class="filter-list small">Loading…</div>
-      </div>
-
-      <div class="filter-block" id="fabricBlock">
-        <div class="filter-title">Fabric</div>
-        <div id="fabricList" class="filter-list small">Loading…</div>
-      </div>
-
-      <div class="filter-block">
-        <div class="filter-title">Price (₹)</div>
-        <div class="price-row">
-          <input id="minPrice" class="input" placeholder="Min" inputmode="numeric" />
-          <input id="maxPrice" class="input" placeholder="Max" inputmode="numeric" />
-        </div>
-        <div class="small" style="margin-top:10px; opacity:.75;">Tip: leave blank to ignore.</div>
-      </div>
-
-      <div class="filter-block">
-        <div class="filter-title">Availability</div>
-        <label class="filter-option">
-          <input type="checkbox" id="inStockOnly" />
-          <span>In Stock Only</span>
-        </label>
-      </div>
-
-      <button id="clearAll" class="btn secondary" style="margin-top:12px;width:100%;">Clear all</button>
-    </div>
-
-    <div class="filter-drawer-foot">
-      <button id="applyFilters" class="btn" style="width:100%;">See items</button>
-    </div>
-  </aside>
+  <!-- Sticky mobile add-to-cart bar (hidden on desktop; see .pd-mobile-bar) -->
+  <div id="pdMobileBar" class="pd-mobile-bar">
+    <div class="pd-mobile-bar-price" id="pdMobileBarPrice"></div>
+    <button id="pdMobileBarBtn" type="button" class="btn pd-add">Add to cart</button>
+  </div>
 
   <div id="footer"></div>
 
-<script type="module">
-  import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
-  import { supabase } from "./assets/supabase.js";
-  import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+    import { addToCart } from "./assets/cart.js";
+    import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
+	    import { escapeHtml, escapeAttr, safeSrc, safeUrl } from "./assets/safe.js";
 
-  const _typeForHeader = (new URL(location.href)).searchParams.get("type");
-  document.getElementById("header").innerHTML = renderHeader((_typeForHeader && _typeForHeader.toLowerCase()==="suit") ? "suits" : "products");
-  document.getElementById("footer").innerHTML = renderFooter();
-  hydrateHeaderAuth();
+    document.getElementById("header").innerHTML = renderHeader("products");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
 
-  const status = document.getElementById("status");
-  const grid = document.getElementById("grid");
-  const itemsCount = document.getElementById("itemsCount");
-  const applyFiltersBtn = document.getElementById("applyFilters");
-  const skeleton = document.getElementById("skeletonState");
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
 
-  const url = new URL(location.href);
-  const params = url.searchParams;
-
-  function numOrNull(v) {
-    if (v === null || v === undefined) return null;
-    const s = String(v).trim();
-    if (s === "") return null;
-    const n = Number(s);
-    return Number.isFinite(n) ? n : null;
-  }
-
-  function setParam(k, v){
-    if (v === null || v === undefined || v === "") params.delete(k);
-    else params.set(k, String(v));
-    const qs = params.toString();
-    history.replaceState({}, "", qs ? (url.pathname + "?" + qs) : url.pathname);
-  }
-
-  function moneyINR(v){
-    const n = Number(v);
-    if (!Number.isFinite(n)) return "";
-    return "₹" + n.toLocaleString("en-IN");
-  }
-
-  // Drawer open/close
-  const overlay = document.getElementById("filterOverlay");
-  const drawer = document.getElementById("filterDrawer");
-  const openBtn = document.getElementById("openFilters");
-  const closeBtn = document.getElementById("closeFilters");
-
-  function openDrawer(){
-    overlay.classList.add("open");
-    drawer.classList.add("open");
-    overlay.setAttribute("aria-hidden", "false");
-    drawer.setAttribute("aria-hidden", "false");
-    document.body.classList.add("no-scroll");
-  }
-  function closeDrawer(){
-    overlay.classList.remove("open");
-    drawer.classList.remove("open");
-    overlay.setAttribute("aria-hidden", "true");
-    drawer.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("no-scroll");
-  }
-
-  openBtn.addEventListener("click", openDrawer);
-  closeBtn.addEventListener("click", closeDrawer);
-  overlay.addEventListener("click", closeDrawer);
-  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
-
-  async function loadCollections(){
-    const box = document.getElementById("collectionList");
-    const selected = params.get("collection") || "";
-    const { data, error } = await supabase
-      .from("collections")
-      .select("id,name,slug")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
-    if (error){ box.textContent = "Could not load collections."; return; }
-    box.innerHTML = `
-      <label class="filter-option">
-        <input type="radio" name="col" value="" ${selected ? "" : "checked"} />
-        <span>All</span>
-      </label>
-    ` + (data ?? []).map(c => `
-      <label class="filter-option">
-        <input type="radio" name="col" value="${escapeAttr(c.slug)}" ${c.slug === selected ? "checked" : ""} />
-        <span>${escapeHtml(c.name)}</span>
-      </label>
-    `).join("");
-    Array.from(box.querySelectorAll("input[name='col']")).forEach(r => {
-      r.addEventListener("change", () => { setParam("collection", r.value); });
-    });
-  }
-
-  async function loadFabrics(){
-    const box = document.getElementById("fabricList");
-    const selected = params.get("fabric") || "";
-    try{
-      const { data, error } = await supabase
-        .from("fabrics")
-        .select("id,name,slug,description,sort_order,is_active")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("name", { ascending: true });
-      if (error) throw error;
-      const rows = data ?? [];
-      if (rows.length === 0){ document.getElementById("fabricBlock")?.classList.add("hidden"); return; }
-      box.innerHTML = `
-        <label class="filter-option">
-          <input type="radio" name="fab" value="" ${selected === "" ? "checked" : ""} />
-          <span>All</span>
-        </label>
-        ${rows.map(f => `
-          <label class="filter-option">
-            <input type="radio" name="fab" value="${escapeAttr(f.slug)}" ${selected === f.slug ? "checked" : ""} />
-            <span>${escapeHtml(f.name)}</span>
-          </label>
-        `).join("")}
-      `;
-      Array.from(box.querySelectorAll("input[name='fab']")).forEach(r => {
-        r.addEventListener("change", () => setParam("fabric", r.value));
-      });
-    } catch(e){ document.getElementById("fabricBlock")?.classList.add("hidden"); }
-  }
-
-  async function loadWeaveLines(){
-    const box = document.getElementById("weaveList");
-    const selected = params.get("weave") || "";
-    try{
-      const { data, error } = await supabase
-        .from("weave_lines")
-        .select("id,name,slug,description,sort_order,is_active")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("name", { ascending: true });
-      if (error) throw error;
-      const rows = data ?? [];
-      if (rows.length === 0){ document.getElementById("weaveBlock")?.classList.add("hidden"); return; }
-      box.innerHTML = `
-        <label class="filter-option">
-          <input type="radio" name="weave" value="" ${selected === "" ? "checked" : ""} />
-          <span>All</span>
-        </label>
-        ${rows.map(w => `
-          <label class="filter-option">
-            <input type="radio" name="weave" value="${escapeAttr(w.slug)}" ${selected === w.slug ? "checked" : ""} />
-            <span>${escapeHtml(w.name)}</span>
-          </label>
-        `).join("")}
-      `;
-      Array.from(box.querySelectorAll("input[name='weave']")).forEach(r => {
-        r.addEventListener("change", () => setParam("weave", r.value));
-      });
-    } catch(e){ document.getElementById("weaveBlock")?.classList.add("hidden"); }
-  }
-
-  const PAGE_SIZE = 24;
-  let offset = 0;
-  let hasMore = true;
-  let isLoading = false;
-
-  const loadMoreRow = document.getElementById("loadMoreRow");
-  const loadMoreBtn = document.getElementById("loadMore");
-  const sentinel = document.getElementById("scrollSentinel");
-
-  const cache = {
-    collectionSlug: null, collectionId: null, collectionName: null, productIds: null,
-    fabricSlug: null, fabricId: null, fabricName: null,
-    weaveSlug: null, weaveId: null, weaveName: null
-  };
-
-  async function resolveCollection(slug){
-    if (!slug) { cache.collectionSlug = null; cache.collectionId = null; cache.collectionName = null; cache.productIds = null; return null; }
-    if (cache.collectionSlug === slug && cache.collectionId) return cache;
-    const { data: col, error: colErr } = await supabase.from("collections").select("id,name").eq("slug", slug).maybeSingle();
-    if (colErr || !col) return null;
-    const { data: links, error: linkErr } = await supabase.from("collection_products").select("product_id").eq("collection_id", col.id);
-    if (linkErr) return null;
-    cache.collectionSlug = slug; cache.collectionId = col.id; cache.collectionName = col.name;
-    cache.productIds = (links ?? []).map(x => x.product_id);
-    return cache;
-  }
-
-  async function resolveFabric(slug){
-    if (!slug) { cache.fabricSlug = null; cache.fabricId = null; cache.fabricName = null; return null; }
-    if (cache.fabricSlug === slug && cache.fabricId) return cache;
-    try{
-      const { data: fab, error: fabErr } = await supabase.from("fabrics").select("id,name").eq("slug", slug).maybeSingle();
-      if (fabErr || !fab) return null;
-      cache.fabricSlug = slug; cache.fabricId = fab.id; cache.fabricName = fab.name;
-      return cache;
-    } catch(e){ return null; }
-  }
-
-  async function resolveWeave(slug){
-    if (!slug) { cache.weaveSlug = null; cache.weaveId = null; cache.weaveName = null; return null; }
-    if (cache.weaveSlug === slug && cache.weaveId) return cache;
-    try{
-      const { data: wv, error: wvErr } = await supabase.from("weave_lines").select("id,name").eq("slug", slug).maybeSingle();
-      if (wvErr || !wv) return null;
-      cache.weaveSlug = slug; cache.weaveId = wv.id; cache.weaveName = wv.name;
-      return cache;
-    } catch(e){ return null; }
-  }
-
-  function setPageTitle(){
-    const type = (params.get("type") || "saree").toLowerCase();
-    const collection = params.get("collection") || "";
-    const titleEl = document.getElementById("pageTitle");
-    const subEl = document.getElementById("pageSubtitle");
-
-    if (collection && cache.collectionName){
-      titleEl.innerHTML = escapeHtml(cache.collectionName);
-      subEl.textContent = "A handpicked edit from our collection.";
-    } else if (type === "suit") {
-      titleEl.innerHTML = `Handloom <em>Suits</em>`;
-      subEl.textContent = "Crafted for everyday grace — from weave to wear.";
-    } else {
-      titleEl.innerHTML = `Handloom <em>Sarees</em>`;
-      subEl.textContent = "Woven with care, made to last a lifetime.";
-    }
-  }
-
-  function normalize(rows = []){
-    return (rows ?? []).map(p => {
-      const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
-      const inv = Number(p.inventory_qty || 0);
-      const res = Number(p.reserved_qty || 0);
-      const available_qty = Math.max(0, inv - res);
-      const original_price = Number(p.price_inr || 0);
-      const sale_price = (p.sale_price_inr === null || p.sale_price_inr === undefined) ? null : Number(p.sale_price_inr);
-      const effective_price = (sale_price && sale_price > 0) ? sale_price : original_price;
-      return { ...p, image_url: imgs[0]?.image_url ?? "", available_qty, _original_price_inr: original_price, _effective_price_inr: effective_price };
-    });
-  }
-
-  function productCard(p, idx){
-    const base = Number(p.price_inr || 0);
-    const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
-    const hasSale = sale != null && sale > 0 && sale < base;
-    const pctOff = hasSale ? Math.round((1 - sale/base) * 100) : 0;
-    const soldOut = Number(p.available_qty || 0) <= 0;
-    const stockCount = Number(p.available_qty || 0);
-
-    const priceHtml = hasSale
-      ? `<span class="p-card-original">${moneyINR(base)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
-      : `<span class="p-card-price">${moneyINR(base)}</span>`;
-
-    const imgHtml = p.image_url
-      ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title)}" loading="lazy" decoding="async">`
-      : `<div class="p-card-img-empty"></div>`;
-
-    return `
-      <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
-        <a class="product-link" href="product.html?id=${encodeURIComponent(p.id)}&from=products&type=${encodeURIComponent(params.get('type') || 'saree')}${params.get('collection') ? '&col=' + encodeURIComponent(params.get('collection')) + '&colName=' + encodeURIComponent(cache.collectionName || '') : ''}">
-          <div class="p-card-img">
-            ${imgHtml}
-            ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
-            ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
-          </div>
-          <div class="p-card-body">
-            <div class="p-card-title">${escapeHtml(p.title)}</div>
-            <div class="p-card-pricing">${priceHtml}</div>
-            ${!soldOut && stockCount <= 3 ? `<div class="p-card-stock low">Only ${stockCount} left</div>` : ""}
-            ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
-          </div>
-        </a>
-      </div>`;
-  }
-
-  function updateLoadMoreUI(){
-    if (hasMore) {
-      loadMoreRow.style.display = "block";
-      loadMoreBtn.disabled = false;
-      loadMoreBtn.textContent = "Load more";
-    } else {
-      loadMoreRow.style.display = "none";
-    }
-  }
-
-  async function loadNextPage(isFirst = false){
-    if (isLoading || !hasMore) return;
-    isLoading = true;
-
-    if (isFirst){
-      status.textContent = "";
-      grid.innerHTML = "";
-      offset = 0;
-      hasMore = true;
-      skeleton.style.display = "grid";
-    } else {
-      loadMoreBtn.textContent = "Loading…";
-      loadMoreBtn.disabled = true;
+    function safeNum(v, fallback = 0) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : fallback;
     }
 
-    const selectedSlug = params.get("collection") || "";
-    const selectedFabricSlug = params.get("fabric") || "";
-    const selectedWeaveSlug = params.get("weave") || "";
-    const min = numOrNull(params.get("min"));
-    const max = numOrNull(params.get("max"));
-    const sort = params.get("sort") || "newest";
-    const inStockOnly = params.get("inStock") === "true";
-    const type = (params.get("type") || "saree").toLowerCase();
+    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
-    const col = await resolveCollection(selectedSlug);
-    const fab = await resolveFabric(selectedFabricSlug);
-    const wv = await resolveWeave(selectedWeaveSlug);
-    setPageTitle();
+    async function loadProduct() {
+      const status = document.getElementById("status");
 
-    if (selectedSlug){
-      if (!col){ status.textContent = "Collection not found."; itemsCount.textContent = ""; skeleton.style.display = "none"; isLoading = false; return; }
-      if (!cache.productIds || cache.productIds.length === 0){
-        status.textContent = "No products in this collection yet.";
-        itemsCount.textContent = "0 items";
-        skeleton.style.display = "none";
-        hasMore = false; updateLoadMoreUI(); isLoading = false; return;
+      if (!id) {
+        status.textContent = "Product not found.";
+        return;
       }
-    }
 
-    if (min !== null && max !== null && min > max) {
-      status.textContent = "Min price cannot be greater than Max price.";
-      skeleton.style.display = "none";
-      isLoading = false; return;
-    }
+      // 1) Product + images (you already had this)
+      const { data, error } = await supabase
+        .from("products")
+        .select("id,title,description,price_inr,sale_price_inr,sku,inventory_qty,reserved_qty,is_active, product_images(image_url, sort_order, alt_text)")
+        .eq("id", id)
+        .maybeSingle();
 
-    if (isFirst){
-      try{
-        let countQ = supabase.from("products").select("id", { count: "exact", head: true }).eq("is_active", true).eq("category", type);
-        if (selectedSlug) countQ = countQ.in("id", cache.productIds);
-        if (fab && cache.fabricId) countQ = countQ.eq("fabric_id", cache.fabricId);
-        if (wv && cache.weaveId) countQ = countQ.eq("weave_line_id", cache.weaveId);
-        if (min !== null) countQ = countQ.gte("price_inr", min);
-        if (max !== null) countQ = countQ.lte("price_inr", max);
-        if (inStockOnly) countQ = countQ.gt("inventory_qty", 0);
-        const { count } = await countQ;
-        if (typeof count === "number"){
-          itemsCount.textContent = `${count} item${count !== 1 ? "s" : ""}`;
-          applyFiltersBtn.textContent = count ? `See ${count} items` : "See items";
+      if (error || !data) {
+        status.textContent = "Product not found.";
+        return;
+      }
+
+      const images = (data.product_images ?? [])
+        .slice()
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+      const main = images[0]?.image_url ?? "";
+      const safeMain = safeUrl(main, { type: "src" });
+
+      // Show page
+      document.getElementById("status").style.display = "none";
+      document.getElementById("content").style.display = "block";
+// Increment view count — fire and forget, don't block page render
+const viewKey = `viewed_${id}`;
+if (!sessionStorage.getItem(viewKey)) {
+  sessionStorage.setItem(viewKey, "1");
+  supabase.rpc("increment_view_count", { p_id: id }).then(() => {}).catch(() => {});
+}
+		
+      // Basic fields
+      document.getElementById("title").textContent = data.title ?? "";
+      document.getElementById("desc").textContent = data.description ?? "";
+
+      const skuEl = document.getElementById("sku");
+      skuEl.textContent = data.sku ? `SKU: ${data.sku}` : "";
+
+      const inv = safeNum(data.inventory_qty, 0);
+      const reserved = safeNum(data.reserved_qty, 0);
+      const available = Math.max(0, inv - reserved);
+      const stockEl = document.getElementById("stock");
+      stockEl.textContent = available > 0 ? `${available} available` : "Sold out";
+
+      // Price: show sale if present
+      const priceEl = document.getElementById("price");
+      const price = safeNum(data.price_inr, 0);
+      const sale = data.sale_price_inr === null || data.sale_price_inr === undefined ? null : safeNum(data.sale_price_inr, 0);
+
+      const hasSale = !!(sale && sale > 0 && sale < price);
+      if (hasSale) {
+        priceEl.innerHTML = `<span class="pd-price-sale">₹${sale}</span> <span class="pd-price-mrp">₹${price}</span>`;
+      } else {
+        priceEl.textContent = `₹${price}`;
+      }
+      if (hasSale) {
+        const pctOff = Math.round((1 - sale / price) * 100);
+        document.querySelector(".pd-main").insertAdjacentHTML("afterbegin", `<div class="pd-badge">${pctOff}% OFF</div>`);
+      }
+
+      // Images
+      const mainImg = document.getElementById("mainImg");
+      const pdMain = document.querySelector(".pd-main");
+      if (safeMain) {
+        mainImg.src = safeMain;
+        mainImg.style.display = "";
+      } else {
+        mainImg.style.display = "none";
+        if (!pdMain.querySelector(".pd-main-empty")) {
+          pdMain.insertAdjacentHTML("beforeend", `<div class="pd-main-empty">No image available</div>`);
+        }
+      }
+      mainImg.alt = data.title ?? "Product image";
+      mainImg.dataset.idx = "0";
+
+      const thumbs = document.getElementById("thumbs");
+      thumbs.innerHTML = images.map((img, idx) => {
+        const thumbSrc = safeSrc(img.image_url);
+        const thumbAlt = escapeAttr(img.alt_text ?? data.title ?? "");
+        const inner = thumbSrc
+          ? `<img src="${thumbSrc}" alt="${thumbAlt}" loading="lazy" decoding="async">`
+          : `<div class="pd-thumb-empty">No image</div>`;
+        return `
+          <button class="pd-thumb" data-idx="${idx}" type="button" aria-label="View image ${idx + 1}">
+            ${inner}
+          </button>
+        `;
+      }).join("");
+
+      // ===== Lightbox logic =====
+      let currentIndex = 0;
+
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = document.getElementById("lightboxImg");
+      const lbClose = document.getElementById("lbClose");
+      const lbPrev = document.getElementById("lbPrev");
+      const lbNext = document.getElementById("lbNext");
+
+      const lbZoomHint = document.getElementById("lb-zoom-hint");
+
+      // ── Breadcrumb ──
+      (function renderBreadcrumb() {
+        const from = params.get("from") || "";
+        const type = (params.get("type") || "saree").toLowerCase();
+        const colSlug = params.get("col") || "";
+        const colName = params.get("colName") || "";
+        let href, label, trail;
+
+        if (from === "sale") {
+          href = "sale.html"; label = "Sale"; trail = "Sale";
+        } else if (from === "new-arrivals") {
+          href = "new-arrivals.html"; label = "New Arrivals"; trail = "New Arrivals";
+        } else if (from === "collection" && colName) {
+          href = `collection.html?slug=${encodeURIComponent(colSlug)}`; label = colName; trail = "Collection";
+        } else if (type === "suit") {
+          href = "products.html?type=suit"; label = "All Handloom Suits"; trail = "Suits";
         } else {
-          itemsCount.textContent = "";
-          applyFiltersBtn.textContent = "See items";
+          href = "products.html?type=saree"; label = "All Handloom Sarees"; trail = "Sarees";
         }
-      } catch(e){ itemsCount.textContent = ""; applyFiltersBtn.textContent = "See items"; }
-    }
 
-    let query = supabase
-      .from("products")
-      .select("id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,product_images(image_url, sort_order)")
-      .eq("is_active", true)
-      .eq("category", type);
+        document.getElementById("breadcrumb-slot").innerHTML =
+          `<a class="page-breadcrumb" href="${href}">
+             <span class="bc-arrow">&#8592;</span>
+             <span class="bc-trail">${trail} /</span>
+             <span class="bc-label">${label}</span>
+           </a>`;
+      })();
 
-    if (selectedSlug) query = query.in("id", cache.productIds);
-    if (fab && cache.fabricId) query = query.eq("fabric_id", cache.fabricId);
-    if (wv && cache.weaveId) query = query.eq("weave_line_id", cache.weaveId);
-    if (min !== null) query = query.gte("price_inr", min);
-    if (max !== null) query = query.lte("price_inr", max);
-    if (inStockOnly) query = query.gt("inventory_qty", 0);
+      // ── Lightbox zoom + drag-to-pan ──
+      let isZoomed = false;
+      let isDragging = false;
+      let dragStart = { x: 0, y: 0 };
+      let pan = { x: 0, y: 0 };
+      const ZOOM_SCALE = 2.4;
 
-    if (sort === "mostLoved") query = query.order("view_count", { ascending: false }).order("created_at", { ascending: false });
-    else if (sort === "priceLow") query = query.order("price_inr", { ascending: true });
-    else if (sort === "priceHigh") query = query.order("price_inr", { ascending: false });
-    else query = query.order("created_at", { ascending: false });
-
-    // Check if we need to restore a previous pagination + scroll state
-    let restoreTarget = 0;
-    if (isFirst) {
-      try {
-        const saved = JSON.parse(sessionStorage.getItem("scrollState:" + location.href) || "null");
-        if (saved && saved.offset > PAGE_SIZE) restoreTarget = saved.offset;
-      } catch(e) {}
-    }
-
-    if (restoreTarget > 0) {
-      // Load all previously-seen items in one shot, plus one to probe hasMore
-      query = query.range(0, restoreTarget);
-    } else {
-      query = query.range(offset, offset + PAGE_SIZE);
-    }
-
-    const { data, error } = await query;
-    skeleton.style.display = "none";
-
-    if (error){ status.textContent = "Error: " + error.message; isLoading = false; return; }
-
-    let slice;
-    if (restoreTarget > 0) {
-      hasMore = (data ?? []).length > restoreTarget;
-      slice = hasMore ? (data ?? []).slice(0, restoreTarget) : (data ?? []);
-    } else {
-      const rows = data ?? [];
-      hasMore = rows.length > PAGE_SIZE;
-      slice = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
-    }
-
-    const normalized = normalize(slice);
-
-    if (isFirst && normalized.length === 0){
-      status.textContent = "No products found.";
-      hasMore = false; updateLoadMoreUI(); isLoading = false; return;
-    }
-
-    grid.insertAdjacentHTML("beforeend", normalized.map((p, i) => productCard(p, offset + i)).join(""));
-    offset += slice.length;
-    updateLoadMoreUI();
-    isLoading = false;
-
-    // Restore scroll position after content renders
-    if (isFirst) {
-      try {
-        const saved = JSON.parse(sessionStorage.getItem("scrollState:" + location.href) || "null");
-        if (saved && saved.scrollY) {
-          setTimeout(() => { window.scrollTo(0, saved.scrollY); }, 300);
-          sessionStorage.removeItem("scrollState:" + location.href);
+      function applyTransform() {
+        if (isZoomed) {
+          lightboxImg.style.transform = `scale(${ZOOM_SCALE}) translate(${pan.x / ZOOM_SCALE}px, ${pan.y / ZOOM_SCALE}px)`;
+        } else {
+          lightboxImg.style.transform = "";
         }
-      } catch(e) {}
+      }
+
+      function resetZoom() {
+        isZoomed = false; isDragging = false; pan = { x: 0, y: 0 };
+        lightboxImg.classList.remove("lb-zoomed", "lb-dragging");
+        applyTransform();
+        if (lbZoomHint) lbZoomHint.style.opacity = "1";
+      }
+
+      function openLightbox(idx) {
+        if (!images.length) return;
+        currentIndex = clamp(idx, 0, images.length - 1);
+        lightboxImg.src = safeUrl(images[currentIndex].image_url, { type: "src" }) || "";
+        resetZoom();
+        lightbox.classList.add("open");
+        lightbox.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeLightbox() {
+        resetZoom();
+        lightbox.classList.remove("open");
+        lightbox.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+      }
+
+      function showNext() {
+        if (!images.length) return;
+        currentIndex = (currentIndex + 1) % images.length;
+        lightboxImg.src = safeUrl(images[currentIndex].image_url, { type: "src" }) || "";
+        resetZoom();
+      }
+
+      function showPrev() {
+        if (!images.length) return;
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        lightboxImg.src = safeUrl(images[currentIndex].image_url, { type: "src" }) || "";
+        resetZoom();
+      }
+
+      // Double-click (desktop) to toggle zoom
+      lightboxImg.addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        isZoomed = !isZoomed;
+        pan = { x: 0, y: 0 };
+        lightboxImg.classList.toggle("lb-zoomed", isZoomed);
+        applyTransform();
+        if (lbZoomHint) lbZoomHint.style.opacity = "0";
+      });
+
+      // Mouse drag-to-pan when zoomed
+      lightboxImg.addEventListener("mousedown", (e) => {
+        if (!isZoomed) return;
+        isDragging = true;
+        dragStart = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+        lightboxImg.classList.add("lb-dragging");
+        e.preventDefault();
+      });
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        pan = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y };
+        applyTransform();
+      });
+      document.addEventListener("mouseup", () => {
+        if (!isDragging) return;
+        isDragging = false;
+        lightboxImg.classList.remove("lb-dragging");
+      });
+
+      // ── Touch: double-tap to zoom, drag-to-pan when zoomed, swipe to navigate when not zoomed ──
+      let lastTapTime = 0;
+      let touchStartX = 0, touchStartY = 0;
+      let touchMoved = false;
+
+      lightboxImg.addEventListener("touchstart", (e) => {
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        touchMoved = false;
+
+        // Double-tap detection
+        const now = Date.now();
+        if (now - lastTapTime < 300) {
+          // Double tap
+          isZoomed = !isZoomed;
+          pan = { x: 0, y: 0 };
+          lightboxImg.classList.toggle("lb-zoomed", isZoomed);
+          applyTransform();
+          if (lbZoomHint) lbZoomHint.style.opacity = "0";
+          lastTapTime = 0;
+          e.preventDefault();
+          return;
+        }
+        lastTapTime = now;
+
+        if (isZoomed && e.touches.length === 1) {
+          isDragging = true;
+          dragStart = { x: touch.clientX - pan.x, y: touch.clientY - pan.y };
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      document.addEventListener("touchmove", (e) => {
+        if (e.touches.length !== 1) return;
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) touchMoved = true;
+
+        if (isDragging && isZoomed) {
+          pan = { x: e.touches[0].clientX - dragStart.x, y: e.touches[0].clientY - dragStart.y };
+          applyTransform();
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      document.addEventListener("touchend", (e) => {
+        if (!isZoomed && touchMoved) {
+          // Swipe left/right to navigate images
+          const dx = (e.changedTouches[0]?.clientX ?? touchStartX) - touchStartX;
+          if (Math.abs(dx) > 50) {
+            dx < 0 ? showNext() : showPrev();
+          }
+        }
+        isDragging = false;
+        lightboxImg.classList.remove("lb-dragging");
+      });
+
+      // Clicking main image opens lightbox
+      mainImg.addEventListener("click", () => {
+        const idx = Number(mainImg.dataset.idx || "0");
+        openLightbox(idx);
+      });
+
+      // Clicking thumbs switches main image (Nalli-like)
+      Array.from(thumbs.querySelectorAll("button")).forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.getAttribute("data-idx") || "0");
+          mainImg.src = safeUrl(images[idx].image_url, { type: "src" }) || "";
+          mainImg.alt = images[idx].alt_text ?? data.title ?? "Product image";
+          mainImg.dataset.idx = String(idx);
+        });
+
+        // Optional: double-click thumb to open zoom
+        btn.addEventListener("dblclick", () => {
+          const idx = Number(btn.getAttribute("data-idx") || "0");
+          openLightbox(idx);
+        });
+      });
+
+      // Lightbox controls
+      lbClose.addEventListener("click", closeLightbox);
+      lbNext.addEventListener("click", showNext);
+      lbPrev.addEventListener("click", showPrev);
+
+      lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) closeLightbox();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (!lightbox.classList.contains("open")) return;
+        if (e.key === "Escape") closeLightbox();
+        if (e.key === "ArrowRight") showNext();
+        if (e.key === "ArrowLeft") showPrev();
+      });
+
+      // ===== Quantity controls =====
+      const qtyInput = document.getElementById("qtyInput");
+      const qtyMinus = document.getElementById("qtyMinus");
+      const qtyPlus = document.getElementById("qtyPlus");
+
+      function getQty() {
+        const v = safeNum(qtyInput.value, 1);
+        // Limit qty to available stock (if stock is 0, keep at 1 but button disabled anyway)
+        const max = available > 0 ? available : 1;
+        return clamp(Math.floor(v), 1, max);
+      }
+
+      function setQty(n) {
+        qtyInput.value = String(getQty() === n ? n : clamp(n, 1, available > 0 ? available : 1));
+      }
+
+      qtyInput.addEventListener("input", () => setQty(getQty()));
+      qtyMinus.addEventListener("click", () => setQty(getQty() - 1));
+      qtyPlus.addEventListener("click", () => setQty(getQty() + 1));
+
+      // If sold out, disable qty controls completely
+      if (available <= 0) {
+        qtyInput.disabled = true;
+        qtyMinus.disabled = true;
+        qtyPlus.disabled = true;
+      }
+
+
+      // ===== Fetch & render specs =====
+      const { data: specs, error: specsErr } = await supabase
+        .from("product_specs")
+        .select("label,value,sort_order")
+        .eq("product_id", data.id)
+        .order("sort_order", { ascending: true });
+
+      const specsDiv = document.getElementById("specs");
+      const specsCard = document.getElementById("specsCard");
+      if (specsErr) {
+        specsDiv.innerHTML = "<div class='small' style='opacity:.7'>Could not load specifications.</div>";
+      } else if (!specs || specs.length === 0) {
+        // Nothing to show — hide the whole card rather than an empty-looking box.
+        specsCard.style.display = "none";
+      } else {
+        specsDiv.innerHTML = `
+          <div class="spec-grid">
+            ${specs.map(s => `
+              <div class="spec-k">${escapeHtml(s.label)}</div>
+              <div class="spec-v">${escapeHtml(s.value)}</div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      // ===== Fetch & render sections (accordion) =====
+      const { data: sections, error: secErr } = await supabase
+        .from("product_sections")
+        .select("title,content,content_type,sort_order")
+        .eq("product_id", data.id)
+        .order("sort_order", { ascending: true });
+
+      const sectionsDiv = document.getElementById("sections");
+      const sectionsCard = document.getElementById("sectionsCard");
+      if (secErr) {
+        sectionsDiv.innerHTML = "<div class='small' style='opacity:.7'>Could not load product details.</div>";
+      } else if (!sections || sections.length === 0) {
+        // Nothing to show — hide the whole card rather than an empty-looking box.
+        sectionsCard.style.display = "none";
+      } else {
+        sectionsDiv.innerHTML = sections.map((sec, idx) => {
+          const isBullets = (sec.content_type || "text") === "bullets";
+          const raw = String(sec.content || "");
+          const lines = raw
+            .split(/\r?\n/)
+            .map(s => s.trim())
+            .filter(Boolean);
+
+          const contentHtml = isBullets
+            ? `<ul class="bullets">${lines.map(li => `<li>${escapeHtml(li)}</li>`).join("")}</ul>`
+            : `<div>${escapeHtml(raw).replace(/\r?\n/g, "<br>")}</div>`;
+
+          return `
+            <div class="ac-item ${idx === 0 ? "open" : ""}">
+              <button class="ac-btn" type="button">
+                <span>${escapeHtml(sec.title)}</span>
+                <span class="ac-chevron">▾</span>
+              </button>
+              <div class="ac-content">${contentHtml}</div>
+            </div>
+          `;
+        }).join("");
+
+        Array.from(sectionsDiv.querySelectorAll(".ac-item")).forEach(item => {
+          const btn = item.querySelector(".ac-btn");
+          btn.addEventListener("click", () => item.classList.toggle("open"));
+        });
+      }
+
+      // ===== Add to cart (uses qty) =====
+      const addBtn = document.getElementById("addBtn");
+      if (available <= 0) {
+        addBtn.disabled = true;
+        addBtn.textContent = "Sold out";
+        addBtn.style.background = "#ddd";
+        addBtn.style.borderColor = "#ddd";
+        addBtn.style.color = "#666";
+      } else {
+        addBtn.addEventListener("click", () => {
+          const qty = getQty();
+          addToCart({ ...data, image_url: safeMain || "" }, qty);
+          location.href = "cart.html";
+        });
+      }
+
+      // ===== Sticky mobile add-to-cart bar =====
+      // Mirrors the main price + Add to cart button so it's reachable
+      // without scrolling back up on a phone, without duplicating the
+      // add-to-cart logic itself.
+      const mobileBar = document.getElementById("pdMobileBar");
+      const mobileBarPrice = document.getElementById("pdMobileBarPrice");
+      const mobileBarBtn = document.getElementById("pdMobileBarBtn");
+      mobileBarPrice.innerHTML = priceEl.innerHTML;
+      if (available <= 0) {
+        mobileBarBtn.disabled = true;
+        mobileBarBtn.textContent = "Sold out";
+      } else {
+        mobileBarBtn.addEventListener("click", () => addBtn.click());
+      }
+      mobileBar.classList.add("visible");
+      document.body.classList.add("has-mobile-cart-bar");
+
+      // ===== Wishlist =====
+      // NOTE: We use the shared wishlist helpers in assets/wishlist.js.
+      // This fixes the old mismatch where product.html used "wishlist_items"
+      // but the wishlist page used a different table.
+      const wishBtn = document.getElementById("wishBtn");
+
+      async function syncWishlistButton() {
+        if (!wishBtn) return;
+        const inWish = await isInWishlist(data.id);
+        wishBtn.textContent = inWish ? "♥ In wishlist" : "♡ Wishlist";
+        wishBtn.dataset.inWishlist = inWish ? "1" : "0";
+      }
+
+      if (wishBtn) {
+        wishBtn.addEventListener("click", async () => {
+          const inWish = wishBtn.dataset.inWishlist === "1";
+          if (inWish) {
+            const res = await removeFromWishlist(data.id);
+            if (!res?.success) {
+              alert("Could not remove from wishlist. Please try again.");
+            }
+          } else {
+            const res = await addToWishlist(data.id);
+            if (!res?.success) {
+              // Duplicate is not a hard error; still refresh UI
+              if (res?.message && res.message !== "Already in wishlist") {
+                alert(res.message);
+              }
+            }
+          }
+          await syncWishlistButton();
+        });
+
+      }
+
+      // Initial state
+      await syncWishlistButton();
+
     }
-  }
 
-  function resetAndLoad(){
-    hasMore = true;
-    offset = 0;
-    loadNextPage(true);
-  }
-
-  // Init control values from URL
-  document.getElementById("minPrice").value = params.get("min") || "";
-  document.getElementById("maxPrice").value = params.get("max") || "";
-  document.getElementById("sortBy").value = params.get("sort") || "newest";
-  document.getElementById("inStockOnly").checked = params.get("inStock") === "true";
-
-  document.getElementById("sortBy").addEventListener("change", (e) => {
-    setParam("sort", e.target.value);
-    resetAndLoad();
-  });
-
-  applyFiltersBtn.addEventListener("click", () => {
-    setParam("min", document.getElementById("minPrice").value.trim());
-    setParam("max", document.getElementById("maxPrice").value.trim());
-    setParam("inStock", document.getElementById("inStockOnly").checked ? "true" : "");
-    resetAndLoad();
-    closeDrawer();
-  });
-
-  document.getElementById("clearAll").addEventListener("click", () => {
-    params.delete("collection"); params.delete("fabric"); params.delete("weave"); params.delete("min"); params.delete("max"); params.delete("sort"); params.delete("inStock");
-    history.replaceState({}, "", url.pathname);
-    document.getElementById("minPrice").value = "";
-    document.getElementById("maxPrice").value = "";
-    document.getElementById("sortBy").value = "newest";
-    document.getElementById("inStockOnly").checked = false;
-    loadCollections();
-    loadFabrics();
-    loadWeaveLines();
-    resetAndLoad();
-    closeDrawer();
-  });
-
-  loadCollections();
-  loadFabrics();
-  loadWeaveLines();
-  resetAndLoad();
-
-  loadMoreBtn.addEventListener("click", () => loadNextPage(false));
-
-  if ("IntersectionObserver" in window) {
-    const obs = new IntersectionObserver((entries) => {
-      if (entries.some(e => e.isIntersecting)) loadNextPage(false);
-    }, { rootMargin: "600px" });
-    obs.observe(sentinel);
-  }
-</script>
-
-<script>
-  // Save scroll + offset state continuously so it's always up to date
-  history.scrollRestoration = "manual";
-  let _scrollSaveTimer;
-  window.addEventListener("scroll", () => {
-    clearTimeout(_scrollSaveTimer);
-    _scrollSaveTimer = setTimeout(() => {
-      try {
-        sessionStorage.setItem("scrollState:" + location.href, JSON.stringify({ scrollY: window.scrollY, offset }));
-      } catch(e) {}
-    }, 200);
-  }, { passive: true });
-</script>
-
+    loadProduct();
+  </script>
 </body>
 </html>
