@@ -2,6 +2,7 @@
 import { cartCount } from "./cart.js";
 import { supabase } from "./supabase.js";
 import { mountWelcomePopup } from "./welcome-popup.js";
+import { escapeHtml } from "./safe.js";
 
 // ── Header offset (keeps content below fixed header) ──
 let _headerOffsetInitDone = false;
@@ -60,6 +61,12 @@ function iconBag() {
 function iconClose() {
   return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>`;
+}
+
+function iconChevron() {
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <polyline points="6 9 12 15 18 9"/>
   </svg>`;
 }
 
@@ -157,8 +164,16 @@ export function renderHeader(active = "") {
               </div>
 
               <nav class="mobile-drawer-links">
-                <a href="products.html?type=saree">Handloom Sarees</a>
-                <a href="products.html?type=suit">Handloom Suits</a>
+                <div class="mobile-drawer-item">
+                  <a href="products.html?type=saree">Handloom Sarees</a>
+                  <button class="mobile-drawer-caret" type="button" data-cat="saree" aria-label="Show saree categories" aria-expanded="false" hidden>${iconChevron()}</button>
+                  <div class="mobile-drawer-submenu" data-cat-sub="saree"></div>
+                </div>
+                <div class="mobile-drawer-item">
+                  <a href="products.html?type=suit">Handloom Suits</a>
+                  <button class="mobile-drawer-caret" type="button" data-cat="suit" aria-label="Show suit categories" aria-expanded="false" hidden>${iconChevron()}</button>
+                  <div class="mobile-drawer-submenu" data-cat-sub="suit"></div>
+                </div>
                 <a href="new-arrivals.html">New Arrivals</a>
                 <a href="collections.html">Collections</a>
                 <a href="sale.html">Sale</a>
@@ -177,8 +192,14 @@ export function renderHeader(active = "") {
 
         <!-- Desktop: Left nav -->
         <nav class="nav nav-desktop">
-          <a href="products.html?type=saree" class="${(active === "products" || active === "sarees") ? "active" : ""}">Handloom Sarees</a>
-          <a href="products.html?type=suit" class="${active === "suits" ? "active" : ""}">Handloom Suits</a>
+          <div class="nav-item has-submenu">
+            <a href="products.html?type=saree" class="${(active === "products" || active === "sarees") ? "active" : ""}">Handloom Sarees</a>
+            <div class="nav-submenu" data-cat="saree"></div>
+          </div>
+          <div class="nav-item has-submenu">
+            <a href="products.html?type=suit" class="${active === "suits" ? "active" : ""}">Handloom Suits</a>
+            <div class="nav-submenu" data-cat="suit"></div>
+          </div>
           <a href="new-arrivals.html">New Arrivals</a>
           <a href="collections.html">Collections</a>
           <a href="sale.html">Sale</a>
@@ -336,6 +357,69 @@ function close() {
 }
 
 
+// ── Nav category dropdowns (Sarees → weave lines, Suits → weave lines) ──
+// Every page calls hydrateHeaderAuth() already, so this is the one place
+// that populates the header's category submenus without touching every
+// page. Wrapped defensively — if this fails, the plain category links
+// still work exactly as before (no dropdown, no breakage).
+let _navDropdownsHydrated = false;
+
+function initNavCarets() {
+  document.querySelectorAll(".mobile-drawer-caret").forEach((btn) => {
+    if (btn.dataset.caretInit === "1") return;
+    btn.dataset.caretInit = "1";
+    btn.addEventListener("click", () => {
+      const item = btn.closest(".mobile-drawer-item");
+      const sub = item && item.querySelector(".mobile-drawer-submenu");
+      if (!sub) return;
+      const open = item.classList.toggle("open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      sub.style.maxHeight = open ? sub.scrollHeight + "px" : null;
+    });
+  });
+}
+
+async function hydrateNavDropdowns() {
+  if (_navDropdownsHydrated) return;
+  _navDropdownsHydrated = true;
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select("category, weave_line:weave_lines!inner(id,name,slug,sort_order,is_active)")
+      .eq("is_active", true)
+      .eq("weave_line.is_active", true);
+
+    if (error || !data || data.length === 0) return;
+
+    const groups = {};
+    for (const row of data) {
+      const cat = row.category || "saree";
+      const wl = row.weave_line;
+      if (!wl) continue;
+      if (!groups[cat]) groups[cat] = new Map();
+      if (!groups[cat].has(wl.slug)) groups[cat].set(wl.slug, wl);
+    }
+
+    for (const cat of ["saree", "suit"]) {
+      if (!groups[cat] || groups[cat].size === 0) continue;
+      const rows = Array.from(groups[cat].values()).sort((a, b) =>
+        (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name))
+      );
+      const linksHtml = rows.map(w =>
+        `<a href="products.html?type=${encodeURIComponent(cat)}&weave=${encodeURIComponent(w.slug)}">${escapeHtml(w.name)}</a>`
+      ).join("");
+
+      document.querySelectorAll(`.nav-submenu[data-cat="${cat}"]`).forEach(el => { el.innerHTML = linksHtml; });
+      document.querySelectorAll(`.mobile-drawer-submenu[data-cat-sub="${cat}"]`).forEach(el => { el.innerHTML = linksHtml; });
+      document.querySelectorAll(`.mobile-drawer-caret[data-cat="${cat}"]`).forEach(el => { el.hidden = false; });
+    }
+
+    initNavCarets();
+  } catch (_) {
+    // silent — the plain "Handloom Sarees" / "Handloom Suits" links still work
+  }
+}
+
 export async function hydrateHeaderAuth() {
   initMobileMenu();
   initHeaderOffset();
@@ -344,6 +428,8 @@ export async function hydrateHeaderAuth() {
   // so this is the one place that mounts it without touching every page.
   // Wrapped defensively so a popup problem can never break header hydration.
   try { mountWelcomePopup(); } catch (_) {}
+
+  hydrateNavDropdowns();
 
   const aDesktop = document.getElementById("accountLink");
   const aMobile  = document.getElementById("accountLinkMobile");
