@@ -105,7 +105,7 @@ export function renderHeader(active = "") {
     <!-- Top bar -->
     <div class="topbar">
       <div class="container topbar-inner">
-        <div class="topbar-left">Complimentary shipping across India &nbsp;·&nbsp; 7-day returns</div>
+        <div class="topbar-left">Complimentary shipping across India<span class="topbar-sep">&nbsp;·&nbsp;7-day returns</span></div>
         <div class="topbar-right">
           <a href="about.html">About</a>
           <a href="shipping.html">Shipping</a>
