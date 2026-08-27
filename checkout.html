@@ -587,13 +587,33 @@
     localStorage.removeItem("ahamstree_coupon");
     appliedCoupon = "";
 
-    // ── Pending payment detection (browser back button scenario) ─────────
-    // If the user went to Razorpay and hit back/cancelled, we already have an
-    // order sitting in the DB. Rather than showing a resume banner in place,
-    // send them straight to My Orders — that page owns the countdown/timer UI
-    // and reflects the real (server-side) reservation state, not a stale
-    // localStorage guess.
-    (function checkPendingPayment() {
+    // ── Pending payment detection (browser back / bfcache scenario) ──────────
+    // If the user went to Razorpay and comes back, we already have an order
+    // sitting in the DB — send them straight to My Orders instead of showing
+    // a resume banner in place.
+    //
+    // Two things this has to get right (both were bugs in the first pass):
+    //
+    // 1. Browser "back" from Razorpay is very often served from the
+    //    back-forward cache (bfcache) — the browser restores the exact page
+    //    it had in memory WITHOUT re-running this script. A plain
+    //    IIFE-at-load only catches a full reload, not a bfcache restore,
+    //    which is why "click Pay → back" was landing back on the address
+    //    form instead of Orders. `pageshow` fires in BOTH cases, with
+    //    `event.persisted === true` for the bfcache case, so the check is
+    //    wrapped in a function and re-run on every `pageshow`.
+    //
+    // 2. This must only fire for the SAME purchase attempt. If the user has
+    //    since changed their cart (added/removed an item) and clicks
+    //    Checkout fresh, that is a NEW checkout and must proceed normally —
+    //    it must not be hijacked into redirecting to the old pending order.
+    //    The old order still expires on its own via the server-side timer
+    //    regardless of what happens here.
+    function cartSignature(cart) {
+      return Array.from(new Set((cart || []).map(i => String(i.product_id)))).sort().join(",");
+    }
+
+    async function checkPendingPaymentAndRedirect() {
       try {
         const raw = localStorage.getItem("ahamstree_pending_payment");
         if (!raw) return;
@@ -608,11 +628,24 @@
           return;
         }
 
+        // Only auto-redirect if the current cart is the same one the pending
+        // order was created for.
+        if (pending.items_signature) {
+          const cartMod = await import("./assets/cart.js");
+          const currentSig = cartSignature(cartMod.getCart?.() || []);
+          if (currentSig !== pending.items_signature) return;
+        }
+
         window.location.replace(`orders.html#order-${pending.order_id}`);
       } catch (_) {
         localStorage.removeItem("ahamstree_pending_payment");
       }
-    })();
+    }
+
+    checkPendingPaymentAndRedirect();
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) checkPendingPaymentAndRedirect();
+    });
 
     // ---------- Coupon UI ----------
     const AVAILABLE_COUPONS = [
@@ -746,12 +779,13 @@
     // countdown banner in place on checkout.html, send the user straight to
     // My Orders — that's the single source of truth for the countdown/timer
     // now and reflects real server state.
-    function showResumeCheckoutBanner({ orderId, expiresAt }) {
+    function showResumeCheckoutBanner({ orderId, expiresAt, itemsSignature }) {
       try {
         localStorage.setItem("ahamstree_pending_payment", JSON.stringify({
-          order_id:   orderId,
-          expires_at: expiresAt,
-          stored_at:  Date.now(),
+          order_id:        orderId,
+          expires_at:      expiresAt,
+          items_signature: itemsSignature || null,
+          stored_at:       Date.now(),
         }));
       } catch (_) {}
 
@@ -829,11 +863,12 @@
           if (data.resumed) {
             statusEl.textContent = "";
             showResumeCheckoutBanner({
-              orderId:        data.order_id,
-              paymentLinkUrl: data.payment_link_url,
-              expiresAt:      data.expires_at,
-              msRemaining:    data.ms_remaining,
-              totalInr:       data.total_inr,
+              orderId:         data.order_id,
+              paymentLinkUrl:  data.payment_link_url,
+              expiresAt:       data.expires_at,
+              msRemaining:     data.ms_remaining,
+              totalInr:        data.total_inr,
+              itemsSignature:  cartSignature(cart),
             });
             return;
           }
@@ -841,13 +876,17 @@
           // ── New order — redirect immediately ─────────────────────────────
           statusEl.textContent = "Redirecting to Razorpay…";
 
-          // Persist so checkout.html can detect the back-button scenario
+          // Persist so checkout.html can detect the back-button scenario.
+          // items_signature ties this pending payment to THIS specific cart —
+          // if the person comes back later having changed their cart, a new
+          // checkout must proceed normally instead of being redirected here.
           try {
             localStorage.setItem("ahamstree_pending_payment", JSON.stringify({
               order_id:         data.order_id,
               payment_link_id:  data.payment_link_id,
               payment_link_url: data.payment_link_url,
               expires_at:       data.expires_at,
+              items_signature:  cartSignature(cart),
               stored_at:        Date.now(),
             }));
           } catch (_) {}
