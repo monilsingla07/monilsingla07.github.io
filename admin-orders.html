@@ -334,14 +334,19 @@
 
             ${needsShipping ? `
             <div class="action-bar ship-bar">
-              <div style="font-weight:800;font-size:13px;margin-bottom:6px;">📦 Mark as shipped</div>
+              <div style="font-weight:800;font-size:13px;margin-bottom:6px;">📦 Ship this order</div>
               <div class="small" style="color:#1e40af;margin-bottom:10px;">
-                Once dispatched via Shiprocket, enter the AWB to update tracking.
+                One click creates the Shiprocket shipment, assigns a courier + AWB, and requests pickup.
               </div>
+              <button class="btn" style="padding:10px 16px;font-size:13px;white-space:nowrap;margin-bottom:12px;"
+                      data-action="ship-auto" data-id="${escapeAttr(o.id)}">
+                🚀 Ship Now (auto)
+              </button>
+              <div class="small" style="color:#64748b;margin:2px 0 6px;">— or, if you already shipped it directly in Shiprocket —</div>
               <div class="awb-row">
                 <input class="input awb-input" placeholder="Shiprocket AWB number"
                       data-id="${escapeAttr(o.id)}" style="font-size:13px;" />
-                <button class="btn" style="padding:10px 16px;font-size:13px;white-space:nowrap;"
+                <button class="btn secondary" style="padding:10px 16px;font-size:13px;white-space:nowrap;"
                         data-action="ship" data-id="${escapeAttr(o.id)}">
                   Mark shipped →
                 </button>
@@ -469,6 +474,30 @@
               toast("Error: " + e.message, "#dc2626");
               btn.disabled = false;
             } finally {
+              btn.textContent = oldText;
+            }
+          });
+        });
+
+        // Ship Now (auto) — creates the real Shiprocket shipment/AWB/pickup
+        list.querySelectorAll("button[data-action='ship-auto']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            if (!confirm(`Ship order ${id.slice(0,8).toUpperCase()} via Shiprocket now?\n\nThis creates a real shipment and requests courier pickup.`)) return;
+
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Creating shipment…";
+            try {
+              const r = await callFn("admin-create-shipment", { order_id: id });
+              if (!r.ok) { if (!r.handled) throw new Error("Shipment creation failed"); return; }
+              const awb = r.data?.awb;
+              const courier = r.data?.courier ? ` via ${r.data.courier}` : "";
+              toast(`Shipped 🚚 AWB ${awb}${courier}`, "#166534");
+              load();
+            } catch (e) {
+              toast("Error: " + e.message, "#dc2626");
+              btn.disabled = false;
               btn.textContent = oldText;
             }
           });

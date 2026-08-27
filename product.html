@@ -71,6 +71,14 @@
               <a class="btn secondary pd-go" href="cart.html">Go to cart</a>
             </div>
 
+            <div class="pd-delivery-check">
+              <div class="pd-delivery-row">
+                <input id="pdPincode" class="input pd-delivery-input" type="text" inputmode="numeric" maxlength="6" placeholder="Enter pincode" aria-label="Pincode" />
+                <button id="pdCheckDelivery" type="button" class="btn secondary pd-delivery-btn">Check</button>
+              </div>
+              <div id="pdDeliveryResult" class="small pd-delivery-result"></div>
+            </div>
+
             <div id="desc" class="pd-desc"></div>
           </div>
 
@@ -135,6 +143,55 @@
     document.getElementById("header").innerHTML = renderHeader("products");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+
+    // ===== Delivery time estimate (pincode → Shiprocket serviceability) =====
+    // Independent of the product data load below — works the instant the
+    // page renders, and degrades to a plain "couldn't check" message if
+    // Shiprocket isn't configured yet, so it never looks broken.
+    (function initDeliveryCheck() {
+      const pinInput = document.getElementById("pdPincode");
+      const checkBtn = document.getElementById("pdCheckDelivery");
+      const resultEl = document.getElementById("pdDeliveryResult");
+      if (!pinInput || !checkBtn || !resultEl) return;
+
+      pinInput.addEventListener("input", () => {
+        pinInput.value = pinInput.value.replace(/\D/g, "").slice(0, 6);
+      });
+      pinInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") checkBtn.click();
+      });
+
+      checkBtn.addEventListener("click", async () => {
+        const pin = pinInput.value.trim();
+        if (!/^[1-9][0-9]{5}$/.test(pin)) {
+          resultEl.style.color = "crimson";
+          resultEl.textContent = "Enter a valid 6-digit pincode.";
+          return;
+        }
+        checkBtn.disabled = true;
+        resultEl.style.color = "#64748b";
+        resultEl.textContent = "Checking…";
+        try {
+          const { data, error } = await supabase.functions.invoke("check-delivery-estimate", {
+            body: { pincode: pin },
+          });
+          if (error) throw new Error(error.message);
+          if (data?.serviceable === false) {
+            resultEl.style.color = "#9a3412";
+          } else if (data?.ok === false) {
+            resultEl.style.color = "#64748b";
+          } else {
+            resultEl.style.color = "#166534";
+          }
+          resultEl.textContent = data?.message || "Could not check delivery time right now.";
+        } catch (err) {
+          resultEl.style.color = "#64748b";
+          resultEl.textContent = "Could not check delivery time right now.";
+        } finally {
+          checkBtn.disabled = false;
+        }
+      });
+    })();
 
     const params = new URLSearchParams(location.search);
     const id = params.get("id");

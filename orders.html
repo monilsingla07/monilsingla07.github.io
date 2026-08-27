@@ -164,6 +164,13 @@
             style="width:100%; font-size:13px; resize:vertical;"></textarea>
         </div>
 
+        <div style="margin-top:14px;">
+          <div class="small" style="font-weight:700; margin-bottom:8px;">Photos of the defect (required, up to 3)</div>
+          <input type="file" id="retPhotos" accept="image/jpeg,image/png,image/webp" multiple
+            style="font-size:12.5px; max-width:100%;" />
+          <div id="retPhotoPreviews" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;"></div>
+        </div>
+
         <div style="margin-top:14px; padding:12px; background:#fff7ed; border-radius:12px; border:1px solid #fed7aa;">
           <div class="small" style="color:#9a3412; font-weight:700; margin-bottom:4px;">⚠️ Please note</div>
           <div class="small" style="color:#9a3412; line-height:1.5;">
@@ -185,7 +192,7 @@
         <div style="font-size:42px; margin-bottom:10px;">✅</div>
         <div style="font-weight:900; font-size:16px; margin-bottom:6px;">Return request submitted!</div>
         <div class="small" style="color:#64748b; max-width:32ch; margin:0 auto 18px;">
-          Our team will review your request and arrange a pickup within 2–3 business days.
+          Our team will review your photos and get back to you within 2–3 business days.
         </div>
         <button class="btn secondary" id="retSuccessClose" type="button">Close</button>
       </div>
@@ -280,6 +287,39 @@
     const reasonChips  = document.querySelectorAll(".chip[data-r]");
     const otherWrap    = document.getElementById("otherWrap");
     const otherTxt     = document.getElementById("otherTxt");
+    const retPhotos    = document.getElementById("retPhotos");
+    const retPhotoPreviews = document.getElementById("retPhotoPreviews");
+
+    const MAX_RETURN_PHOTOS = 3;
+    let selectedPhotoFiles = [];
+
+    function renderPhotoPreviews() {
+      retPhotoPreviews.innerHTML = selectedPhotoFiles.map((f, i) => `
+        <div style="position:relative; width:64px; height:64px; border-radius:10px; overflow:hidden; border:1.5px solid var(--border-light);">
+          <img src="${URL.createObjectURL(f)}" style="width:100%; height:100%; object-fit:cover; display:block;" />
+          <button type="button" data-i="${i}" class="ret-photo-remove"
+            style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; border:none; background:rgba(0,0,0,0.65); color:#fff; font-size:11px; line-height:1; cursor:pointer;">✕</button>
+        </div>
+      `).join("");
+      retPhotoPreviews.querySelectorAll(".ret-photo-remove").forEach(btn => {
+        btn.addEventListener("click", () => {
+          selectedPhotoFiles.splice(Number(btn.dataset.i), 1);
+          renderPhotoPreviews();
+        });
+      });
+    }
+
+    retPhotos.addEventListener("change", () => {
+      const incoming = Array.from(retPhotos.files || []);
+      const room = MAX_RETURN_PHOTOS - selectedPhotoFiles.length;
+      if (incoming.length > room) {
+        retStatus.style.color = "crimson";
+        retStatus.textContent = `You can attach up to ${MAX_RETURN_PHOTOS} photos.`;
+      }
+      selectedPhotoFiles = selectedPhotoFiles.concat(incoming.slice(0, Math.max(room, 0)));
+      retPhotos.value = "";
+      renderPhotoPreviews();
+    });
 
     reasonChips.forEach(chip => {
       chip.addEventListener("click", () => {
@@ -296,6 +336,8 @@
       reasonChips.forEach(c => c.classList.remove("sel"));
       otherWrap.style.display   = "none";
       otherTxt.value            = "";
+      selectedPhotoFiles        = [];
+      renderPhotoPreviews();
       retStatus.textContent     = "";
       retSubmitBtn.disabled     = false;
       retFormBody.style.display = "";
@@ -322,26 +364,49 @@
         retStatus.textContent = "Please select a reason for your return.";
         return;
       }
+      if (selectedPhotoFiles.length === 0) {
+        retStatus.style.color = "crimson";
+        retStatus.textContent = "Please attach at least one photo of the defect.";
+        return;
+      }
 
       retSubmitBtn.disabled = true;
       retStatus.style.color = "#64748b";
-      retStatus.textContent = "Submitting your return request…";
 
       try {
-        const { data, error } = await supabase.functions.invoke("shiprocket-return", {
-          body: { order_id: retOrderId, reason }
+        // ── Step 1: upload each photo via a signed URL, one at a time ──────
+        // (this does NOT touch Shiprocket at all — it only stores the
+        // request for admin review; the real return pickup only gets
+        // created later, once an admin approves it in the admin panel)
+        const evidencePaths = [];
+        for (let i = 0; i < selectedPhotoFiles.length; i++) {
+          const file = selectedPhotoFiles[i];
+          retStatus.textContent = `Uploading photo ${i + 1} of ${selectedPhotoFiles.length}…`;
+
+          const { data: uploadInfo, error: uploadInfoErr } = await supabase.functions.invoke("request-return", {
+            body: { action: "get_upload_url", order_id: retOrderId, content_type: file.type }
+          });
+          if (uploadInfoErr || uploadInfo?.error) {
+            throw new Error(uploadInfo?.error || uploadInfoErr?.message || "Could not prepare photo upload");
+          }
+
+          const { error: putErr } = await supabase.storage
+            .from("return-evidence")
+            .uploadToSignedUrl(uploadInfo.path, uploadInfo.token, file);
+          if (putErr) throw new Error("Photo upload failed: " + putErr.message);
+
+          evidencePaths.push(uploadInfo.path);
+        }
+
+        // ── Step 2: submit the actual request ───────────────────────────────
+        retStatus.textContent = "Submitting your return request…";
+        const { data, error } = await supabase.functions.invoke("request-return", {
+          body: { action: "submit", order_id: retOrderId, reason, evidence_paths: evidencePaths }
         });
 
         if (error || data?.error) {
-          throw new Error(error?.message || data?.error || "Unknown error");
+          throw new Error(data?.error || error?.message || "Unknown error");
         }
-
-        // Save return status to DB (fire-and-forget)
-        supabase.from("orders").update({
-          return_status: "requested",
-          return_reason: reason,
-          return_requested_at: new Date().toISOString(),
-        }).eq("id", retOrderId).then(() => {});
 
         // Update card badge + remove button immediately
         const badge = document.getElementById(`ret-badge-${retOrderId}`);
