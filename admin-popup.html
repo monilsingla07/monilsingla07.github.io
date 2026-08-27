@@ -1,0 +1,334 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Popup Manager — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+    .pm-row .full { grid-column: 1 / -1; }
+    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-list-item + .pm-list-item { margin-top: 10px; }
+    .pm-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge.active { background: #dcfce7; color: #166534; }
+    .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
+    #pmPreviewOverlay { position: fixed; inset: 0; z-index: 9999; background: rgba(20,14,10,.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    #pmPreviewCard { position: relative; background: #fff; border-radius: 20px; max-width: 420px; width: 100%; max-height: 88vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); text-align: center; }
+    #pmPreviewClose { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 999px; border: none; background: rgba(0,0,0,.55); color: #fff; font-size: 18px; cursor: pointer; }
+    #pmPreviewImg { width: 100%; display: block; border-radius: 20px 20px 0 0; max-height: 46vh; object-fit: cover; }
+    #pmPreviewBody { padding: 22px 24px 26px; }
+    #pmPreviewHeadline { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; margin: 0 0 8px; }
+    #pmPreviewSubtext { font-size: 14px; opacity: .78; margin: 0 0 18px; line-height: 1.5; }
+    #pmPreviewBtn { display: inline-block; background: var(--brand, #7c1c1c); color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 26px; border-radius: 999px; }
+    @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:840px;">
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">Popup Manager</h2>
+          <div class="small" style="opacity:.6; margin-top:4px;">Controls the welcome popup shown across the site. Changes go live immediately — no code changes needed.</div>
+        </div>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="pm-card">
+        <div style="font-weight:900;" id="formTitle">New popup</div>
+        <input type="hidden" id="f_id" />
+
+        <div class="pm-row">
+          <div class="full">
+            <label class="pm-label">Internal label (only you see this)</label>
+            <input id="f_title" class="input" placeholder="e.g. Diwali Sale 2026" />
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Image URL (optional)</label>
+            <input id="f_image_url" class="input" placeholder="https://..." />
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Headline (optional)</label>
+            <input id="f_headline" class="input" placeholder="e.g. Diwali Sale is Live!" />
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Subtext (optional)</label>
+            <input id="f_subtext" class="input" placeholder="e.g. Flat 20% off sitewide, this week only" />
+          </div>
+
+          <div>
+            <label class="pm-label">Button text (optional)</label>
+            <input id="f_button_text" class="input" placeholder="e.g. Shop Now" />
+          </div>
+          <div>
+            <label class="pm-label">Button link (optional)</label>
+            <input id="f_button_link" class="input" placeholder="e.g. /sale.html" />
+          </div>
+
+          <div>
+            <label class="pm-label">Show from (optional)</label>
+            <input id="f_starts_at" class="input" type="datetime-local" />
+          </div>
+          <div>
+            <label class="pm-label">Show until (optional)</label>
+            <input id="f_ends_at" class="input" type="datetime-local" />
+          </div>
+
+          <div class="full" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <input id="f_is_active" type="checkbox" style="width:16px; height:16px;" />
+            <label for="f_is_active" style="font-size:13px; font-weight:700;">Active (visitors will see this popup)</label>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+          <button id="btnSave" class="btn">Save popup</button>
+          <button id="btnPreview" class="btn secondary" type="button">Preview</button>
+          <button id="btnReset" class="btn secondary" type="button">New / clear form</button>
+          <div id="formStatus" class="small" style="align-self:center;"></div>
+        </div>
+      </div>
+
+      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All popups</div>
+      <div id="popupList"></div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr, safeUrl } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-popup";
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+    const formStatus   = document.getElementById("formStatus");
+    const formTitle    = document.getElementById("formTitle");
+
+    function showGateError(emoji, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function authedFetch(body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    function toLocalInputValue(iso) {
+      if (!iso) return "";
+      const d = new Date(iso);
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function clearForm() {
+      document.getElementById("f_id").value = "";
+      document.getElementById("f_title").value = "";
+      document.getElementById("f_image_url").value = "";
+      document.getElementById("f_headline").value = "";
+      document.getElementById("f_subtext").value = "";
+      document.getElementById("f_button_text").value = "";
+      document.getElementById("f_button_link").value = "";
+      document.getElementById("f_starts_at").value = "";
+      document.getElementById("f_ends_at").value = "";
+      document.getElementById("f_is_active").checked = false;
+      formTitle.textContent = "New popup";
+      formStatus.textContent = "";
+    }
+
+    function fillForm(p) {
+      document.getElementById("f_id").value = p.id;
+      document.getElementById("f_title").value = p.title || "";
+      document.getElementById("f_image_url").value = p.image_url || "";
+      document.getElementById("f_headline").value = p.headline || "";
+      document.getElementById("f_subtext").value = p.subtext || "";
+      document.getElementById("f_button_text").value = p.button_text || "";
+      document.getElementById("f_button_link").value = p.button_link || "";
+      document.getElementById("f_starts_at").value = toLocalInputValue(p.starts_at);
+      document.getElementById("f_ends_at").value = toLocalInputValue(p.ends_at);
+      document.getElementById("f_is_active").checked = !!p.is_active;
+      formTitle.textContent = "Editing: " + (p.title || "Untitled popup");
+      formStatus.textContent = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderList(popups) {
+      const list = document.getElementById("popupList");
+      if (!popups.length) {
+        list.innerHTML = '<div class="small" style="opacity:.6;">No popups yet — create one above.</div>';
+        return;
+      }
+      list.innerHTML = popups.map(p => `
+        <div class="pm-list-item">
+          <div>
+            <div style="font-weight:800;">${escapeHtml(p.title || "Untitled popup")}
+              <span class="pm-badge ${p.is_active ? "active" : "inactive"}" style="margin-left:8px;">${p.is_active ? "Active" : "Inactive"}</span>
+            </div>
+            <div class="small" style="opacity:.65; margin-top:4px;">${escapeHtml(p.headline || "")}</div>
+            <div class="small" style="opacity:.5; margin-top:2px;">Updated ${new Date(p.updated_at).toLocaleString("en-IN")}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(p.id)}">Edit</button>
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-delete="${escapeAttr(p.id)}">Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      let popupsById = new Map(popups.map(p => [p.id, p]));
+
+      list.querySelectorAll("button[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => fillForm(popupsById.get(btn.dataset.edit)));
+      });
+      list.querySelectorAll("button[data-delete]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("Delete this popup? This cannot be undone.")) return;
+          try {
+            await authedFetch({ action: "delete", id: btn.dataset.delete });
+            clearForm();
+            await loadList();
+          } catch (e) {
+            alert("Delete failed: " + e.message);
+          }
+        });
+      });
+    }
+
+    async function loadList() {
+      const result = await authedFetch({ action: "list" });
+      renderList(result.popups || []);
+    }
+
+    document.getElementById("btnReset").addEventListener("click", clearForm);
+
+    document.getElementById("btnSave").addEventListener("click", async () => {
+      formStatus.textContent = "Saving…";
+      try {
+        const payload = {
+          action: "save",
+          id: document.getElementById("f_id").value || null,
+          title: document.getElementById("f_title").value,
+          image_url: document.getElementById("f_image_url").value,
+          headline: document.getElementById("f_headline").value,
+          subtext: document.getElementById("f_subtext").value,
+          button_text: document.getElementById("f_button_text").value,
+          button_link: document.getElementById("f_button_link").value,
+          starts_at: document.getElementById("f_starts_at").value || null,
+          ends_at: document.getElementById("f_ends_at").value || null,
+          is_active: document.getElementById("f_is_active").checked,
+        };
+        const result = await authedFetch(payload);
+        fillForm(result.popup);
+        formStatus.textContent = "Saved ✅";
+        await loadList();
+      } catch (e) {
+        formStatus.textContent = "Error: " + e.message;
+      }
+    });
+
+    document.getElementById("btnPreview").addEventListener("click", () => {
+      const headline = document.getElementById("f_headline").value.trim();
+      const subtext = document.getElementById("f_subtext").value.trim();
+      const buttonText = document.getElementById("f_button_text").value.trim();
+      const buttonLink = document.getElementById("f_button_link").value.trim();
+      const imageUrl = document.getElementById("f_image_url").value.trim();
+
+      const img = safeUrl(imageUrl, { type: "src" });
+      const link = safeUrl(buttonLink, { type: "href" });
+      const hasBtn = !!(buttonText && link);
+
+      const overlay = document.createElement("div");
+      overlay.id = "pmPreviewOverlay";
+      overlay.innerHTML = `
+        <div id="pmPreviewCard">
+          <button id="pmPreviewClose" type="button">&times;</button>
+          ${img ? `<img id="pmPreviewImg" src="${img}" alt="${escapeAttr(headline || "Preview")}" />` : ""}
+          <div id="pmPreviewBody">
+            ${headline ? `<div id="pmPreviewHeadline">${escapeHtml(headline)}</div>` : ""}
+            ${subtext ? `<div id="pmPreviewSubtext">${escapeHtml(subtext)}</div>` : ""}
+            ${hasBtn ? `<a id="pmPreviewBtn" href="${link}" target="_blank" rel="noopener noreferrer">${escapeHtml(buttonText)}</a>` : ""}
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      const close = () => overlay.remove();
+      overlay.querySelector("#pmPreviewClose").addEventListener("click", close);
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+    });
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+
+        const adminResult = await supabase
+          .from("admin_users")
+          .select("email")
+          .eq("email", session.user.email.toLowerCase())
+          .maybeSingle();
+
+        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        clearForm();
+        await loadList();
+      } catch (e) {
+        console.error("Popup admin page error:", e);
+        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>
