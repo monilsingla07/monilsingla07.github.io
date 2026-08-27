@@ -47,6 +47,32 @@
     .section-header h3 { margin: 0; font-size: 15px; font-weight: 800; }
     .section-body { padding: 16px; }
 
+    /* ── Mode toggle (Catalog / Quick Sale) ── */
+    .mode-toggle {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-warm, #f7f3ee);
+      border-radius: 10px;
+      padding: 4px;
+    }
+    .mode-toggle button {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #6b6b6b;
+      transition: all .15s;
+    }
+    .mode-toggle button.active {
+      background: #fff;
+      color: var(--brand, #7c1c1c);
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
     /* ── Product search ── */
     .search-wrap { position: relative; }
     #productSearch { width: 100%; }
@@ -74,14 +100,6 @@
     }
     .search-result:last-child { border-bottom: none; }
     .search-result:hover { background: var(--brand-light, #fdf2f2); }
-    .search-result img {
-      width: 44px;
-      height: 44px;
-      object-fit: cover;
-      border-radius: 8px;
-      flex-shrink: 0;
-      background: #f3f4f6;
-    }
     .search-result-info { flex: 1; min-width: 0; }
     .search-result-title { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .search-result-price { font-size: 12px; opacity: .65; margin-top: 2px; }
@@ -97,7 +115,6 @@
     }
     .cart-item:last-child { border-bottom: none; }
     .cart-item-name { font-weight: 700; font-size: 13px; }
-    .cart-item-sku  { font-size: 11px; opacity: .5; margin-top: 2px; }
     .cart-item input[type="number"] { width: 60px; text-align: center; }
     .cart-item-remove {
       background: none;
@@ -111,7 +128,6 @@
     }
     .cart-item-remove:hover { opacity: 1; }
 
-    /* Price override */
     .price-override-row {
       grid-column: 1 / -1;
       display: flex;
@@ -121,10 +137,32 @@
     }
     .price-override-row label { font-size: 11px; opacity: .6; white-space: nowrap; }
     .price-override-row input { width: 90px; font-size: 13px; }
-    .original-price { font-size: 11px; opacity: .5; text-decoration: line-through; }
 
-    /* ── Payment method selector ── */
-    .pm-option {
+    /* ── Quick sale rows ── */
+    .quick-row {
+      display: grid;
+      grid-template-columns: 1fr 90px 60px auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .quick-row input { font-size: 13px; }
+    #addQuickRow {
+      background: none;
+      border: 1px dashed var(--border, #d1d5db);
+      border-radius: 10px;
+      padding: 8px;
+      width: 100%;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand, #7c1c1c);
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    #addQuickRow:hover { background: var(--brand-light, #fdf2f2); }
+
+    /* ── Choice cards (Order type / Payment) ── */
+    .choice-option {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -135,15 +173,35 @@
       transition: all .15s;
       margin-bottom: 8px;
     }
-    .pm-option:last-child { margin-bottom: 0; }
-    .pm-option.selected {
+    .choice-option:last-child { margin-bottom: 0; }
+    .choice-option.selected {
       border-color: var(--brand, #7c1c1c);
       background: var(--brand-light, #fdf2f2);
     }
-    .pm-option input[type="radio"] { accent-color: var(--brand, #7c1c1c); flex-shrink: 0; }
-    .pm-option-text { flex: 1; }
-    .pm-option-title { font-weight: 800; font-size: 14px; }
-    .pm-option-sub { font-size: 12px; opacity: .65; margin-top: 2px; }
+    .choice-option input[type="radio"] { accent-color: var(--brand, #7c1c1c); flex-shrink: 0; }
+    .choice-option-text { flex: 1; }
+    .choice-option-title { font-weight: 800; font-size: 14px; }
+    .choice-option-sub { font-size: 12px; opacity: .65; margin-top: 2px; }
+
+    /* Sub-selector (Cash/Card/UPI/Other pills) */
+    .subpill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border, #e5e7eb); }
+    .subpill {
+      flex: 1 1 auto;
+      text-align: center;
+      padding: 8px 10px;
+      border: 1.5px solid var(--border, #e5e7eb);
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      min-width: 70px;
+    }
+    .subpill.selected {
+      border-color: var(--brand, #7c1c1c);
+      background: var(--brand, #7c1c1c);
+      color: #fff;
+    }
 
     /* ── Order summary sidebar ── */
     .summary-row {
@@ -189,10 +247,7 @@
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ── Field label ── */
     .field-label { font-size: 12px; font-weight: 700; opacity: .6; margin-bottom: 4px; display: block; }
-
-    /* ── Empty cart ── */
     .empty-cart { text-align: center; padding: 24px; opacity: .5; font-size: 13px; }
   </style>
 </head>
@@ -202,17 +257,15 @@
 
   <div class="container" style="max-width: 1040px;">
 
-    <!-- Loading / gate -->
     <div id="loadingState" style="text-align:center;padding:48px;opacity:.6;font-size:14px;">Verifying admin access…</div>
 
-    <!-- Main content -->
     <div id="mainContent" style="display:none;">
 
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
         <div>
           <h2 style="margin:0;">Create Order</h2>
           <div class="small" style="opacity:.65; margin-top:4px;">
-            Place an order on behalf of an offline customer and generate a Razorpay payment link to share with them.
+            Ring up a walk-in sale or place an order for a customer who needs it shipped.
           </div>
         </div>
         <a class="btn secondary" href="admin-orders.html" style="padding:8px 14px; font-size:13px;">← Back to orders</a>
@@ -220,25 +273,40 @@
 
       <div class="create-grid">
 
-        <!-- ── LEFT: Product + Customer ── -->
+        <!-- ── LEFT: Items + Customer + Order type ── -->
         <div>
 
-          <!-- Product search -->
+          <!-- Products / Quick sale -->
           <div class="section-card">
             <div class="section-header">
-              <h3>🛍 Products</h3>
+              <h3 id="itemsHeading">🛍 Products</h3>
               <span class="small" id="cartCount" style="opacity:.6;">0 items</span>
             </div>
             <div class="section-body">
-              <label class="field-label">Search product by name or SKU</label>
-              <div class="search-wrap">
-                <input class="input" id="productSearch" placeholder="Type to search…" autocomplete="off" />
-                <div id="searchDropdown"></div>
+              <div class="mode-toggle" style="margin-bottom:14px;">
+                <button type="button" id="modeCatalogBtn" class="active">🛍 From Catalog</button>
+                <button type="button" id="modeQuickBtn">⚡ Quick Sale</button>
               </div>
-              <div id="searchMsg" class="small" style="margin-top:6px; min-height:14px; opacity:.6;"></div>
 
-              <!-- Cart items -->
-              <div id="cartItems" style="margin-top:14px;"></div>
+              <!-- Catalog mode -->
+              <div id="catalogPanel">
+                <label class="field-label">Search product by name or SKU</label>
+                <div class="search-wrap">
+                  <input class="input" id="productSearch" placeholder="Type to search…" autocomplete="off" />
+                  <div id="searchDropdown"></div>
+                </div>
+                <div id="searchMsg" class="small" style="margin-top:6px; min-height:14px; opacity:.6;"></div>
+                <div id="cartItems" style="margin-top:14px;"></div>
+              </div>
+
+              <!-- Quick sale mode -->
+              <div id="quickPanel" style="display:none;">
+                <div class="small" style="opacity:.6; margin-bottom:10px;">
+                  For a custom or one-off item that isn't in your product catalog — e.g. a custom-tailored piece or an alteration charge. Not tracked in inventory.
+                </div>
+                <div id="quickRows"></div>
+                <button type="button" id="addQuickRow">+ Add another item</button>
+              </div>
             </div>
           </div>
 
@@ -257,32 +325,35 @@
                 <input class="input" id="cPhone" type="tel" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" />
               </div>
               <div>
-                <label class="field-label">Email (optional — needed for Razorpay notification)</label>
+                <label class="field-label">Email (optional)</label>
                 <input class="input" id="cEmail" type="email" placeholder="name@email.com" />
               </div>
             </div>
           </div>
 
-          <!-- Shipping address -->
+          <!-- Order type -->
           <div class="section-card">
             <div class="section-header">
-              <h3>📍 Shipping Address</h3>
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; font-weight:600; user-select:none;">
-                <input type="checkbox" id="hasAddressToggle" style="accent-color:var(--brand,#7c1c1c); width:15px; height:15px; cursor:pointer;" />
-                Ship to address
+              <h3>📦 Order Type</h3>
+            </div>
+            <div class="section-body">
+              <label class="choice-option selected" id="typeWalkinLabel">
+                <input type="radio" name="orderType" value="walkin" id="typeWalkin" checked />
+                <div class="choice-option-text">
+                  <div class="choice-option-title">🏪 Walk-in (in-store)</div>
+                  <div class="choice-option-sub">Customer is here now. No address needed — a direct invoice is generated once payment is recorded.</div>
+                </div>
               </label>
-            </div>
+              <label class="choice-option" id="typeShippingLabel">
+                <input type="radio" name="orderType" value="shipping" id="typeShipping" />
+                <div class="choice-option-text">
+                  <div class="choice-option-title">📮 Ship to Customer</div>
+                  <div class="choice-option-sub">Collect a delivery address — once paid, you can ship it right from this page.</div>
+                </div>
+              </label>
 
-            <!-- Walk-in notice (shown when no address) -->
-            <div id="noAddressNotice" class="section-body" style="padding-top:10px; padding-bottom:10px;">
-              <div style="background:var(--brand-light,#fdf2f2); border-radius:10px; padding:10px 12px; font-size:13px; color:#7c1c1c; font-weight:600;">
-                🏪 Walk-in / offline sale — no delivery address required.
-              </div>
-            </div>
-
-            <!-- Address fields (hidden until checkbox ticked) -->
-            <div id="addressFields" style="display:none;">
-              <div class="section-body" style="display:grid; gap:12px;">
+              <!-- Address fields (shown only for shipping) -->
+              <div id="addressFields" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border,#e5e7eb); display:grid; gap:12px;">
                 <div>
                   <label class="field-label">Address line 1 *</label>
                   <input class="input" id="aLine1" placeholder="House / street" autocapitalize="words" />
@@ -312,15 +383,8 @@
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Always-visible bottom: shipping (no-address) + note -->
-            <div class="section-body" style="display:grid; gap:12px; padding-top:0; border-top: 1px solid var(--border,#e5e7eb);">
-              <div id="shippingNoAddrRow">
-                <label class="field-label">Shipping charge (₹)</label>
-                <input class="input" id="shippingInrNoAddr" type="number" value="0" min="0" step="1" />
-              </div>
-              <div>
+              <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border,#e5e7eb);">
                 <label class="field-label">Admin note (optional — internal only)</label>
                 <input class="input" id="adminNote" placeholder="e.g. Customer walked in, paid cash" />
               </div>
@@ -332,7 +396,6 @@
         <!-- ── RIGHT: Summary + Payment + Submit ── -->
         <div style="position: sticky; top: 80px;">
 
-          <!-- Order summary -->
           <div class="section-card">
             <div class="section-header">
               <h3>💰 Order Summary</h3>
@@ -343,39 +406,66 @@
               </div>
               <div id="summaryTotals" style="display:none;">
                 <div class="summary-row"><span style="opacity:.7;">Subtotal</span><span id="sSubtotal">₹0</span></div>
-                <div class="summary-row"><span style="opacity:.7;">Shipping</span><span id="sShipping">₹0</span></div>
+                <div class="summary-row" id="sShippingRow"><span style="opacity:.7;">Shipping</span><span id="sShipping">₹0</span></div>
                 <div class="summary-row"><span style="opacity:.7;" id="sGstLabel">GST</span><span id="sGst">₹0</span></div>
                 <div class="summary-row total"><span>Total</span><span id="sTotal">₹0</span></div>
               </div>
             </div>
           </div>
 
-          <!-- Payment method: Razorpay only. COD has been removed. -->
+          <!-- Payment -->
           <div class="section-card">
             <div class="section-header">
-              <h3>💳 Payment Method</h3>
+              <h3>💳 Payment</h3>
             </div>
             <div class="section-body">
 
-              <label class="pm-option selected" id="pmRazorpayLabel">
-                <input type="radio" name="pm" value="razorpay" id="pmRazorpay" checked />
-                <div class="pm-option-text">
-                  <div class="pm-option-title">Send Payment Link</div>
-                  <div class="pm-option-sub">Generate a Razorpay link to share with the customer.</div>
+              <!-- Walk-in: payment received via, always -->
+              <div id="paidViaOnly">
+                <div class="small" style="font-weight:700; margin-bottom:8px;">Payment received via</div>
+                <div class="subpill-row" id="paidViaRowWalkin">
+                  <div class="subpill" data-via="cash">💵 Cash</div>
+                  <div class="subpill" data-via="card">💳 Card</div>
+                  <div class="subpill" data-via="upi">📱 UPI</div>
+                  <div class="subpill" data-via="other">Other</div>
                 </div>
-                <span style="font-size:20px;">💳</span>
-              </label>
+              </div>
+
+              <!-- Shipping: choice between link and mark-as-paid -->
+              <div id="shippingPaymentChoice" style="display:none;">
+                <label class="choice-option selected" id="pmLinkLabel">
+                  <input type="radio" name="paymentMode" value="link" id="pmLink" checked />
+                  <div class="choice-option-text">
+                    <div class="choice-option-title">Send Payment Link</div>
+                    <div class="choice-option-sub">Generate a Razorpay link to share with the customer.</div>
+                  </div>
+                  <span style="font-size:20px;">💳</span>
+                </label>
+                <label class="choice-option" id="pmPaidLabel">
+                  <input type="radio" name="paymentMode" value="paid" id="pmPaid" />
+                  <div class="choice-option-text">
+                    <div class="choice-option-title">Mark as Already Paid</div>
+                    <div class="choice-option-sub">Cash/card/UPI already collected — ship this to a different address.</div>
+                  </div>
+                  <span style="font-size:20px;">✅</span>
+                </label>
+
+                <div class="subpill-row" id="paidViaRowShipping" style="display:none;">
+                  <div class="subpill" data-via="cash">💵 Cash</div>
+                  <div class="subpill" data-via="card">💳 Card</div>
+                  <div class="subpill" data-via="upi">📱 UPI</div>
+                  <div class="subpill" data-via="other">Other</div>
+                </div>
+              </div>
 
             </div>
           </div>
 
-          <!-- Submit -->
           <button class="btn" id="submitBtn" style="width:100%; padding:14px; font-size:15px; font-weight:900;">
-            Generate Payment Link
+            Complete Sale &amp; Generate Invoice
           </button>
           <div id="submitMsg" class="small" style="margin-top:8px; text-align:center; min-height:16px; opacity:.7;"></div>
 
-          <!-- Result panel -->
           <div id="resultPanel">
             <div id="resultContent"></div>
           </div>
@@ -413,10 +503,14 @@
     }
 
     // ── State ─────────────────────────────────────────────────────────────
-    const cart = [];   // { product_id, title, qty, unit_price, price_override }
+    const cart = [];        // catalog mode: { product_id, title, qty, unit_price, price_override }
+    let quickRows = [{ title: "", price: "", qty: 1 }]; // quick-sale mode
+    let itemMode = "catalog"; // "catalog" | "quick"
+    let orderType = "walkin"; // "walkin" | "shipping"
+    let paymentMode = "link"; // "link" | "paid" (only meaningful for shipping; walkin is always "paid")
+    let paidVia = null;       // "cash" | "card" | "upi" | "other"
     let searchTimeout = null;
 
-    // ── Helpers ───────────────────────────────────────────────────────────
     function money(v) {
       return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
     }
@@ -429,11 +523,67 @@
       setTimeout(() => el.classList.remove("show"), 3500);
     }
 
-    function getPaymentMethod() {
-      return "razorpay"; // COD removed — Razorpay is the only method
+    // ── Item mode toggle (Catalog vs Quick Sale) ─────────────────────────
+    const modeCatalogBtn = document.getElementById("modeCatalogBtn");
+    const modeQuickBtn   = document.getElementById("modeQuickBtn");
+    const catalogPanel   = document.getElementById("catalogPanel");
+    const quickPanel     = document.getElementById("quickPanel");
+    const itemsHeading   = document.getElementById("itemsHeading");
+
+    function setItemMode(mode) {
+      if (mode === itemMode) return;
+      const hasCatalogItems = cart.length > 0;
+      const hasQuickItems   = quickRows.some(r => r.title.trim() || r.price !== "");
+      if ((mode === "quick" && hasCatalogItems) || (mode === "catalog" && hasQuickItems)) {
+        if (!confirm("Switching will clear the items you've entered in the other mode. Continue?")) return;
+        if (mode === "quick") { cart.length = 0; renderCart(); }
+        else { quickRows = [{ title: "", price: "", qty: 1 }]; renderQuickRows(); }
+      }
+      itemMode = mode;
+      modeCatalogBtn.classList.toggle("active", mode === "catalog");
+      modeQuickBtn.classList.toggle("active", mode === "quick");
+      catalogPanel.style.display = mode === "catalog" ? "block" : "none";
+      quickPanel.style.display   = mode === "quick" ? "block" : "none";
+      itemsHeading.textContent   = mode === "catalog" ? "🛍 Products" : "⚡ Quick Sale Item(s)";
+      renderSummary();
     }
 
-    // ── Product search ────────────────────────────────────────────────────
+    modeCatalogBtn.addEventListener("click", () => setItemMode("catalog"));
+    modeQuickBtn.addEventListener("click", () => setItemMode("quick"));
+
+    // ── Quick sale rows ───────────────────────────────────────────────────
+    const quickRowsEl  = document.getElementById("quickRows");
+    const addQuickRowBtn = document.getElementById("addQuickRow");
+
+    function renderQuickRows() {
+      quickRowsEl.innerHTML = quickRows.map((r, i) => `
+        <div class="quick-row" data-idx="${i}">
+          <input class="input qr-title" placeholder="Description (e.g. Blouse stitching)" value="${escapeAttr(r.title)}" />
+          <input class="input qr-price" type="number" min="0" step="1" placeholder="Price ₹" value="${escapeAttr(r.price)}" />
+          <input class="input qr-qty" type="number" min="1" step="1" value="${r.qty}" />
+          <button type="button" class="cart-item-remove qr-remove" title="Remove">✕</button>
+        </div>
+      `).join("");
+
+      quickRowsEl.querySelectorAll(".qr-title").forEach((el, i) => el.addEventListener("input", () => { quickRows[i].title = el.value; renderSummary(); }));
+      quickRowsEl.querySelectorAll(".qr-price").forEach((el, i) => el.addEventListener("input", () => { quickRows[i].price = el.value; renderSummary(); }));
+      quickRowsEl.querySelectorAll(".qr-qty").forEach((el, i) => el.addEventListener("input", () => { quickRows[i].qty = Math.max(1, parseInt(el.value) || 1); renderSummary(); }));
+      quickRowsEl.querySelectorAll(".qr-remove").forEach((el, i) => el.addEventListener("click", () => {
+        if (quickRows.length === 1) { quickRows[0] = { title: "", price: "", qty: 1 }; }
+        else { quickRows.splice(i, 1); }
+        renderQuickRows();
+        renderSummary();
+      }));
+    }
+
+    addQuickRowBtn.addEventListener("click", () => {
+      quickRows.push({ title: "", price: "", qty: 1 });
+      renderQuickRows();
+    });
+
+    renderQuickRows();
+
+    // ── Product search (catalog mode) ────────────────────────────────────
     const searchInput    = document.getElementById("productSearch");
     const searchDropdown = document.getElementById("searchDropdown");
     const searchMsg      = document.getElementById("searchMsg");
@@ -478,14 +628,11 @@
           return `
             <div class="search-result" data-product-id="${escapeAttr(p.id)}"
                  data-title="${escapeAttr(p.title)}"
-                 data-price="${price}"
-                 data-orig-price="${p.price_inr}">
+                 data-price="${price}">
               <div class="search-result-info">
                 <div class="search-result-title">${escapeHtml(p.title)}</div>
                 <div class="search-result-price">
-                  ${money(price)}
-                  ${p.sale_price_inr ? `<span class="original-price">${money(p.price_inr)}</span>` : ""}
-                  · Stock: ${avail}
+                  ${money(price)} · Stock: ${avail}
                   ${inCart ? "· <strong>In cart</strong>" : ""}
                 </div>
               </div>
@@ -495,10 +642,7 @@
 
         searchDropdown.querySelectorAll(".search-result").forEach(row => {
           row.addEventListener("click", () => {
-            const pid   = row.dataset.productId;
-            const title = row.dataset.title;
-            const price = parseInt(row.dataset.price, 10);
-            addToCart(pid, title, price);
+            addToCart(row.dataset.productId, row.dataset.title, parseInt(row.dataset.price, 10));
             searchDropdown.style.display = "none";
             searchInput.value = "";
             searchMsg.textContent = "";
@@ -511,16 +655,10 @@
       }
     }
 
-    // ── Cart management ───────────────────────────────────────────────────
     function addToCart(productId, title, unitPrice) {
       const existing = cart.find(c => c.product_id === productId);
-      if (existing) {
-        existing.qty++;
-        toast(`${title} qty increased`, "#166534");
-      } else {
-        cart.push({ product_id: productId, title, qty: 1, unit_price: unitPrice, price_override: null });
-        toast(`${title} added`, "#166534");
-      }
+      if (existing) { existing.qty++; toast(`${title} qty increased`, "#166534"); }
+      else { cart.push({ product_id: productId, title, qty: 1, unit_price: unitPrice, price_override: null }); toast(`${title} added`, "#166534"); }
       renderCart();
     }
 
@@ -533,7 +671,6 @@
     function renderCart() {
       const cartItems = document.getElementById("cartItems");
       const cartCount = document.getElementById("cartCount");
-
       const total = cart.reduce((s, c) => s + c.qty, 0);
       cartCount.textContent = `${total} item${total !== 1 ? "s" : ""}`;
 
@@ -547,7 +684,7 @@
         <div class="cart-item" data-pid="${escapeAttr(c.product_id)}">
           <div>
             <div class="cart-item-name">${escapeHtml(c.title)}</div>
-            <div class="cart-item-sku">Unit: ${money(c.price_override ?? c.unit_price)}</div>
+            <div class="small" style="opacity:.5;">Unit: ${money(c.price_override ?? c.unit_price)}</div>
           </div>
           <input type="number" class="input qty-input" value="${c.qty}" min="1" max="999"
                  data-pid="${escapeAttr(c.product_id)}" style="width:64px;text-align:center;" />
@@ -555,28 +692,22 @@
             <div class="small" style="font-weight:700;">${money((c.price_override ?? c.unit_price) * c.qty)}</div>
           </div>
           <button class="cart-item-remove" data-pid="${escapeAttr(c.product_id)}" title="Remove">✕</button>
-
-          <!-- Price override row -->
           <div class="price-override-row">
             <label>Custom price (₹)</label>
             <input type="number" class="input override-input" placeholder="${c.unit_price}"
                    value="${c.price_override ?? ""}" min="0" step="1"
-                   data-pid="${escapeAttr(c.product_id)}"
-                   style="width:90px;font-size:13px;" />
+                   data-pid="${escapeAttr(c.product_id)}" style="width:90px;font-size:13px;" />
             <span class="small" style="opacity:.5;">leave blank for default ${money(c.unit_price)}</span>
           </div>
         </div>
       `).join("");
 
-      // Qty changes
       cartItems.querySelectorAll(".qty-input").forEach(inp => {
         inp.addEventListener("change", () => {
           const item = cart.find(c => c.product_id === inp.dataset.pid);
           if (item) { item.qty = Math.max(1, parseInt(inp.value) || 1); renderCart(); }
         });
       });
-
-      // Price override changes
       cartItems.querySelectorAll(".override-input").forEach(inp => {
         inp.addEventListener("change", () => {
           const item = cart.find(c => c.product_id === inp.dataset.pid);
@@ -587,8 +718,6 @@
           }
         });
       });
-
-      // Remove buttons
       cartItems.querySelectorAll(".cart-item-remove").forEach(btn => {
         btn.addEventListener("click", () => removeFromCart(btn.dataset.pid));
       });
@@ -596,40 +725,114 @@
       renderSummary();
     }
 
+    // ── Order type toggle ─────────────────────────────────────────────────
+    const typeWalkinLabel   = document.getElementById("typeWalkinLabel");
+    const typeShippingLabel = document.getElementById("typeShippingLabel");
+    const typeWalkin        = document.getElementById("typeWalkin");
+    const typeShipping      = document.getElementById("typeShipping");
+    const addressFields     = document.getElementById("addressFields");
+    const paidViaOnly            = document.getElementById("paidViaOnly");
+    const shippingPaymentChoice  = document.getElementById("shippingPaymentChoice");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function applyOrderType() {
+      orderType = typeShipping.checked ? "shipping" : "walkin";
+      typeWalkinLabel.classList.toggle("selected", orderType === "walkin");
+      typeShippingLabel.classList.toggle("selected", orderType === "shipping");
+      addressFields.style.display = orderType === "shipping" ? "grid" : "none";
+
+      paidViaOnly.style.display = orderType === "walkin" ? "block" : "none";
+      shippingPaymentChoice.style.display = orderType === "shipping" ? "block" : "none";
+
+      if (orderType === "walkin") {
+        paymentMode = "paid";
+      } else {
+        paymentMode = document.getElementById("pmPaid").checked ? "paid" : "link";
+      }
+      updateSubmitLabel();
+      renderSummary();
+    }
+
+    typeWalkin.addEventListener("change", applyOrderType);
+    typeShipping.addEventListener("change", applyOrderType);
+
+    // ── Payment mode (shipping only): link vs mark-as-paid ────────────────
+    const pmLink  = document.getElementById("pmLink");
+    const pmPaid  = document.getElementById("pmPaid");
+    const pmLinkLabel = document.getElementById("pmLinkLabel");
+    const pmPaidLabel = document.getElementById("pmPaidLabel");
+    const paidViaRowShipping = document.getElementById("paidViaRowShipping");
+
+    function applyPaymentModeChoice() {
+      paymentMode = pmPaid.checked ? "paid" : "link";
+      pmLinkLabel.classList.toggle("selected", paymentMode === "link");
+      pmPaidLabel.classList.toggle("selected", paymentMode === "paid");
+      paidViaRowShipping.style.display = paymentMode === "paid" ? "flex" : "none";
+      updateSubmitLabel();
+    }
+    pmLink.addEventListener("change", applyPaymentModeChoice);
+    pmPaid.addEventListener("change", applyPaymentModeChoice);
+
+    // ── Payment received via (both walkin's always-visible row + shipping's sub-row) ──
+    function wireViaRow(rowEl) {
+      rowEl.querySelectorAll(".subpill").forEach(p => {
+        p.addEventListener("click", () => {
+          document.querySelectorAll(".subpill").forEach(x => x.classList.remove("selected"));
+          document.querySelectorAll(`.subpill[data-via="${p.dataset.via}"]`).forEach(x => x.classList.add("selected"));
+          paidVia = p.dataset.via;
+        });
+      });
+    }
+    wireViaRow(document.getElementById("paidViaRowWalkin"));
+    wireViaRow(paidViaRowShipping);
+
+    function updateSubmitLabel() {
+      if (orderType === "walkin") submitBtn.textContent = "Complete Sale & Generate Invoice";
+      else if (paymentMode === "paid") submitBtn.textContent = "Mark as Paid & Continue";
+      else submitBtn.textContent = "Generate Payment Link";
+    }
+
+    applyOrderType();
+
+    document.getElementById("shippingInr").addEventListener("input", renderSummary);
+
     // ── Summary ───────────────────────────────────────────────────────────
+    function activeLineItems() {
+      if (itemMode === "catalog") {
+        return cart.map(c => ({ title: c.title, qty: c.qty, unitPrice: c.price_override ?? c.unit_price }));
+      }
+      return quickRows
+        .filter(r => r.title.trim() && r.price !== "" && !isNaN(parseFloat(r.price)))
+        .map(r => ({ title: r.title.trim(), qty: r.qty, unitPrice: Math.max(0, parseInt(r.price) || 0) }));
+    }
+
     function renderSummary() {
       const summaryItems  = document.getElementById("summaryItems");
       const summaryTotals = document.getElementById("summaryTotals");
+      const items = activeLineItems();
 
-      if (!cart.length) {
+      if (!items.length) {
         summaryItems.innerHTML  = `<div class="small" style="opacity:.4;">No items added yet.</div>`;
         summaryTotals.style.display = "none";
         return;
       }
 
-      const hasAddr = document.getElementById("hasAddressToggle").checked;
-      const shipping = parseInt((hasAddr
-        ? document.getElementById("shippingInr")
-        : document.getElementById("shippingInrNoAddr")).value) || 0;
-      let subtotal   = 0;
+      const shipping = orderType === "shipping" ? (parseInt(document.getElementById("shippingInr").value) || 0) : 0;
+      document.getElementById("sShippingRow").style.display = orderType === "shipping" ? "flex" : "none";
+      let subtotal = 0;
 
-      summaryItems.innerHTML = cart.map(c => {
-        const unitPrice = c.price_override ?? c.unit_price;
-        const lineTotal = unitPrice * c.qty;
+      summaryItems.innerHTML = items.map(it => {
+        const lineTotal = it.unitPrice * it.qty;
         subtotal += lineTotal;
         return `<div class="summary-row">
-          <span style="opacity:.8;">${escapeHtml(c.title)} × ${c.qty}</span>
+          <span style="opacity:.8;">${escapeHtml(it.title)} × ${it.qty}</span>
           <span style="font-weight:700;">${money(lineTotal)}</span>
         </div>`;
       }).join("");
 
-      // Client-side GST estimate (edge function does authoritative calculation)
-      const GST_RATE     = 0.05;  // Match your env — just for preview
-      const GST_INCLUDED = true;
-      const net          = subtotal + shipping;
-      const gst          = GST_INCLUDED
-        ? Math.round(net - net / (1 + GST_RATE))
-        : Math.round(net * GST_RATE);
+      const GST_RATE = 0.05, GST_INCLUDED = true; // client-side preview only — edge function computes authoritatively
+      const net = subtotal + shipping;
+      const gst = GST_INCLUDED ? Math.round(net - net / (1 + GST_RATE)) : Math.round(net * GST_RATE);
       const total = GST_INCLUDED ? net : net + gst;
 
       document.getElementById("sSubtotal").textContent = money(subtotal);
@@ -639,78 +842,59 @@
       summaryTotals.style.display = "block";
     }
 
-    document.getElementById("shippingInr").addEventListener("input", renderSummary);
-    document.getElementById("shippingInrNoAddr").addEventListener("input", renderSummary);
-
-    // ── Address toggle ────────────────────────────────────────────────────
-    const addrToggle     = document.getElementById("hasAddressToggle");
-    const addrFields     = document.getElementById("addressFields");
-    const noAddrNotice   = document.getElementById("noAddressNotice");
-    const shippingNoAddr = document.getElementById("shippingNoAddrRow");
-
-    function applyAddressToggle() {
-      const show = addrToggle.checked;
-      addrFields.style.display   = show ? "block" : "none";
-      noAddrNotice.style.display = show ? "none"  : "block";
-      // Keep only one shipping input visible below the fold
-      document.getElementById("shippingInr").closest("div.section-body") &&
-        (shippingNoAddr.style.display = show ? "none" : "block");
-      renderSummary();
-    }
-
-    addrToggle.addEventListener("change", applyAddressToggle);
-    // Run once on load so default state is correct
-    applyAddressToggle();
-
-    // ── Payment method UI (Razorpay only — COD removed) ─────────────────────
-    const pmRazorpayLabel = document.getElementById("pmRazorpayLabel");
-    const submitBtn       = document.getElementById("submitBtn");
-
-    function updatePaymentUI() {
-      pmRazorpayLabel.classList.add("selected");
-      submitBtn.textContent = "Generate Payment Link";
-    }
-
-    // ── Validate form ─────────────────────────────────────────────────────
+    // ── Validate ──────────────────────────────────────────────────────────
     function validate() {
-      if (!cart.length)                                      return "Add at least one product.";
-      if (!document.getElementById("cName").value.trim())   return "Customer name is required.";
-      if (!document.getElementById("cPhone").value.trim())  return "Customer phone is required.";
+      const items = activeLineItems();
+      if (!items.length) return itemMode === "catalog" ? "Add at least one product." : "Add at least one item with a description and price.";
+      if (!document.getElementById("cName").value.trim())  return "Customer name is required.";
+      if (!document.getElementById("cPhone").value.trim()) return "Customer phone is required.";
       const ph = document.getElementById("cPhone").value.replace(/\D/g, "");
-      if (ph.length !== 10)                                  return "Enter a valid 10-digit phone number.";
-      if (document.getElementById("hasAddressToggle").checked) {
-        if (!document.getElementById("aLine1").value.trim())  return "Address line 1 is required.";
-        if (!document.getElementById("aCity").value.trim())   return "City is required.";
-        if (!document.getElementById("aState").value.trim())  return "State is required.";
+      if (ph.length !== 10) return "Enter a valid 10-digit phone number.";
+
+      if (orderType === "shipping") {
+        if (!document.getElementById("aLine1").value.trim()) return "Address line 1 is required.";
+        if (!document.getElementById("aCity").value.trim())  return "City is required.";
+        if (!document.getElementById("aState").value.trim()) return "State is required.";
         const pin = document.getElementById("aPincode").value.replace(/\D/g, "");
-        if (pin.length !== 6)                                  return "Enter a valid 6-digit pincode.";
+        if (pin.length !== 6) return "Enter a valid 6-digit pincode.";
       }
+
+      if (paymentMode === "paid" && !paidVia) return "Select how payment was received.";
       return null;
     }
 
     // ── Submit ────────────────────────────────────────────────────────────
+    async function callFn(name, payload) {
+      const { data: sess } = await supabase.auth.getSession();
+      const tok = sess?.session?.access_token || "";
+      const res = await fetch(`https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/${name}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tok, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data;
+    }
+
     submitBtn.addEventListener("click", async () => {
       const validationError = validate();
       if (validationError) { toast(validationError, "#dc2626"); return; }
 
-      const method    = getPaymentMethod();
       const submitMsg = document.getElementById("submitMsg");
       const result    = document.getElementById("resultPanel");
       const resultContent = document.getElementById("resultContent");
 
-      submitBtn.disabled    = true;
-      submitMsg.textContent = "Generating payment link…";
-      result.style.display  = "none";
+      submitBtn.disabled = true;
+      submitMsg.textContent = paymentMode === "paid" ? "Recording sale…" : "Generating payment link…";
+      result.style.display = "none";
 
       try {
-        const hasAddress = document.getElementById("hasAddressToggle").checked;
-        const shippingInrVal = parseInt(
-          (hasAddress
-            ? document.getElementById("shippingInr")
-            : document.getElementById("shippingInrNoAddr")).value
-        ) || 0;
+        const items = itemMode === "catalog"
+          ? cart.map(c => ({ product_id: c.product_id, qty: c.qty, price_override_inr: c.price_override }))
+          : activeLineItems().map(it => ({ custom_title: it.title, custom_price_inr: it.unitPrice, qty: it.qty }));
 
-        const shippingAddress = hasAddress ? {
+        const shippingAddress = orderType === "shipping" ? {
           full_name:     document.getElementById("cName").value.trim(),
           address_line1: document.getElementById("aLine1").value.trim(),
           address_line2: document.getElementById("aLine2").value.trim() || null,
@@ -720,41 +904,55 @@
         } : null;
 
         const payload = {
-          payment_method:   method,
-          customer_name:    document.getElementById("cName").value.trim(),
-          customer_phone:   document.getElementById("cPhone").value.replace(/\D/g, ""),
-          customer_email:   document.getElementById("cEmail").value.trim() || null,
+          order_type: orderType,
+          payment_mode: paymentMode,
+          payment_received_via: paymentMode === "paid" ? paidVia : null,
+          customer_name:  document.getElementById("cName").value.trim(),
+          customer_phone: document.getElementById("cPhone").value.replace(/\D/g, ""),
+          customer_email: document.getElementById("cEmail").value.trim() || null,
           shipping_address: shippingAddress,
-          shipping_inr:     shippingInrVal,
-          note:             document.getElementById("adminNote").value.trim() || null,
-          items: cart.map(c => ({
-            product_id:           c.product_id,
-            qty:                  c.qty,
-            price_override_inr:   c.price_override,
-          })),
+          shipping_inr: orderType === "shipping" ? (parseInt(document.getElementById("shippingInr").value) || 0) : 0,
+          note: document.getElementById("adminNote").value.trim() || null,
+          items,
         };
 
-        const { data: _sessC } = await supabase.auth.getSession();
-        const _tokC = _sessC?.session?.access_token || "";
-        const _respC = await fetch("https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-create-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + _tokC,
-            "apikey": SUPABASE_ANON_KEY
-          },
-          body: JSON.stringify(payload)
-        });
-        const data = await _respC.json();
-        const error = _respC.ok ? null : { message: data.error || ("HTTP " + _respC.status) };
-
-        if (error) throw new Error(error.message);
+        const data = await callFn("admin-create-order", payload);
         if (!data?.ok) throw new Error(data?.error || "Unknown error");
 
         submitMsg.textContent = "";
-        const shortId         = data.order_id?.slice(0, 8).toUpperCase() || "—";
+        const shortId = data.order_id?.slice(0, 8).toUpperCase() || "—";
 
-        {
+        if (data.payment_mode === "paid") {
+          result.className = "";
+          resultContent.innerHTML = `
+            <div style="font-weight:900; font-size:16px; color:#166534; margin-bottom:8px;">✅ Sale Completed!</div>
+            <div class="small" style="margin-bottom:12px;">
+              <strong>Order #${shortId}</strong> — Total: <strong>${money(data.total_inr)}</strong>
+            </div>
+            <div id="paidActionsRow" style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn secondary" id="invoiceBtn2" style="padding:8px 14px; font-size:13px;">📄 Generating invoice…</button>
+              <button class="btn secondary" id="newOrderBtn2" style="padding:8px 14px; font-size:13px;">Create another</button>
+            </div>
+            ${orderType === "shipping" ? `<div id="shipSlot2" style="margin-top:12px;">
+              <button class="btn" id="shipNowBtn2" style="padding:8px 14px; font-size:13px;">🚀 Ship Now — choose courier</button>
+            </div>` : ""}`;
+          result.style.display = "block";
+
+          document.getElementById("newOrderBtn2")?.addEventListener("click", resetForm);
+          const invBtn = document.getElementById("invoiceBtn2");
+          invBtn.disabled = true;
+          generateInvoice(data.order_id, invBtn); // auto-generate right away — it's a "direct invoice"
+
+          const shipBtn2 = document.getElementById("shipNowBtn2");
+          if (shipBtn2) {
+            shipBtn2.addEventListener("click", function() {
+              startShipOptions(this, data.order_id, document.getElementById("shipSlot2"));
+            });
+          }
+
+          toast("Sale recorded ✅", "#166534");
+
+        } else {
           const link = data.payment_link_url;
           const phone = document.getElementById("cPhone").value.replace(/\D/g, "");
           const phone91 = phone.length === 10 ? "91" + phone : phone;
@@ -771,6 +969,9 @@
               <div class="small" style="font-weight:700; margin-bottom:4px;">Payment Link:</div>
               <a href="${safeHref(link)}" target="_blank" rel="noopener noreferrer" style="color:var(--brand); font-size:13px;">${escapeHtml(link)}</a>
             </div>
+            <div class="small" style="opacity:.65; margin-bottom:10px;">
+              Once the customer pays, this order will show a 🚀 Ship Now button in Admin → Orders.
+            </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <a class="btn" href="${safeHref(waLink)}" target="_blank" rel="noopener noreferrer" style="padding:8px 14px; font-size:13px; background:#25d366; border-color:#25d366;">
                 📲 Send via WhatsApp
@@ -785,9 +986,7 @@
             navigator.clipboard.writeText(link).then(() => toast("Link copied! ✅", "#166534"));
           });
           document.getElementById("newOrderBtn2")?.addEventListener("click", resetForm);
-          document.getElementById("invoiceBtn2")?.addEventListener("click", function() {
-            generateInvoice(data.order_id, this);
-          });
+          document.getElementById("invoiceBtn2")?.addEventListener("click", function() { generateInvoice(data.order_id, this); });
           toast("Payment link generated! Share it via WhatsApp ✅", "#166534");
         }
 
@@ -804,63 +1003,127 @@
       }
     });
 
-
     // ── Generate invoice for a just-created order ────────────────────────
     async function generateInvoice(orderId, btn) {
       if (!orderId) { toast("No order ID — cannot generate invoice", "#dc2626"); return; }
-      const originalText = btn.textContent;
       btn.disabled = true;
       btn.textContent = "Generating…";
       try {
-        const { data: _sessI } = await supabase.auth.getSession();
-        const _tokI = _sessI?.session?.access_token || "";
-        const _respI = await fetch("https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-generate-invoice", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + _tokI,
-            "apikey": SUPABASE_ANON_KEY
-          },
-          body: JSON.stringify({ order_id: orderId })
-        });
-        const inv = await _respI.json();
-        if (!_respI.ok) { toast("Invoice error: " + (inv.error || "HTTP " + _respI.status), "#dc2626"); return; }
+        const inv = await callFn("admin-generate-invoice", { order_id: orderId });
         const invUrl = inv.invoice_url;
-        if (!invUrl) { toast("Invalid invoice URL", "#dc2626"); return; }
+        if (!invUrl) { toast("Invalid invoice URL", "#dc2626"); btn.textContent = "📄 Generate Invoice"; return; }
         const w = window.open(invUrl, "_blank", "noopener,noreferrer");
         if (w) w.opener = null;
         btn.textContent = "Open Invoice ↗";
         btn.onclick = function() { const w2 = window.open(invUrl, "_blank", "noopener,noreferrer"); if (w2) w2.opener = null; };
-        toast("Invoice generated ✅  — " + (inv.invoice_number || ""), "#166534");
+        toast("Invoice ready ✅  — " + (inv.invoice_number || ""), "#166534");
       } catch (e) {
         toast("Invoice error: " + e.message, "#dc2626");
-        btn.textContent = originalText;
+        btn.textContent = "📄 Generate Invoice";
       } finally {
         btn.disabled = false;
       }
     }
 
+    // ── Ship an order right after it's paid: live courier picker ─────────
+    async function startShipOptions(btn, orderId, slot) {
+      btn.disabled = true;
+      const oldText = btn.textContent;
+      btn.textContent = "Loading couriers…";
+      try {
+        const r = await callFn("admin-create-shipment", { order_id: orderId, action: "get_options" });
+        const couriers = r?.couriers || [];
+        if (!couriers.length) throw new Error("No couriers available for this pincode");
+        renderCourierPicker2(slot, orderId, couriers);
+      } catch (e) {
+        toast("Error: " + e.message, "#dc2626");
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+
+    function renderShipButton2(slot, orderId) {
+      slot.innerHTML = `<button class="btn" id="shipNowBtn2" style="padding:8px 14px; font-size:13px;">🚀 Ship Now — choose courier</button>`;
+      const btn = slot.querySelector("#shipNowBtn2");
+      btn.addEventListener("click", () => startShipOptions(btn, orderId, slot));
+    }
+
+    function renderCourierPicker2(slot, orderId, couriers) {
+      const rows = couriers.map((c, i) => `
+        <label style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid ${i === 0 ? "#93c5fd" : "#e5e7eb"};border-radius:8px;margin-bottom:6px;cursor:pointer;background:#fff;">
+          <input type="radio" name="courier-choice-2" value="${escapeAttr(String(c.courier_id))}" ${i === 0 ? "checked" : ""} style="margin:0;flex-shrink:0;" />
+          <span style="flex:1;font-size:13px;">
+            <strong>${escapeHtml(c.courier_name || "Courier")}</strong>
+            ${c.is_recommended ? `<span style="margin-left:6px;font-size:11px;font-weight:800;color:#166534;">★ Recommended</span>` : ""}
+            <br><span style="color:#64748b;font-size:12px;">₹${Number(c.rate || 0).toFixed(2)}${c.etd_days ? ` • Est. ${escapeHtml(String(c.etd_days))}` : ""}</span>
+          </span>
+        </label>`).join("");
+
+      slot.innerHTML = `
+        <div style="border:1px solid #bae6fd;border-radius:10px;padding:10px;background:#f8fbff;max-width:420px;">
+          <div style="font-weight:700;font-size:12px;margin-bottom:8px;color:#1e40af;">Choose a courier</div>
+          ${rows}
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn" data-role="confirm-ship2" style="padding:8px 14px;font-size:13px;">Confirm & Ship</button>
+            <button class="btn secondary" data-role="cancel-ship2" style="padding:8px 14px;font-size:13px;">Cancel</button>
+          </div>
+        </div>`;
+
+      slot.querySelector("[data-role='cancel-ship2']").addEventListener("click", () => renderShipButton2(slot, orderId));
+
+      slot.querySelector("[data-role='confirm-ship2']").addEventListener("click", async (evt) => {
+        const confirmBtn = evt.currentTarget;
+        const cancelBtn = slot.querySelector("[data-role='cancel-ship2']");
+        const chosen = slot.querySelector("input[type='radio']:checked");
+        const courierId = chosen ? chosen.value : null;
+        const courierName = chosen ? couriers.find(c => String(c.courier_id) === courierId)?.courier_name : null;
+        if (!confirm(`Ship this order via ${courierName || "the selected courier"} now?\n\nThis creates a real shipment and requests courier pickup.`)) return;
+
+        confirmBtn.disabled = true;
+        cancelBtn.disabled = true;
+        confirmBtn.textContent = "Creating shipment…";
+        try {
+          const r = await callFn("admin-create-shipment", { order_id: orderId, courier_id: courierId });
+          if (!r?.ok) throw new Error(r?.error || "Shipping failed");
+          slot.innerHTML = `<div style="font-weight:800;color:#166534;font-size:13px;">✅ Shipped — AWB ${escapeHtml(r.awb || "")}${r.courier ? ` via ${escapeHtml(r.courier)}` : ""}</div>`;
+          toast(`Shipped! AWB ${r.awb || "pending"} 🚚`, "#166534");
+        } catch (e) {
+          toast("Ship error: " + e.message, "#dc2626");
+          confirmBtn.disabled = false;
+          cancelBtn.disabled = false;
+          confirmBtn.textContent = "Confirm & Ship";
+        }
+      });
+    }
+
     // ── Reset form for next order ─────────────────────────────────────────
     function resetForm() {
       cart.length = 0;
+      quickRows = [{ title: "", price: "", qty: 1 }];
       renderCart();
-      document.getElementById("cName").value      = "";
-      document.getElementById("cPhone").value     = "";
-      document.getElementById("cEmail").value     = "";
-      document.getElementById("aLine1").value     = "";
-      document.getElementById("aLine2").value     = "";
-      document.getElementById("aCity").value      = "";
-      document.getElementById("aState").value     = "";
-      document.getElementById("aPincode").value   = "";
+      renderQuickRows();
+      setItemMode("catalog");
+
+      document.getElementById("cName").value  = "";
+      document.getElementById("cPhone").value = "";
+      document.getElementById("cEmail").value = "";
+      document.getElementById("aLine1").value = "";
+      document.getElementById("aLine2").value = "";
+      document.getElementById("aCity").value  = "";
+      document.getElementById("aState").value = "";
+      document.getElementById("aPincode").value = "";
       document.getElementById("shippingInr").value = "0";
-      document.getElementById("shippingInrNoAddr").value = "0";
-      document.getElementById("adminNote").value  = "";
+      document.getElementById("adminNote").value = "";
+
+      document.getElementById("typeWalkin").checked = true;
+      document.getElementById("pmLink").checked = true;
+      paidVia = null;
+      document.querySelectorAll(".subpill").forEach(x => x.classList.remove("selected"));
+      applyOrderType();
+      applyPaymentModeChoice();
+
       document.getElementById("resultPanel").style.display = "none";
       document.getElementById("submitMsg").textContent = "";
-      document.getElementById("pmRazorpay").checked = true;
-      document.getElementById("hasAddressToggle").checked = false;
-      applyAddressToggle();
-      updatePaymentUI();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 

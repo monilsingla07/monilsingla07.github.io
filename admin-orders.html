@@ -93,8 +93,9 @@
 
         <select id="methodFilter" class="input" style="max-width:180px;">
           <option value="">All payment types</option>
-          <option value="cod">Cash on Delivery</option>
           <option value="razorpay">Online (Razorpay)</option>
+          <option value="manual">Manual / In-store</option>
+          <option value="cod">Cash on Delivery</option>
         </select>
 
         <input id="search" class="input" placeholder="Search phone or order ID…" style="max-width:260px;" />
@@ -219,8 +220,14 @@
         return `<span class="sbadge ${s.cls}">${s.label}</span>`;
       }
 
-      function paymentPill(method) {
+      const MANUAL_VIA_LABEL = { cash: "💵 Cash", card: "💳 Card", upi: "📱 UPI", other: "🏪 In-store" };
+
+      function paymentPill(method, receivedVia) {
         if (method === "cod") return `<span class="pm-pill cod">💵 COD</span>`;
+        if (method === "manual") {
+          const label = MANUAL_VIA_LABEL[receivedVia] || "🏪 In-store";
+          return `<span class="pm-pill cod">${label}</span>`;
+        }
         return `<span class="pm-pill online">💳 Online</span>`;
       }
 
@@ -232,7 +239,8 @@
 
       function renderOrder(o) {
         const isCod         = o.payment_method === "cod";
-        const isOnline      = !isCod;
+        const isManual      = o.payment_method === "manual";
+        const isOnline      = o.payment_method === "razorpay";
         const shortId       = (o.id || "").slice(0, 8).toUpperCase();
         const phone         = o.customer_phone || "";
         const addr          = o.shipping_address;
@@ -274,7 +282,7 @@
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
                   <span style="font-weight:900;font-size:15px;">Order #${shortId}</span>
                   ${statusBadge(o.status)}
-                  ${paymentPill(o.payment_method)}
+                  ${paymentPill(o.payment_method, o.payment_received_via)}
                   ${isCodPending  ? `<span style="background:#fef3c7;color:#b45309;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;">⚠ Needs confirmation</span>` : ""}
                   ${needsShipping ? `<span style="background:#dbeafe;color:#1e40af;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;">📦 Ready to ship</span>` : ""}
                 </div>
@@ -336,12 +344,14 @@
             <div class="action-bar ship-bar">
               <div style="font-weight:800;font-size:13px;margin-bottom:6px;">📦 Ship this order</div>
               <div class="small" style="color:#1e40af;margin-bottom:10px;">
-                One click creates the Shiprocket shipment, assigns a courier + AWB, and requests pickup.
+                Pick a courier, then confirm — this creates the Shiprocket shipment, assigns that courier's AWB, and requests pickup.
               </div>
-              <button class="btn" style="padding:10px 16px;font-size:13px;white-space:nowrap;margin-bottom:12px;"
-                      data-action="ship-auto" data-id="${escapeAttr(o.id)}">
-                🚀 Ship Now (auto)
-              </button>
+              <div class="ship-slot" data-slot-id="${escapeAttr(o.id)}" style="margin-bottom:12px;">
+                <button class="btn" style="padding:10px 16px;font-size:13px;white-space:nowrap;"
+                        data-action="ship-options" data-id="${escapeAttr(o.id)}">
+                  🚀 Ship Now — choose courier
+                </button>
+              </div>
               <div class="small" style="color:#64748b;margin:2px 0 6px;">— or, if you already shipped it directly in Shiprocket —</div>
               <div class="awb-row">
                 <input class="input awb-input" placeholder="Shiprocket AWB number"
@@ -458,6 +468,90 @@
         return r.data;
       }
 
+      // ── Courier picker for "Ship Now" ──────────────────────────────────
+      function wireShipOptionsButton(btn) {
+        if (!btn) return;
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const slot = btn.closest(".ship-slot");
+          btn.disabled = true;
+          const oldText = btn.textContent;
+          btn.textContent = "Loading couriers…";
+          try {
+            const r = await callFn("admin-create-shipment", { order_id: id, action: "get_options" });
+            if (!r.ok) { if (!r.handled) throw new Error("Could not load couriers"); return; }
+            const couriers = r.data?.couriers || [];
+            if (!couriers.length) throw new Error("No couriers available for this pincode");
+            renderCourierPicker(slot, id, couriers);
+          } catch (e) {
+            toast("Error: " + e.message, "#dc2626");
+            btn.disabled = false;
+            btn.textContent = oldText;
+          }
+        });
+      }
+
+      function renderShipButton(slot, orderId) {
+        slot.innerHTML = `
+          <button class="btn" style="padding:10px 16px;font-size:13px;white-space:nowrap;"
+                  data-action="ship-options" data-id="${escapeAttr(orderId)}">
+            🚀 Ship Now — choose courier
+          </button>`;
+        wireShipOptionsButton(slot.querySelector("button[data-action='ship-options']"));
+      }
+
+      function renderCourierPicker(slot, orderId, couriers) {
+        const rows = couriers.map((c, i) => `
+          <label style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid ${i === 0 ? "#93c5fd" : "#e5e7eb"};border-radius:8px;margin-bottom:6px;cursor:pointer;background:#fff;">
+            <input type="radio" name="courier-choice" value="${escapeAttr(String(c.courier_id))}" ${i === 0 ? "checked" : ""} style="margin:0;flex-shrink:0;" />
+            <span style="flex:1;font-size:13px;">
+              <strong>${escapeHtml(c.courier_name || "Courier")}</strong>
+              ${c.is_recommended ? `<span style="margin-left:6px;font-size:11px;font-weight:800;color:#166534;">★ Recommended</span>` : ""}
+              <br><span style="color:#64748b;font-size:12px;">₹${Number(c.rate || 0).toFixed(2)}${c.etd_days ? ` • Est. ${escapeHtml(String(c.etd_days))}` : ""}</span>
+            </span>
+          </label>`).join("");
+
+        slot.innerHTML = `
+          <div style="border:1px solid #bae6fd;border-radius:10px;padding:10px;background:#f8fbff;">
+            <div style="font-weight:700;font-size:12px;margin-bottom:8px;color:#1e40af;">Choose a courier</div>
+            ${rows}
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="btn" data-role="confirm-ship" style="padding:8px 14px;font-size:13px;">Confirm & Ship</button>
+              <button class="btn secondary" data-role="cancel-ship" style="padding:8px 14px;font-size:13px;">Cancel</button>
+            </div>
+          </div>`;
+
+        slot.querySelector("[data-role='cancel-ship']").addEventListener("click", () => {
+          renderShipButton(slot, orderId);
+        });
+
+        slot.querySelector("[data-role='confirm-ship']").addEventListener("click", async (evt) => {
+          const confirmBtn = evt.currentTarget;
+          const cancelBtn = slot.querySelector("[data-role='cancel-ship']");
+          const chosen = slot.querySelector("input[type='radio']:checked");
+          const courierId = chosen ? chosen.value : null;
+          const courierName = chosen ? (couriers.find(c => String(c.courier_id) === courierId)?.courier_name) : null;
+          if (!confirm(`Ship order ${orderId.slice(0,8).toUpperCase()} via ${courierName || "the selected courier"} now?\n\nThis creates a real shipment and requests courier pickup.`)) return;
+
+          confirmBtn.disabled = true;
+          cancelBtn.disabled = true;
+          confirmBtn.textContent = "Creating shipment…";
+          try {
+            const r = await callFn("admin-create-shipment", { order_id: orderId, courier_id: courierId });
+            if (!r.ok) { if (!r.handled) throw new Error("Shipment creation failed"); return; }
+            const awb = r.data?.awb;
+            const courier = r.data?.courier ? ` via ${r.data.courier}` : "";
+            toast(`Shipped 🚚 AWB ${awb}${courier}`, "#166534");
+            load();
+          } catch (e) {
+            toast("Ship error: " + e.message, "#dc2626");
+            confirmBtn.disabled = false;
+            cancelBtn.disabled = false;
+            confirmBtn.textContent = "Confirm & Ship";
+          }
+        });
+      }
+
       function wireEvents() {
         // Confirm COD
         list.querySelectorAll("button[data-action='confirm-cod']").forEach(btn => {
@@ -479,29 +573,9 @@
           });
         });
 
-        // Ship Now (auto) — creates the real Shiprocket shipment/AWB/pickup
-        list.querySelectorAll("button[data-action='ship-auto']").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const id = btn.dataset.id;
-            if (!confirm(`Ship order ${id.slice(0,8).toUpperCase()} via Shiprocket now?\n\nThis creates a real shipment and requests courier pickup.`)) return;
-
-            btn.disabled = true;
-            const oldText = btn.textContent;
-            btn.textContent = "Creating shipment…";
-            try {
-              const r = await callFn("admin-create-shipment", { order_id: id });
-              if (!r.ok) { if (!r.handled) throw new Error("Shipment creation failed"); return; }
-              const awb = r.data?.awb;
-              const courier = r.data?.courier ? ` via ${r.data.courier}` : "";
-              toast(`Shipped 🚚 AWB ${awb}${courier}`, "#166534");
-              load();
-            } catch (e) {
-              toast("Error: " + e.message, "#dc2626");
-              btn.disabled = false;
-              btn.textContent = oldText;
-            }
-          });
-        });
+        // Ship Now — choose courier: step 1 loads live courier options,
+        // step 2 (after picking one) actually creates the shipment/AWB/pickup.
+        list.querySelectorAll("button[data-action='ship-options']").forEach(wireShipOptionsButton);
 
         // Mark shipped
         list.querySelectorAll("button[data-action='ship']").forEach(btn => {
