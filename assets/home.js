@@ -23,7 +23,9 @@ function normalizeProducts(rows = []) {
     const imgs = (p.product_images ?? [])
       .slice()
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-    return { ...p, image_url: imgs[0]?.image_url ?? "" };
+    const inv = Number(p.inventory_qty || 0);
+    const res = Number(p.reserved_qty || 0);
+    return { ...p, image_url: imgs[0]?.image_url ?? "", available_qty: Math.max(0, inv - res) };
   });
 }
 
@@ -70,7 +72,7 @@ async function hydrateHomeCollections(){
   try{
     const { data, error } = await supabase
       .from("collections")
-      .select("name,slug,description,is_active,created_at")
+      .select("name,slug,description,cover_image_url,is_active,created_at")
       .eq("is_active", true)
       .order("created_at", { ascending: false })
       .limit(6);
@@ -83,36 +85,51 @@ async function hydrateHomeCollections(){
       return;
     }
 
-    box.innerHTML = rows.map(c => `
-      <a class="cat-tile" href="products.html?collection=${encodeURIComponent(c.slug)}">
-        <div class="cat-title">${escapeHtml(c.name)}</div>
-        <div class="cat-sub">${escapeHtml(c.description || "Explore")}</div>
-      </a>
-    `).join("");
+    box.innerHTML = rows.map(c => {
+      const photo = safeCssUrl(c.cover_image_url || "");
+      const cls = photo ? "cat-tile has-photo" : "cat-tile";
+      const style = photo ? ` style="background-image:url('${photo}')"` : "";
+      return `
+        <a class="${cls}" href="products.html?collection=${encodeURIComponent(c.slug)}"${style}>
+          <div class="cat-title">${escapeHtml(c.name)}</div>
+          <div class="cat-sub">${escapeHtml(c.description || "Explore")}</div>
+        </a>
+      `;
+    }).join("");
   } catch(e){
     box.innerHTML = `<div class="small">Could not load collections.</div>`;
   }
 }
 
 function productCard(p) {
-  const img = p.image_url
-    ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title ?? "")}" loading="lazy">`
-    : `<div class="img-placeholder" aria-label="${escapeAttr(p.title ?? "")}"></div>`;
+  const base = Number(p.price_inr || 0);
+  const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
+  const hasSale = sale != null && sale > 0 && sale < base;
+  const pctOff = hasSale ? Math.round((1 - sale / base) * 100) : 0;
+  const available = Number(p.available_qty || 0);
+  const soldOut = available <= 0;
 
-  const inv = Number(p.inventory_qty || 0);
-  const res = Number(p.reserved_qty || 0);
-  const available = Math.max(0, inv - res);
+  const priceHtml = hasSale
+    ? `<span class="p-card-original">${moneyINR(base)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
+    : `<span class="p-card-price">${moneyINR(base)}</span>`;
+
+  const imgHtml = p.image_url
+    ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">`
+    : `<div class="p-card-img-empty"></div>`;
 
   return `
-    <div class="card product-card">
+    <div class="p-card">
       <a href="product.html?id=${encodeURIComponent(p.id)}" class="product-link">
-        ${img}
-        <div class="p">
-          <div class="product-title">${escapeHtml(p.title ?? "")}</div>
-          <div class="product-price">${moneyINR(p.price_inr)}</div>
-          <div class="small" style="margin-top:6px;">
-            ${available > 0 ? `In stock (${available})` : "Sold out"}
-          </div>
+        <div class="p-card-img">
+          ${imgHtml}
+          ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
+          ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-title">${escapeHtml(p.title ?? "")}</div>
+          <div class="p-card-pricing">${priceHtml}</div>
+          ${!soldOut && available <= 3 ? `<div class="p-card-stock low">Only ${available} left</div>` : ""}
+          ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
         </div>
       </a>
     </div>
@@ -144,7 +161,7 @@ async function fetchMostLoved(limit = 6) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,title,price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count, product_images(image_url, sort_order)"
+      "id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count, product_images(image_url, sort_order)"
     )
     .eq("is_active", true)
     .order("view_count", { ascending: false })
@@ -160,7 +177,7 @@ async function fetchLatestActive(limit = 6) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,title,price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
+      "id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
     )
     .eq("is_active", true)
     .order("created_at", { ascending: false })
