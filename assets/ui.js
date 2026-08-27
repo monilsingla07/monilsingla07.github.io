@@ -105,7 +105,7 @@ export function renderHeader(active = "") {
     <!-- Top bar -->
     <div class="topbar">
       <div class="container topbar-inner">
-        <div class="topbar-left">Complimentary shipping across India<span class="topbar-sep">&nbsp;·&nbsp;7-day returns</span></div>
+        <div class="topbar-left">Complimentary shipping across India</div>
         <div class="topbar-right">
           <a href="about.html">About</a>
           <a href="shipping.html">Shipping</a>
@@ -162,7 +162,6 @@ export function renderHeader(active = "") {
                 <a href="new-arrivals.html">New Arrivals</a>
                 <a href="collections.html">Collections</a>
                 <a href="sale.html">Sale</a>
-                <a href="blogs.html">Blogs</a>
               </nav>
 
               <div class="mobile-drawer-section">
@@ -183,7 +182,6 @@ export function renderHeader(active = "") {
           <a href="new-arrivals.html">New Arrivals</a>
           <a href="collections.html">Collections</a>
           <a href="sale.html">Sale</a>
-          <a href="blogs.html">Blogs</a>
         </nav>
 
         <!-- Desktop: Center logo -->
@@ -222,13 +220,12 @@ export function renderFooter() {
           <a href="products.html">Sarees</a>
           <a href="collections.html">Collections</a>
           <a href="sale.html">Sale</a>
-          <a href="blogs.html">Blogs</a>
         </div>
 
         <div>
           <div class="footer-title">Need Help</div>
           <a href="shipping.html">Shipping Policy</a>
-          <a href="returns.html">Returns & Cancellations</a>
+          <a href="returns.html">Returns &amp; Cancellations</a>
           <a href="help.html">FAQs</a>
           <a href="track.html">Track Order</a>
         </div>
