@@ -149,6 +149,16 @@
       </section>
 
 
+      <!-- Instagram reels (admin-managed) -->
+      <section class="section" id="instagramReelsSection">
+        <div class="section-head">
+          <h2 class="section-title">From Our Instagram</h2>
+          <a class="section-link section-follow-link" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noopener noreferrer">Follow @ahamstree</a>
+        </div>
+
+        <div id="instagramReelsStrip" class="reel-strip"></div>
+      </section>
+
       <!-- Testimonials -->
       <section class="section">
         <div class="section-head">
@@ -172,6 +182,7 @@
     <script type="module">
       import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
       import { hydrateHome } from "./assets/home.js";
+      import { hydrateInstagramReels } from "./assets/instagram-reels.js";
 
       document.getElementById("header").innerHTML = renderHeader("home");
       hydrateHeaderAuth();
@@ -179,6 +190,7 @@
 
       // Home page dynamic sections
       hydrateHome();
+      hydrateInstagramReels();
 
       // Testimonials (static for now)
       // Testimonials (static for now)

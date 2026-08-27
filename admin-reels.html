@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reel Manager — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+    .pm-row .full { grid-column: 1 / -1; }
+    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-hint { font-size: 11px; opacity: .55; margin-top: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-list-item + .pm-list-item { margin-top: 10px; }
+    .pm-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge.active { background: #dcfce7; color: #166534; }
+    .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
+    @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:840px;">
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">Reel Manager</h2>
+          <div class="small" style="opacity:.6; margin-top:4px;">Controls the "From Our Instagram" section on the homepage. Changes go live immediately — no code changes needed.</div>
+        </div>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="pm-card">
+        <div style="font-weight:900;" id="formTitle">New reel</div>
+        <input type="hidden" id="f_id" />
+
+        <div class="pm-row">
+          <div class="full">
+            <label class="pm-label">Instagram Reel / post URL</label>
+            <input id="f_reel_url" class="input" placeholder="https://www.instagram.com/reel/XXXXXXXXXXX/" />
+            <div class="pm-hint">Open the reel on Instagram, tap Share → Copy Link, and paste it here. Must be a real instagram.com/reel/, /p/ or /tv/ link.</div>
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Caption (optional — shown as the fallback link text if the embed doesn't load)</label>
+            <input id="f_caption" class="input" placeholder="e.g. Behind the scenes: our Banarasi weave" />
+          </div>
+
+          <div>
+            <label class="pm-label">Display order</label>
+            <input id="f_sort_order" class="input" type="number" step="1" value="0" />
+            <div class="pm-hint">Lower numbers show first.</div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px; margin-top:22px;">
+            <input id="f_is_active" type="checkbox" style="width:16px; height:16px;" />
+            <label for="f_is_active" style="font-size:13px; font-weight:700;">Active (visitors will see this reel)</label>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+          <button id="btnSave" class="btn">Save reel</button>
+          <button id="btnReset" class="btn secondary" type="button">New / clear form</button>
+          <div id="formStatus" class="small" style="align-self:center;"></div>
+        </div>
+      </div>
+
+      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All reels</div>
+      <div id="reelList"></div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr, safeHref } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-reels";
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+    const formStatus   = document.getElementById("formStatus");
+    const formTitle    = document.getElementById("formTitle");
+
+    function showGateError(emoji, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function authedFetch(body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    function clearForm() {
+      document.getElementById("f_id").value = "";
+      document.getElementById("f_reel_url").value = "";
+      document.getElementById("f_caption").value = "";
+      document.getElementById("f_sort_order").value = "0";
+      document.getElementById("f_is_active").checked = false;
+      formTitle.textContent = "New reel";
+      formStatus.textContent = "";
+    }
+
+    function fillForm(r) {
+      document.getElementById("f_id").value = r.id;
+      document.getElementById("f_reel_url").value = r.reel_url || "";
+      document.getElementById("f_caption").value = r.caption || "";
+      document.getElementById("f_sort_order").value = String(r.sort_order ?? 0);
+      document.getElementById("f_is_active").checked = !!r.is_active;
+      formTitle.textContent = "Editing reel";
+      formStatus.textContent = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderList(reels) {
+      const list = document.getElementById("reelList");
+      if (!reels.length) {
+        list.innerHTML = '<div class="small" style="opacity:.6;">No reels yet — add one above.</div>';
+        return;
+      }
+      list.innerHTML = reels.map(r => `
+        <div class="pm-list-item">
+          <div>
+            <div style="font-weight:800;">${escapeHtml(r.caption || "Untitled reel")}
+              <span class="pm-badge ${r.is_active ? "active" : "inactive"}" style="margin-left:8px;">${r.is_active ? "Active" : "Inactive"}</span>
+            </div>
+            <div class="small" style="opacity:.65; margin-top:4px; word-break:break-all;">
+              <a href="${safeHref(r.reel_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(r.reel_url || "")} ↗</a>
+            </div>
+            <div class="small" style="opacity:.5; margin-top:2px;">Order ${escapeHtml(String(r.sort_order ?? 0))} · Updated ${new Date(r.updated_at).toLocaleString("en-IN")}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(r.id)}">Edit</button>
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-delete="${escapeAttr(r.id)}">Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      let reelsById = new Map(reels.map(r => [r.id, r]));
+
+      list.querySelectorAll("button[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => fillForm(reelsById.get(btn.dataset.edit)));
+      });
+      list.querySelectorAll("button[data-delete]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("Delete this reel? This cannot be undone.")) return;
+          try {
+            await authedFetch({ action: "delete", id: btn.dataset.delete });
+            clearForm();
+            await loadList();
+          } catch (e) {
+            alert("Delete failed: " + e.message);
+          }
+        });
+      });
+    }
+
+    async function loadList() {
+      const result = await authedFetch({ action: "list" });
+      renderList(result.reels || []);
+    }
+
+    document.getElementById("btnReset").addEventListener("click", clearForm);
+
+    document.getElementById("btnSave").addEventListener("click", async () => {
+      formStatus.textContent = "Saving…";
+      try {
+        const payload = {
+          action: "save",
+          id: document.getElementById("f_id").value || null,
+          reel_url: document.getElementById("f_reel_url").value,
+          caption: document.getElementById("f_caption").value,
+          sort_order: Number(document.getElementById("f_sort_order").value || 0),
+          is_active: document.getElementById("f_is_active").checked,
+        };
+        const result = await authedFetch(payload);
+        fillForm(result.reel);
+        formStatus.textContent = "Saved ✅";
+        await loadList();
+      } catch (e) {
+        formStatus.textContent = "Error: " + e.message;
+      }
+    });
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+
+        const adminResult = await supabase
+          .from("admin_users")
+          .select("email")
+          .eq("email", session.user.email.toLowerCase())
+          .maybeSingle();
+
+        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        clearForm();
+        await loadList();
+      } catch (e) {
+        console.error("Reel admin page error:", e);
+        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>
