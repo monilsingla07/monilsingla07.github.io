@@ -743,6 +743,28 @@
 
       // Start live countdown timers for payment_link_created orders
       startCountdowns(orders);
+
+      // ── Scroll to + highlight a specific order ──────────────────────────
+      // Used when arriving here from checkout.html/success.html after an
+      // interrupted payment (e.g. orders.html#order-<uuid>), so the person
+      // lands directly on the order with the live countdown instead of
+      // having to scan the whole list.
+      highlightOrderFromHash();
+    }
+
+    function highlightOrderFromHash() {
+      const hash = decodeURIComponent(location.hash || "");
+      const match = hash.match(/^#order-(.+)$/);
+      if (!match) return;
+
+      const card = document.getElementById(`order-card-${match[1]}`);
+      if (!card) return;
+
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      const prevBoxShadow = card.style.boxShadow;
+      card.style.transition = "box-shadow .3s ease";
+      card.style.boxShadow = "0 0 0 3px var(--brand, #7c3aed)";
+      setTimeout(() => { card.style.boxShadow = prevBoxShadow; }, 2600);
     }
 
     loadOrders();

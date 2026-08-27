@@ -155,34 +155,18 @@
       }
     }
 
-    function showCancelled({ pendingPaymentLink } = {}) {
+    // Any outcome other than a confirmed "paid" sends the person to My
+    // Orders instead of showing an interstitial card here. orders.html is
+    // now the single place that owns the pending-payment countdown/timer and
+    // reflects real server-side order + reservation state, so there's no
+    // reason to duplicate that UI (or a stale localStorage guess) here.
+    function redirectToOrders(orderId) {
       hide("loadingState");
-      hide("successState");
-      hide("pendingState");
-      show("cancelledState");
-
-      // Do NOT clear cart — user may want to retry
-      // Keep pending_payment in localStorage so checkout.html can resume
-
-      // Show retry button if we still have the payment link
-      const stored = (() => {
-        try { return JSON.parse(localStorage.getItem("ahamstree_pending_payment") || ""); } catch { return null; }
-      })();
-      const retryUrl = pendingPaymentLink || stored?.payment_link_url;
-
-      if (retryUrl) {
-        const retryBox = document.getElementById("retryBox");
-        const retryLink = document.getElementById("retryPayLink");
-        retryBox.style.display = "block";
-        retryLink.href = retryUrl;
+      if (orderId) {
+        window.location.replace(`orders.html#order-${orderId}`);
+      } else {
+        window.location.replace("orders.html");
       }
-    }
-
-    function showPending() {
-      hide("loadingState");
-      hide("successState");
-      hide("cancelledState");
-      show("pendingState");
     }
 
     // ─── Main logic ────────────────────────────────────────────────────────────
@@ -198,7 +182,7 @@
       }
 
       if (rpStatus === "cancelled") {
-        showCancelled();
+        redirectToOrders(rpOrderId);
         return;
       }
 
@@ -224,33 +208,31 @@
                 showSuccess({ orderId: order.id });
                 return;
               }
-              if (order.status === "failed" || order.status === "cancelled") {
-                showCancelled({ pendingPaymentLink: stored.payment_link_url });
-                return;
-              }
-              if (order.status === "payment_link_created" || order.status === "created") {
-                // Still pending — maybe they navigated here too early
-                showPending();
-                return;
-              }
+              // failed / cancelled / still payment_link_created / created —
+              // in every non-paid case, Orders is the right place to be.
+              redirectToOrders(order.id);
+              return;
             }
           } catch (_) {
-            // DB check failed — fall through to pending
+            // DB check failed — fall through below
           }
+
+          redirectToOrders(stored.order_id);
+          return;
         }
 
-        // No stored order or DB lookup failed — show pending state
-        showPending();
+        // No stored order — nothing to show here, send them to Orders.
+        redirectToOrders(null);
         return;
       }
 
       // ── Fallback: unknown state ────────────────────────────────────────────
-      showPending();
+      redirectToOrders(rpOrderId);
     }
 
     init().catch((e) => {
       console.error("success.html init error:", e);
-      showPending(); // safe fallback — never show a false success
+      redirectToOrders(rpOrderId); // safe fallback — never show a false success
     });
   </script>
 </body>
