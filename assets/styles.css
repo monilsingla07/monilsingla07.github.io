@@ -1444,6 +1444,27 @@ header .nav {
 .pd-go { min-width: 140px; }
 .pd-desc { margin-top: 14px; opacity: .88; line-height: 1.6; }
 
+/* Delivery time estimate (pincode check) on the product page */
+.pd-delivery-check {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-warm);
+}
+.pd-delivery-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.pd-delivery-input {
+  flex: 1 1 160px;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  letter-spacing: 0.5px;
+}
+.pd-delivery-btn { flex: 0 0 auto; padding: 9px 18px; font-size: 13px; }
+.pd-delivery-result { margin-top: 8px; min-height: 1em; line-height: 1.4; }
+
 /* Sticky mobile add-to-cart bar — keeps price + Add to cart reachable
    without scrolling back up, once the main action row scrolls off screen. */
 .pd-mobile-bar {
