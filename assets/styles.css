@@ -1472,3 +1472,32 @@ header .nav {
 .product-link { display: block; text-decoration: none; color: inherit; }
 .img-placeholder { height: 280px; background: var(--bg-warm); }
 .hidden { display: none !important; }
+
+/* ═══════════════════════════
+   INSTAGRAM REELS (homepage)
+═══════════════════════════ */
+.reel-strip {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+.reel-strip::-webkit-scrollbar { display: none; }
+
+.reel-tile {
+  flex: 0 0 auto;
+  width: 300px;
+  max-width: 80vw;
+  scroll-snap-align: start;
+}
+.reel-tile iframe { border-radius: 12px !important; }
+
+.section-follow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
