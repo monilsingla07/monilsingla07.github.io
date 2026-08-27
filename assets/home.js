@@ -30,38 +30,90 @@ function normalizeProducts(rows = []) {
 }
 
 
+const CATEGORY_LABELS = { saree: "Sarees", suit: "Suits" };
+
+function weaveGroupHtml(categoryKey, rows){
+  const label = CATEGORY_LABELS[categoryKey] || categoryKey;
+  const tiles = rows.map(w => `
+    <a class="cat-tile" href="products.html?type=${encodeURIComponent(categoryKey)}&weave=${encodeURIComponent(w.slug)}">
+      <div class="cat-title">${escapeHtml(w.name)}</div>
+      <div class="cat-sub">${escapeHtml(w.description || "")}</div>
+    </a>
+  `).join("");
+  return `
+    <div class="weave-group">
+      <div class="weave-group-head">
+        <div class="weave-group-title">${escapeHtml(label)}</div>
+        <a class="weave-group-link" href="products.html?type=${encodeURIComponent(categoryKey)}">View all ${escapeHtml(label)} →</a>
+      </div>
+      <div class="category-tiles">${tiles}</div>
+    </div>
+  `;
+}
+
 async function hydrateCategoryTiles(){
   const box = document.getElementById("homeCategoryTiles");
   if (!box) return;
 
-  // Fallback tiles (shown if the weave_lines table doesn't exist yet)
-  const fallback = [
-    { name: "Chanderi Handloom", slug: "chanderi-handloom", description: "Cotton Silk & Silk" },
-    { name: "Chanderi Cotton", slug: "chanderi-cotton", description: "Hand block print" }
-  ];
+  // Fallback (shown only if the live query below fails entirely) — mirrors
+  // the real hierarchy: Sarees come in both weaves, Suits only in Chanderi
+  // Handloom.
+  const fallback = {
+    saree: [
+      { name: "Chanderi Handloom", slug: "chanderi-handloom", description: "Cotton Silk & Silk" },
+      { name: "Chanderi Cotton", slug: "chanderi-cotton", description: "Hand block print" },
+    ],
+    suit: [
+      { name: "Chanderi Handloom", slug: "chanderi-handloom", description: "Cotton Silk & Silk" },
+    ],
+  };
+
+  const renderFallback = () => {
+    box.innerHTML = Object.entries(fallback).map(([cat, rows]) => weaveGroupHtml(cat, rows)).join("");
+  };
 
   try{
+    // Which (category, weave) combinations actually have at least one live
+    // product — this is what previously went missing: the old query just
+    // listed every weave_lines row flat, with every tile hardcoded to link
+    // to type=saree, so Suits never appeared here at all and clicking a
+    // weave tile never actually filtered the listing page by that weave
+    // (see the matching fix in products.html). Grouping by real product
+    // data means this stays correct automatically as products/categories/
+    // weaves change, instead of a hardcoded mapping going stale.
     const { data, error } = await supabase
-      .from("weave_lines")
-      .select("name,slug,description,sort_order,is_active")
+      .from("products")
+      .select("category, weave_line:weave_lines!inner(id,name,slug,sort_order,is_active)")
       .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .order("name", { ascending: true });
+      .eq("weave_line.is_active", true);
 
-    const rows = (error || !data || data.length === 0) ? fallback : data;
-    box.innerHTML = rows.map(w => `
-      <a class="cat-tile" href="products.html?type=saree&weave=${encodeURIComponent(w.slug)}">
-        <div class="cat-title">${escapeHtml(w.name)}</div>
-        <div class="cat-sub">${escapeHtml(w.description || "")}</div>
-      </a>
-    `).join("");
+    if (error || !data || data.length === 0) { renderFallback(); return; }
+
+    const groups = {}; // category -> Map(slug -> weave_line row)
+    for (const row of data) {
+      const cat = row.category || "saree";
+      const wl = row.weave_line;
+      if (!wl) continue;
+      if (!groups[cat]) groups[cat] = new Map();
+      if (!groups[cat].has(wl.slug)) groups[cat].set(wl.slug, wl);
+    }
+
+    const order = ["saree", "suit"];
+    const categoryKeys = Object.keys(groups).sort((a, b) => {
+      const ia = order.indexOf(a), ib = order.indexOf(b);
+      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+    });
+
+    if (categoryKeys.length === 0) { renderFallback(); return; }
+
+    box.innerHTML = categoryKeys.map(cat => {
+      const rows = Array.from(groups[cat].values()).sort((a, b) =>
+        (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name))
+      );
+      return weaveGroupHtml(cat, rows);
+    }).join("");
   } catch(e){
-    box.innerHTML = fallback.map(w => `
-      <a class="cat-tile" href="products.html?type=saree&weave=${encodeURIComponent(w.slug)}">
-        <div class="cat-title">${escapeHtml(w.name)}</div>
-        <div class="cat-sub">${escapeHtml(w.description || "")}</div>
-      </a>
-    `).join("");
+    renderFallback();
   }
 }
 
