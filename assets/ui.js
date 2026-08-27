@@ -1,6 +1,7 @@
 // assets/ui.js
 import { cartCount } from "./cart.js";
 import { supabase } from "./supabase.js";
+import { mountWelcomePopup } from "./welcome-popup.js";
 
 // ── Header offset (keeps content below fixed header) ──
 let _headerOffsetInitDone = false;
@@ -341,6 +342,11 @@ function close() {
 export async function hydrateHeaderAuth() {
   initMobileMenu();
   initHeaderOffset();
+
+  // Site-wide welcome popup — every page calls hydrateHeaderAuth() already,
+  // so this is the one place that mounts it without touching every page.
+  // Wrapped defensively so a popup problem can never break header hydration.
+  try { mountWelcomePopup(); } catch (_) {}
 
   const aDesktop = document.getElementById("accountLink");
   const aMobile  = document.getElementById("accountLinkMobile");
