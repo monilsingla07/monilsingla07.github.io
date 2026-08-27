@@ -49,12 +49,71 @@
       window.location.href = "login.html";
     }
 
+    // ── Validation (mirrors checkout.html's "Shipping details" form so the
+    // saved-profile form and the payment-time checkout form behave the same
+    // way and accept/reject exactly the same values) ─────────────────────────
+    const isValidEmail     = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(e);
+    const sanitizeText     = (s) => String(s || "").trim().replace(/\s+/g, " ");
+    const normalizePhone10 = (raw) => {
+      let d = String(raw || "").replace(/\D/g, "");
+      if (d.startsWith("91") && d.length === 12) d = d.slice(2);
+      if (d.startsWith("0")  && d.length === 11) d = d.slice(1);
+      return d;
+    };
+    const normalizePincode6 = (raw) => String(raw || "").replace(/\D/g, "");
+
+    const validateField = (name, valueRaw) => {
+      if (name === "full_name") {
+        const v = sanitizeText(valueRaw);
+        if (!v || v.length < 3) return { ok: false, message: "Enter a valid full name (min 3 chars)." };
+        return { ok: true };
+      }
+      if (name === "phone") {
+        const p = normalizePhone10(valueRaw);
+        if (!p || p.length !== 10 || !/^[6-9]\d{9}$/.test(p))
+          return { ok: false, message: "Enter a valid 10-digit Indian mobile (starts 6–9)." };
+        return { ok: true };
+      }
+      if (name === "email") {
+        const e = sanitizeText(valueRaw).toLowerCase();
+        if (!e) return { ok: true }; // optional, same as checkout
+        if (!isValidEmail(e)) return { ok: false, message: "Enter a valid email or leave blank." };
+        return { ok: true };
+      }
+      if (name === "address_line1") {
+        const v = sanitizeText(valueRaw);
+        if (!v || v.length < 5) return { ok: false, message: "Enter Address line 1 (min 5 chars)." };
+        return { ok: true };
+      }
+      if (name === "city") {
+        if (!sanitizeText(valueRaw)) return { ok: false, message: "Enter your city." };
+        return { ok: true };
+      }
+      if (name === "state") {
+        if (!sanitizeText(valueRaw)) return { ok: false, message: "Enter your state." };
+        return { ok: true };
+      }
+      if (name === "pincode") {
+        const p = normalizePincode6(valueRaw);
+        if (!p || p.length !== 6) return { ok: false, message: "Enter a valid 6-digit pincode." };
+        return { ok: true };
+      }
+      return { ok: true };
+    };
+
+    // Address fields are optional here (unlike checkout) — a customer may
+    // just want to save their name/phone/email before ever placing an
+    // order. Whatever they DO fill in is still validated with the same
+    // rules as checkout, so a saved profile can never be malformed and
+    // fail silently later when it's used to prefill a real order.
+    const requiredFields = ["full_name", "phone"];
+
     function renderForm(p) {
       app.innerHTML = `
         <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
           <div>
             <div style="font-weight:900;">My Details</div>
-            <div class="small" style="margin-top:6px;">Email: ${escapeHtml(user.email ?? "-")}</div>
+            <div class="small" style="margin-top:6px;">Login email: ${escapeHtml(user.email ?? "-")}</div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
             <a class="btn secondary" href="orders.html">Orders</a>
@@ -64,47 +123,60 @@
 
         <hr/>
 
-        <div style="display:grid;gap:10px;grid-template-columns: 1fr 1fr;">
-          <div style="grid-column: 1 / -1;">
-            <label class="small">Full name</label>
-            <input id="full_name" class="input" value="${escapeAttr(p.full_name ?? "")}" autocomplete="name" />
+        <div id="warn" class="small" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:12px; border:1px solid rgba(220,20,60,.22); color:crimson;"></div>
+
+        <form id="profileForm">
+          <div style="display:grid;gap:10px;grid-template-columns: 1fr 1fr;">
+            <div style="grid-column: 1 / -1;">
+              <label class="small">Full name</label>
+              <input id="full_name" name="full_name" class="input" value="${escapeAttr(p.full_name ?? "")}" placeholder="e.g., Monil Gupta" autocomplete="name" autocapitalize="words" />
+            </div>
+
+            <div>
+              <label class="small">Phone</label>
+              <input id="phone" name="phone" class="input" type="tel" value="${escapeAttr(p.phone ?? "")}" maxlength="10" placeholder="10-digit mobile" inputmode="numeric" autocomplete="tel" />
+            </div>
+
+            <div>
+              <label class="small">Email (optional)</label>
+              <input id="email" name="email" class="input" type="email" value="${escapeAttr(p.email ?? user.email ?? "")}" placeholder="name@email.com" inputmode="email" autocomplete="email" />
+            </div>
+
+            <div style="grid-column: 1 / -1;">
+              <label class="small">Address line 1</label>
+              <input id="address_line1" name="address_line1" class="input" value="${escapeAttr(p.address_line1 ?? "")}" placeholder="House / street" autocomplete="address-line1" autocapitalize="words" />
+            </div>
+
+            <div style="grid-column: 1 / -1;">
+              <label class="small">Address line 2 (optional)</label>
+              <input id="address_line2" name="address_line2" class="input" value="${escapeAttr(p.address_line2 ?? "")}" placeholder="Landmark" autocomplete="address-line2" autocapitalize="words" />
+            </div>
+
+            <div>
+              <label class="small">City</label>
+              <input id="city" name="city" class="input" value="${escapeAttr(p.city ?? "")}" autocomplete="address-level2" autocapitalize="words" />
+            </div>
+
+            <div>
+              <label class="small">State</label>
+              <input id="state" name="state" class="input" value="${escapeAttr(p.state ?? "")}" autocomplete="address-level1" autocapitalize="words" />
+            </div>
+
+            <div style="grid-column: 1 / -1;">
+              <label class="small">Pincode</label>
+              <input id="pincode" name="pincode" class="input" value="${escapeAttr(p.pincode ?? "")}" maxlength="6" placeholder="e.g., 560001" inputmode="numeric" autocomplete="postal-code" />
+            </div>
           </div>
 
-          <div>
-            <label class="small">Phone</label>
-            <input id="phone" class="input" value="${escapeAttr(p.phone ?? "")}" inputmode="numeric" autocomplete="tel" />
+          <div class="small" style="opacity:.7; margin-top:10px;">
+            This is the same information used to prefill your Shipping details at checkout — keep it up to date to check out faster.
           </div>
 
-          <div>
-            <label class="small">Pincode</label>
-            <input id="pincode" class="input" value="${escapeAttr(p.pincode ?? "")}" inputmode="numeric" autocomplete="postal-code" />
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center;">
+            <button id="save" type="button" class="btn">Save profile</button>
+            <div id="status" class="small" style="align-self:center;"></div>
           </div>
-
-          <div style="grid-column: 1 / -1;">
-            <label class="small">Address line 1</label>
-            <input id="address_line1" class="input" value="${escapeAttr(p.address_line1 ?? "")}" autocomplete="address-line1" />
-          </div>
-
-          <div style="grid-column: 1 / -1;">
-            <label class="small">Address line 2</label>
-            <input id="address_line2" class="input" value="${escapeAttr(p.address_line2 ?? "")}" autocomplete="address-line2" />
-          </div>
-
-          <div>
-            <label class="small">City</label>
-            <input id="city" class="input" value="${escapeAttr(p.city ?? "")}" autocomplete="address-level2" />
-          </div>
-
-          <div>
-            <label class="small">State</label>
-            <input id="state" class="input" value="${escapeAttr(p.state ?? "")}" autocomplete="address-level1" />
-          </div>
-        </div>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
-          <button id="save" class="btn">Save profile</button>
-          <div id="status" class="small" style="align-self:center;"></div>
-        </div>
+        </form>
       `;
 
       document.getElementById("logout").onclick = async () => {
@@ -112,24 +184,91 @@
         window.location.href = "login.html";
       };
 
-      document.getElementById("save").onclick = async () => {
+      const form    = document.getElementById("profileForm");
+      const warnBox = document.getElementById("warn");
+      const saveBtn = document.getElementById("save");
+
+      const showWarn  = (msg) => { warnBox.style.display = "block"; warnBox.textContent = msg; };
+      const clearWarn = ()    => { warnBox.style.display = "none";  warnBox.textContent = ""; };
+
+      const markInvalid = (el, msg) => { el.classList.add("is-invalid"); el.classList.remove("is-valid"); el.dataset.error = msg; };
+      const markValid   = (el)      => { el.classList.remove("is-invalid"); el.classList.add("is-valid"); delete el.dataset.error; };
+      const clearMarks  = (el)      => { el.classList.remove("is-invalid", "is-valid"); delete el.dataset.error; };
+
+      const validateAll = ({ showErrors = false } = {}) => {
+        let allOk = true;
+        let firstError = null;
+
+        form.querySelectorAll("input[name]").forEach((input) => {
+          const name = input.name;
+          const res  = validateField(name, input.value);
+          const isRequired = requiredFields.includes(name);
+          const isEmpty    = input.value.trim() === "";
+
+          // Optional fields left blank are fine and shown neutral, not invalid.
+          if (!isRequired && isEmpty) { clearMarks(input); return; }
+
+          if (!res.ok) {
+            allOk = false;
+            if (showErrors || input.dataset.touched === "1") markInvalid(input, res.message);
+            else clearMarks(input);
+            if (!firstError) firstError = res.message;
+          } else {
+            markValid(input);
+          }
+        });
+
+        saveBtn.disabled      = !allOk;
+        saveBtn.style.opacity = allOk ? "1" : "0.6";
+        saveBtn.style.cursor  = allOk ? "pointer" : "not-allowed";
+
+        if (showErrors) {
+          if (!allOk && firstError) showWarn(firstError);
+          else clearWarn();
+        }
+        return allOk;
+      };
+
+      form.querySelectorAll("input[name]").forEach((input) => {
+        const name = input.name;
+        input.addEventListener("input", () => {
+          if (name === "phone")   input.value = String(input.value || "").replace(/\D/g, "").slice(0, 10);
+          if (name === "pincode") input.value = String(input.value || "").replace(/\D/g, "").slice(0, 6);
+          validateAll({ showErrors: false });
+        });
+        input.addEventListener("blur", () => {
+          input.dataset.touched = "1";
+          validateAll({ showErrors: false });
+        });
+      });
+
+      validateAll({ showErrors: false });
+
+      saveBtn.onclick = async () => {
+        form.querySelectorAll("input[name]").forEach(i => (i.dataset.touched = "1"));
+        if (!validateAll({ showErrors: true })) return;
+
         const status = document.getElementById("status");
         status.textContent = "Saving…";
+        saveBtn.disabled = true;
 
         const payload = {
           user_id: user.id,
-          full_name: document.getElementById("full_name").value.trim() || null,
-          phone: document.getElementById("phone").value.trim() || null,
-          address_line1: document.getElementById("address_line1").value.trim() || null,
-          address_line2: document.getElementById("address_line2").value.trim() || null,
-          city: document.getElementById("city").value.trim() || null,
-          state: document.getElementById("state").value.trim() || null,
-          pincode: document.getElementById("pincode").value.trim() || null,
+          full_name: sanitizeText(document.getElementById("full_name").value) || null,
+          phone: normalizePhone10(document.getElementById("phone").value) || null,
+          email: sanitizeText(document.getElementById("email").value).toLowerCase() || null,
+          address_line1: sanitizeText(document.getElementById("address_line1").value) || null,
+          address_line2: sanitizeText(document.getElementById("address_line2").value) || null,
+          city: sanitizeText(document.getElementById("city").value) || null,
+          state: sanitizeText(document.getElementById("state").value) || null,
+          pincode: normalizePincode6(document.getElementById("pincode").value) || null,
           updated_at: new Date().toISOString(),
         };
 
         const { error } = await supabase.from("profiles").upsert(payload);
         status.textContent = error ? ("Error: " + error.message) : "Saved ✅";
+        saveBtn.disabled = false;
+        validateAll({ showErrors: false });
       };
     }
 

@@ -103,7 +103,7 @@
     async function loadProfile(userId) {
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name,phone,address_line1,address_line2,city,state,pincode")
+        .select("full_name,phone,email,address_line1,address_line2,city,state,pincode")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -168,6 +168,9 @@
 
           <div class="small nav-muted">Phone</div>
           <div>${safeText(profile.phone)}</div>
+
+          <div class="small nav-muted">Contact email</div>
+          <div>${safeText(profile.email)}</div>
         </div>
 
         <div class="acct-row">

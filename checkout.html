@@ -721,7 +721,7 @@
 
       const { data: profile } = await sbMod.supabase
         .from("profiles")
-        .select("full_name,phone,address_line1,address_line2,city,state,pincode")
+        .select("full_name,phone,email,address_line1,address_line2,city,state,pincode")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -742,6 +742,7 @@
         };
         set("full_name",     profile.full_name);
         set("phone",         profile.phone);
+        set("email",         profile.email);
         set("address_line1", profile.address_line1);
         set("address_line2", profile.address_line2);
         set("city",          profile.city);
