@@ -140,6 +140,7 @@
     const limit = 50;
     let lastTotal = 0;
     let lastShown = 0;
+    let currentOrders = [];
 
     function showAdminError(emoji, title, message) {
       loadingState.style.display = "block";
@@ -253,17 +254,192 @@
         return `https://wa.me/${full}?text=${encodeURIComponent(text)}`;
       }
 
+      // Renders the "Customer / Ship to / Items" block. Extracted so both
+      // the normal card render and the Cancel button on the edit form can
+      // produce the exact same markup without duplicating it.
+      function orderDetailsHtml(o) {
+        const addr = o.shipping_address;
+        const addrText = addr
+          ? [addr.full_name, addr.address_line1, addr.address_line2, addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")
+          : "—";
+        const itemsHtml = (o.order_items || []).map(it =>
+          `<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6;">
+             <span class="small">${Number(it.qty)}× ${escapeHtml(it.title)}</span>
+             <span class="small" style="font-weight:700;white-space:nowrap;">${money(it.price_inr)}</span>
+           </div>`
+        ).join("");
+
+        return `
+          <div class="order-details" data-details="${escapeAttr(o.id)}">
+            <div style="padding:0 16px 12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <div class="section-lbl">Customer</div>
+                <div style="font-weight:700;">${escapeHtml(o.customer_name || "—")}</div>
+                <div class="small">${escapeHtml(o.customer_phone || "—")}</div>
+                ${o.customer_email ? `<div class="small" style="opacity:.6;">${escapeHtml(o.customer_email)}</div>` : ""}
+              </div>
+              <div>
+                <div class="section-lbl">Ship to</div>
+                <div class="small" style="line-height:1.5;">${escapeHtml(addrText)}</div>
+              </div>
+            </div>
+
+            <div style="padding:0 16px 10px;">
+              <div class="section-lbl">Items</div>
+              ${itemsHtml || `<div class="small" style="opacity:.5;">No items recorded.</div>`}
+            </div>
+          </div>`;
+      }
+
+      // Inline edit form, swapped in over orderDetailsHtml() for an
+      // admin-created order. Item qty/price editing is only offered when
+      // the order has no catalog product_id line items — see
+      // admin-edit-order for why.
+      function renderEditForm(o) {
+        const addr = o.shipping_address || {};
+        const isShipping = o.order_type === "shipping";
+        const items = o.order_items || [];
+        const hasCatalogItems = items.some(it => it.product_id != null);
+
+        const itemRowHtml = (it) => `
+          <div class="edit-item-row" style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+            <input class="input edit-item-title" value="${escapeAttr(it.title || "")}" placeholder="Item description" style="flex:2;font-size:13px;padding:6px 8px;" ${hasCatalogItems ? "readonly" : ""} />
+            <input class="input edit-item-qty" type="number" min="1" value="${Number(it.qty || 1)}" style="width:64px;font-size:13px;padding:6px 8px;" ${hasCatalogItems ? "readonly" : ""} />
+            <input class="input edit-item-price" type="number" min="0" value="${Number(it.price_inr || 0)}" style="width:96px;font-size:13px;padding:6px 8px;" ${hasCatalogItems ? "readonly" : ""} />
+            ${hasCatalogItems ? "" : `<button type="button" class="btn secondary" data-role="remove-item" style="padding:6px 10px;font-size:12px;">✕</button>`}
+          </div>`;
+
+        const itemRows = items.map(itemRowHtml).join("");
+
+        return `
+          <div class="order-details order-edit-form" data-details="${escapeAttr(o.id)}" style="padding:12px 16px;background:#fafafa;border-top:1px solid #f3f4f6;border-bottom:1px solid #f3f4f6;">
+            <div class="section-lbl" style="margin-bottom:8px;">Edit order</div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+              <label class="small">Name
+                <input class="input edit-name" value="${escapeAttr(o.customer_name || "")}" style="width:100%;font-size:13px;padding:7px 9px;margin-top:3px;" />
+              </label>
+              <label class="small">Phone
+                <input class="input edit-phone" value="${escapeAttr(o.customer_phone || "")}" style="width:100%;font-size:13px;padding:7px 9px;margin-top:3px;" />
+              </label>
+            </div>
+            <label class="small" style="display:block;margin-bottom:10px;">Email
+              <input class="input edit-email" value="${escapeAttr(o.customer_email || "")}" style="width:100%;font-size:13px;padding:7px 9px;margin-top:3px;" />
+            </label>
+
+            ${isShipping ? `
+            <div class="section-lbl" style="margin-bottom:6px;">Ship to</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+              <input class="input edit-addr-line1" placeholder="Address line 1" value="${escapeAttr(addr.address_line1 || "")}" style="font-size:13px;padding:7px 9px;" />
+              <input class="input edit-addr-line2" placeholder="Address line 2 (optional)" value="${escapeAttr(addr.address_line2 || "")}" style="font-size:13px;padding:7px 9px;" />
+              <input class="input edit-addr-city" placeholder="City" value="${escapeAttr(addr.city || "")}" style="font-size:13px;padding:7px 9px;" />
+              <input class="input edit-addr-state" placeholder="State" value="${escapeAttr(addr.state || "")}" style="font-size:13px;padding:7px 9px;" />
+              <input class="input edit-addr-pincode" placeholder="Pincode" value="${escapeAttr(addr.pincode || "")}" style="font-size:13px;padding:7px 9px;" />
+            </div>` : ""}
+
+            <div class="section-lbl" style="margin-bottom:6px;">Items</div>
+            ${hasCatalogItems ? `<div class="small" style="opacity:.6;margin-bottom:8px;">This order has catalog inventory items — quantities/prices can't be edited here yet. Customer and address changes above still apply.</div>` : ""}
+            <div class="edit-items-list">${itemRows}</div>
+            ${hasCatalogItems ? "" : `<button type="button" class="btn secondary" data-role="add-item" style="padding:6px 12px;font-size:12px;margin-top:2px;">+ Add item</button>`}
+
+            <div style="display:flex;gap:8px;margin-top:14px;">
+              <button type="button" class="btn" data-role="save-edit" style="padding:9px 16px;font-size:13px;">Save changes</button>
+              <button type="button" class="btn secondary" data-role="cancel-edit" style="padding:9px 16px;font-size:13px;">Cancel</button>
+            </div>
+          </div>`;
+      }
+
+      function wireEditForm(order) {
+        const form = document.querySelector(`.order-edit-form[data-details="${order.id}"]`);
+        if (!form) return;
+
+        const itemsList = form.querySelector(".edit-items-list");
+
+        form.querySelectorAll("[data-role='remove-item']").forEach(b => {
+          b.addEventListener("click", () => b.closest(".edit-item-row").remove());
+        });
+
+        const addBtn = form.querySelector("[data-role='add-item']");
+        if (addBtn) {
+          addBtn.addEventListener("click", () => {
+            const row = document.createElement("div");
+            row.className = "edit-item-row";
+            row.style.cssText = "display:flex;gap:6px;align-items:center;margin-bottom:6px;";
+            row.innerHTML = `
+              <input class="input edit-item-title" placeholder="Item description" style="flex:2;font-size:13px;padding:6px 8px;" />
+              <input class="input edit-item-qty" type="number" min="1" value="1" style="width:64px;font-size:13px;padding:6px 8px;" />
+              <input class="input edit-item-price" type="number" min="0" value="0" style="width:96px;font-size:13px;padding:6px 8px;" />
+              <button type="button" class="btn secondary" data-role="remove-item" style="padding:6px 10px;font-size:12px;">✕</button>`;
+            row.querySelector("[data-role='remove-item']").addEventListener("click", () => row.remove());
+            itemsList.appendChild(row);
+          });
+        }
+
+        form.querySelector("[data-role='cancel-edit']").addEventListener("click", () => {
+          form.outerHTML = orderDetailsHtml(order);
+        });
+
+        form.querySelector("[data-role='save-edit']").addEventListener("click", async () => {
+          const saveBtn = form.querySelector("[data-role='save-edit']");
+          const cancelBtn = form.querySelector("[data-role='cancel-edit']");
+          saveBtn.disabled = true;
+          cancelBtn.disabled = true;
+          saveBtn.textContent = "Saving…";
+
+          const payload = {
+            order_id: order.id,
+            customer_name: form.querySelector(".edit-name").value.trim(),
+            customer_phone: form.querySelector(".edit-phone").value.trim(),
+            customer_email: form.querySelector(".edit-email").value.trim(),
+          };
+
+          if (order.order_type === "shipping") {
+            payload.shipping_address = {
+              full_name: payload.customer_name,
+              address_line1: form.querySelector(".edit-addr-line1")?.value.trim() || "",
+              address_line2: form.querySelector(".edit-addr-line2")?.value.trim() || "",
+              city: form.querySelector(".edit-addr-city")?.value.trim() || "",
+              state: form.querySelector(".edit-addr-state")?.value.trim() || "",
+              pincode: form.querySelector(".edit-addr-pincode")?.value.trim() || "",
+            };
+          }
+
+          const hasCatalogItems = (order.order_items || []).some(it => it.product_id != null);
+          if (!hasCatalogItems) {
+            const rows = [...itemsList.querySelectorAll(".edit-item-row")];
+            const items = rows.map(row => ({
+              title: row.querySelector(".edit-item-title").value.trim(),
+              qty: Number(row.querySelector(".edit-item-qty").value || 0),
+              price_inr: Number(row.querySelector(".edit-item-price").value || 0),
+            })).filter(it => it.title);
+            if (!items.length) {
+              toast("Add at least one item", "#dc2626");
+              saveBtn.disabled = false; cancelBtn.disabled = false; saveBtn.textContent = "Save changes";
+              return;
+            }
+            payload.items = items;
+          }
+
+          try {
+            const r = await callFn("admin-edit-order", payload);
+            if (!r.ok) { if (!r.handled) throw new Error("Save failed"); return; }
+            toast("Order updated ✅", "#166534");
+            load();
+          } catch (e) {
+            toast("Error: " + e.message, "#dc2626");
+            saveBtn.disabled = false;
+            cancelBtn.disabled = false;
+            saveBtn.textContent = "Save changes";
+          }
+        });
+      }
+
       function renderOrder(o) {
         const isCod         = o.payment_method === "cod";
         const isManual      = o.payment_method === "manual";
         const isOnline      = o.payment_method === "razorpay";
         const shortId       = (o.id || "").slice(0, 8).toUpperCase();
         const phone         = o.customer_phone || "";
-        const addr          = o.shipping_address;
-
-        const addrText      = addr
-          ? [addr.full_name, addr.address_line1, addr.address_line2, addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")
-          : "—";
 
         const isCodPending  = o.status === "cod_pending";
         const needsShipping = ["confirmed", "paid"].includes(o.status) && !o.shiprocket_awb;
@@ -272,17 +448,18 @@
         const canRegen      = isOnline && ["payment_link_created", "payment_link_failed", "created", "failed", "payment_pending"].includes(o.status);
         const payHref       = o.razorpay_payment_link_url ? safeHref(o.razorpay_payment_link_url) : "";
 
+        // Admin-created orders (order_type set by admin-create-order.html —
+        // customer checkout never sets this) can be edited/deleted here.
+        // Editing is further blocked once the order has actually shipped or
+        // landed in a terminal status — matches admin-edit-order's own guard.
+        const isAdminCreated = !!o.order_type;
+        const isEditable     = isAdminCreated && !o.shiprocket_awb &&
+          ["paid", "confirmed", "payment_link_created", "cod_pending"].includes(o.status);
+
         const siteRoot      = window.location.origin;
         const confirmMsg    = `Hi ${o.customer_name || "there"}, your AhamStree Cash on Delivery order #${shortId} is confirmed! Total: ${money(o.total_inr)}. We'll dispatch it soon. 🙏`;
         const shippedMsg    = `Hi ${o.customer_name || "there"}, your AhamStree order #${shortId} has been shipped! 🎉 Track here: ${siteRoot}/track.html?awb=${encodeURIComponent(o.shiprocket_awb || "")}`;
         const reminderMsg   = `Hi ${o.customer_name || "there"}, your AhamStree order #${shortId} payment is pending. Complete it here: ${o.razorpay_payment_link_url || ""}`;
-
-        const itemsHtml = (o.order_items || []).map(it =>
-          `<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6;">
-             <span class="small">${Number(it.qty)}× ${escapeHtml(it.title)}</span>
-             <span class="small" style="font-weight:700;white-space:nowrap;">${money(it.price_inr)}</span>
-           </div>`
-        ).join("");
 
         const discountRow = Number(o.discount_inr) > 0
           ? `<div style="display:flex;justify-content:space-between;gap:8px;margin-top:4px;">
@@ -309,26 +486,12 @@
                 ${payHref ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${payHref}" target="_blank" rel="noopener noreferrer">View payment link</a>` : ""}
                 ${canRegen ? `<button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="regen" data-id="${escapeAttr(o.id)}">Regenerate link</button>` : ""}
                 <button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="invoice" data-id="${escapeAttr(o.id)}">Generate invoice</button>
+                ${isEditable ? `<button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="edit-order" data-id="${escapeAttr(o.id)}">✏️ Edit</button>` : ""}
+                <button class="btn secondary" style="padding:7px 12px;font-size:12px;color:crimson;border-color:crimson;" data-action="delete-order" data-id="${escapeAttr(o.id)}">🗑 Delete</button>
               </div>
             </div>
 
-            <div style="padding:0 16px 12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div>
-                <div class="section-lbl">Customer</div>
-                <div style="font-weight:700;">${escapeHtml(o.customer_name || "—")}</div>
-                <div class="small">${escapeHtml(phone || "—")}</div>
-                ${o.customer_email ? `<div class="small" style="opacity:.6;">${escapeHtml(o.customer_email)}</div>` : ""}
-              </div>
-              <div>
-                <div class="section-lbl">Ship to</div>
-                <div class="small" style="line-height:1.5;">${escapeHtml(addrText)}</div>
-              </div>
-            </div>
-
-            <div style="padding:0 16px 10px;">
-              <div class="section-lbl">Items</div>
-              ${itemsHtml || `<div class="small" style="opacity:.5;">No items recorded.</div>`}
-            </div>
+            ${orderDetailsHtml(o)}
 
             <div style="padding:10px 16px;border-top:1px solid #f3f4f6;background:#fafafa;font-size:13px;">
               ${discountRow}
@@ -474,6 +637,7 @@
         // If we got less than limit items, likely last page
         btnNext.disabled = orders.length < limit;
 
+        currentOrders = orders;
         list.innerHTML = orders.map(renderOrder).join("");
         wireEvents();
       }
@@ -644,6 +808,49 @@
               toast("Error: " + e.message, "#dc2626");
               btn.disabled = false;
             } finally {
+              btn.textContent = oldText;
+            }
+          });
+        });
+
+        // Edit order (admin-created orders only — see isEditable)
+        list.querySelectorAll("button[data-action='edit-order']").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.dataset.id;
+            const order = currentOrders.find(o => o.id === id);
+            if (!order) return;
+            const target = list.querySelector(`.order-details[data-details="${id}"]`);
+            if (!target) return;
+            target.outerHTML = renderEditForm(order);
+            wireEditForm(order);
+          });
+        });
+
+        // Delete order (permanent — releases/restocks any held inventory first)
+        list.querySelectorAll("button[data-action='delete-order']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            const order = currentOrders.find(o => o.id === id);
+            const shortId = id.slice(0, 8).toUpperCase();
+            const hasShipment = !!(order && (order.shiprocket_order_id || order.shiprocket_shipment_id));
+
+            let msg = `Permanently delete order ${shortId} (${order?.customer_name || "customer"}, ${money(order?.total_inr)})?\n\nThis cannot be undone.`;
+            if (hasShipment) {
+              msg += `\n\n⚠ This order has a Shiprocket shipment. Deleting it here does NOT cancel or remove it on Shiprocket's side — handle that separately if needed.`;
+            }
+            if (!confirm(msg)) return;
+
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Deleting…";
+            try {
+              const r = await callFn("admin-delete-order", { order_id: id });
+              if (!r.ok) { if (!r.handled) throw new Error("Delete failed"); return; }
+              toast("Order deleted 🗑", "#166534");
+              load();
+            } catch (e) {
+              toast("Error: " + e.message, "#dc2626");
+              btn.disabled = false;
               btn.textContent = oldText;
             }
           });
