@@ -54,7 +54,7 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
-    import { escapeHtml } from "./assets/safe.js";
+    import { escapeHtml, escapeAttr } from "./assets/safe.js";
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
@@ -98,29 +98,54 @@
       result.innerHTML = "";
       btn.disabled = true;
 
-      // Requires the Supabase Edge Function: shiprocket-track
-      const { data, error } = await supabase.functions.invoke("shiprocket-track", {
-        body: { awb: clean }
-      });
+      try {
+        // Requires the Supabase Edge Function: shiprocket-track
+        const { data, error } = await supabase.functions.invoke("shiprocket-track", {
+          body: { awb: clean }
+        });
 
-      btn.disabled = false;
+        if (error) {
+          // FIX: supabase.functions.invoke() only ever put a generic
+          // "Edge Function returned a non-2xx status code" in error.message —
+          // the function's real reason (order not found, no access, etc.)
+          // lives in error.context, which was never read here. Same fix
+          // already applied to the admin pages in an earlier round.
+          let msg = error.message || "Unknown error";
+          try {
+            if (error.context && typeof error.context.json === "function") {
+              const body = await error.context.json();
+              if (body?.error) msg = body.error;
+            }
+          } catch (_) { /* fall back to the generic message above */ }
+          status.textContent = "Could not fetch tracking: " + msg;
+          return;
+        }
 
-      if (error) {
-        status.textContent = "Could not fetch tracking: " + (error.message || "Unknown error");
-        return;
+        const tracking = data?.tracking_data;
+        const shipmentTrack = tracking?.shipment_track?.[0];
+        const current = shipmentTrack?.current_status || "";
+        const trackUrl = tracking?.track_url || "";
+        const safeUrl = trackUrl && /^https?:\/\//i.test(trackUrl) ? escapeAttr(trackUrl) : "";
+
+        if (data?.shipped === false) {
+          status.textContent = data.message || "This order has not been shipped yet.";
+          result.innerHTML = "";
+          return;
+        }
+
+        status.textContent = current ? ("Current status: " + current) : "Tracking loaded.";
+        result.innerHTML = `
+          ${safeUrl ? `<div class="small" style="margin-bottom:10px;"><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open Shiprocket tracking link</a></div>` : ``}
+          ${renderTimeline(tracking?.shipment_track_activities || [])}
+        `;
+      } catch (e) {
+        // FIX: with no try/catch, a thrown network error (not just a non-2xx
+        // response) left the button permanently disabled — this ensures it
+        // always gets re-enabled below no matter what goes wrong.
+        status.textContent = "Could not fetch tracking: " + (e?.message || "Network error");
+      } finally {
+        btn.disabled = false;
       }
-
-      const tracking = data?.tracking_data;
-      const shipmentTrack = tracking?.shipment_track?.[0];
-      const current = shipmentTrack?.current_status || "";
-      const trackUrl = tracking?.track_url || "";
-      const safeUrl = trackUrl && /^https?:\/\//i.test(trackUrl) ? trackUrl : "";
-
-      status.textContent = current ? ("Current status: " + current) : "Tracking loaded.";
-      result.innerHTML = `
-        ${safeUrl ? `<div class="small" style="margin-bottom:10px;"><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open Shiprocket tracking link</a></div>` : ``}
-        ${renderTimeline(tracking?.shipment_track_activities || [])}
-      `;
     }
 
     btn.addEventListener("click", () => doTrack(elAwb.value));
