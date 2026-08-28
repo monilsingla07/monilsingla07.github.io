@@ -1034,7 +1034,7 @@
         const r = await callFn("admin-create-shipment", { order_id: orderId, action: "get_options" });
         const couriers = r?.couriers || [];
         if (!couriers.length) throw new Error("No couriers available for this pincode");
-        renderCourierPicker2(slot, orderId, couriers);
+        renderCourierPicker2(slot, orderId, couriers, r?.computed_weight_kg);
       } catch (e) {
         toast("Error: " + e.message, "#dc2626");
         btn.disabled = false;
@@ -1048,7 +1048,7 @@
       btn.addEventListener("click", () => startShipOptions(btn, orderId, slot));
     }
 
-    function renderCourierPicker2(slot, orderId, couriers) {
+    function renderCourierPicker2(slot, orderId, couriers, weightKg) {
       const rows = couriers.map((c, i) => `
         <label style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid ${i === 0 ? "#93c5fd" : "#e5e7eb"};border-radius:8px;margin-bottom:6px;cursor:pointer;background:#fff;">
           <input type="radio" name="courier-choice-2" value="${escapeAttr(String(c.courier_id))}" ${i === 0 ? "checked" : ""} style="margin:0;flex-shrink:0;" />
@@ -1059,9 +1059,14 @@
           </span>
         </label>`).join("");
 
+      const weightNote = weightKg != null
+        ? `<div style="font-size:11px;color:#64748b;margin-bottom:8px;">Rates based on ${Number(weightKg).toFixed(2)} kg chargeable weight (packed product weight vs. box size, whichever is higher)</div>`
+        : "";
+
       slot.innerHTML = `
         <div style="border:1px solid #bae6fd;border-radius:10px;padding:10px;background:#f8fbff;max-width:420px;">
           <div style="font-weight:700;font-size:12px;margin-bottom:8px;color:#1e40af;">Choose a courier</div>
+          ${weightNote}
           ${rows}
           <div style="display:flex;gap:8px;margin-top:10px;">
             <button class="btn" data-role="confirm-ship2" style="padding:8px 14px;font-size:13px;">Confirm & Ship</button>
