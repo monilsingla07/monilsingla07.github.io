@@ -330,10 +330,10 @@ if (!sessionStorage.getItem(viewKey)) {
         }
 
         document.getElementById("breadcrumb-slot").innerHTML =
-          `<a class="page-breadcrumb" href="${href}">
+          `<a class="page-breadcrumb" href="${escapeAttr(href)}">
              <span class="bc-arrow">&#8592;</span>
-             <span class="bc-trail">${trail} /</span>
-             <span class="bc-label">${label}</span>
+             <span class="bc-trail">${escapeHtml(trail)} /</span>
+             <span class="bc-label">${escapeHtml(label)}</span>
            </a>`;
       })();
 
