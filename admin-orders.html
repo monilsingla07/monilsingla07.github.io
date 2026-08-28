@@ -722,11 +722,15 @@
           cancelBtn.disabled = true;
           confirmBtn.textContent = "Creating shipment…";
           try {
-            const r = await callFn("admin-create-shipment", { order_id: orderId, courier_id: courierId });
+            const fallbackCourierIds = courierId
+              ? couriers.filter(c => String(c.courier_id) !== courierId).map(c => c.courier_id)
+              : [];
+            const r = await callFn("admin-create-shipment", { order_id: orderId, courier_id: courierId, fallback_courier_ids: fallbackCourierIds });
             if (!r.ok) { if (!r.handled) throw new Error("Shipment creation failed"); return; }
             const awb = r.data?.awb;
             const courier = r.data?.courier ? ` via ${r.data.courier}` : "";
-            toast(`Shipped 🚚 AWB ${awb}${courier}`, "#166534");
+            const switched = r.data?.courier_switched ? " (auto-switched courier after a failed attempt)" : "";
+            toast(`Shipped 🚚 AWB ${awb}${courier}${switched}`, "#166534");
             load();
           } catch (e) {
             toast("Ship error: " + e.message, "#dc2626");
