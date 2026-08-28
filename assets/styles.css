@@ -1271,6 +1271,23 @@ header .nav {
   background: #25d366; box-shadow: 0 0 0 5px rgba(37,211,102,0.15);
   flex-shrink: 0;
 }
+/* FIX: on mobile this pill (with its "Need help?" label) was wide enough to
+   sit directly on top of card copy when scrolled over a card grid — e.g.
+   the "Festive Favourites" collection card's description text — and since
+   the whole card is a link, it also stole taps in that corner. Collapsing
+   to a small icon-only circle (standard WhatsApp-style FAB pattern) keeps
+   it reachable with a much smaller footprint, so it no longer overlaps
+   card text. Unchanged on desktop. */
+@media (max-width: 768px) {
+  .floating-cta {
+    width: 44px; height: 44px; padding: 0;
+    justify-content: center;
+  }
+  .floating-cta-label { display: none; }
+  .floating-cta-dot {
+    width: 11px; height: 11px;
+  }
+}
 
 /* ═══════════════════════════
    LIGHTBOX
