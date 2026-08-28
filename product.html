@@ -642,8 +642,30 @@ if (!sessionStorage.getItem(viewKey)) {
       } else {
         mobileBarBtn.addEventListener("click", () => addBtn.click());
       }
-      mobileBar.classList.add("visible");
       document.body.classList.add("has-mobile-cart-bar");
+
+      // FIX: this used to call mobileBar.classList.add("visible") right
+      // here, unconditionally — so the bar was already pinned over the
+      // SKU/stock line on first paint, before the visitor ever scrolled.
+      // The bar's own CSS comment says it's meant to appear "once the main
+      // action row scrolls off screen" — this IntersectionObserver on the
+      // real add-to-cart button (addBtn) is what actually implements that:
+      // show the sticky bar only once addBtn is no longer visible on
+      // screen, hide it again once it scrolls back into view.
+      if ("IntersectionObserver" in window) {
+        const addBtnObserver = new IntersectionObserver(
+          (entries) => {
+            const entry = entries[0];
+            mobileBar.classList.toggle("visible", !entry.isIntersecting);
+          },
+          { threshold: 0 },
+        );
+        addBtnObserver.observe(addBtn);
+      } else {
+        // No IntersectionObserver support — fall back to the old always-on
+        // behavior rather than never showing the bar at all.
+        mobileBar.classList.add("visible");
+      }
 
       // ===== Wishlist =====
       // NOTE: We use the shared wishlist helpers in assets/wishlist.js.

@@ -1,0 +1,269 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Returns — AhamStree</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .rbadge { display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;gap:4px; }
+    .rbadge.requested { background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe; }
+    .rbadge.approved  { background:#f0fdf4;color:#14532d;border:1px solid #86efac; }
+    .rbadge.rejected  { background:#fee2e2;color:#991b1b; }
+
+    .return-card { border-radius:16px;overflow:hidden;border:1px solid var(--border,#e5e7eb);background:#fff; }
+    .action-bar { padding:12px 16px;border-top:1px solid var(--border-light,#f3f4f6); }
+
+    .evidence-row { display:flex;gap:8px;flex-wrap:wrap;margin-top:10px; }
+    .evidence-thumb {
+      width:84px;height:84px;border-radius:10px;overflow:hidden;border:1.5px solid var(--border-light);
+      cursor:zoom-in;background:var(--bg-warm);
+    }
+    .evidence-thumb img { width:100%;height:100%;object-fit:cover;display:block; }
+
+    #toast {
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+      background:#111;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;
+      font-weight:700;opacity:0;transition:all .25s ease;pointer-events:none;z-index:9999;
+      white-space:nowrap;
+    }
+    #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+
+    #evidenceLightbox {
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;
+      align-items:center;justify-content:center;padding:20px;
+    }
+    #evidenceLightbox.open { display:flex; }
+    #evidenceLightbox img { max-width:100%;max-height:90vh;border-radius:8px; }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:860px;">
+    <div id="loadingState" style="text-align:center;padding:48px;opacity:.6;font-size:14px;">Verifying admin access…</div>
+
+    <div id="mainContent" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+        <div>
+          <h2 style="margin:0;">Admin — Returns</h2>
+          <div class="small" style="opacity:.65;margin-top:4px;">Review defect photos before approving — approving creates a real Shiprocket pickup.</div>
+        </div>
+        <a class="btn secondary" href="admin.html" style="padding:8px 14px;font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div id="statusMsg" class="small" style="margin-bottom:12px;opacity:.6;">Loading…</div>
+      <div id="list" style="display:grid;gap:14px;"></div>
+    </div>
+  </div>
+
+  <div id="evidenceLightbox"><img id="evidenceLightboxImg" /></div>
+  <div id="toast"></div>
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const loadingState = document.getElementById("loadingState");
+    const mainContent  = document.getElementById("mainContent");
+    const statusMsg    = document.getElementById("statusMsg");
+    const list         = document.getElementById("list");
+    const toastEl      = document.getElementById("toast");
+    const lightbox      = document.getElementById("evidenceLightbox");
+    const lightboxImg   = document.getElementById("evidenceLightboxImg");
+
+    function toast(msg, color) {
+      toastEl.textContent = msg;
+      toastEl.style.background = color || "#111";
+      toastEl.classList.add("show");
+      setTimeout(() => toastEl.classList.remove("show"), 2600);
+    }
+
+    lightbox.addEventListener("click", () => lightbox.classList.remove("open"));
+
+    function showAdminError(emoji, title, message) {
+      loadingState.style.display = "block";
+      mainContent.style.display = "none";
+      loadingState.innerHTML =
+        '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) { showAdminError("⚠️", "Auth Error", sessResult.error.message); return; }
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        loadingState.style.display = "none";
+        mainContent.style.display  = "block";
+        setupPage();
+      } catch (e) {
+        console.error("Admin page error:", e);
+        showAdminError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    function setupPage() {
+      async function callFn(action, extra) {
+        const { data, error } = await supabase.functions.invoke("admin-manage-return", {
+          body: { action, ...(extra || {}) },
+        });
+        if (error) {
+          if (error.status === 401) { window.location.href = "login.html"; return { ok: false, handled: true }; }
+          if (error.status === 403) { showAdminError("🔒", "Access Denied", "Your account does not have admin access."); return { ok: false, handled: true }; }
+          throw new Error(error.message || "Function error");
+        }
+        if (data?.error) throw new Error(data.error + (data.details ? " — " + data.details : ""));
+        return { ok: true, data };
+      }
+
+      function money(v) {
+        return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+      }
+      function formatDate(iso) {
+        if (!iso) return "—";
+        return new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+      }
+
+      function renderReturn(r) {
+        const shortId = escapeHtml(r.id.slice(0, 8).toUpperCase());
+        const items = (r.order_items || []).map(it =>
+          `<div class="small" style="padding:3px 0;">${Number(it.qty || 0)} × ${escapeHtml(it.title)}</div>`
+        ).join("");
+        const evidence = (r.evidence_urls || []).map((url, i) =>
+          `<div class="evidence-thumb" data-url="${escapeAttr(url)}"><img src="${escapeAttr(url)}" alt="Defect photo ${i + 1}" loading="lazy" /></div>`
+        ).join("");
+
+        const isPending = r.return_status === "requested";
+
+        return `
+          <div class="return-card" data-return-id="${escapeAttr(r.id)}">
+            <div style="padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border-light);">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                  <span style="font-weight:900;font-size:15px;">Order #${shortId}</span>
+                  <span class="rbadge ${escapeAttr(r.return_status)}">${escapeHtml(r.return_status)}</span>
+                </div>
+                <div class="small" style="opacity:.65;">Requested ${formatDate(r.return_requested_at)}</div>
+                <div class="small" style="opacity:.65;">${escapeHtml(r.customer_name || "")} · ${escapeHtml(r.customer_phone || "")}</div>
+              </div>
+              <div class="small" style="font-weight:700;">${money(r.total_inr)}</div>
+            </div>
+
+            <div style="padding:12px 16px;">
+              ${items}
+              <div style="margin-top:10px;font-weight:700;font-size:13px;">Reason given:</div>
+              <div class="small" style="margin-top:2px;">${escapeHtml(r.return_reason || "—")}</div>
+              <div class="evidence-row">${evidence || `<div class="small" style="opacity:.6;">No photos attached.</div>`}</div>
+              ${r.return_admin_note ? `<div class="small" style="margin-top:8px;color:#9a3412;">Admin note: ${escapeHtml(r.return_admin_note)}</div>` : ""}
+              ${r.return_awb ? `<div class="small" style="margin-top:8px;color:#1e40af;">Return AWB: <strong>${escapeHtml(r.return_awb)}</strong></div>` : ""}
+            </div>
+
+            ${isPending ? `
+            <div class="action-bar" style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn" style="padding:9px 16px;font-size:13px;" data-action="approve" data-id="${escapeAttr(r.id)}">
+                ✅ Approve & create Shiprocket pickup
+              </button>
+              <button class="btn secondary" style="padding:9px 16px;font-size:13px;color:crimson;border-color:crimson;" data-action="reject" data-id="${escapeAttr(r.id)}">
+                Reject
+              </button>
+            </div>` : ""}
+          </div>
+        `;
+      }
+
+      function wireEvents() {
+        list.querySelectorAll(".evidence-thumb").forEach(el => {
+          el.addEventListener("click", () => {
+            lightboxImg.src = el.dataset.url;
+            lightbox.classList.add("open");
+          });
+        });
+
+        list.querySelectorAll("button[data-action='approve']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            if (!confirm(`Approve this return and create a real Shiprocket pickup for order ${id.slice(0,8).toUpperCase()}?`)) return;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Creating pickup…";
+            try {
+              const r = await callFn("approve", { order_id: id });
+              if (!r.ok) { if (!r.handled) throw new Error("Approve failed"); return; }
+              toast(`Return approved — AWB ${r.data.awb || "pending"} 🚚`, "#166534");
+              load();
+            } catch (e) {
+              toast("Error: " + e.message, "#dc2626");
+              btn.disabled = false;
+              btn.textContent = oldText;
+            }
+          });
+        });
+
+        list.querySelectorAll("button[data-action='reject']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            const note = prompt("Reason for rejecting this return (shown internally only):", "") || "";
+            if (note === null) return;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Saving…";
+            try {
+              const r = await callFn("reject", { order_id: id, admin_note: note });
+              if (!r.ok) { if (!r.handled) throw new Error("Reject failed"); return; }
+              toast("Return rejected", "#6b7280");
+              load();
+            } catch (e) {
+              toast("Error: " + e.message, "#dc2626");
+              btn.disabled = false;
+              btn.textContent = oldText;
+            }
+          });
+        });
+      }
+
+      async function load() {
+        statusMsg.textContent = "Loading…";
+        try {
+          const r = await callFn("list");
+          if (!r.ok) return;
+          const returns = r.data.returns || [];
+          statusMsg.textContent = returns.length ? "" : "No return requests yet.";
+          list.innerHTML = returns.map(renderReturn).join("");
+          wireEvents();
+        } catch (e) {
+          statusMsg.textContent = "Could not load returns: " + e.message;
+        }
+      }
+
+      load();
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

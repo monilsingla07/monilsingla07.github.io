@@ -214,7 +214,15 @@
             else clearMarks(input);
             if (!firstError) firstError = res.message;
           } else {
-            markValid(input);
+            // FIX: this used to call markValid() unconditionally, so every
+            // prefilled field lit up green on page load before the visitor
+            // had touched anything — reads as an accidental "validated!"
+            // state. Now mirrors the same showErrors/touched gating already
+            // used for the invalid case above: a valid-but-untouched field
+            // stays neutral, and only goes green once the visitor has
+            // actually interacted with it (or on a real save attempt).
+            if (showErrors || input.dataset.touched === "1") markValid(input);
+            else clearMarks(input);
           }
         });
 
