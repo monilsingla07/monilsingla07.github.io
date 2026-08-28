@@ -873,7 +873,14 @@
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      if (!res.ok) {
+        // Our edge functions put the real, specific reason (e.g. a raw
+        // Shiprocket rejection message) in `details`, separate from the
+        // generic `error` summary — surface both, not just the summary,
+        // so a failure here shows what actually went wrong.
+        const msg = data.details ? `${data.error || "Request failed"} (${data.details})` : (data.error || `HTTP ${res.status}`);
+        throw new Error(msg);
+      }
       return data;
     }
 

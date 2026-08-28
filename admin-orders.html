@@ -182,7 +182,23 @@
             showAdminError("🔒", "Access Denied", "Your account does not have admin access.");
             return { ok: false, handled: true };
           }
-          throw new Error(error.message || "Function error");
+          // supabase.functions.invoke() only puts a generic string on
+          // error.message ("Edge Function returned a non-2xx status code")
+          // — the actual reason our function gave (its `error`/`details`
+          // JSON fields) lives in error.context, the raw Response, and has
+          // to be parsed out explicitly or it's lost. Without this, every
+          // failure here showed the same unhelpful generic text no matter
+          // what actually went wrong (e.g. a real Shiprocket rejection
+          // reason like a wallet-balance error).
+          let msg = error.message || "Function error";
+          try {
+            if (error.context && typeof error.context.json === "function") {
+              const body2 = await error.context.json();
+              if (body2?.details) msg = body2.error ? `${body2.error} (${body2.details})` : String(body2.details);
+              else if (body2?.error) msg = body2.error;
+            }
+          } catch (_) { /* keep the fallback message if the body can't be parsed */ }
+          throw new Error(msg);
         }
 
         return { ok: true, data };
