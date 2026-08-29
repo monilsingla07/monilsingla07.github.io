@@ -190,20 +190,9 @@ export function renderHeader(active = "") {
           </div>
         </div>
 
-        <!-- Desktop: Left nav -->
-        <nav class="nav nav-desktop">
-          <div class="nav-item has-submenu">
-            <a href="products.html?type=saree" class="${(active === "products" || active === "sarees") ? "active" : ""}">Handloom Sarees</a>
-            <div class="nav-submenu" data-cat="saree"></div>
-          </div>
-          <div class="nav-item has-submenu">
-            <a href="products.html?type=suit" class="${active === "suits" ? "active" : ""}">Handloom Suits</a>
-            <div class="nav-submenu" data-cat="suit"></div>
-          </div>
-          <a href="new-arrivals.html">New Arrivals</a>
-          <a href="collections.html">Collections</a>
-          <a href="sale.html">Sale</a>
-        </nav>
+        <!-- Desktop: left spacer (balances the utils column so the logo sits dead-center,
+             matching the two-row header pattern — logo+utils row, nav on its own row below) -->
+        <div class="header-spacer" aria-hidden="true"></div>
 
         <!-- Desktop: Center logo -->
         <a href="index.html" class="site-logo-center" aria-label="Ahamstree home">
@@ -218,6 +207,26 @@ export function renderHeader(active = "") {
           <a class="util-link ${active === "cart" ? "active" : ""}" href="cart.html" title="Cart">Cart (${count})</a>
         </div>
 
+      </div>
+
+      <!-- Desktop: nav row, full width, on its own line below the logo (Chidiyaa-style
+           two-row header instead of everything crammed into one row) -->
+      <div class="header-nav-row">
+        <div class="container">
+          <nav class="nav nav-desktop">
+            <div class="nav-item has-submenu">
+              <a href="products.html?type=saree" class="${(active === "products" || active === "sarees") ? "active" : ""}">Handloom Sarees</a>
+              <div class="nav-submenu" data-cat="saree"></div>
+            </div>
+            <div class="nav-item has-submenu">
+              <a href="products.html?type=suit" class="${active === "suits" ? "active" : ""}">Handloom Suits</a>
+              <div class="nav-submenu" data-cat="suit"></div>
+            </div>
+            <a href="new-arrivals.html">New Arrivals</a>
+            <a href="collections.html">Collections</a>
+            <a href="sale.html">Sale</a>
+          </nav>
+        </div>
       </div>
     </header>
 
