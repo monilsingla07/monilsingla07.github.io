@@ -165,12 +165,12 @@ export function renderHeader(active = "") {
 
               <nav class="mobile-drawer-links">
                 <div class="mobile-drawer-item">
-                  <a href="products.html?type=saree">Handloom Sarees</a>
+                  <a href="products.html?type=saree">Sarees</a>
                   <button class="mobile-drawer-caret" type="button" data-cat="saree" aria-label="Show saree categories" aria-expanded="false" hidden>${iconChevron()}</button>
                   <div class="mobile-drawer-submenu" data-cat-sub="saree"></div>
                 </div>
                 <div class="mobile-drawer-item">
-                  <a href="products.html?type=suit">Handloom Suits</a>
+                  <a href="products.html?type=suit">Suits</a>
                   <button class="mobile-drawer-caret" type="button" data-cat="suit" aria-label="Show suit categories" aria-expanded="false" hidden>${iconChevron()}</button>
                   <div class="mobile-drawer-submenu" data-cat-sub="suit"></div>
                 </div>
@@ -215,11 +215,11 @@ export function renderHeader(active = "") {
         <div class="container">
           <nav class="nav nav-desktop">
             <div class="nav-item has-submenu">
-              <a href="products.html?type=saree" class="${(active === "products" || active === "sarees") ? "active" : ""}">Handloom Sarees</a>
+              <a href="products.html?type=saree" class="${(active === "products" || active === "sarees") ? "active" : ""}">Sarees</a>
               <div class="nav-submenu" data-cat="saree"></div>
             </div>
             <div class="nav-item has-submenu">
-              <a href="products.html?type=suit" class="${active === "suits" ? "active" : ""}">Handloom Suits</a>
+              <a href="products.html?type=suit" class="${active === "suits" ? "active" : ""}">Suits</a>
               <div class="nav-submenu" data-cat="suit"></div>
             </div>
             <a href="new-arrivals.html">New Arrivals</a>
