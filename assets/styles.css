@@ -273,6 +273,14 @@ nav a { margin-right: 12px; text-decoration: none; color: #111; }
   border-color: rgba(166,124,61,.50);
   box-shadow: 0 0 0 4px rgba(166,124,61,.09);
 }
+/* iOS Safari auto-zooms the whole page when a focused input's font-size is
+   under 16px — every form on the site (search, login/signup, checkout
+   address fields, the cart qty box) uses .input at 14px, so every one of
+   them was triggering that zoom on iPhone. Bumped to 16px only on
+   touch/mobile widths so desktop sizing is unaffected. */
+@media (max-width: 768px) {
+  .input { font-size: 16px; }
+}
 .input.is-invalid {
   border-color: rgba(220,20,60,.4) !important;
   box-shadow: 0 0 0 4px rgba(220,20,60,.08);
@@ -1023,10 +1031,22 @@ header .nav {
 /* ═══════════════════════════
    CATEGORY TILES
 ═══════════════════════════ */
+/* Shop by Category — homepage: exactly 2 tiles (Sarees, Suits), the two
+   top-level entry points, sized a bit larger/more prominent than the 4-up
+   weave-filter grid used elsewhere (.category-tiles). Previously this was
+   a flex column of per-category "weave groups" (a heading + one small tile
+   per weave), which repeated the weave name that's already in the nav's
+   category dropdown — collapsed down to just the 2 boxes. */
 .category-tile-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 26px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.category-tile-groups .cat-tile { min-height: 130px; padding: 22px; }
+.category-tile-groups .cat-title { font-size: 20px; }
+@media (max-width: 560px) {
+  .category-tile-groups { gap: 10px; }
+  .category-tile-groups .cat-tile { min-height: 100px; padding: 16px; }
 }
 .weave-group-head {
   display: flex;
@@ -1968,9 +1988,12 @@ header .nav {
   flex-shrink: 0;
 }
 .ig-media {
+  position: relative;
+  display: block;
   width: 100%;
   aspect-ratio: 9 / 16;
   background: #000;
+  cursor: pointer;
 }
 .ig-video {
   display: block;
@@ -1978,7 +2001,22 @@ header .nav {
   height: 100%;
   object-fit: contain;
   background: #000;
+  pointer-events: none;
 }
+/* Play-button affordance over the muted preview — the video itself doesn't
+   play here; clicking anywhere on .ig-media opens the real reel on
+   Instagram (see assets/instagram-reels.js). */
+.ig-play-overlay {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.ig-media:hover .ig-play-overlay { background: rgba(0,0,0,0.6); transform: translate(-50%, -50%) scale(1.06); }
 .ig-actions {
   display: flex;
   align-items: center;
