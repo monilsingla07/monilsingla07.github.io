@@ -5,9 +5,9 @@ import { addToWishlist, removeFromWishlist, isInWishlist } from "./wishlist.js";
 
 /**
  * Home page helpers:
- * - Renders "Most loved" + "New Collection" (6 items each)
+ * - Renders "Most loved" + "New Arrivals" (6 items each)
  * - Uses view_count for Most loved
- * - Uses created_at for New Collection
+ * - Uses created_at for New Arrivals
  * - Sets hero background from latest product image
  */
 
@@ -33,22 +33,23 @@ function normalizeProducts(rows = []) {
 
 const CATEGORY_LABELS = { saree: "Sarees", suit: "Suits" };
 
-function weaveGroupHtml(categoryKey, rows){
+// Homepage category section: exactly one tile per top-level category
+// (Sarees, Suits) — NOT one tile per weave. Previously this rendered a
+// "Sarees" heading followed by separate "Chanderi Handloom" / "Chanderi
+// Cotton" tiles, and a "Suits" heading followed by its own "Chanderi
+// Handloom" tile — repetitive since the nav's own category labels already
+// said "Handloom Sarees" / "Handloom Suits". The weave names (Chanderi
+// Handloom, Chanderi Cotton, ...) still surface — as the tile's subtitle,
+// and as the real filter chips/dropdown on the category listing page
+// (products.html?type=...&weave=...) — just not as their own homepage box.
+function categoryTileHtml(categoryKey, weaveRows){
   const label = CATEGORY_LABELS[categoryKey] || categoryKey;
-  const tiles = rows.map(w => `
-    <a class="cat-tile" href="products.html?type=${encodeURIComponent(categoryKey)}&weave=${encodeURIComponent(w.slug)}">
-      <div class="cat-title">${escapeHtml(w.name)}</div>
-      <div class="cat-sub">${escapeHtml(w.description || "")}</div>
-    </a>
-  `).join("");
+  const weaveNames = weaveRows.map(w => w.name).join(" · ");
   return `
-    <div class="weave-group">
-      <div class="weave-group-head">
-        <div class="weave-group-title">${escapeHtml(label)}</div>
-        <a class="weave-group-link" href="products.html?type=${encodeURIComponent(categoryKey)}">View all ${escapeHtml(label)} →</a>
-      </div>
-      <div class="category-tiles">${tiles}</div>
-    </div>
+    <a class="cat-tile" href="products.html?type=${encodeURIComponent(categoryKey)}">
+      <div class="cat-title">${escapeHtml(label)}</div>
+      <div class="cat-sub">${escapeHtml(weaveNames)}</div>
+    </a>
   `;
 }
 
@@ -61,27 +62,23 @@ async function hydrateCategoryTiles(){
   // Handloom.
   const fallback = {
     saree: [
-      { name: "Chanderi Handloom", slug: "chanderi-handloom", description: "Cotton Silk & Silk" },
-      { name: "Chanderi Cotton", slug: "chanderi-cotton", description: "Hand block print" },
+      { name: "Chanderi Handloom" },
+      { name: "Chanderi Cotton" },
     ],
     suit: [
-      { name: "Chanderi Handloom", slug: "chanderi-handloom", description: "Cotton Silk & Silk" },
+      { name: "Chanderi Handloom" },
     ],
   };
 
   const renderFallback = () => {
-    box.innerHTML = Object.entries(fallback).map(([cat, rows]) => weaveGroupHtml(cat, rows)).join("");
+    box.innerHTML = Object.entries(fallback).map(([cat, rows]) => categoryTileHtml(cat, rows)).join("");
   };
 
   try{
     // Which (category, weave) combinations actually have at least one live
-    // product — this is what previously went missing: the old query just
-    // listed every weave_lines row flat, with every tile hardcoded to link
-    // to type=saree, so Suits never appeared here at all and clicking a
-    // weave tile never actually filtered the listing page by that weave
-    // (see the matching fix in products.html). Grouping by real product
-    // data means this stays correct automatically as products/categories/
-    // weaves change, instead of a hardcoded mapping going stale.
+    // product — grouping by real product data means the weave names shown
+    // in each tile's subtitle stay correct automatically as products
+    // change, instead of a hardcoded mapping going stale.
     const { data, error } = await supabase
       .from("products")
       .select("category, weave_line:weave_lines!inner(id,name,slug,sort_order,is_active)")
@@ -111,7 +108,7 @@ async function hydrateCategoryTiles(){
       const rows = Array.from(groups[cat].values()).sort((a, b) =>
         (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name))
       );
-      return weaveGroupHtml(cat, rows);
+      return categoryTileHtml(cat, rows);
     }).join("");
   } catch(e){
     renderFallback();
@@ -268,7 +265,7 @@ async function fetchMostLoved(limit = 6) {
   return normalizeProducts(data ?? []);
 }
 
-// New Collection = latest products by created_at
+// New Arrivals = latest products by created_at
 async function fetchLatestActive(limit = 6) {
   const { data, error } = await supabase
     .from("products")
@@ -297,7 +294,7 @@ export async function hydrateHome() {
     renderGrid("bestsellersGrid", mostLoved);
     setStatus("bestsellersStatus", "");
 
-    // New Collection (latest arrivals)
+    // New Arrivals (latest active products)
     const latest = await fetchLatestActive(8);
     renderGrid("newCollectionGrid", latest);
     setStatus("newCollectionStatus", "");
