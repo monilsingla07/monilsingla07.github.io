@@ -195,8 +195,8 @@ nav a { margin-right: 12px; text-decoration: none; color: #111; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 28px;
-  border-radius: 3px;
+  padding: 14px 30px;
+  border-radius: 999px;
   background: var(--gold);
   color: var(--espresso-dark);
   border: none;
@@ -894,14 +894,20 @@ header .nav {
   display: block;
 }
 
-/* Bottom-heavy scrim over image (only applies when image is present) */
-.hero-media + .hero-overlay::before {
+/* Legibility panel behind hero text — was previously ".hero-media + .hero-overlay::before",
+   a sibling selector that never matched (the .hero-deco element sits between .hero-media and
+   .hero-overlay in the markup) and used position:fixed (would have covered the whole
+   viewport, not just the banner). Rewritten as a self-contained glass panel on .hero-overlay
+   so text stays readable against any slide background, image or gradient. */
+.hero-overlay::before {
   content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    linear-gradient(to top, rgba(8,4,2,0.90) 0%, rgba(8,4,2,0.25) 45%, transparent 100%),
-    linear-gradient(to right, rgba(8,4,2,0.55) 0%, transparent 55%);
+  position: absolute;
+  inset: -28px -32px -24px -28px;
+  background: linear-gradient(160deg, rgba(36,24,17,0.72) 0%, rgba(36,24,17,0.55) 100%);
+  backdrop-filter: blur(6px) saturate(1.1);
+  -webkit-backdrop-filter: blur(6px) saturate(1.1);
+  border-radius: 22px;
+  box-shadow: 0 20px 50px rgba(20,13,8,0.22);
   z-index: -1;
   pointer-events: none;
 }
