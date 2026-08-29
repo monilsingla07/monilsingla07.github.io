@@ -17,10 +17,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/products.html?type=saree&amp;fabric=cotton-silk</loc>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/collections.html</loc>
     <priority>0.8</priority>
   </url>
@@ -77,6 +73,10 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.ahamstree.com/products.html?type=saree&amp;fabric=cotton-silk</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.ahamstree.com/collection.html?slug=chanderi-classics</loc>
     <priority>0.7</priority>
   </url>
@@ -90,6 +90,50 @@
   </url>
   <url>
     <loc>https://www.ahamstree.com/collection.html?slug=off-beat</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/collection.html?slug=everyday-cotton</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=417dafef-8432-437e-ad70-fadd6c4b887a</loc>
+    <lastmod>2026-08-29</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=d86442cc-160d-42de-8bce-6a52f264c656</loc>
+    <lastmod>2026-08-29</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=18078aa5-1bfd-4a8d-99f3-41aa1749472d</loc>
+    <lastmod>2026-08-29</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=a6ae65ce-1039-41e0-a456-96c2baba0dd6</loc>
+    <lastmod>2026-08-29</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=f7b7648e-f42d-4dbd-95da-2d9b4902bdf2</loc>
+    <lastmod>2026-08-29</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=79823aec-e527-4328-b21e-482c9be975e9</loc>
+    <lastmod>2026-08-29</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=593d3f21-7aae-4975-95ed-1110676367a7</loc>
+    <lastmod>2026-08-29</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=3a14a968-d986-465a-8048-a173e0340b59</loc>
+    <lastmod>2026-08-29</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
@@ -113,22 +157,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?id=d86442cc-160d-42de-8bce-6a52f264c656</loc>
-    <lastmod>2026-08-28</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=18078aa5-1bfd-4a8d-99f3-41aa1749472d</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/product.html?id=5e778fd0-2893-41d5-b075-652fd59b5828</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=79823aec-e527-4328-b21e-482c9be975e9</loc>
     <lastmod>2026-08-27</lastmod>
     <priority>0.7</priority>
   </url>
@@ -143,12 +172,12 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?id=f7b7648e-f42d-4dbd-95da-2d9b4902bdf2</loc>
+    <loc>https://www.ahamstree.com/product.html?id=2a22bbd8-a890-4258-8558-3cb06a062cc1</loc>
     <lastmod>2026-08-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?id=2a22bbd8-a890-4258-8558-3cb06a062cc1</loc>
+    <loc>https://www.ahamstree.com/product.html?id=bb252e60-08e6-44de-bfed-b5efa6e2d6c8</loc>
     <lastmod>2026-08-27</lastmod>
     <priority>0.7</priority>
   </url>
@@ -169,11 +198,6 @@
   </url>
   <url>
     <loc>https://www.ahamstree.com/product.html?id=266cd868-548f-4dcb-bdcf-861d3754d2a6</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=593d3f21-7aae-4975-95ed-1110676367a7</loc>
     <lastmod>2026-08-27</lastmod>
     <priority>0.7</priority>
   </url>
@@ -203,32 +227,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?id=417dafef-8432-437e-ad70-fadd6c4b887a</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=bb252e60-08e6-44de-bfed-b5efa6e2d6c8</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=3a14a968-d986-465a-8048-a173e0340b59</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/product.html?id=d4aac9da-1f3e-4860-b42d-212dc8413bd4</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=a6ae65ce-1039-41e0-a456-96c2baba0dd6</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=18589e9e-284d-4afa-b031-017905703af4</loc>
     <lastmod>2026-08-27</lastmod>
     <priority>0.7</priority>
   </url>
@@ -243,18 +242,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/blog.html?slug=handloom-slow-fashion-luxury</loc>
-    <lastmod>2026-01-18</lastmod>
-    <priority>0.5</priority>
+    <loc>https://www.ahamstree.com/product.html?id=18589e9e-284d-4afa-b031-017905703af4</loc>
+    <lastmod>2026-08-27</lastmod>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/blog.html?slug=style-chanderi-day-night</loc>
-    <lastmod>2026-01-21</lastmod>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/blog.html?slug=saree-care-guide</loc>
-    <lastmod>2026-01-23</lastmod>
+    <loc>https://www.ahamstree.com/blog.html?slug=chanderi-motifs-meaning</loc>
+    <lastmod>2026-01-27</lastmod>
     <priority>0.5</priority>
   </url>
   <url>
@@ -263,13 +257,23 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/blog.html?slug=magic-of-chanderi</loc>
-    <lastmod>2026-01-16</lastmod>
+    <loc>https://www.ahamstree.com/blog.html?slug=saree-care-guide</loc>
+    <lastmod>2026-01-23</lastmod>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/blog.html?slug=chanderi-motifs-meaning</loc>
-    <lastmod>2026-01-27</lastmod>
+    <loc>https://www.ahamstree.com/blog.html?slug=style-chanderi-day-night</loc>
+    <lastmod>2026-01-21</lastmod>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/blog.html?slug=handloom-slow-fashion-luxury</loc>
+    <lastmod>2026-01-18</lastmod>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/blog.html?slug=magic-of-chanderi</loc>
+    <lastmod>2026-01-16</lastmod>
     <priority>0.5</priority>
   </url>
 </urlset>
