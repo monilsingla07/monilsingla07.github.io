@@ -144,23 +144,26 @@
       <!-- Category quick links: exactly 2 boxes (Sarees, Suits) — the weave
            names (Chanderi Handloom, Chanderi Cotton, ...) live in each
            tile's subtitle and as the real filter on the category page, not
-           as their own separate boxes here. -->
+           as their own separate boxes here. No section heading/"View all"
+           here — the two tiles are self-explanatory and each links straight
+           into its category (per user request, round 7). -->
       <section class="section">
-        <div class="section-head">
-          <h2 class="section-title">Shop by Category</h2>
-          <a class="section-link" href="products.html">View all</a>
-        </div>
-
         <div id="homeCategoryTiles" class="category-tile-groups">
           <div class="small">Loading categories…</div>
         </div>
       </section>
 
       <!-- New Arrivals (renamed from "New Collection", moved above Curated
-           Collections and Most Loved) -->
+           Collections and Most Loved). Kicker label + tinted-panel bands
+           below are the "bolder identity + motion" pass — alternating
+           white/warm panels for visual rhythm, each .section fades in on
+           scroll via assets/ui.js's initScrollReveal(). -->
       <section class="section">
         <div class="section-head">
-          <h2 class="section-title">New Arrivals</h2>
+          <div>
+            <span class="section-kicker">Fresh In</span>
+            <h2 class="section-title">New Arrivals</h2>
+          </div>
           <a class="section-link" href="new-arrivals.html">See more</a>
         </div>
 
@@ -169,9 +172,12 @@
       </section>
 
       <!-- Curated collections (from backend) -->
-      <section class="section">
+      <section class="section section-tinted">
         <div class="section-head">
-          <h2 class="section-title">Curated Collections</h2>
+          <div>
+            <span class="section-kicker">Curated For You</span>
+            <h2 class="section-title">Curated Collections</h2>
+          </div>
           <a class="section-link" href="collections.html">View all</a>
         </div>
 
@@ -183,7 +189,10 @@
       <!-- Bestsellers -->
       <section class="section">
         <div class="section-head">
-          <h2 class="section-title">Most loved</h2>
+          <div>
+            <span class="section-kicker">Customer Favourites</span>
+            <h2 class="section-title">Most loved</h2>
+          </div>
           <a class="section-link" href="products.html">Shop all</a>
         </div>
 
@@ -193,7 +202,7 @@
 
 
       <!-- Instagram reels (admin-managed) -->
-      <section class="section" id="instagramReelsSection">
+      <section class="section section-tinted" id="instagramReelsSection">
         <div class="section-head">
           <h2 class="section-title">From Our Instagram</h2>
           <a class="section-link section-follow-link" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noopener noreferrer">Follow @ahamstree</a>
