@@ -4,15 +4,14 @@
 // Reel Manager) — the store owner uploads the actual video file for each
 // reel there and it shows up here, no code changes needed.
 //
-// Videos are self-hosted (uploaded to Supabase Storage via the admin panel)
-// and played with a plain HTML5 <video> element styled to look like an
-// Instagram post card. This plays fully inline on the page — no iframe, no
-// third-party script, no click-through to instagram.com required. That's a
-// deliberate change from the previous approach (Instagram's own oEmbed
-// widget): Instagram's widget frequently declines to render a real playable
-// card and silently falls back to a plain "view on Instagram" link, which is
-// outside our control. Self-hosting the video file is the only way to
-// guarantee inline playback for every visitor.
+// Videos are self-hosted (uploaded to Supabase Storage via the admin panel).
+// Earlier this played fully inline via a plain <video controls> element —
+// but inline playback of these files was inconsistent/rough for visitors
+// (buffering, no real Instagram chrome, awkward mobile tap-to-play). So the
+// card now shows the video as a silent, non-interactive preview (muted, no
+// controls) with a play-button overlay, and the whole media area is a link
+// straight to the real Instagram post/reel — clicking it takes visitors to
+// instagram.com to actually watch it there, where playback is reliable.
 //
 // Older reels that were never given a video file (video_url is empty) still
 // degrade to a "View this post on Instagram" link — never a blank hole.
@@ -37,11 +36,26 @@ function iconBookmarkOutline() {
 function iconDots() {
   return `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>`;
 }
+function iconPlay() {
+  return `<svg viewBox="0 0 24 24" width="26" height="26" fill="#fff" stroke="none"><path d="M8 5v14l11-7L8 5z"/></svg>`;
+}
 
 function videoCard(r) {
   const postUrl = safeHref(r.reel_url);
   const videoSrc = safeSrc(r.video_url);
   const caption = r.caption ? escapeHtml(r.caption) : "";
+
+  // Muted, controls-less preview — this is a thumbnail, not a player.
+  // Wrapped in a link to the real Instagram post whenever we have one, with
+  // a play-button overlay for click affordance; falls back to a plain,
+  // non-clickable preview only in the rare case there's no post URL at all.
+  const mediaInner = `
+    <video class="ig-video" src="${videoSrc}" muted playsinline preload="metadata" tabindex="-1" aria-hidden="true"></video>
+    <span class="ig-play-overlay" aria-hidden="true">${iconPlay()}</span>
+  `;
+  const mediaHtml = postUrl
+    ? `<a class="ig-media" href="${postUrl}" target="_blank" rel="noopener noreferrer" aria-label="Watch this reel on Instagram">${mediaInner}</a>`
+    : `<div class="ig-media">${mediaInner}</div>`;
 
   return `
     <div class="reel-tile">
@@ -54,9 +68,7 @@ function videoCard(r) {
           ${postUrl ? `<a class="ig-dots-link" href="${postUrl}" target="_blank" rel="noopener noreferrer" aria-label="View this post on Instagram">${iconDots()}</a>` : iconDots()}
         </div>
 
-        <div class="ig-media">
-          <video class="ig-video" src="${videoSrc}" controls playsinline preload="metadata"></video>
-        </div>
+        ${mediaHtml}
 
         <div class="ig-actions">
           <span class="ig-action">${iconHeartOutline()}</span>
@@ -67,7 +79,7 @@ function videoCard(r) {
         </div>
 
         ${caption ? `<div class="ig-caption"><strong>ahamstree</strong> ${caption}</div>` : ""}
-        ${postUrl ? `<a class="ig-view-link" href="${postUrl}" target="_blank" rel="noopener noreferrer">View on Instagram ↗</a>` : ""}
+        ${postUrl ? `<a class="ig-view-link" href="${postUrl}" target="_blank" rel="noopener noreferrer">Watch on Instagram ↗</a>` : ""}
       </div>
     </div>
   `;
