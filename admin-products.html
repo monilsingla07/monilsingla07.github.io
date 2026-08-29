@@ -199,6 +199,39 @@
               </div>
             </div>
 
+            <div class="section-title">SEO attributes</div>
+            <div class="pm-hint">Used for Google Product/Offer schema and the Merchant Center feed. Only fill in what's genuinely true of this exact product — leave a field blank rather than guess. These are separate from Fabric/Weave line above, which already have their own dropdowns.</div>
+            <div class="pm-row">
+              <div>
+                <label class="pm-label">Colour</label>
+                <input id="f_colour" class="input" placeholder="e.g. Maroon" />
+              </div>
+              <div>
+                <label class="pm-label">Print type (only if printed)</label>
+                <input id="f_print_type" class="input" placeholder="e.g. Hand block print — leave blank if not printed" />
+              </div>
+              <div>
+                <label class="pm-label">Craft</label>
+                <input id="f_craft" class="input" placeholder="e.g. Chanderi handloom weaving" />
+              </div>
+              <div>
+                <label class="pm-label">Motif</label>
+                <input id="f_motif" class="input" placeholder="e.g. Floral butti" />
+              </div>
+              <div>
+                <label class="pm-label">Border</label>
+                <input id="f_border_type" class="input" placeholder="e.g. Zari brocade border" />
+              </div>
+              <div>
+                <label class="pm-label">Zari (leave blank if none)</label>
+                <input id="f_zari" class="input" placeholder="e.g. Gold zari border and pallu" />
+              </div>
+              <div>
+                <label class="pm-label">Occasion</label>
+                <input id="f_occasion" class="input" placeholder="e.g. Festive, Office wear, Wedding" />
+              </div>
+            </div>
+
             <div class="section-title">Photos</div>
             <input id="f_image_files" type="file" accept="image/jpeg,image/png,image/webp" multiple class="input" />
             <div class="pm-hint">JPG, PNG or WEBP, up to 8MB each, up to 12 photos. First photo is the main listing image — use the ◀ ▶ buttons to reorder.</div>
@@ -530,6 +563,13 @@
       document.getElementById("f_sku").value = "";
       document.getElementById("f_inventory_qty").value = "0";
       document.getElementById("f_weight_grams").value = "400";
+      document.getElementById("f_colour").value = "";
+      document.getElementById("f_print_type").value = "";
+      document.getElementById("f_craft").value = "";
+      document.getElementById("f_motif").value = "";
+      document.getElementById("f_border_type").value = "";
+      document.getElementById("f_zari").value = "";
+      document.getElementById("f_occasion").value = "";
       document.getElementById("reservedHint").textContent = "";
       editorImages = []; editorSpecs = []; editorSections = [];
       renderImgThumbs(); renderSpecRows(); renderSectionRows(); renderCollectionChips([]);
@@ -575,6 +615,13 @@
         document.getElementById("f_sku").value = p.sku || "";
         document.getElementById("f_inventory_qty").value = p.inventory_qty ?? 0;
         document.getElementById("f_weight_grams").value = p.weight_grams ?? 400;
+        document.getElementById("f_colour").value = p.colour || "";
+        document.getElementById("f_print_type").value = p.print_type || "";
+        document.getElementById("f_craft").value = p.craft || "";
+        document.getElementById("f_motif").value = p.motif || "";
+        document.getElementById("f_border_type").value = p.border_type || "";
+        document.getElementById("f_zari").value = p.zari || "";
+        document.getElementById("f_occasion").value = p.occasion || "";
         document.getElementById("reservedHint").textContent = p.reserved_qty ? p.reserved_qty + " unit(s) currently reserved by in-progress checkouts (not editable here)." : "";
 
         editorImages = (r.images || []).map(im => ({ image_url: im.image_url, alt_text: im.alt_text || "" }));
@@ -627,6 +674,13 @@
           sku: document.getElementById("f_sku").value,
           inventory_qty: Number(document.getElementById("f_inventory_qty").value || 0),
           weight_grams: Number(document.getElementById("f_weight_grams").value || 400),
+          colour: document.getElementById("f_colour").value,
+          print_type: document.getElementById("f_print_type").value,
+          craft: document.getElementById("f_craft").value,
+          motif: document.getElementById("f_motif").value,
+          border_type: document.getElementById("f_border_type").value,
+          zari: document.getElementById("f_zari").value,
+          occasion: document.getElementById("f_occasion").value,
         });
         const productId = saveRes.product.id;
         document.getElementById("f_id").value = productId;

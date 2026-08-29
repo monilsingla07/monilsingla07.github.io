@@ -146,12 +146,35 @@
         idText.textContent  = oid;
       }
 
-      // Fire GA purchase event
+      // Fire GA4 purchase event with real value/items so it's usable for
+      // revenue reporting and Google Ads conversion value — fetched fresh
+      // from the order + order_items tables (RLS-scoped to this user's own
+      // order) rather than localStorage, since clearCart() already ran above.
       if (typeof gtag === "function" && oid) {
-        gtag("event", "purchase", {
-          transaction_id: oid,
-          payment_type: "razorpay",
-        });
+        (async () => {
+          try {
+            const [{ data: orderRow }, { data: orderItems }] = await Promise.all([
+              supabase.from("orders").select("total_inr").eq("id", oid).maybeSingle(),
+              supabase.from("order_items").select("product_id,title,qty,price_inr").eq("order_id", oid),
+            ]);
+
+            gtag("event", "purchase", {
+              transaction_id: oid,
+              payment_type: "razorpay",
+              currency: "INR",
+              value: Number(orderRow?.total_inr ?? 0),
+              items: (orderItems || []).map((i) => ({
+                item_id: i.product_id,
+                item_name: i.title || "",
+                price: Number(i.price_inr ?? 0),
+                quantity: Number(i.qty ?? 1),
+              })),
+            });
+          } catch (_) {
+            // Fall back to a bare event rather than losing the conversion entirely.
+            gtag("event", "purchase", { transaction_id: oid, payment_type: "razorpay" });
+          }
+        })();
       }
     }
 

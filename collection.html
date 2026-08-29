@@ -11,7 +11,12 @@
 </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Collection — Ahamstree</title>
+  <title>Saree Collections | AhamStree</title>
+  <meta name="description" content="Shop curated handwoven Chanderi saree collections at AhamStree. Real collection title/description load below." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:site_name" content="AhamStree" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://www.ahamstree.com/hero-1-launch.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
@@ -292,6 +297,7 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
+    import { setPageMeta, injectJsonLd, buildCollectionSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -361,7 +367,19 @@
       // Render hero
       if (col) {
         currentColName = col.name || "";
-        document.title = `${col.name} — Ahamstree`;
+        const canonicalPath = `/collection.html?slug=${encodeURIComponent(slug)}`;
+        setPageMeta({
+          title: `${col.name} | AhamStree`,
+          description: truncateForMeta(col.description || `Shop the ${col.name} collection at AhamStree — handwoven Chanderi sarees, quality checked before dispatch.`),
+          path: canonicalPath,
+          image: col.cover_image_url,
+          type: "website",
+        });
+        injectJsonLd("ld-breadcrumb", buildBreadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: "Collections", path: "/collections.html" },
+          { name: col.name, path: canonicalPath },
+        ]));
         const breadcrumb = `<a href="collections.html">Collections</a><span>›</span>${escapeHtml(col.name)}`;
 
         if (col.cover_image_url) {
@@ -425,6 +443,12 @@
       }
 
       grid.innerHTML = normalized.map((p, i) => productCard(p, i)).join("");
+
+      injectJsonLd("ld-collection", buildCollectionSchema({
+        name: currentColName,
+        path: `/collection.html?slug=${encodeURIComponent(slug)}`,
+        products: normalized.map(p => ({ title: p.title, path: `/product.html?id=${encodeURIComponent(p.id)}` })),
+      }));
 
       // Restore scroll if user navigated back
       const savedScroll = sessionStorage.getItem("scrollPos:" + location.href);

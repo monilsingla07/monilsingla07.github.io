@@ -12,7 +12,15 @@
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Product — AhamStree</title>
+  <title>Handwoven Chanderi Sarees & Suits | AhamStree</title>
+  <meta name="description" content="Shop handwoven Chanderi sarees and suits at AhamStree — real per-product title, description, and images load below." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:site_name" content="AhamStree" />
+  <meta property="og:type" content="product" />
+  <meta property="og:image" content="https://www.ahamstree.com/hero-1-launch.jpg" />
+  <!-- Title, description, canonical, OG tags, and Product/Breadcrumb JSON-LD are set dynamically
+       once the real product loads (see assets/seo.js) — these are just the pre-render fallback
+       for the instant before that JS runs. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
@@ -139,6 +147,7 @@
     import { addToCart } from "./assets/cart.js";
     import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
 	    import { escapeHtml, escapeAttr, safeSrc, safeUrl } from "./assets/safe.js";
+    import { setPageMeta, injectJsonLd, buildProductSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
     document.getElementById("header").innerHTML = renderHeader("products");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -214,7 +223,13 @@
       // 1) Product + images (you already had this)
       const { data, error } = await supabase
         .from("products")
-        .select("id,title,description,price_inr,sale_price_inr,sku,inventory_qty,reserved_qty,is_active, product_images(image_url, sort_order, alt_text)")
+        .select(`
+          id,title,description,category,price_inr,sale_price_inr,sku,inventory_qty,reserved_qty,is_active,
+          colour,print_type,craft,motif,border_type,zari,occasion,
+          fabric:fabrics(name),
+          weave_line:weave_lines(name),
+          product_images(image_url, sort_order, alt_text)
+        `)
         .eq("id", id)
         .maybeSingle();
 
@@ -269,6 +284,22 @@ if (!sessionStorage.getItem(viewKey)) {
         document.querySelector(".pd-main").insertAdjacentHTML("afterbegin", `<div class="pd-badge">${pctOff}% OFF</div>`);
       }
 
+      // GA4: view_item — fires once per page load, using the real price/sale
+      // already computed above (no separate lookup, nothing invented).
+      if (typeof gtag === "function") {
+        gtag("event", "view_item", {
+          currency: "INR",
+          value: hasSale ? sale : price,
+          items: [{
+            item_id: data.id,
+            item_name: data.title || "",
+            item_category: data.category === "suit" ? "Suit" : "Saree",
+            price: hasSale ? sale : price,
+            quantity: 1,
+          }],
+        });
+      }
+
       // Images
       const mainImg = document.getElementById("mainImg");
       const pdMain = document.querySelector(".pd-main");
@@ -310,7 +341,7 @@ if (!sessionStorage.getItem(viewKey)) {
       const lbZoomHint = document.getElementById("lb-zoom-hint");
 
       // ── Breadcrumb ──
-      (function renderBreadcrumb() {
+      function computeBreadcrumb() {
         const from = params.get("from") || "";
         const type = (params.get("type") || "saree").toLowerCase();
         const colSlug = params.get("col") || "";
@@ -328,13 +359,51 @@ if (!sessionStorage.getItem(viewKey)) {
         } else {
           href = "products.html?type=saree"; label = "All Handloom Sarees"; trail = "Sarees";
         }
+        return { href, label, trail };
+      }
 
-        document.getElementById("breadcrumb-slot").innerHTML =
-          `<a class="page-breadcrumb" href="${escapeAttr(href)}">
-             <span class="bc-arrow">&#8592;</span>
-             <span class="bc-trail">${escapeHtml(trail)} /</span>
-             <span class="bc-label">${escapeHtml(label)}</span>
-           </a>`;
+      const breadcrumb = computeBreadcrumb();
+      document.getElementById("breadcrumb-slot").innerHTML =
+        `<a class="page-breadcrumb" href="${escapeAttr(breadcrumb.href)}">
+           <span class="bc-arrow">&#8592;</span>
+           <span class="bc-trail">${escapeHtml(breadcrumb.trail)} /</span>
+           <span class="bc-label">${escapeHtml(breadcrumb.label)}</span>
+         </a>`;
+
+      // ── SEO: dynamic title/meta/canonical/OG + Product & Breadcrumb JSON-LD ──
+      (function applySeo() {
+        const weaveName = data.weave_line?.name || "";
+        const fabricName = data.fabric?.name || "";
+        const descriptor = [weaveName, fabricName].filter(Boolean).join(" ");
+        const catLabel = data.category === "suit" ? "Suit" : "Saree";
+        const pageTitle = `${data.title}${descriptor ? " – " + descriptor : ""} ${catLabel} | AhamStree`;
+        const metaDesc = data.description
+          ? truncateForMeta(data.description)
+          : truncateForMeta(`${data.title} — a handwoven ${descriptor ? descriptor + " " : ""}${catLabel.toLowerCase()} from AhamStree.`);
+
+        setPageMeta({
+          title: pageTitle,
+          description: metaDesc,
+          path: `/product.html?id=${encodeURIComponent(id)}`,
+          image: images[0]?.image_url,
+          type: "product",
+        });
+
+        injectJsonLd("ld-product", buildProductSchema(
+          {
+            ...data,
+            weave_line_name: weaveName || undefined,
+            fabric_name: fabricName || undefined,
+          },
+          images,
+          `/product.html?id=${encodeURIComponent(id)}`
+        ));
+
+        injectJsonLd("ld-breadcrumb", buildBreadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: breadcrumb.label, path: breadcrumb.href },
+          { name: data.title, path: `/product.html?id=${encodeURIComponent(id)}` },
+        ]));
       })();
 
       // ── Lightbox zoom + drag-to-pan ──

@@ -1,4 +1,17 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ahamstree.com/sitemap.xml
+# Keep low-value/duplicate-content paths out of the crawl budget.
+Disallow: /cart.html
+Disallow: /checkout.html
+Disallow: /account.html
+Disallow: /orders.html
+Disallow: /profile.html
+Disallow: /wishlist.html
+Disallow: /login.html
+Disallow: /track.html
+Disallow: /success.html
+Disallow: /cancel.html
+Disallow: /admin*.html
+
+Sitemap: https://www.ahamstree.com/sitemap.xml

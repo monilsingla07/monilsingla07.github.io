@@ -11,7 +11,14 @@
   </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Products — AhamStree</title>
+  <title>Handloom Chanderi Sarees & Suits | AhamStree</title>
+  <meta name="description" content="Shop handwoven Chanderi sarees and suits at AhamStree — filter by weave and fabric. Real title/description load per view below." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:site_name" content="AhamStree" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://www.ahamstree.com/hero-1-launch.jpg" />
+  <!-- Title, description, canonical, OG tags, and CollectionPage/Breadcrumb JSON-LD are set
+       dynamically per weave/fabric/collection filter once data loads (see assets/seo.js). -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
@@ -231,6 +238,7 @@
   import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
   import { supabase } from "./assets/supabase.js";
   import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
+  import { setPageMeta, injectJsonLd, buildCollectionSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
   const _typeForHeader = (new URL(location.href)).searchParams.get("type");
   document.getElementById("header").innerHTML = renderHeader((_typeForHeader && _typeForHeader.toLowerCase()==="suit") ? "suits" : "products");
@@ -423,6 +431,46 @@
     }
   }
 
+  // Returns the canonical path for the current type/weave/fabric/collection
+  // combination — deliberately drops min/max/sort/inStock/page-state params
+  // so those variations all consolidate onto the same canonical URL instead
+  // of being treated as separate pages.
+  function applySeoForListing(){
+    const type = (params.get("type") || "saree").toLowerCase();
+    const catLabel = type === "suit" ? "Suits" : "Sarees";
+    const collectionName = params.get("collection") && cache.collectionName ? cache.collectionName : "";
+    const weaveName = cache.weaveId ? cache.weaveName : "";
+    const fabricName = cache.fabricId ? cache.fabricName : "";
+
+    let title, description;
+    if (collectionName) {
+      title = `${collectionName} | AhamStree`;
+      description = truncateForMeta(`Shop the ${collectionName} collection at AhamStree — handwoven Chanderi ${catLabel.toLowerCase()}, quality checked before dispatch.`);
+    } else {
+      const parts = [];
+      parts.push(weaveName || "Chanderi");
+      if (fabricName) parts.push(fabricName);
+      const descriptor = parts.join(" ");
+      title = `${descriptor} ${catLabel} | AhamStree`;
+      description = truncateForMeta(`Shop handwoven ${descriptor} ${catLabel.toLowerCase()} at AhamStree — quality checked before dispatch, pan-India delivery.`);
+    }
+
+    const canonicalParams = new URLSearchParams();
+    canonicalParams.set("type", type);
+    if (params.get("weave")) canonicalParams.set("weave", params.get("weave"));
+    if (params.get("fabric")) canonicalParams.set("fabric", params.get("fabric"));
+    if (params.get("collection")) canonicalParams.set("collection", params.get("collection"));
+    const canonicalPath = `/products.html?${canonicalParams.toString()}`;
+
+    setPageMeta({ title, description, path: canonicalPath, type: "website" });
+    injectJsonLd("ld-breadcrumb", buildBreadcrumbSchema([
+      { name: "Home", path: "/" },
+      { name: title.split(" | ")[0], path: canonicalPath },
+    ]));
+
+    return { title, canonicalPath };
+  }
+
   function normalize(rows = []){
     return (rows ?? []).map(p => {
       const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
@@ -508,6 +556,7 @@
     const fab = await resolveFabric(selectedFabricSlug);
     const weave = await resolveWeave(selectedWeaveSlug);
     setPageTitle();
+    const seoInfo = applySeoForListing();
 
     if (selectedSlug){
       if (!col){ status.textContent = "Collection not found."; itemsCount.textContent = ""; skeleton.style.display = "none"; isLoading = false; return; }
@@ -605,6 +654,14 @@
     offset += slice.length;
     updateLoadMoreUI();
     isLoading = false;
+
+    if (isFirst && normalized.length) {
+      injectJsonLd("ld-collection", buildCollectionSchema({
+        name: seoInfo.title.split(" | ")[0],
+        path: seoInfo.canonicalPath,
+        products: normalized.map(p => ({ title: p.title, path: `/product.html?id=${encodeURIComponent(p.id)}` })),
+      }));
+    }
 
     // Restore scroll position after content renders
     if (isFirst) {

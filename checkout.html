@@ -242,6 +242,7 @@
 
     let cartOk        = true;
     let appliedCoupon = localStorage.getItem("ahamstree_coupon") || "";
+    let beginCheckoutFired = false; // GA4 begin_checkout should fire once per checkout page load
 
     function money(n) {
       return "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
@@ -456,6 +457,28 @@
       subtotalEl.textContent = money(subtotal);
       shippingEl.textContent = money(shipping);
       totalEl.textContent    = money(total);
+
+      // GA4: begin_checkout — fire once per checkout session (not on every
+      // coupon-triggered re-render of this same function), using the real
+      // cart contents + server-quoted total computed just above.
+      if (!beginCheckoutFired && cartOk && typeof gtag === "function") {
+        beginCheckoutFired = true;
+        gtag("event", "begin_checkout", {
+          currency: "INR",
+          value: total,
+          items: items.map((i) => {
+            const p = pMap.get(String(i.product_id));
+            const basePrice = Number(p?.price_inr ?? i.price_inr ?? 0);
+            const hasSale   = p?.sale_price_inr != null && Number(p.sale_price_inr) > 0 && Number(p.sale_price_inr) < basePrice;
+            return {
+              item_id: i.product_id,
+              item_name: p?.title || i.title || "Item",
+              price: hasSale ? Number(p.sale_price_inr) : basePrice,
+              quantity: Number(i.qty || 1),
+            };
+          }),
+        });
+      }
 
       validateAll({ showErrors: false });
     }
