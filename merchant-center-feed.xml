@@ -5,6 +5,24 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>2a22bbd8-a890-4258-8558-3cb06a062cc1</g:id>
+      <title><![CDATA[Red Chanderi Saree ]]></title>
+      <description><![CDATA[tbu]]></description>
+      <link>https://www.ahamstree.com/product.html?id=2a22bbd8-a890-4258-8558-3cb06a062cc1</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>4599.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>2271</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-181]]></g:mpn>
+      <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>417dafef-8432-437e-ad70-fadd6c4b887a</g:id>
       <title><![CDATA[Deep Teal Saree with Gold Pallu & Maroon Accent]]></title>
       <description><![CDATA[Deep teal saree paired with a gold pallu and a maroon highlight near the border. A premium-looking saree for evening events and festive gatherings.]]></description>
@@ -281,60 +299,6 @@
       <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
     </item>
     <item>
-      <g:id>2a22bbd8-a890-4258-8558-3cb06a062cc1</g:id>
-      <title><![CDATA[Red Chanderi Saree ]]></title>
-      <description><![CDATA[tbu]]></description>
-      <link>https://www.ahamstree.com/product.html?id=2a22bbd8-a890-4258-8558-3cb06a062cc1</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>4599.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>2271</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-181]]></g:mpn>
-      <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>bb252e60-08e6-44de-bfed-b5efa6e2d6c8</g:id>
-      <title><![CDATA[Aqua Saree with Gold Motifs & Contrast Border]]></title>
-      <description><![CDATA[Beautiful aqua saree with large gold woven motifs and a contrasting beige-gold border. Perfect when you want something elegant yet eye-catching for functions and parties.]]></description>
-      <link>https://www.ahamstree.com/product.html?id=bb252e60-08e6-44de-bfed-b5efa6e2d6c8</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>5299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>2271</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-53]]></g:mpn>
-      <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>0ada92f8-b966-4865-80bb-b5e2270e0477</g:id>
-      <title><![CDATA[Steel Blue Saree with Gold Pallu & Motifs]]></title>
-      <description><![CDATA[Cool steel-blue shade with gold pallu and woven motifs for a refined festive outfit.]]></description>
-      <link>https://www.ahamstree.com/product.html?id=0ada92f8-b966-4865-80bb-b5e2270e0477</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>5299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>2271</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-54]]></g:mpn>
-      <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
-    </item>
-    <item>
       <g:id>ec998506-1b0b-4af5-a904-218513e8bc2a</g:id>
       <title><![CDATA[Turquoise Saree with Gold Butti & Maroon-Gold Border]]></title>
       <description><![CDATA[Bright turquoise saree with small gold butti motifs and a rich maroon-gold striped border/pallu. A great pick for festive wear, pooja, and family functions.]]></description>
@@ -498,24 +462,6 @@
       <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
     </item>
     <item>
-      <g:id>43ba8b91-d199-4806-b16e-6cbf98add20a</g:id>
-      <title><![CDATA[Coffee Brown Saree with Maroon & Gold Border]]></title>
-      <description><![CDATA[Rich coffee-brown saree with a contrasting maroon border featuring traditional gold woven detailing. A festive, classic piece for family functions and celebrations.]]></description>
-      <link>https://www.ahamstree.com/product.html?id=43ba8b91-d199-4806-b16e-6cbf98add20a</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24_2.jpg</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>6299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>2271</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-24]]></g:mpn>
-      <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
-    </item>
-    <item>
       <g:id>98d2386b-1570-484f-b8e4-f83f22b988f4</g:id>
       <title><![CDATA[Forest-Green Saree with Gold Butti]]></title>
       <description><![CDATA[Deep forest-green saree with a simple gold butti motif placement. A versatile option for regular festive wear and family occasions.]]></description>
@@ -549,6 +495,60 @@
       <g:product_type><![CDATA[Saree]]></g:product_type>
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-52]]></g:mpn>
+      <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>43ba8b91-d199-4806-b16e-6cbf98add20a</g:id>
+      <title><![CDATA[Coffee Brown Saree with Maroon & Gold Border]]></title>
+      <description><![CDATA[Rich coffee-brown saree with a contrasting maroon border featuring traditional gold woven detailing. A festive, classic piece for family functions and celebrations.]]></description>
+      <link>https://www.ahamstree.com/product.html?id=43ba8b91-d199-4806-b16e-6cbf98add20a</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24_2.jpg</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>6299.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>2271</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-24]]></g:mpn>
+      <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>bb252e60-08e6-44de-bfed-b5efa6e2d6c8</g:id>
+      <title><![CDATA[Aqua Saree with Gold Motifs & Contrast Border]]></title>
+      <description><![CDATA[Beautiful aqua saree with large gold woven motifs and a contrasting beige-gold border. Perfect when you want something elegant yet eye-catching for functions and parties.]]></description>
+      <link>https://www.ahamstree.com/product.html?id=bb252e60-08e6-44de-bfed-b5efa6e2d6c8</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>5299.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>2271</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-53]]></g:mpn>
+      <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>0ada92f8-b966-4865-80bb-b5e2270e0477</g:id>
+      <title><![CDATA[Steel Blue Saree with Gold Pallu & Motifs]]></title>
+      <description><![CDATA[Cool steel-blue shade with gold pallu and woven motifs for a refined festive outfit.]]></description>
+      <link>https://www.ahamstree.com/product.html?id=0ada92f8-b966-4865-80bb-b5e2270e0477</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>5299.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>2271</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-54]]></g:mpn>
       <g:material><![CDATA[Chanderi Handloom Cotton-Silk]]></g:material>
     </item>
   </channel>
