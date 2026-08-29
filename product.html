@@ -38,7 +38,7 @@
       <!-- Nalli-style: left gallery, right details -->
       <div class="pd-wrap">
         <!-- LEFT: Thumbs + main image -->
-        <div class="pd-left card" style="border-radius:16px; padding: 12px;">
+        <div class="pd-left card" style="border-radius:0; padding: 12px;">
           <div class="pd-gallery">
             <div id="thumbs" class="pd-thumbs"></div>
 
@@ -51,7 +51,7 @@
 
         <!-- RIGHT: Details -->
         <div class="pd-right">
-          <div class="card" style="padding:16px;border-radius:16px;">
+          <div class="card" style="padding:16px;border-radius:0;">
             <div id="title" class="pd-title"></div>
 
             <div class="pd-meta">
@@ -74,9 +74,17 @@
                 </div>
               </div>
 
-              <button id="addBtn" class="btn pd-add">Add to cart</button>
-              <button id="wishBtn" type="button" class="btn secondary pd-wish">♡ Wishlist</button>
-              <a class="btn secondary pd-go" href="cart.html">Go to cart</a>
+              <!-- Add to cart (outline) + wishlist icon, then Buy it now (solid,
+                   full-width, primary) below — mirrors Chidiyaa's PDP button
+                   hierarchy instead of three same-weight buttons in a row. -->
+              <div class="pd-buy-row">
+                <button id="addBtn" class="btn secondary pd-add">Add to cart</button>
+                <button id="wishBtn" type="button" class="pd-wish-icon" aria-label="Add to wishlist" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+                </button>
+              </div>
+              <button id="buyNowBtn" type="button" class="btn pd-buy-now">Buy it now</button>
+              <a class="pd-cart-link" href="cart.html">View cart</a>
             </div>
 
             <div class="pd-delivery-check">
@@ -88,21 +96,38 @@
             </div>
 
             <div id="desc" class="pd-desc"></div>
+
+            <!-- Trust strip — same 3 claims as the homepage's trust strip,
+                 restyled as a compact icon row (Chidiyaa's PDP pattern). -->
+            <div class="pd-trust-row">
+              <div class="pd-trust-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/><circle cx="12" cy="12" r="3.2"/></svg>
+                <span>Handwoven by master artisans</span>
+              </div>
+              <div class="pd-trust-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg>
+                <span>Complimentary shipping across India</span>
+              </div>
+              <div class="pd-trust-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.7-7 10-4-2.3-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+                <span>Quality checked before dispatch</span>
+              </div>
+            </div>
           </div>
 
           <!-- Specs -->
-          <div id="specsCard" class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
+          <div id="specsCard" class="card" style="margin-top:14px;padding:16px;border-radius:0;">
             <div style="font-weight:900;font-size:16px;">Specifications</div>
             <div id="specs" style="margin-top:10px;"></div>
           </div>
 
           <!-- Sections / Accordion -->
-          <div id="sectionsCard" class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
+          <div id="sectionsCard" class="card" style="margin-top:14px;padding:16px;border-radius:0;">
             <div id="sections"></div>
           </div>
 
           <!-- Available Offers -->
-          <div class="card" style="margin-top:14px;padding:16px;border-radius:16px;">
+          <div class="card" style="margin-top:14px;padding:16px;border-radius:0;">
             <div style="font-weight:900;font-size:15px;margin-bottom:10px;">🏷️ Available Offers</div>
             <div style="display:flex;flex-direction:column;gap:8px;">
               <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg-warm);border-radius:10px;border:1px solid var(--border);">
@@ -697,6 +722,22 @@ if (!sessionStorage.getItem(viewKey)) {
         });
       }
 
+      // ===== Buy it now (add to cart, then skip straight to checkout instead
+      // of the cart page — same addToCart() call the regular button uses) =====
+      const buyNowBtn = document.getElementById("buyNowBtn");
+      if (buyNowBtn) {
+        if (available <= 0) {
+          buyNowBtn.disabled = true;
+          buyNowBtn.textContent = "Sold out";
+        } else {
+          buyNowBtn.addEventListener("click", () => {
+            const qty = getQty();
+            addToCart({ ...data, image_url: safeMain || "" }, qty);
+            location.href = "checkout.html";
+          });
+        }
+      }
+
       // ===== Sticky mobile add-to-cart bar =====
       // Mirrors the main price + Add to cart button so it's reachable
       // without scrolling back up on a phone, without duplicating the
@@ -745,7 +786,9 @@ if (!sessionStorage.getItem(viewKey)) {
       async function syncWishlistButton() {
         if (!wishBtn) return;
         const inWish = await isInWishlist(data.id);
-        wishBtn.textContent = inWish ? "♥ In wishlist" : "♡ Wishlist";
+        wishBtn.classList.toggle("is-active", inWish);
+        wishBtn.setAttribute("aria-pressed", inWish ? "true" : "false");
+        wishBtn.setAttribute("aria-label", inWish ? "Remove from wishlist" : "Add to wishlist");
         wishBtn.dataset.inWishlist = inWish ? "1" : "0";
       }
 

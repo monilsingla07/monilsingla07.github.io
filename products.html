@@ -238,6 +238,7 @@
   import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
   import { supabase } from "./assets/supabase.js";
   import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
+  import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
   import { setPageMeta, injectJsonLd, buildCollectionSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
   const _typeForHeader = (new URL(location.href)).searchParams.get("type");
@@ -502,6 +503,7 @@
 
     return `
       <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
+        <button type="button" class="p-card-wish" data-product-id="${escapeAttr(p.id)}" aria-label="Add to wishlist" aria-pressed="false">${heartIcon()}</button>
         <a class="product-link" href="product.html?id=${encodeURIComponent(p.id)}&from=products&type=${encodeURIComponent(params.get('type') || 'saree')}${params.get('collection') ? '&col=' + encodeURIComponent(params.get('collection')) + '&colName=' + encodeURIComponent(cache.collectionName || '') : ''}">
           <div class="p-card-img">
             ${imgHtml}
@@ -516,6 +518,49 @@
           </div>
         </a>
       </div>`;
+  }
+
+  function heartIcon() {
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
+  }
+
+  // Card-grid wishlist hearts: wires clicks (add/remove, no navigation) and
+  // paints the current saved state. isInWishlist() is one lookup per card —
+  // instant from localStorage for a guest, one small Supabase query per card
+  // if signed in. Fine at this catalog's size; would want a single bulk
+  // lookup instead if the grid ever grows into the hundreds.
+  function hydrateWishlistHearts(scope) {
+    const buttons = scope.querySelectorAll(".p-card-wish");
+    buttons.forEach(async (btn) => {
+      const id = btn.dataset.productId;
+      if (!id) return;
+      try {
+        if (await isInWishlist(id)) {
+          btn.classList.add("is-active");
+          btn.setAttribute("aria-pressed", "true");
+        }
+      } catch {}
+    });
+    if (scope.dataset.wishBound) return; // avoid re-binding the delegated listener on every page of results
+    scope.dataset.wishBound = "1";
+    scope.addEventListener("click", async (e) => {
+      const btn = e.target.closest(".p-card-wish");
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.dataset.productId;
+      if (!id) return;
+      const active = btn.classList.toggle("is-active");
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      try {
+        if (active) await addToWishlist(id);
+        else await removeFromWishlist(id);
+      } catch {
+        // revert on failure so the heart never lies about saved state
+        btn.classList.toggle("is-active", !active);
+        btn.setAttribute("aria-pressed", !active ? "true" : "false");
+      }
+    });
   }
 
   function updateLoadMoreUI(){
@@ -651,6 +696,7 @@
     }
 
     grid.insertAdjacentHTML("beforeend", normalized.map((p, i) => productCard(p, offset + i)).join(""));
+    hydrateWishlistHearts(grid);
     offset += slice.length;
     updateLoadMoreUI();
     isLoading = false;
