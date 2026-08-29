@@ -1,0 +1,911 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product Catalogue — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+    .pm-row .full { grid-column: 1 / -1; }
+    .pm-row .third { grid-column: span 1; }
+    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-hint { font-size: 11px; opacity: .55; margin-top: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-list-item + .pm-list-item { margin-top: 10px; }
+    .pm-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+    .pm-badge.active { background: #dcfce7; color: #166534; }
+    .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
+    .pm-badge.low { background: #fef3c7; color: #92400e; }
+    .pm-badge.out { background: #fee2e2; color: #b91c1c; }
+    .pm-badge.sale { background: #fdf2f2; color: #7c1c1c; }
+    .pm-badge.neutral { background: #f3f4f6; color: #374151; }
+    .section-title { font-size: 13px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; opacity: .5; margin: 22px 0 10px; }
+
+    .tabbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; border-bottom: 1.5px solid var(--border, #e5e7eb); }
+    .tab-btn { border: none; background: none; padding: 10px 14px; font-weight: 800; font-size: 13px; opacity: .55; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; }
+    .tab-btn.active { opacity: 1; color: var(--brand, #7c1c1c); border-bottom-color: var(--brand, #7c1c1c); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .toolbar .input { max-width: 260px; }
+    .toolbar select.input { max-width: 170px; }
+    .toolbar .spacer { flex: 1; }
+
+    .prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+    .prod-card { border: 1px solid #eee; border-radius: 14px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+    .prod-thumb-wrap { position: relative; width: 100%; aspect-ratio: 3/4; background: #f3f4f6; }
+    .prod-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .prod-thumb-empty { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 12px; }
+    .prod-badges { position: absolute; top: 8px; left: 8px; display: flex; gap: 5px; flex-wrap: wrap; }
+    .prod-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .prod-title { font-weight: 800; font-size: 14px; line-height: 1.25; }
+    .prod-meta { font-size: 11px; opacity: .6; }
+    .prod-price { font-weight: 900; font-family: 'Cormorant Garamond', serif; font-size: 18px; }
+    .prod-price .strike { text-decoration: line-through; opacity: .5; font-weight: 600; font-size: 13px; margin-right: 6px; }
+    .prod-actions { display: flex; gap: 6px; margin-top: auto; flex-wrap: wrap; }
+    .prod-actions .btn, .prod-actions .btn.secondary { padding: 6px 10px; font-size: 12px; }
+    .switch { position: relative; display: inline-block; width: 34px; height: 19px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch .slider { position: absolute; inset: 0; background: #d1d5db; border-radius: 999px; cursor: pointer; transition: .15s; }
+    .switch .slider:before { content: ""; position: absolute; height: 15px; width: 15px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: .15s; }
+    .switch input:checked + .slider { background: var(--brand, #7c1c1c); }
+    .switch input:checked + .slider:before { transform: translateX(15px); }
+
+    .img-thumb-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .img-thumb { width: 110px; border: 1px solid #eee; border-radius: 10px; overflow: hidden; background: #fff; }
+    .img-thumb img { width: 100%; height: 110px; object-fit: cover; display: block; background: #f3f4f6; }
+    .img-thumb .img-thumb-controls { display: flex; justify-content: space-between; padding: 4px 5px; gap: 2px; }
+    .img-thumb .img-thumb-controls button { border: none; background: #f3f4f6; border-radius: 6px; font-size: 11px; padding: 2px 5px; cursor: pointer; }
+    .img-thumb input.alt-input { width: 100%; border: none; border-top: 1px solid #eee; font-size: 10px; padding: 4px 5px; box-sizing: border-box; }
+
+    .repeat-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-top: 8px; align-items: start; }
+    .repeat-row.sections { grid-template-columns: 1fr 2fr auto auto; }
+    .repeat-row textarea.input { min-height: 44px; resize: vertical; }
+    .repeat-row button.rm { border: none; background: #fee2e2; color: #b91c1c; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-weight: 800; }
+
+    .chip-check-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .chip-check { display: flex; align-items: center; gap: 6px; border: 1px solid #eee; border-radius: 999px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+    .chip-check input { width: 14px; height: 14px; }
+
+    .cover-preview { width: 140px; height: 187px; border-radius: 10px; object-fit: cover; background: #f3f4f6; display: block; margin-top: 8px; }
+
+    @media (max-width: 640px) {
+      .pm-row { grid-template-columns: 1fr; }
+      .repeat-row, .repeat-row.sections { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:1120px;">
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">Product Catalogue</h2>
+          <div class="small" style="opacity:.6; margin-top:4px;">Add, edit, deactivate, or delete products — prices, stock, fabric, weave, images, specs, and collections, all from here.</div>
+        </div>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="tabbar">
+        <button class="tab-btn active" data-tab="products">Products</button>
+        <button class="tab-btn" data-tab="fabrics">Fabrics</button>
+        <button class="tab-btn" data-tab="weaves">Weave Lines</button>
+        <button class="tab-btn" data-tab="collections">Collections</button>
+      </div>
+
+      <!-- ═══════════════════════ PRODUCTS TAB ═══════════════════════ -->
+      <div class="tab-panel active" id="panel-products">
+
+        <div id="productListView">
+          <div class="toolbar">
+            <input id="pSearch" class="input" placeholder="Search title or SKU…" />
+            <select id="pFilterCategory" class="input"><option value="">All categories</option></select>
+            <select id="pFilterStatus" class="input">
+              <option value="">All statuses</option>
+              <option value="active">Active only</option>
+              <option value="inactive">Inactive only</option>
+            </select>
+            <div class="spacer"></div>
+            <button id="btnAddProduct" class="btn">+ Add product</button>
+          </div>
+          <div id="productCount" class="small" style="opacity:.55; margin-bottom:10px;"></div>
+          <div id="productGrid" class="prod-grid"></div>
+        </div>
+
+        <div id="productEditorView" style="display:none;">
+          <div class="pm-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <div style="font-weight:900; font-size:16px;" id="editorTitle">New product</div>
+              <button id="btnBackToList" class="btn secondary" style="padding:6px 12px; font-size:12px;" type="button">← Back to list</button>
+            </div>
+            <input type="hidden" id="f_id" />
+
+            <div class="section-title" style="margin-top:16px;">Basic info</div>
+            <div class="pm-row">
+              <div class="full">
+                <label class="pm-label">Title</label>
+                <input id="f_title" class="input" placeholder="e.g. Chanderi Silk Saree — Emerald Green" />
+              </div>
+              <div class="full">
+                <label class="pm-label">Description</label>
+                <textarea id="f_description" class="input" style="min-height:80px; resize:vertical;" placeholder="Shown on the product page"></textarea>
+              </div>
+              <div>
+                <label class="pm-label">Category</label>
+                <select id="f_category" class="input">
+                  <option value="saree">Saree</option>
+                  <option value="suit">Suit</option>
+                  <option value="__custom__">Custom…</option>
+                </select>
+                <input id="f_category_custom" class="input" style="display:none; margin-top:6px;" placeholder="Custom category" />
+                <div class="pm-hint">A custom category won't appear in site navigation/homepage groupings until that's added in code — stick to Saree/Suit unless you know that's fine.</div>
+              </div>
+              <div>
+                <label class="pm-label">Fabric</label>
+                <select id="f_fabric_id" class="input"><option value="">— None —</option></select>
+              </div>
+              <div>
+                <label class="pm-label">Weave line</label>
+                <select id="f_weave_line_id" class="input"><option value="">— None —</option></select>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; margin-top:22px;">
+                <input id="f_is_active" type="checkbox" style="width:16px; height:16px;" />
+                <label for="f_is_active" style="font-size:13px; font-weight:700;">Active (visible on the storefront)</label>
+              </div>
+            </div>
+
+            <div class="section-title">Pricing &amp; inventory</div>
+            <div class="pm-row">
+              <div>
+                <label class="pm-label">Price (₹)</label>
+                <input id="f_price_inr" class="input" type="number" min="0" step="1" />
+              </div>
+              <div>
+                <label class="pm-label">Sale price (₹, optional)</label>
+                <input id="f_sale_price_inr" class="input" type="number" min="0" step="1" placeholder="Leave blank for no sale" />
+              </div>
+              <div>
+                <label class="pm-label">SKU (optional, unique)</label>
+                <input id="f_sku" class="input" placeholder="e.g. SAR-0042" />
+              </div>
+              <div>
+                <label class="pm-label">Quantity in stock</label>
+                <input id="f_inventory_qty" class="input" type="number" min="0" step="1" />
+                <div class="pm-hint" id="reservedHint"></div>
+              </div>
+              <div>
+                <label class="pm-label">Weight (grams, for shipping)</label>
+                <input id="f_weight_grams" class="input" type="number" min="1" step="1" value="400" />
+              </div>
+            </div>
+
+            <div class="section-title">Photos</div>
+            <input id="f_image_files" type="file" accept="image/jpeg,image/png,image/webp" multiple class="input" />
+            <div class="pm-hint">JPG, PNG or WEBP, up to 8MB each, up to 12 photos. First photo is the main listing image — use the ◀ ▶ buttons to reorder.</div>
+            <div id="imgUploadStatus" class="small" style="margin-top:6px;"></div>
+            <div id="imgThumbGrid" class="img-thumb-grid"></div>
+
+            <div class="section-title">Specifications</div>
+            <div class="pm-hint">Shown as a spec table on the product page (e.g. "Fabric" / "Pure Chanderi Silk").</div>
+            <div id="specRows"></div>
+            <button id="btnAddSpec" type="button" class="btn secondary" style="margin-top:10px; padding:6px 12px; font-size:12px;">+ Add specification</button>
+
+            <div class="section-title">Additional details</div>
+            <div class="pm-hint">Free-form sections shown further down the product page (e.g. "Care Instructions", "Fit &amp; Sizing").</div>
+            <div id="sectionRows"></div>
+            <button id="btnAddSection" type="button" class="btn secondary" style="margin-top:10px; padding:6px 12px; font-size:12px;">+ Add section</button>
+
+            <div class="section-title">Collections</div>
+            <div class="pm-hint">Which curated collections this product shows up in.</div>
+            <div id="collectionChips" class="chip-check-grid"></div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; align-items:center;">
+              <button id="btnSaveProduct" class="btn">Save product</button>
+              <button id="btnDeleteProduct" class="btn secondary" style="display:none; color:#b91c1c;" type="button">Delete permanently</button>
+              <div id="editorStatus" class="small" style="align-self:center;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════ FABRICS TAB ═══════════════════════ -->
+      <div class="tab-panel" id="panel-fabrics"></div>
+
+      <!-- ═══════════════════════ WEAVE LINES TAB ═══════════════════════ -->
+      <div class="tab-panel" id="panel-weaves"></div>
+
+      <!-- ═══════════════════════ COLLECTIONS TAB ═══════════════════════ -->
+      <div class="tab-panel" id="panel-collections"></div>
+
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr, safeHref, safeSrc } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const BASE = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/";
+    const PRODUCTS_FN = BASE + "admin-manage-products";
+    const CATALOG_FN  = BASE + "admin-manage-catalog";
+    const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+    const MAX_IMAGES = 12;
+    const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+    const ENTITY_LABEL = { fabric: "Fabric", weave_line: "Weave line", collection: "Collection" };
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+
+    function showGateError(emoji, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function authedFetch(url, body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    function money(v) {
+      return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+    }
+
+    // ══════════════════════════════════════ TABS ══════════════════════════════════════
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    // ══════════════════════════════════════ CATALOG CACHES ══════════════════════════════════════
+    let fabricsCache = [], weaveLinesCache = [], collectionsCache = [];
+
+    async function loadCatalogCache(entity) {
+      const r = await authedFetch(CATALOG_FN, { action: "list", entity });
+      return r.items || [];
+    }
+
+    function populateSelect(sel, items, placeholder) {
+      sel.innerHTML = '<option value="">' + placeholder + '</option>' +
+        items.map(it => `<option value="${escapeAttr(it.id)}">${escapeHtml(it.name)}${it.is_active ? "" : " (inactive)"}</option>`).join("");
+    }
+
+    // ══════════════════════════════════════ PRODUCTS: LIST ══════════════════════════════════════
+    let productsCache = [];
+
+    function productBadges(p) {
+      const badges = [];
+      badges.push(p.is_active ? '<span class="pm-badge active">Active</span>' : '<span class="pm-badge inactive">Inactive</span>');
+      if (p.sale_price_inr != null) badges.push('<span class="pm-badge sale">Sale</span>');
+      if ((p.inventory_qty || 0) <= 0) badges.push('<span class="pm-badge out">Out of stock</span>');
+      else if ((p.inventory_qty || 0) <= 3) badges.push('<span class="pm-badge low">Low stock</span>');
+      return badges.join("");
+    }
+
+    function renderProductGrid() {
+      const search = document.getElementById("pSearch").value.trim().toLowerCase();
+      const catFilter = document.getElementById("pFilterCategory").value;
+      const statusFilter = document.getElementById("pFilterStatus").value;
+
+      const filtered = productsCache.filter(p => {
+        if (search && !((p.title || "").toLowerCase().includes(search) || (p.sku || "").toLowerCase().includes(search))) return false;
+        if (catFilter && p.category !== catFilter) return false;
+        if (statusFilter === "active" && !p.is_active) return false;
+        if (statusFilter === "inactive" && p.is_active) return false;
+        return true;
+      });
+
+      document.getElementById("productCount").textContent = filtered.length + " of " + productsCache.length + " products";
+
+      const grid = document.getElementById("productGrid");
+      if (!filtered.length) {
+        grid.innerHTML = '<div class="small" style="opacity:.6; padding:20px 0;">No products match.</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => `
+        <div class="prod-card">
+          <div class="prod-thumb-wrap">
+            ${p.thumbnail_url ? `<img src="${safeSrc(p.thumbnail_url)}" alt="" />` : `<div class="prod-thumb-empty">No photo</div>`}
+            <div class="prod-badges">${productBadges(p)}</div>
+          </div>
+          <div class="prod-body">
+            <div class="prod-title">${escapeHtml(p.title)}</div>
+            <div class="prod-meta">${escapeHtml(p.category || "")}${p.sku ? " · " + escapeHtml(p.sku) : ""} · Qty ${escapeHtml(String(p.inventory_qty ?? 0))}${p.reserved_qty ? " (" + escapeHtml(String(p.reserved_qty)) + " reserved)" : ""}</div>
+            <div class="prod-meta">${p.fabric ? escapeHtml(p.fabric.name) : "No fabric"} · ${p.weave_line ? escapeHtml(p.weave_line.name) : "No weave"} · ${escapeHtml(String(p.image_count))} photo${p.image_count === 1 ? "" : "s"}</div>
+            <div class="prod-price">
+              ${p.sale_price_inr != null ? `<span class="strike">${money(p.price_inr)}</span>${money(p.sale_price_inr)}` : money(p.price_inr)}
+            </div>
+            <div class="prod-actions">
+              <button class="btn secondary" data-edit="${escapeAttr(p.id)}">Edit</button>
+              <label class="switch" title="Toggle active">
+                <input type="checkbox" data-toggle="${escapeAttr(p.id)}" ${p.is_active ? "checked" : ""} />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      grid.querySelectorAll("button[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => openProductEditor(btn.dataset.edit));
+      });
+      grid.querySelectorAll("input[data-toggle]").forEach(chk => {
+        chk.addEventListener("change", async () => {
+          const id = chk.dataset.toggle;
+          const is_active = chk.checked;
+          chk.disabled = true;
+          try {
+            await authedFetch(PRODUCTS_FN, { action: "toggle_active", id, is_active });
+            const p = productsCache.find(x => x.id === id);
+            if (p) p.is_active = is_active;
+            renderProductGrid();
+          } catch (e) {
+            alert("Couldn't update: " + e.message);
+            chk.checked = !is_active;
+          } finally {
+            chk.disabled = false;
+          }
+        });
+      });
+    }
+
+    async function loadProductsList() {
+      document.getElementById("productCount").textContent = "Loading…";
+      const r = await authedFetch(PRODUCTS_FN, { action: "list" });
+      productsCache = r.products || [];
+      renderProductGrid();
+    }
+
+    document.getElementById("pSearch").addEventListener("input", renderProductGrid);
+    document.getElementById("pFilterCategory").addEventListener("change", renderProductGrid);
+    document.getElementById("pFilterStatus").addEventListener("change", renderProductGrid);
+
+    // ══════════════════════════════════════ PRODUCTS: EDITOR ══════════════════════════════════════
+    let editorImages = [];   // [{image_url, alt_text}]
+    let editorSpecs = [];    // [{label, value}]
+    let editorSections = []; // [{title, content, content_type}]
+
+    function renderImgThumbs() {
+      const box = document.getElementById("imgThumbGrid");
+      if (!editorImages.length) {
+        box.innerHTML = '<div class="small" style="opacity:.55;">No photos yet.</div>';
+        return;
+      }
+      box.innerHTML = editorImages.map((im, i) => `
+        <div class="img-thumb">
+          <img src="${safeSrc(im.image_url)}" alt="" />
+          <input class="alt-input" data-alt="${i}" placeholder="Alt text" value="${escapeAttr(im.alt_text || "")}" />
+          <div class="img-thumb-controls">
+            <button type="button" data-move="${i}:-1" ${i === 0 ? "disabled" : ""}>◀</button>
+            <button type="button" data-move="${i}:1" ${i === editorImages.length - 1 ? "disabled" : ""}>▶</button>
+            <button type="button" data-rm="${i}" style="color:#b91c1c;">✕</button>
+          </div>
+        </div>
+      `).join("");
+      box.querySelectorAll("input[data-alt]").forEach(inp => {
+        inp.addEventListener("input", () => { editorImages[Number(inp.dataset.alt)].alt_text = inp.value; });
+      });
+      box.querySelectorAll("button[data-move]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const [idx, dir] = btn.dataset.move.split(":").map(Number);
+          const j = idx + dir;
+          if (j < 0 || j >= editorImages.length) return;
+          [editorImages[idx], editorImages[j]] = [editorImages[j], editorImages[idx]];
+          renderImgThumbs();
+        });
+      });
+      box.querySelectorAll("button[data-rm]").forEach(btn => {
+        btn.addEventListener("click", () => { editorImages.splice(Number(btn.dataset.rm), 1); renderImgThumbs(); });
+      });
+    }
+
+    document.getElementById("f_image_files").addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []);
+      const status = document.getElementById("imgUploadStatus");
+      for (const file of files) {
+        if (editorImages.length >= MAX_IMAGES) { status.textContent = "Max " + MAX_IMAGES + " photos reached."; break; }
+        if (!ALLOWED_IMAGE_TYPES.includes(file.type)) { status.textContent = file.name + ": unsupported type, skipped."; continue; }
+        if (file.size > MAX_IMAGE_BYTES) { status.textContent = file.name + ": over 8MB, skipped."; continue; }
+        try {
+          status.textContent = "Uploading " + file.name + "…";
+          const { path, token, publicUrl } = await authedFetch(PRODUCTS_FN, { action: "get_upload_url", content_type: file.type });
+          const { error } = await supabase.storage.from("product-images").uploadToSignedUrl(path, token, file);
+          if (error) throw new Error(error.message);
+          editorImages.push({ image_url: publicUrl, alt_text: "" });
+          renderImgThumbs();
+        } catch (err) {
+          status.textContent = file.name + ": upload failed — " + err.message;
+        }
+      }
+      status.textContent = status.textContent.includes("failed") || status.textContent.includes("skipped") ? status.textContent : "Done.";
+      e.target.value = "";
+    });
+
+    function renderSpecRows() {
+      const box = document.getElementById("specRows");
+      if (!editorSpecs.length) { box.innerHTML = '<div class="small" style="opacity:.55; margin-top:8px;">No specifications yet.</div>'; return; }
+      box.innerHTML = editorSpecs.map((s, i) => `
+        <div class="repeat-row">
+          <input class="input" data-spec-label="${i}" placeholder="Label (e.g. Fabric)" value="${escapeAttr(s.label)}" />
+          <input class="input" data-spec-value="${i}" placeholder="Value (e.g. Pure Chanderi Silk)" value="${escapeAttr(s.value)}" />
+          <button type="button" class="rm" data-spec-rm="${i}">✕</button>
+        </div>
+      `).join("");
+      box.querySelectorAll("[data-spec-label]").forEach(inp => inp.addEventListener("input", () => { editorSpecs[Number(inp.dataset.specLabel)].label = inp.value; }));
+      box.querySelectorAll("[data-spec-value]").forEach(inp => inp.addEventListener("input", () => { editorSpecs[Number(inp.dataset.specValue)].value = inp.value; }));
+      box.querySelectorAll("[data-spec-rm]").forEach(btn => btn.addEventListener("click", () => { editorSpecs.splice(Number(btn.dataset.specRm), 1); renderSpecRows(); }));
+    }
+    document.getElementById("btnAddSpec").addEventListener("click", () => { editorSpecs.push({ label: "", value: "" }); renderSpecRows(); });
+
+    function renderSectionRows() {
+      const box = document.getElementById("sectionRows");
+      if (!editorSections.length) { box.innerHTML = '<div class="small" style="opacity:.55; margin-top:8px;">No additional-detail sections yet.</div>'; return; }
+      box.innerHTML = editorSections.map((s, i) => `
+        <div class="repeat-row sections">
+          <input class="input" data-sec-title="${i}" placeholder="Section title (e.g. Care Instructions)" value="${escapeAttr(s.title)}" />
+          <textarea class="input" data-sec-content="${i}" placeholder="Content">${escapeHtml(s.content)}</textarea>
+          <select class="input" data-sec-type="${i}">
+            <option value="text" ${s.content_type === "text" ? "selected" : ""}>Text</option>
+            <option value="html" ${s.content_type === "html" ? "selected" : ""}>HTML</option>
+          </select>
+          <button type="button" class="rm" data-sec-rm="${i}">✕</button>
+        </div>
+      `).join("");
+      box.querySelectorAll("[data-sec-title]").forEach(inp => inp.addEventListener("input", () => { editorSections[Number(inp.dataset.secTitle)].title = inp.value; }));
+      box.querySelectorAll("[data-sec-content]").forEach(inp => inp.addEventListener("input", () => { editorSections[Number(inp.dataset.secContent)].content = inp.value; }));
+      box.querySelectorAll("[data-sec-type]").forEach(inp => inp.addEventListener("change", () => { editorSections[Number(inp.dataset.secType)].content_type = inp.value; }));
+      box.querySelectorAll("[data-sec-rm]").forEach(btn => btn.addEventListener("click", () => { editorSections.splice(Number(btn.dataset.secRm), 1); renderSectionRows(); }));
+    }
+    document.getElementById("btnAddSection").addEventListener("click", () => { editorSections.push({ title: "", content: "", content_type: "text" }); renderSectionRows(); });
+
+    function renderCollectionChips(selectedIds) {
+      const box = document.getElementById("collectionChips");
+      if (!collectionsCache.length) { box.innerHTML = '<div class="small" style="opacity:.55;">No collections yet — add one in the Collections tab.</div>'; return; }
+      const sel = new Set((selectedIds || []).map(String));
+      box.innerHTML = collectionsCache.map(c => `
+        <label class="chip-check">
+          <input type="checkbox" value="${escapeAttr(c.id)}" ${sel.has(String(c.id)) ? "checked" : ""} />
+          ${escapeHtml(c.name)}
+        </label>
+      `).join("");
+    }
+
+    function resetEditorForm() {
+      document.getElementById("f_id").value = "";
+      document.getElementById("f_title").value = "";
+      document.getElementById("f_description").value = "";
+      document.getElementById("f_category").value = "saree";
+      document.getElementById("f_category_custom").style.display = "none";
+      document.getElementById("f_category_custom").value = "";
+      document.getElementById("f_fabric_id").value = "";
+      document.getElementById("f_weave_line_id").value = "";
+      document.getElementById("f_is_active").checked = true;
+      document.getElementById("f_price_inr").value = "";
+      document.getElementById("f_sale_price_inr").value = "";
+      document.getElementById("f_sku").value = "";
+      document.getElementById("f_inventory_qty").value = "0";
+      document.getElementById("f_weight_grams").value = "400";
+      document.getElementById("reservedHint").textContent = "";
+      editorImages = []; editorSpecs = []; editorSections = [];
+      renderImgThumbs(); renderSpecRows(); renderSectionRows(); renderCollectionChips([]);
+      document.getElementById("btnDeleteProduct").style.display = "none";
+      document.getElementById("editorTitle").textContent = "New product";
+      document.getElementById("editorStatus").textContent = "";
+    }
+
+    function setCategorySelect(category) {
+      const sel = document.getElementById("f_category");
+      const custom = document.getElementById("f_category_custom");
+      if (category === "saree" || category === "suit") {
+        sel.value = category; custom.style.display = "none"; custom.value = "";
+      } else {
+        sel.value = "__custom__"; custom.style.display = "block"; custom.value = category || "";
+      }
+    }
+    document.getElementById("f_category").addEventListener("change", () => {
+      document.getElementById("f_category_custom").style.display = document.getElementById("f_category").value === "__custom__" ? "block" : "none";
+    });
+
+    async function openProductEditor(id) {
+      resetEditorForm();
+      document.getElementById("productListView").style.display = "none";
+      document.getElementById("productEditorView").style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      if (!id) return; // new product — blank form is ready
+
+      document.getElementById("editorStatus").textContent = "Loading…";
+      try {
+        const r = await authedFetch(PRODUCTS_FN, { action: "get", id });
+        const p = r.product;
+        document.getElementById("f_id").value = p.id;
+        document.getElementById("f_title").value = p.title || "";
+        document.getElementById("f_description").value = p.description || "";
+        setCategorySelect(p.category);
+        document.getElementById("f_fabric_id").value = p.fabric_id ?? "";
+        document.getElementById("f_weave_line_id").value = p.weave_line_id ?? "";
+        document.getElementById("f_is_active").checked = !!p.is_active;
+        document.getElementById("f_price_inr").value = p.price_inr ?? "";
+        document.getElementById("f_sale_price_inr").value = p.sale_price_inr ?? "";
+        document.getElementById("f_sku").value = p.sku || "";
+        document.getElementById("f_inventory_qty").value = p.inventory_qty ?? 0;
+        document.getElementById("f_weight_grams").value = p.weight_grams ?? 400;
+        document.getElementById("reservedHint").textContent = p.reserved_qty ? p.reserved_qty + " unit(s) currently reserved by in-progress checkouts (not editable here)." : "";
+
+        editorImages = (r.images || []).map(im => ({ image_url: im.image_url, alt_text: im.alt_text || "" }));
+        editorSpecs = (r.specs || []).map(s => ({ label: s.label, value: s.value }));
+        editorSections = (r.sections || []).map(s => ({ title: s.title, content: s.content, content_type: s.content_type || "text" }));
+        renderImgThumbs(); renderSpecRows(); renderSectionRows(); renderCollectionChips(r.collection_ids || []);
+
+        document.getElementById("editorTitle").textContent = "Editing: " + p.title;
+        document.getElementById("btnDeleteProduct").style.display = "inline-block";
+        document.getElementById("editorStatus").textContent = "";
+      } catch (e) {
+        document.getElementById("editorStatus").textContent = "Error loading product: " + e.message;
+      }
+    }
+
+    function closeProductEditor(refresh) {
+      document.getElementById("productEditorView").style.display = "none";
+      document.getElementById("productListView").style.display = "block";
+      if (refresh) loadProductsList();
+    }
+
+    document.getElementById("btnAddProduct").addEventListener("click", () => openProductEditor(null));
+    document.getElementById("btnBackToList").addEventListener("click", () => closeProductEditor(false));
+
+    document.getElementById("btnSaveProduct").addEventListener("click", async () => {
+      const status = document.getElementById("editorStatus");
+      const title = document.getElementById("f_title").value.trim();
+      if (!title) { status.textContent = "Title is required."; return; }
+      const price_inr = document.getElementById("f_price_inr").value;
+      if (price_inr === "" || Number(price_inr) < 0) { status.textContent = "Enter a valid price."; return; }
+
+      const categorySel = document.getElementById("f_category").value;
+      const category = categorySel === "__custom__" ? document.getElementById("f_category_custom").value.trim() : categorySel;
+
+      const collectionIds = Array.from(document.querySelectorAll("#collectionChips input:checked")).map(i => i.value);
+
+      try {
+        status.textContent = "Saving product…";
+        const saveRes = await authedFetch(PRODUCTS_FN, {
+          action: "save",
+          id: document.getElementById("f_id").value || null,
+          title,
+          description: document.getElementById("f_description").value,
+          category,
+          fabric_id: document.getElementById("f_fabric_id").value || null,
+          weave_line_id: document.getElementById("f_weave_line_id").value || null,
+          is_active: document.getElementById("f_is_active").checked,
+          price_inr: Number(price_inr),
+          sale_price_inr: document.getElementById("f_sale_price_inr").value === "" ? null : Number(document.getElementById("f_sale_price_inr").value),
+          sku: document.getElementById("f_sku").value,
+          inventory_qty: Number(document.getElementById("f_inventory_qty").value || 0),
+          weight_grams: Number(document.getElementById("f_weight_grams").value || 400),
+        });
+        const productId = saveRes.product.id;
+        document.getElementById("f_id").value = productId;
+
+        status.textContent = "Saving photos…";
+        await authedFetch(PRODUCTS_FN, { action: "save_images", product_id: productId, images: editorImages });
+
+        status.textContent = "Saving specifications…";
+        await authedFetch(PRODUCTS_FN, { action: "save_specs", product_id: productId, specs: editorSpecs });
+
+        status.textContent = "Saving details…";
+        await authedFetch(PRODUCTS_FN, { action: "save_sections", product_id: productId, sections: editorSections });
+
+        status.textContent = "Saving collections…";
+        await authedFetch(PRODUCTS_FN, { action: "save_collections", product_id: productId, collection_ids: collectionIds });
+
+        status.textContent = "Saved ✅";
+        await loadCatalogAndRefreshCollectionCounts();
+        closeProductEditor(true);
+      } catch (e) {
+        status.textContent = "Error: " + e.message;
+      }
+    });
+
+    document.getElementById("btnDeleteProduct").addEventListener("click", async () => {
+      const id = document.getElementById("f_id").value;
+      if (!id) return;
+      if (!confirm("Permanently delete this product? This removes it, its photos, specs, and collection listings for good. This cannot be undone.")) return;
+      const status = document.getElementById("editorStatus");
+      try {
+        status.textContent = "Deleting…";
+        await authedFetch(PRODUCTS_FN, { action: "delete", id });
+        closeProductEditor(true);
+      } catch (e) {
+        status.textContent = "";
+        alert(e.message);
+      }
+    });
+
+    // ══════════════════════════════════════ TAXONOMY TABS (fabrics / weave lines / collections) ══════════════════════════════════════
+    function taxonomyPanelHtml(entity) {
+      const label = ENTITY_LABEL[entity];
+      const isCollection = entity === "collection";
+      return `
+        <div class="pm-card">
+          <div style="font-weight:900;" id="${entity}_formTitle">New ${label.toLowerCase()}</div>
+          <input type="hidden" id="${entity}_f_id" />
+          <div class="pm-row">
+            <div class="full">
+              <label class="pm-label">Name</label>
+              <input id="${entity}_f_name" class="input" placeholder="e.g. ${entity === "fabric" ? "Georgette" : entity === "weave_line" ? "Banarasi Handloom" : "Festive Edit"}" />
+            </div>
+            <div class="full">
+              <label class="pm-label">Description (optional)</label>
+              <textarea id="${entity}_f_description" class="input" style="min-height:60px; resize:vertical;"></textarea>
+            </div>
+            ${isCollection ? `
+            <div class="full">
+              <label class="pm-label">Cover image</label>
+              <input id="${entity}_f_cover_file" type="file" accept="image/jpeg,image/png,image/webp" class="input" />
+              <input type="hidden" id="${entity}_f_cover_url" />
+              <div id="${entity}_coverPreviewBox"></div>
+              <div class="pm-hint">Or paste an image URL directly:</div>
+              <input id="${entity}_f_cover_url_text" class="input" placeholder="https://…" style="margin-top:4px;" />
+            </div>` : ""}
+            <div>
+              <label class="pm-label">Display order</label>
+              <input id="${entity}_f_sort_order" class="input" type="number" step="1" value="0" />
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:22px;">
+              <input id="${entity}_f_is_active" type="checkbox" style="width:16px; height:16px;" checked />
+              <label for="${entity}_f_is_active" style="font-size:13px; font-weight:700;">Active</label>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+            <button id="${entity}_btnSave" class="btn">Save</button>
+            <button id="${entity}_btnReset" class="btn secondary" type="button">New / clear form</button>
+            <div id="${entity}_formStatus" class="small" style="align-self:center;"></div>
+          </div>
+        </div>
+        <div class="section-title">All ${label.toLowerCase()}s</div>
+        <div id="${entity}_list"></div>
+      `;
+    }
+
+    function taxonomyItemsCacheRef(entity) {
+      if (entity === "fabric") return () => fabricsCache;
+      if (entity === "weave_line") return () => weaveLinesCache;
+      return () => collectionsCache;
+    }
+
+    function setTaxonomyCache(entity, items) {
+      if (entity === "fabric") fabricsCache = items;
+      else if (entity === "weave_line") weaveLinesCache = items;
+      else collectionsCache = items;
+    }
+
+    function renderTaxonomyList(entity) {
+      const items = taxonomyItemsCacheRef(entity)();
+      const list = document.getElementById(entity + "_list");
+      if (!items.length) { list.innerHTML = '<div class="small" style="opacity:.6;">None yet — add one above.</div>'; return; }
+      list.innerHTML = items.map(it => `
+        <div class="pm-list-item">
+          <div style="display:flex; gap:10px; align-items:flex-start;">
+            ${entity === "collection" && it.cover_image_url ? `<img src="${safeSrc(it.cover_image_url)}" style="width:44px;height:58px;object-fit:cover;border-radius:6px;" alt="" />` : ""}
+            <div>
+              <div style="font-weight:800;">${escapeHtml(it.name)}
+                <span class="pm-badge ${it.is_active ? "active" : "inactive"}" style="margin-left:8px;">${it.is_active ? "Active" : "Inactive"}</span>
+                <span class="pm-badge neutral" style="margin-left:6px;">${escapeHtml(String(it.product_count))} product${it.product_count === 1 ? "" : "s"}</span>
+              </div>
+              <div class="small" style="opacity:.55; margin-top:2px;">/${escapeHtml(it.slug)}${it.description ? " · " + escapeHtml(it.description) : ""}</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-tedit="${escapeAttr(it.id)}">Edit</button>
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-tdelete="${escapeAttr(it.id)}">Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      const byId = new Map(items.map(it => [String(it.id), it]));
+      list.querySelectorAll("button[data-tedit]").forEach(btn => btn.addEventListener("click", () => fillTaxonomyForm(entity, byId.get(btn.dataset.tedit))));
+      list.querySelectorAll("button[data-tdelete]").forEach(btn => btn.addEventListener("click", async () => {
+        if (!confirm("Delete this " + ENTITY_LABEL[entity].toLowerCase() + "?")) return;
+        try {
+          await authedFetch(CATALOG_FN, { action: "delete", entity, id: btn.dataset.tdelete });
+          await reloadTaxonomy(entity);
+        } catch (e) { alert("Delete failed: " + e.message); }
+      }));
+    }
+
+    function clearTaxonomyForm(entity) {
+      document.getElementById(entity + "_f_id").value = "";
+      document.getElementById(entity + "_f_name").value = "";
+      document.getElementById(entity + "_f_description").value = "";
+      document.getElementById(entity + "_f_sort_order").value = "0";
+      document.getElementById(entity + "_f_is_active").checked = true;
+      if (entity === "collection") {
+        document.getElementById(entity + "_f_cover_url").value = "";
+        document.getElementById(entity + "_f_cover_url_text").value = "";
+        document.getElementById(entity + "_f_cover_file").value = "";
+        renderCoverPreview(entity, "");
+      }
+      document.getElementById(entity + "_formTitle").textContent = "New " + ENTITY_LABEL[entity].toLowerCase();
+      document.getElementById(entity + "_formStatus").textContent = "";
+    }
+
+    function fillTaxonomyForm(entity, it) {
+      document.getElementById(entity + "_f_id").value = it.id;
+      document.getElementById(entity + "_f_name").value = it.name || "";
+      document.getElementById(entity + "_f_description").value = it.description || "";
+      document.getElementById(entity + "_f_sort_order").value = String(it.sort_order ?? 0);
+      document.getElementById(entity + "_f_is_active").checked = !!it.is_active;
+      if (entity === "collection") {
+        document.getElementById(entity + "_f_cover_url").value = it.cover_image_url || "";
+        document.getElementById(entity + "_f_cover_url_text").value = it.cover_image_url || "";
+        renderCoverPreview(entity, it.cover_image_url || "");
+      }
+      document.getElementById(entity + "_formTitle").textContent = "Editing: " + it.name;
+      document.getElementById(entity + "_formStatus").textContent = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderCoverPreview(entity, url) {
+      const box = document.getElementById(entity + "_coverPreviewBox");
+      if (!box) return;
+      box.innerHTML = url ? `<img src="${safeSrc(url)}" class="cover-preview" alt="" />` : "";
+    }
+
+    async function reloadTaxonomy(entity) {
+      const items = await loadCatalogCache(entity);
+      setTaxonomyCache(entity, items);
+      renderTaxonomyList(entity);
+      if (entity === "fabric") populateSelect(document.getElementById("f_fabric_id"), fabricsCache, "— None —");
+      if (entity === "weave_line") populateSelect(document.getElementById("f_weave_line_id"), weaveLinesCache, "— None —");
+      if (entity === "collection") {
+        // Collections tab also feeds the product editor's checkbox list; if that's open, refresh selection state.
+      }
+    }
+
+    function wireTaxonomyPanel(entity) {
+      document.getElementById(entity + "_btnReset").addEventListener("click", () => clearTaxonomyForm(entity));
+
+      if (entity === "collection") {
+        document.getElementById(entity + "_f_cover_file").addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const status = document.getElementById(entity + "_formStatus");
+          if (!ALLOWED_IMAGE_TYPES.includes(file.type)) { status.textContent = "Unsupported image type."; return; }
+          if (file.size > MAX_IMAGE_BYTES) { status.textContent = "Image too large (max 8MB)."; return; }
+          try {
+            status.textContent = "Uploading cover image…";
+            const { path, token, publicUrl } = await authedFetch(CATALOG_FN, { action: "get_upload_url", content_type: file.type });
+            const { error } = await supabase.storage.from("product-images").uploadToSignedUrl(path, token, file);
+            if (error) throw new Error(error.message);
+            document.getElementById(entity + "_f_cover_url").value = publicUrl;
+            document.getElementById(entity + "_f_cover_url_text").value = publicUrl;
+            renderCoverPreview(entity, publicUrl);
+            status.textContent = "Cover image uploaded.";
+          } catch (err) {
+            status.textContent = "Upload failed: " + err.message;
+          }
+        });
+        document.getElementById(entity + "_f_cover_url_text").addEventListener("input", (e) => {
+          document.getElementById(entity + "_f_cover_url").value = e.target.value.trim();
+          renderCoverPreview(entity, e.target.value.trim());
+        });
+      }
+
+      document.getElementById(entity + "_btnSave").addEventListener("click", async () => {
+        const status = document.getElementById(entity + "_formStatus");
+        const name = document.getElementById(entity + "_f_name").value.trim();
+        if (!name) { status.textContent = "Name is required."; return; }
+        const payload = {
+          action: "save",
+          entity,
+          id: document.getElementById(entity + "_f_id").value || null,
+          name,
+          description: document.getElementById(entity + "_f_description").value,
+          sort_order: Number(document.getElementById(entity + "_f_sort_order").value || 0),
+          is_active: document.getElementById(entity + "_f_is_active").checked,
+        };
+        if (entity === "collection") payload.cover_image_url = document.getElementById(entity + "_f_cover_url").value;
+
+        try {
+          status.textContent = "Saving…";
+          const r = await authedFetch(CATALOG_FN, payload);
+          fillTaxonomyForm(entity, r.item);
+          status.textContent = "Saved ✅";
+          await reloadTaxonomy(entity);
+        } catch (e) {
+          status.textContent = "Error: " + e.message;
+        }
+      });
+    }
+
+    async function loadCatalogAndRefreshCollectionCounts() {
+      // Re-pull collections so product_count badges stay accurate after a product's collection membership changes.
+      const items = await loadCatalogCache("collection");
+      setTaxonomyCache("collection", items);
+      if (document.getElementById("collection_list")) renderTaxonomyList("collection");
+    }
+
+    // ══════════════════════════════════════ INIT ══════════════════════════════════════
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+        const adminResult = await supabase.from("admin_users").select("email").eq("email", session.user.email.toLowerCase()).maybeSingle();
+        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        // Category filter options mirror the fixed dropdown in the editor.
+        populateSelect(document.getElementById("pFilterCategory"), [{ id: "saree", name: "Saree", is_active: true }, { id: "suit", name: "Suit", is_active: true }], "All categories");
+
+        document.getElementById("panel-fabrics").innerHTML = taxonomyPanelHtml("fabric");
+        document.getElementById("panel-weaves").innerHTML = taxonomyPanelHtml("weave_line");
+        document.getElementById("panel-collections").innerHTML = taxonomyPanelHtml("collection");
+        wireTaxonomyPanel("fabric");
+        wireTaxonomyPanel("weave_line");
+        wireTaxonomyPanel("collection");
+        clearTaxonomyForm("fabric"); clearTaxonomyForm("weave_line"); clearTaxonomyForm("collection");
+
+        await Promise.all([reloadTaxonomy("fabric"), reloadTaxonomy("weave_line"), reloadTaxonomy("collection")]);
+        resetEditorForm();
+        await loadProductsList();
+      } catch (e) {
+        console.error("Product admin page error:", e);
+        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>
