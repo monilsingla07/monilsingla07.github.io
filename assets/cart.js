@@ -35,6 +35,23 @@ export function addToCart(product, qty = 1) {
       }];
 
   setCart(next);
+
+  // GA4: add_to_cart. `gtag` is loaded globally by every storefront page's
+  // own <script> tag (see index.html etc.) — guarded here since this module
+  // has no way to know if that script has finished loading yet.
+  if (typeof gtag === "function") {
+    gtag("event", "add_to_cart", {
+      currency: "INR",
+      value: safePrice * qty,
+      items: [{
+        item_id: product.id,
+        item_name: product.title || "",
+        price: safePrice,
+        quantity: qty,
+      }],
+    });
+  }
+
   return next;
 }
 
