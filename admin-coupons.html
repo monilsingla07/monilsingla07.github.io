@@ -1,0 +1,540 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coupon Manager — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+    .pm-row .full { grid-column: 1 / -1; }
+    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-hint { font-size: 11px; opacity: .55; margin-top: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-list-item + .pm-list-item { margin-top: 10px; }
+    .pm-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+    .pm-badge.active { background: #dcfce7; color: #166534; }
+    .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
+    .pm-badge.neutral { background: #f3f4f6; color: #374151; }
+    .pm-badge.info { background: #dbeafe; color: #1e40af; }
+    .pm-badge.warn { background: #fef3c7; color: #92400e; }
+    .section-title { font-size: 13px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; opacity: .5; margin: 22px 0 10px; }
+
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .toolbar .input { max-width: 260px; }
+    .toolbar select.input { max-width: 170px; }
+    .toolbar .spacer { flex: 1; }
+
+    .switch { position: relative; display: inline-block; width: 34px; height: 19px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch .slider { position: absolute; inset: 0; background: #d1d5db; border-radius: 999px; cursor: pointer; transition: .15s; }
+    .switch .slider:before { content: ""; position: absolute; height: 15px; width: 15px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: .15s; }
+    .switch input:checked + .slider { background: var(--brand, #7c1c1c); }
+    .switch input:checked + .slider:before { transform: translateX(15px); }
+
+    .toggle-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 12px; border: 1px solid #eee; border-radius: 10px; }
+    .toggle-row label.tlabel { font-size: 13px; font-weight: 700; flex: 1; }
+    .toggle-row .thint { font-size: 11px; opacity: .55; margin-top: 2px; }
+
+    .coupon-code-tag { font-family: monospace; font-weight: 800; font-size: 15px; letter-spacing: .02em; background: #f3f4f6; padding: 2px 8px; border-radius: 6px; }
+
+    @media (max-width: 640px) {
+      .pm-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:960px;">
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">Coupon Manager</h2>
+          <div class="small" style="opacity:.6; margin-top:4px;">Create and control every discount code on the site — value, limits, eligibility rules, and whether it's shown at checkout.</div>
+        </div>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div id="couponListView">
+        <div class="toolbar">
+          <input id="cSearch" class="input" placeholder="Search code or label…" />
+          <select id="cFilterStatus" class="input">
+            <option value="">All statuses</option>
+            <option value="active">Active only</option>
+            <option value="inactive">Inactive only</option>
+          </select>
+          <div class="spacer"></div>
+          <button id="btnAddCoupon" class="btn">+ Add coupon</button>
+        </div>
+        <div id="couponCount" class="small" style="opacity:.55; margin-bottom:10px;"></div>
+        <div id="couponList"></div>
+      </div>
+
+      <div id="couponEditorView" style="display:none;">
+        <div class="pm-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="font-weight:900; font-size:16px;" id="editorTitle">New coupon</div>
+            <button id="btnBackToList" class="btn secondary" style="padding:6px 12px; font-size:12px;" type="button">← Back to list</button>
+          </div>
+          <input type="hidden" id="f_id" />
+
+          <div class="section-title" style="margin-top:16px;">Basic info</div>
+          <div class="pm-row">
+            <div>
+              <label class="pm-label">Coupon code</label>
+              <input id="f_code" class="input" placeholder="e.g. WELCOME10" style="text-transform:uppercase;" />
+              <div class="pm-hint">Letters, numbers, - and _ only. What the customer types in at checkout.</div>
+            </div>
+            <div>
+              <label class="pm-label">Display label (optional)</label>
+              <input id="f_label" class="input" placeholder="e.g. 10% off" />
+              <div class="pm-hint">Short text shown on the checkout coupon chip.</div>
+            </div>
+            <div class="full">
+              <label class="pm-label">Description (optional)</label>
+              <input id="f_description" class="input" placeholder="e.g. 10% off your first order • No minimum spend" />
+            </div>
+          </div>
+
+          <div class="section-title">Discount</div>
+          <div class="pm-row">
+            <div>
+              <label class="pm-label">Discount type</label>
+              <select id="f_type" class="input">
+                <option value="percent">Percentage off</option>
+                <option value="amount">Flat ₹ off</option>
+              </select>
+            </div>
+            <div>
+              <label class="pm-label" id="f_value_label">Value</label>
+              <input id="f_value" class="input" type="number" min="0" step="1" placeholder="e.g. 10" />
+            </div>
+            <div>
+              <label class="pm-label">Max discount cap (₹, optional)</label>
+              <input id="f_max_discount_inr" class="input" type="number" min="0" step="1" placeholder="Leave blank for no cap" />
+              <div class="pm-hint">Caps a percentage discount so it can't exceed this ₹ amount. Ignored for flat-₹ coupons.</div>
+            </div>
+            <div>
+              <label class="pm-label">Minimum order value (₹, optional)</label>
+              <input id="f_min_order_inr" class="input" type="number" min="0" step="1" placeholder="Leave blank for no minimum" />
+            </div>
+          </div>
+
+          <div class="section-title">Eligibility &amp; limits</div>
+          <div class="pm-row">
+            <div>
+              <label class="pm-label">Restrict to one email (optional)</label>
+              <input id="f_email" class="input" type="email" placeholder="customer@example.com" />
+              <div class="pm-hint">Leave blank for a general, public coupon.</div>
+            </div>
+            <div>
+              <label class="pm-label">Total use limit across all customers (optional)</label>
+              <input id="f_max_uses" class="input" type="number" min="1" step="1" placeholder="Leave blank for unlimited" />
+            </div>
+            <div>
+              <label class="pm-label">Starts on (optional)</label>
+              <input id="f_starts_at" class="input" type="datetime-local" />
+            </div>
+            <div>
+              <label class="pm-label">Expires on (optional)</label>
+              <input id="f_expires_at" class="input" type="datetime-local" />
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <label class="tlabel" for="f_first_order_only">First-time customers only</label>
+              <div class="thint">Only applies if this email has no prior paid order.</div>
+            </div>
+            <label class="switch"><input id="f_first_order_only" type="checkbox" /><span class="slider"></span></label>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <label class="tlabel" for="f_one_per_customer">One redemption per customer</label>
+              <div class="thint">On by default — the same customer can't reuse this code on a later order. Turning this off lets one customer use it repeatedly, so only turn it off deliberately.</div>
+            </div>
+            <label class="switch"><input id="f_one_per_customer" type="checkbox" checked /><span class="slider"></span></label>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <label class="tlabel" for="f_show_on_checkout">Show as a coupon chip on checkout</label>
+              <div class="thint">If off, the code still works if a customer types it in, but it won't be advertised on the checkout page.</div>
+            </div>
+            <label class="switch"><input id="f_show_on_checkout" type="checkbox" /><span class="slider"></span></label>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <label class="tlabel" for="f_active">Active</label>
+              <div class="thint">Off = coupon is completely disabled everywhere, regardless of any other setting above.</div>
+            </div>
+            <label class="switch"><input id="f_active" type="checkbox" checked /><span class="slider"></span></label>
+          </div>
+
+          <div id="redemptionsBox"></div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; align-items:center;">
+            <button id="btnSaveCoupon" class="btn">Save coupon</button>
+            <button id="btnDeleteCoupon" class="btn secondary" style="display:none; color:#b91c1c;" type="button">Delete permanently</button>
+            <div id="editorStatus" class="small" style="align-self:center;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr, safeHref, safeSrc } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const BASE = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/";
+    const COUPONS_FN = BASE + "admin-manage-coupons";
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+
+    function showGateError(emoji, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function authedFetch(url, body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    function money(v) {
+      return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return "";
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return "";
+      return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    }
+
+    function toLocalDateTimeInputValue(iso) {
+      if (!iso) return "";
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return "";
+      const pad = (n) => String(n).padStart(2, "0");
+      return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes());
+    }
+
+    // ══════════════════════════════════════ LIST ══════════════════════════════════════
+    let couponsCache = [];
+
+    function discountLabel(c) {
+      return c.type === "percent" ? c.value + "% off" : money(c.value) + " off";
+    }
+
+    function couponBadges(c) {
+      const badges = [];
+      badges.push(c.active ? '<span class="pm-badge active">Active</span>' : '<span class="pm-badge inactive">Inactive</span>');
+      if (c.show_on_checkout) badges.push('<span class="pm-badge info">Shown at checkout</span>');
+      if (c.first_order_only) badges.push('<span class="pm-badge warn">First order only</span>');
+      if (!c.one_per_customer) badges.push('<span class="pm-badge warn">Reusable per customer</span>');
+      if (c.email) badges.push('<span class="pm-badge neutral">Locked to ' + escapeHtml(c.email) + '</span>');
+      const now = new Date();
+      if (c.starts_at && new Date(c.starts_at) > now) badges.push('<span class="pm-badge neutral">Starts ' + fmtDate(c.starts_at) + '</span>');
+      if (c.expires_at && new Date(c.expires_at) <= now) badges.push('<span class="pm-badge neutral">Expired ' + fmtDate(c.expires_at) + '</span>');
+      return badges.join("");
+    }
+
+    function renderCouponList() {
+      const search = document.getElementById("cSearch").value.trim().toLowerCase();
+      const statusFilter = document.getElementById("cFilterStatus").value;
+
+      const filtered = couponsCache.filter(c => {
+        if (search && !((c.code || "").toLowerCase().includes(search) || (c.label || "").toLowerCase().includes(search))) return false;
+        if (statusFilter === "active" && !c.active) return false;
+        if (statusFilter === "inactive" && c.active) return false;
+        return true;
+      });
+
+      document.getElementById("couponCount").textContent = filtered.length + " of " + couponsCache.length + " coupons";
+
+      const list = document.getElementById("couponList");
+      if (!filtered.length) {
+        list.innerHTML = '<div class="small" style="opacity:.6; padding:20px 0;">No coupons match.</div>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(c => `
+        <div class="pm-list-item">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="coupon-code-tag">${escapeHtml(c.code)}</span>
+              <span style="font-weight:800;">${escapeHtml(discountLabel(c))}</span>
+            </div>
+            <div class="small" style="opacity:.6; margin-top:4px;">${escapeHtml(c.label || c.description || "")}</div>
+            <div class="small" style="opacity:.55; margin-top:4px;">${escapeHtml(String(c.redemption_count || 0))} redemption${c.redemption_count === 1 ? "" : "s"}${c.max_uses ? " · limit " + escapeHtml(String(c.max_uses)) : ""}${c.min_order_inr ? " · min order " + escapeHtml(money(c.min_order_inr)) : ""}</div>
+            <div style="margin-top:6px; display:flex; gap:5px; flex-wrap:wrap;">${couponBadges(c)}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(c.id)}">Edit</button>
+            <label class="switch" title="Toggle active">
+              <input type="checkbox" data-toggle="${escapeAttr(c.id)}" ${c.active ? "checked" : ""} />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      `).join("");
+
+      list.querySelectorAll("button[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => openCouponEditor(btn.dataset.edit));
+      });
+      list.querySelectorAll("input[data-toggle]").forEach(chk => {
+        chk.addEventListener("change", async () => {
+          const id = chk.dataset.toggle;
+          const active = chk.checked;
+          chk.disabled = true;
+          try {
+            await authedFetch(COUPONS_FN, { action: "toggle_active", id, active });
+            const c = couponsCache.find(x => String(x.id) === String(id));
+            if (c) c.active = active;
+            renderCouponList();
+          } catch (e) {
+            alert("Couldn't update: " + e.message);
+            chk.checked = !active;
+          } finally {
+            chk.disabled = false;
+          }
+        });
+      });
+    }
+
+    async function loadCouponsList() {
+      document.getElementById("couponCount").textContent = "Loading…";
+      const r = await authedFetch(COUPONS_FN, { action: "list" });
+      couponsCache = r.coupons || [];
+      renderCouponList();
+    }
+
+    document.getElementById("cSearch").addEventListener("input", renderCouponList);
+    document.getElementById("cFilterStatus").addEventListener("change", renderCouponList);
+
+    // ══════════════════════════════════════ EDITOR ══════════════════════════════════════
+    document.getElementById("f_type").addEventListener("change", () => {
+      const isPercent = document.getElementById("f_type").value === "percent";
+      document.getElementById("f_value_label").textContent = isPercent ? "Percentage off (%)" : "Flat amount off (₹)";
+    });
+
+    function resetEditorForm() {
+      document.getElementById("f_id").value = "";
+      document.getElementById("f_code").value = "";
+      document.getElementById("f_label").value = "";
+      document.getElementById("f_description").value = "";
+      document.getElementById("f_type").value = "percent";
+      document.getElementById("f_value_label").textContent = "Percentage off (%)";
+      document.getElementById("f_value").value = "";
+      document.getElementById("f_max_discount_inr").value = "";
+      document.getElementById("f_min_order_inr").value = "";
+      document.getElementById("f_email").value = "";
+      document.getElementById("f_max_uses").value = "";
+      document.getElementById("f_starts_at").value = "";
+      document.getElementById("f_expires_at").value = "";
+      document.getElementById("f_first_order_only").checked = false;
+      document.getElementById("f_one_per_customer").checked = true;
+      document.getElementById("f_show_on_checkout").checked = false;
+      document.getElementById("f_active").checked = true;
+      document.getElementById("redemptionsBox").innerHTML = "";
+      document.getElementById("btnDeleteCoupon").style.display = "none";
+      document.getElementById("editorTitle").textContent = "New coupon";
+      document.getElementById("editorStatus").textContent = "";
+    }
+
+    function renderRedemptionsBox(redemptions) {
+      const box = document.getElementById("redemptionsBox");
+      if (!redemptions || !redemptions.length) {
+        box.innerHTML = '<div class="section-title">Redemption history</div><div class="small" style="opacity:.55;">Not used on any order yet.</div>';
+        return;
+      }
+      box.innerHTML = '<div class="section-title">Redemption history (' + redemptions.length + ')</div>' +
+        '<div style="max-height:180px; overflow:auto; border:1px solid #eee; border-radius:10px;">' +
+        redemptions.map(r => `
+          <div style="display:flex; justify-content:space-between; gap:10px; padding:8px 12px; border-bottom:1px solid #f3f4f6; font-size:12px;">
+            <span>${escapeHtml(r.email)}</span>
+            <span style="opacity:.6;">${escapeHtml(fmtDate(r.created_at))}</span>
+          </div>
+        `).join("") +
+        '</div>';
+    }
+
+    async function openCouponEditor(id) {
+      resetEditorForm();
+      document.getElementById("couponListView").style.display = "none";
+      document.getElementById("couponEditorView").style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      if (!id) return; // new coupon — blank form is ready
+
+      document.getElementById("editorStatus").textContent = "Loading…";
+      try {
+        const r = await authedFetch(COUPONS_FN, { action: "get", id });
+        const c = r.coupon;
+        document.getElementById("f_id").value = c.id;
+        document.getElementById("f_code").value = c.code || "";
+        document.getElementById("f_label").value = c.label || "";
+        document.getElementById("f_description").value = c.description || "";
+        document.getElementById("f_type").value = c.type || "percent";
+        document.getElementById("f_value_label").textContent = c.type === "percent" ? "Percentage off (%)" : "Flat amount off (₹)";
+        document.getElementById("f_value").value = c.value ?? "";
+        document.getElementById("f_max_discount_inr").value = c.max_discount_inr ?? "";
+        document.getElementById("f_min_order_inr").value = c.min_order_inr ?? "";
+        document.getElementById("f_email").value = c.email || "";
+        document.getElementById("f_max_uses").value = c.max_uses ?? "";
+        document.getElementById("f_starts_at").value = toLocalDateTimeInputValue(c.starts_at);
+        document.getElementById("f_expires_at").value = toLocalDateTimeInputValue(c.expires_at);
+        document.getElementById("f_first_order_only").checked = !!c.first_order_only;
+        document.getElementById("f_one_per_customer").checked = !!c.one_per_customer;
+        document.getElementById("f_show_on_checkout").checked = !!c.show_on_checkout;
+        document.getElementById("f_active").checked = !!c.active;
+
+        renderRedemptionsBox(r.redemptions);
+
+        document.getElementById("editorTitle").textContent = "Editing: " + c.code;
+        document.getElementById("btnDeleteCoupon").style.display = "inline-block";
+        document.getElementById("editorStatus").textContent = "";
+      } catch (e) {
+        document.getElementById("editorStatus").textContent = "Error loading coupon: " + e.message;
+      }
+    }
+
+    function closeCouponEditor(refresh) {
+      document.getElementById("couponEditorView").style.display = "none";
+      document.getElementById("couponListView").style.display = "block";
+      if (refresh) loadCouponsList();
+    }
+
+    document.getElementById("btnAddCoupon").addEventListener("click", () => openCouponEditor(null));
+    document.getElementById("btnBackToList").addEventListener("click", () => closeCouponEditor(false));
+
+    document.getElementById("btnSaveCoupon").addEventListener("click", async () => {
+      const status = document.getElementById("editorStatus");
+      const code = document.getElementById("f_code").value.trim().toUpperCase();
+      if (!code) { status.textContent = "Coupon code is required."; return; }
+      const value = document.getElementById("f_value").value;
+      if (value === "" || Number(value) <= 0) { status.textContent = "Enter a value greater than 0."; return; }
+
+      const toIntOrNull = (v) => (v === "" || v === null || v === undefined) ? null : Number(v);
+      const toIsoOrNull = (v) => {
+        if (!v) return null;
+        const d = new Date(v);
+        return Number.isNaN(d.getTime()) ? null : d.toISOString();
+      };
+
+      try {
+        status.textContent = "Saving…";
+        const r = await authedFetch(COUPONS_FN, {
+          action: "save",
+          id: document.getElementById("f_id").value || null,
+          code,
+          label: document.getElementById("f_label").value,
+          description: document.getElementById("f_description").value,
+          type: document.getElementById("f_type").value,
+          value: Number(value),
+          max_discount_inr: toIntOrNull(document.getElementById("f_max_discount_inr").value),
+          min_order_inr: toIntOrNull(document.getElementById("f_min_order_inr").value),
+          email: document.getElementById("f_email").value,
+          max_uses: toIntOrNull(document.getElementById("f_max_uses").value),
+          starts_at: toIsoOrNull(document.getElementById("f_starts_at").value),
+          expires_at: toIsoOrNull(document.getElementById("f_expires_at").value),
+          first_order_only: document.getElementById("f_first_order_only").checked,
+          one_per_customer: document.getElementById("f_one_per_customer").checked,
+          show_on_checkout: document.getElementById("f_show_on_checkout").checked,
+          active: document.getElementById("f_active").checked,
+        });
+        document.getElementById("f_id").value = r.coupon.id;
+        status.textContent = "Saved ✅";
+        closeCouponEditor(true);
+      } catch (e) {
+        status.textContent = "Error: " + e.message;
+      }
+    });
+
+    document.getElementById("btnDeleteCoupon").addEventListener("click", async () => {
+      const id = document.getElementById("f_id").value;
+      if (!id) return;
+      if (!confirm("Permanently delete this coupon? This cannot be undone.")) return;
+      const status = document.getElementById("editorStatus");
+      try {
+        status.textContent = "Deleting…";
+        await authedFetch(COUPONS_FN, { action: "delete", id });
+        closeCouponEditor(true);
+      } catch (e) {
+        status.textContent = "";
+        alert(e.message);
+      }
+    });
+
+    // ══════════════════════════════════════ INIT ══════════════════════════════════════
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+        const adminResult = await supabase.from("admin_users").select("email").eq("email", session.user.email.toLowerCase()).maybeSingle();
+        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        resetEditorForm();
+        await loadCouponsList();
+      } catch (e) {
+        console.error("Coupon admin page error:", e);
+        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

@@ -648,9 +648,14 @@
     });
 
     // ---------- Coupon UI ----------
-    const AVAILABLE_COUPONS = [
-      { code: "WELCOME10", label: "10% off",  description: "10% off your first order • No minimum spend" },
-    ];
+    // FIX: this used to be a hardcoded AVAILABLE_COUPONS array, so an admin
+    // toggling a coupon's "show on checkout" setting had no real effect on
+    // the live site. Now it's pulled live from the public get-available-
+    // coupons endpoint, which mirrors exactly what admin-coupons.html
+    // controls. Fails silently to an empty list — a coupon-list problem
+    // must never block checkout (the coupon-code text input still works
+    // regardless of whether any chips loaded).
+    const COUPONS_ENDPOINT = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-available-coupons";
 
     const couponToggle      = document.getElementById("couponToggle");
     const couponPanel       = document.getElementById("couponPanel");
@@ -660,29 +665,55 @@
     const couponMsg         = document.getElementById("couponMsg");
     const couponToggleLabel = document.getElementById("couponToggleLabel");
 
-    if (couponOptions) {
-      couponOptions.innerHTML = AVAILABLE_COUPONS.map(c => `
-        <button type="button" class="coupon-chip" data-code="${c.code}"
-          style="display:flex;align-items:center;justify-content:space-between;gap:10px;
-                 border:1.5px dashed var(--border);border-radius:10px;padding:10px 12px;
-                 background:#fafafa;cursor:pointer;text-align:left;width:100%;
-                 transition:border-color .15s,background .15s;">
-          <div>
-            <span style="font-weight:800;font-size:13px;color:var(--brand);">${c.code}</span>
-            <span style="margin-left:8px;font-size:12px;font-weight:700;background:var(--brand);color:#fff;padding:2px 7px;border-radius:999px;">${c.label}</span>
-            <div style="font-size:12px;opacity:.7;margin-top:3px;">${c.description}</div>
-          </div>
-          <span style="font-size:12px;font-weight:800;color:var(--brand);white-space:nowrap;">Tap to apply →</span>
-        </button>
-      `).join("");
-
-      couponOptions.querySelectorAll(".coupon-chip").forEach(btn => {
-        btn.addEventListener("click", () => {
-          if (couponInput) couponInput.value = btn.dataset.code;
-          applyCouponNow(btn.dataset.code);
-        });
-      });
+    function couponChipDescription(c) {
+      if (c.description) return c.description;
+      const bits = [];
+      if (c.min_order_inr) bits.push(`Min. order ₹${Number(c.min_order_inr).toLocaleString("en-IN")}`);
+      else bits.push("No minimum spend");
+      if (c.first_order_only) bits.push("First order only");
+      return bits.join(" • ");
     }
+
+    async function loadAvailableCoupons() {
+      if (!couponOptions) return;
+      try {
+        const res = await fetch(COUPONS_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        const json = await res.json().catch(() => ({}));
+        const coupons = Array.isArray(json.coupons) ? json.coupons : [];
+        if (!coupons.length) { couponOptions.innerHTML = ""; return; }
+
+        couponOptions.innerHTML = coupons.map(c => `
+          <button type="button" class="coupon-chip" data-code="${c.code}"
+            style="display:flex;align-items:center;justify-content:space-between;gap:10px;
+                   border:1.5px dashed var(--border);border-radius:10px;padding:10px 12px;
+                   background:#fafafa;cursor:pointer;text-align:left;width:100%;
+                   transition:border-color .15s,background .15s;">
+            <div>
+              <span style="font-weight:800;font-size:13px;color:var(--brand);">${c.code}</span>
+              <span style="margin-left:8px;font-size:12px;font-weight:700;background:var(--brand);color:#fff;padding:2px 7px;border-radius:999px;">${c.label || (c.type === "percent" ? c.value + "% off" : "₹" + c.value + " off")}</span>
+              <div style="font-size:12px;opacity:.7;margin-top:3px;">${couponChipDescription(c)}</div>
+            </div>
+            <span style="font-size:12px;font-weight:800;color:var(--brand);white-space:nowrap;">Tap to apply →</span>
+          </button>
+        `).join("");
+
+        couponOptions.querySelectorAll(".coupon-chip").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if (couponInput) couponInput.value = btn.dataset.code;
+            applyCouponNow(btn.dataset.code);
+          });
+        });
+      } catch (_e) {
+        // Silent — the manual coupon-code input still works even if the chip list fails to load.
+        couponOptions.innerHTML = "";
+      }
+    }
+
+    loadAvailableCoupons();
 
     couponToggle?.addEventListener("click", () => {
       const isOpen = couponPanel.style.display !== "none";
