@@ -1,6 +1,7 @@
 // assets/home.js
 import { supabase } from "./supabase.js";
 import { escapeHtml, escapeAttr, safeSrc, safeCssUrl } from "./safe.js";
+import { addToWishlist, removeFromWishlist, isInWishlist } from "./wishlist.js";
 
 /**
  * Home page helpers:
@@ -171,6 +172,7 @@ function productCard(p) {
 
   return `
     <div class="p-card">
+      <button type="button" class="p-card-wish" data-product-id="${escapeAttr(p.id)}" aria-label="Add to wishlist" aria-pressed="false">${heartIcon()}</button>
       <a href="product.html?id=${encodeURIComponent(p.id)}" class="product-link">
         <div class="p-card-img">
           ${imgHtml}
@@ -188,6 +190,47 @@ function productCard(p) {
   `;
 }
 
+function heartIcon() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
+}
+
+// Same wishlist-heart wiring as products.html's grid — see the comment there
+// for the isInWishlist() cost tradeoff. Kept as a duplicate here rather than
+// a shared import because productCard()/renderGrid() are themselves already
+// duplicated between this file and products.html.
+function hydrateWishlistHearts(scope) {
+  const buttons = scope.querySelectorAll(".p-card-wish");
+  buttons.forEach(async (btn) => {
+    const id = btn.dataset.productId;
+    if (!id) return;
+    try {
+      if (await isInWishlist(id)) {
+        btn.classList.add("is-active");
+        btn.setAttribute("aria-pressed", "true");
+      }
+    } catch {}
+  });
+  if (scope.dataset.wishBound) return;
+  scope.dataset.wishBound = "1";
+  scope.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".p-card-wish");
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = btn.dataset.productId;
+    if (!id) return;
+    const active = btn.classList.toggle("is-active");
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+    try {
+      if (active) await addToWishlist(id);
+      else await removeFromWishlist(id);
+    } catch {
+      btn.classList.toggle("is-active", !active);
+      btn.setAttribute("aria-pressed", !active ? "true" : "false");
+    }
+  });
+}
+
 function setStatus(id, msg) {
   const el = document.getElementById(id);
   if (el) el.textContent = msg ?? "";
@@ -197,6 +240,7 @@ function renderGrid(gridId, items) {
   const grid = document.getElementById(gridId);
   if (!grid) return;
   grid.innerHTML = (items ?? []).map(productCard).join("");
+  hydrateWishlistHearts(grid);
 }
 
 function pickHeroBackground(products) {
