@@ -27,45 +27,41 @@
   <div class="container">
     <h2 style="margin-top:0;">Your cart</h2>
 
-    <!-- Premium Empty Cart -->
+    <!-- Empty cart: was an icon-in-a-gradient-box + 3 small emoji "trust"
+         cards wrapped in their own bordered/shadowed boxes — read as
+         cluttered and toy-like. Replaced with a single centered state (no
+         icon, no emoji) and the same plain-text trust strip pattern already
+         used on the homepage, so this page matches the rest of the site's
+         flat, restrained visual system instead of introducing its own. -->
     <div id="empty" style="display:none;">
-      <div class="card" style="padding:22px;border-radius:18px;display:flex;gap:18px;align-items:center;">
-        <div style="width:92px;height:92px;border-radius:18px;background:linear-gradient(135deg,#fff,#f6f0ff);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
-          <span style="font-size:36px;">🧺</span>
+      <div style="text-align:center;padding:48px 16px 8px;max-width:420px;margin:0 auto;">
+        <h3 style="font-family:var(--font-heading);font-weight:600;font-size:22px;margin:0;">
+          Your cart is empty
+        </h3>
+        <div class="small" style="margin-top:8px;opacity:.75;">
+          Add something beautiful — we'll keep it safe here.
         </div>
 
-        <div style="flex:1;min-width:0;">
-          <div style="font-family:'Playfair Display', serif;font-weight:700;font-size:22px;line-height:1.1;">
-            Your cart is waiting
-          </div>
-          <div class="small" style="margin-top:8px;opacity:.75;">
-            Add something beautiful — we’ll keep it safe here.
-          </div>
+        <div class="row" style="margin-top:20px;gap:10px;flex-wrap:wrap;justify-content:center;">
+          <a class="btn" href="products.html">Shop Bestsellers</a>
+          <a class="btn secondary" href="new-arrivals.html">New Arrivals</a>
+        </div>
 
-          <div class="row" style="margin-top:14px;gap:10px;flex-wrap:wrap;">
-            <a class="btn" href="products.html">Shop Bestsellers</a>
-            <a class="btn secondary" href="products.html">New Arrivals</a>
-          </div>
-
-          <div class="small" style="margin-top:12px;opacity:.7;">
-            Secure checkout • Ships across India • Razorpay payments
-          </div>
+        <div class="small" style="margin-top:14px;opacity:.7;">
+          Secure checkout • Ships across India • Razorpay payments
         </div>
       </div>
 
-      <!-- Trust strip -->
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
-        <div class="card" style="padding:12px 14px;border-radius:14px;">
-          <div style="font-weight:700;">✨ Premium quality</div>
-          <div class="small" style="opacity:.75;margin-top:4px;">Carefully curated sarees</div>
+      <!-- Trust strip (same plain-text pattern as the homepage, not separate icon cards) -->
+      <div style="display:flex; flex-wrap:wrap; gap:0; justify-content:space-between; padding:20px 0 8px; margin-top:14px; border-top:1px solid var(--border-light);">
+        <div style="flex:1; min-width:180px; text-align:center; padding:6px 14px;">
+          <span style="font-size:13.5px; color:var(--text-light);">Premium quality, carefully curated</span>
         </div>
-        <div class="card" style="padding:12px 14px;border-radius:14px;">
-          <div style="font-weight:700;">🔒 Secure payments</div>
-          <div class="small" style="opacity:.75;margin-top:4px;">Razorpay protected</div>
+        <div style="flex:1; min-width:180px; text-align:center; padding:6px 14px; border-left:1px solid var(--border); border-right:1px solid var(--border);">
+          <span style="font-size:13.5px; color:var(--text-light);">Secure payments, Razorpay protected</span>
         </div>
-        <div class="card" style="padding:12px 14px;border-radius:14px;">
-          <div style="font-weight:700;">📦 Fast dispatch</div>
-          <div class="small" style="opacity:.75;margin-top:4px;">Quick processing</div>
+        <div style="flex:1; min-width:180px; text-align:center; padding:6px 14px;">
+          <span style="font-size:13.5px; color:var(--text-light);">Fast dispatch, quick processing</span>
         </div>
       </div>
 

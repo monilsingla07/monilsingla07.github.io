@@ -141,16 +141,31 @@
         </div>
       </section>
 
-      <!-- Category quick links -->
+      <!-- Category quick links: exactly 2 boxes (Sarees, Suits) — the weave
+           names (Chanderi Handloom, Chanderi Cotton, ...) live in each
+           tile's subtitle and as the real filter on the category page, not
+           as their own separate boxes here. -->
       <section class="section">
         <div class="section-head">
-          <h2 class="section-title">Shop by Weave</h2>
+          <h2 class="section-title">Shop by Category</h2>
           <a class="section-link" href="products.html">View all</a>
         </div>
 
         <div id="homeCategoryTiles" class="category-tile-groups">
           <div class="small">Loading categories…</div>
         </div>
+      </section>
+
+      <!-- New Arrivals (renamed from "New Collection", moved above Curated
+           Collections and Most Loved) -->
+      <section class="section">
+        <div class="section-head">
+          <h2 class="section-title">New Arrivals</h2>
+          <a class="section-link" href="new-arrivals.html">See more</a>
+        </div>
+
+        <div id="newCollectionStatus" class="small" style="margin-bottom:10px;"></div>
+        <div id="newCollectionGrid" class="grid grid-4"></div>
       </section>
 
       <!-- Curated collections (from backend) -->
@@ -174,17 +189,6 @@
 
         <div id="bestsellersStatus" class="small" style="margin-bottom:10px;"></div>
         <div id="bestsellersGrid" class="grid grid-4"></div>
-      </section>
-
-      <!-- New Collection -->
-      <section class="section">
-        <div class="section-head">
-          <h2 class="section-title">New Collection</h2>
-          <a class="section-link" href="products.html?sort=newest">See more</a>
-        </div>
-
-        <div id="newCollectionStatus" class="small" style="margin-bottom:10px;"></div>
-        <div id="newCollectionGrid" class="grid grid-4"></div>
       </section>
 
 
