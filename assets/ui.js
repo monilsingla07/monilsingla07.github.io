@@ -429,6 +429,38 @@ async function hydrateNavDropdowns() {
   }
 }
 
+// Scroll-reveal (motion/polish pass): fades + slides each .section into
+// view as the visitor scrolls to it, instead of everything just sitting
+// there static. Marks elements with .reveal-init (opacity:0, see
+// styles.css) only when JS actually runs and motion is allowed — with JS
+// disabled, or prefers-reduced-motion set, .reveal-init is never added at
+// all, so the page renders fully visible with zero animation, no
+// flash-of-hidden-content risk either way. Every page already calls
+// hydrateHeaderAuth() once, so wiring it in there covers the whole site
+// without touching each page's own script.
+function initScrollReveal() {
+  try {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!("IntersectionObserver" in window)) return;
+    const targets = document.querySelectorAll(".section");
+    if (!targets.length) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+    targets.forEach((el) => {
+      el.classList.add("reveal-init");
+      io.observe(el);
+    });
+  } catch (_) {
+    // Never let a motion nicety break the page — worst case, no reveal animation.
+  }
+}
+
 export async function hydrateHeaderAuth() {
   initMobileMenu();
   initHeaderOffset();
@@ -439,6 +471,7 @@ export async function hydrateHeaderAuth() {
   try { mountWelcomePopup(); } catch (_) {}
 
   hydrateNavDropdowns();
+  initScrollReveal();
 
   const aDesktop = document.getElementById("accountLink");
   const aMobile  = document.getElementById("accountLinkMobile");
