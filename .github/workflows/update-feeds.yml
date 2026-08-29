@@ -1,0 +1,47 @@
+name: Update sitemap and Merchant Center feed
+
+# Regenerates sitemap.xml and merchant-center-feed.xml from live Supabase
+# product data and commits them back to main if anything changed. This is
+# what keeps the Merchant Center feed and sitemap in sync with the store
+# automatically, per the SEO overhaul (see the project's SEO audit report).
+#
+# Reads only the site's own public anon key (scripts/generate-feeds.mjs),
+# the same key already shipped to every visitor's browser — no secrets are
+# needed and nothing here can write to the database.
+
+on:
+  schedule:
+    # Every 6 hours. GitHub Actions cron runs in UTC.
+    - cron: '0 */6 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-feeds:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate sitemap.xml and merchant-center-feed.xml
+        run: node scripts/generate-feeds.mjs
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet -- sitemap.xml merchant-center-feed.xml; then
+            echo "No changes to sitemap.xml or merchant-center-feed.xml."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sitemap.xml merchant-center-feed.xml
+          git commit -m "chore: auto-update sitemap.xml and merchant-center-feed.xml"
+          git push origin main
