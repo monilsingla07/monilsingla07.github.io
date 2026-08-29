@@ -109,7 +109,16 @@ footer { border-top: 1px solid var(--border); border-bottom: none; margin-top: 2
 /* ═══════════════════════════
    LAYOUT
 ═══════════════════════════ */
-.container { max-width: 1060px; margin: 0 auto; padding: 16px; }
+/* Was 1060px — on any monitor wider than ~1100px that left huge dead
+   margins on both sides (visible in the user's screenshot) and forced
+   .grid-4's 4 equal-width columns to be narrower than they needed to be.
+   Bumped to 1320px so product cards get meaningfully bigger for free
+   (same 4-column grid, ~27% more width per card) without changing how
+   many products show per row. Every page-specific hero/body wrapper that
+   was hardcoded to match the old 1060px (products.html, collections.html,
+   collection.html, new-arrivals.html, sale.html, blogs.html) was bumped to
+   the same 1320px so hero banners stay aligned with the grids below them. */
+.container { max-width: 1320px; margin: 0 auto; padding: 16px; }
 nav a { margin-right: 12px; text-decoration: none; color: #111; }
 
 .grid {
@@ -1264,6 +1273,61 @@ header .nav {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ═══════════════════════════
+   SCROLL REVEAL (motion/polish pass)
+   JS-added only (assets/ui.js initScrollReveal, called from
+   hydrateHeaderAuth on every page) — .reveal-init is never present in the
+   static markup or base CSS, so with JS disabled or prefers-reduced-motion
+   set, every .section renders fully visible with no animation at all, no
+   flash-of-hidden-content risk.
+═══════════════════════════ */
+.reveal-init {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-init.in-view { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .reveal-init, .reveal-init.in-view { opacity: 1; transform: none; transition: none; }
+}
+
+/* Section title underline now draws in left-to-right as its section
+   scrolls into view, instead of just sitting there static — small
+   signature detail, part of the "bolder identity + motion" pass. */
+.section-title::after { width: 0; transition: width 0.6s cubic-bezier(0.16,1,0.3,1) 0.15s; }
+.section.in-view .section-title::after { width: 36px; }
+@media (prefers-reduced-motion: reduce) {
+  .section-title::after { width: 36px; transition: none; }
+}
+
+/* Small gold "kicker" label above a section title — same spirit as
+   .hero-kicker but sized for body sections on a light background instead
+   of over a photo. Homepage-only for now (index.html), not site-wide. */
+.section-kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 8px;
+}
+
+/* Alternating warm-tinted panel behind a homepage section — applied by
+   hand to alternating <section class="section section-tinted"> blocks in
+   index.html, not globally, so it doesn't touch any other page. Kept
+   inside the normal .container width (not an edge-to-edge break-out —
+   that trick has real risk of horizontal-scrollbar bugs and this session
+   has no live browser to verify against) — still breaks up what was one
+   flat wall of white sections into visible rhythm, just as an inset panel
+   rather than full-bleed. */
+.section-tinted {
+  background: linear-gradient(180deg, var(--bg-warm) 0%, var(--surface) 100%);
+  padding: 48px 32px;
+  border-radius: var(--radius-lg);
+}
+@media (max-width: 560px) { .section-tinted { padding: 28px 18px; } }
 
 @media (max-width: 900px) {
   .product-grid, .skeleton-grid { grid-template-columns: repeat(3, 1fr); }
