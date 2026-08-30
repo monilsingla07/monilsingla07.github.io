@@ -77,7 +77,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/collection.html?slug=chanderi-classics</loc>
+    <loc>https://www.ahamstree.com/collection.html?slug=everyday-cotton</loc>
     <priority>0.7</priority>
   </url>
   <url>
@@ -85,7 +85,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/collection.html?slug=office-elegance</loc>
+    <loc>https://www.ahamstree.com/collection.html?slug=chanderi-classics</loc>
     <priority>0.7</priority>
   </url>
   <url>
@@ -93,17 +93,27 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/collection.html?slug=everyday-cotton</loc>
+    <loc>https://www.ahamstree.com/collection.html?slug=office-elegance</loc>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.ahamstree.com/product.html?id=2a22bbd8-a890-4258-8558-3cb06a062cc1</loc>
-    <lastmod>2026-08-29</lastmod>
+    <lastmod>2026-08-30</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=afed1a27-68a7-4606-a460-0eb6463d3019</loc>
+    <lastmod>2026-08-30</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.ahamstree.com/product.html?id=417dafef-8432-437e-ad70-fadd6c4b887a</loc>
-    <lastmod>2026-08-29</lastmod>
+    <lastmod>2026-08-30</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=56a59319-3346-490c-a432-7a33bf7e159c</loc>
+    <lastmod>2026-08-30</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
@@ -142,11 +152,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?id=afed1a27-68a7-4606-a460-0eb6463d3019</loc>
-    <lastmod>2026-08-29</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/product.html?id=d75405b2-eb60-4769-a5a8-ba0d50b38fa2</loc>
     <lastmod>2026-08-29</lastmod>
     <priority>0.7</priority>
@@ -172,31 +177,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?id=56a59319-3346-490c-a432-7a33bf7e159c</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=ec998506-1b0b-4af5-a904-218513e8bc2a</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=bbed78ea-693d-447d-b112-d2b9ff41f42e</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=266cd868-548f-4dcb-bdcf-861d3754d2a6</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?id=44442782-b099-47a4-ada1-88adffd94d93</loc>
-    <lastmod>2026-08-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/product.html?id=d78494cf-595a-4c51-94d4-5d782b47b26c</loc>
     <lastmod>2026-08-27</lastmod>
     <priority>0.7</priority>
@@ -217,7 +197,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?id=d4aac9da-1f3e-4860-b42d-212dc8413bd4</loc>
+    <loc>https://www.ahamstree.com/product.html?id=bbed78ea-693d-447d-b112-d2b9ff41f42e</loc>
     <lastmod>2026-08-27</lastmod>
     <priority>0.7</priority>
   </url>
@@ -243,6 +223,26 @@
   </url>
   <url>
     <loc>https://www.ahamstree.com/product.html?id=0ada92f8-b966-4865-80bb-b5e2270e0477</loc>
+    <lastmod>2026-08-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=ec998506-1b0b-4af5-a904-218513e8bc2a</loc>
+    <lastmod>2026-08-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=d4aac9da-1f3e-4860-b42d-212dc8413bd4</loc>
+    <lastmod>2026-08-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=266cd868-548f-4dcb-bdcf-861d3754d2a6</loc>
+    <lastmod>2026-08-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?id=44442782-b099-47a4-ada1-88adffd94d93</loc>
     <lastmod>2026-08-27</lastmod>
     <priority>0.7</priority>
   </url>
