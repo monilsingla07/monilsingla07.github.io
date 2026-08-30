@@ -1,0 +1,320 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Blog Manager — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+    .pm-row .full { grid-column: 1 / -1; }
+    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-list-item + .pm-list-item { margin-top: 10px; }
+    .pm-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge.active { background: #dcfce7; color: #166534; }
+    .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
+    textarea.input { min-height: 220px; font-family: inherit; resize: vertical; }
+    #coverPreview { max-width: 220px; border-radius: 10px; margin-top: 8px; display: none; }
+    @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:900px;">
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">Blog Manager</h2>
+          <div class="small" style="opacity:.6; margin-top:4px;">Write, edit, and publish/unpublish blog posts — no more editing rows directly in the database.</div>
+        </div>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="pm-card">
+        <div style="font-weight:900;" id="formTitle">New post</div>
+        <input type="hidden" id="f_id" />
+
+        <div class="pm-row">
+          <div class="full">
+            <label class="pm-label">Title</label>
+            <input id="f_title" class="input" placeholder="e.g. Caring for Your Handwoven Chanderi Saree" />
+          </div>
+
+          <div class="full">
+            <label class="pm-label">URL slug (optional — auto-generated from title if left blank)</label>
+            <input id="f_slug" class="input" placeholder="e.g. caring-for-your-chanderi-saree" />
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Excerpt (optional — short summary shown on the blog listing page)</label>
+            <input id="f_excerpt" class="input" placeholder="A one or two line summary" />
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Cover image (optional)</label>
+            <input id="f_cover_file" type="file" accept="image/jpeg,image/png,image/webp" />
+            <input type="hidden" id="f_cover_url" />
+            <img id="coverPreview" alt="Cover preview" />
+            <div class="small" style="opacity:.6; margin-top:4px;">JPEG, PNG, or WEBP, up to 5MB.</div>
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Content (plain text or basic HTML — rendered as-is on the blog page)</label>
+            <textarea id="f_content" class="input" placeholder="Write the post here…"></textarea>
+          </div>
+
+          <div class="full" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <input id="f_is_published" type="checkbox" style="width:16px; height:16px;" checked />
+            <label for="f_is_published" style="font-size:13px; font-weight:700;">Published (visible on the public blog)</label>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+          <button id="btnSave" class="btn">Save post</button>
+          <button id="btnReset" class="btn secondary" type="button">New / clear form</button>
+          <div id="formStatus" class="small" style="align-self:center;"></div>
+        </div>
+      </div>
+
+      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All posts</div>
+      <div id="postList"></div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-blog";
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+    const formStatus   = document.getElementById("formStatus");
+    const formTitle    = document.getElementById("formTitle");
+
+    function showGateError(emoji, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function authedFetch(body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    function clearForm() {
+      document.getElementById("f_id").value = "";
+      document.getElementById("f_title").value = "";
+      document.getElementById("f_slug").value = "";
+      document.getElementById("f_excerpt").value = "";
+      document.getElementById("f_content").value = "";
+      document.getElementById("f_cover_url").value = "";
+      document.getElementById("f_cover_file").value = "";
+      document.getElementById("f_is_published").checked = true;
+      const preview = document.getElementById("coverPreview");
+      preview.style.display = "none";
+      preview.src = "";
+      formTitle.textContent = "New post";
+      formStatus.textContent = "";
+    }
+
+    function fillForm(p) {
+      document.getElementById("f_id").value = p.id;
+      document.getElementById("f_title").value = p.title || "";
+      document.getElementById("f_slug").value = p.slug || "";
+      document.getElementById("f_excerpt").value = p.excerpt || "";
+      document.getElementById("f_content").value = p.content || "";
+      document.getElementById("f_cover_url").value = p.cover_image_url || "";
+      document.getElementById("f_cover_file").value = "";
+      document.getElementById("f_is_published").checked = !!p.is_published;
+      const preview = document.getElementById("coverPreview");
+      if (p.cover_image_url) {
+        preview.src = safeSrc(p.cover_image_url);
+        preview.style.display = "block";
+      } else {
+        preview.style.display = "none";
+      }
+      formTitle.textContent = "Editing: " + (p.title || "Untitled post");
+      formStatus.textContent = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderList(posts) {
+      const list = document.getElementById("postList");
+      if (!posts.length) {
+        list.innerHTML = '<div class="small" style="opacity:.6;">No posts yet — create one above.</div>';
+        return;
+      }
+      list.innerHTML = posts.map(p => `
+        <div class="pm-list-item">
+          <div>
+            <div style="font-weight:800;">${escapeHtml(p.title || "Untitled post")}
+              <span class="pm-badge ${p.is_published ? "active" : "inactive"}" style="margin-left:8px;">${p.is_published ? "Published" : "Draft"}</span>
+            </div>
+            <div class="small" style="opacity:.65; margin-top:4px;">/${escapeHtml(p.slug || "")}</div>
+            <div class="small" style="opacity:.5; margin-top:2px;">${p.published_at ? new Date(p.published_at).toLocaleDateString("en-IN") : "No date"}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(p.id)}">Edit</button>
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-delete="${escapeAttr(p.id)}">Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      list.querySelectorAll("button[data-edit]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          try {
+            const result = await authedFetch({ action: "get", id: btn.dataset.edit });
+            fillForm(result.post);
+          } catch (e) {
+            alert("Could not load post: " + e.message);
+          }
+        });
+      });
+      list.querySelectorAll("button[data-delete]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("Delete this post? This cannot be undone.")) return;
+          try {
+            await authedFetch({ action: "delete", id: btn.dataset.delete });
+            clearForm();
+            await loadList();
+          } catch (e) {
+            alert("Delete failed: " + e.message);
+          }
+        });
+      });
+    }
+
+    async function loadList() {
+      const result = await authedFetch({ action: "list" });
+      renderList(result.posts || []);
+    }
+
+    document.getElementById("btnReset").addEventListener("click", clearForm);
+
+    const MAX_COVER_BYTES = 5 * 1024 * 1024;
+
+    document.getElementById("f_cover_file").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      const preview = document.getElementById("coverPreview");
+      if (!file) return;
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = "block";
+    });
+
+    async function uploadSelectedCoverIfAny() {
+      const file = document.getElementById("f_cover_file").files[0];
+      if (!file) return document.getElementById("f_cover_url").value || null;
+      if (file.size > MAX_COVER_BYTES) throw new Error("Cover image is too large — please keep it under 5MB.");
+
+      formStatus.textContent = "Uploading cover image…";
+      const { path, token, public_url } = await authedFetch({
+        action: "get_upload_url",
+        content_type: file.type,
+      });
+
+      const { error: uploadErr } = await supabase.storage
+        .from("site-images")
+        .uploadToSignedUrl(path, token, file);
+      if (uploadErr) throw new Error("Cover image upload failed: " + uploadErr.message);
+
+      return public_url;
+    }
+
+    document.getElementById("btnSave").addEventListener("click", async () => {
+      formStatus.textContent = "Saving…";
+      try {
+        const cover_image_url = await uploadSelectedCoverIfAny();
+
+        const payload = {
+          action: "save",
+          id: document.getElementById("f_id").value || null,
+          title: document.getElementById("f_title").value,
+          slug: document.getElementById("f_slug").value,
+          excerpt: document.getElementById("f_excerpt").value,
+          content: document.getElementById("f_content").value,
+          cover_image_url,
+          is_published: document.getElementById("f_is_published").checked,
+        };
+        formStatus.textContent = "Saving…";
+        const result = await authedFetch(payload);
+        formStatus.textContent = "Saved ✅";
+        clearForm();
+        await loadList();
+      } catch (e) {
+        formStatus.textContent = "Error: " + e.message;
+      }
+    });
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+
+        const adminResult = await supabase
+          .from("admin_users")
+          .select("email")
+          .eq("email", session.user.email.toLowerCase())
+          .maybeSingle();
+
+        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        clearForm();
+        await loadList();
+      } catch (e) {
+        console.error("Blog admin page error:", e);
+        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

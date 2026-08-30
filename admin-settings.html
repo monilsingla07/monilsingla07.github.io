@@ -1,0 +1,282 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Site Settings — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+    .pm-row .full { grid-column: 1 / -1; }
+    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-list-item + .pm-list-item { margin-top: 10px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab-btn { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border, #e5e7eb); background: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .tab-btn.active { background: var(--brand, #7c1c1c); color: #fff; border-color: var(--brand, #7c1c1c); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:840px;">
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">Site Settings</h2>
+          <div class="small" style="opacity:.6; margin-top:4px;">Store-wide text and business parameters that used to require a code change — plus who can log into this admin area.</div>
+        </div>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="settings">Site Settings</button>
+        <button class="tab-btn" data-tab="admins">Admin Users</button>
+      </div>
+
+      <!-- ── Site Settings tab ── -->
+      <div id="tab-settings" class="tab-panel active">
+        <div class="pm-card">
+          <div class="pm-row">
+            <div class="full">
+              <label class="pm-label">Topbar &amp; homepage announcement text</label>
+              <input id="f_topbar" class="input" placeholder="e.g. Complimentary shipping across India" />
+              <div class="small" style="opacity:.6; margin-top:4px;">Shown in the thin bar at the very top of every page, and as the middle line of the homepage trust strip.</div>
+            </div>
+
+            <div class="full">
+              <label class="pm-label">Support phone (shown on Contact Us)</label>
+              <input id="f_phone" class="input" placeholder="e.g. +91 95822 97550" />
+            </div>
+
+            <div class="full">
+              <label class="pm-label">Support email (optional — shown on Contact Us only if set)</label>
+              <input id="f_email" class="input" placeholder="e.g. support@ahamstree.com" />
+            </div>
+
+            <div class="full">
+              <label class="pm-label">Support hours (shown on Contact Us)</label>
+              <input id="f_hours" class="input" placeholder="e.g. Monday to Saturday, 10 AM – 7 PM" />
+            </div>
+
+            <div class="full">
+              <label class="pm-label">Return request window (hours after delivery)</label>
+              <input id="f_return_hours" class="input" type="number" min="1" max="720" placeholder="48" style="max-width:160px;" />
+              <div class="small" style="opacity:.6; margin-top:4px;">How long a customer has after delivery to report a manufacturing defect and request a return.</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+            <button id="btnSaveSettings" class="btn">Save settings</button>
+            <div id="settingsStatus" class="small" style="align-self:center;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Admin Users tab ── -->
+      <div id="tab-admins" class="tab-panel">
+        <div class="pm-card">
+          <div class="pm-row">
+            <div class="full">
+              <label class="pm-label">Add a new admin by email</label>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <input id="f_new_admin_email" class="input" placeholder="teammate@example.com" style="flex:1; min-width:220px;" />
+                <button id="btnAddAdmin" class="btn" type="button">Grant admin access</button>
+              </div>
+              <div class="small" style="opacity:.6; margin-top:4px;">They must already have a regular AhamStree account (sign up at login.html first) — this just grants that account access to /admin* pages.</div>
+            </div>
+          </div>
+          <div id="adminAddStatus" class="small" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="small" style="font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:20px 0 10px;">Current admins</div>
+        <div id="adminList"></div>
+      </div>
+
+      <div id="statusMsg" class="small" style="margin-top:16px; opacity:.5;"></div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-settings";
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+
+    function showGateError(emoji, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    let currentUserEmail = "";
+
+    async function authedFetch(body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    // ── Tabs ──
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    // ── Site Settings ──
+    async function loadSettings() {
+      const result = await authedFetch({ action: "get_settings" });
+      const s = result.settings || {};
+      document.getElementById("f_topbar").value = s.topbar_announcement || "";
+      document.getElementById("f_phone").value = s.support_phone || "";
+      document.getElementById("f_email").value = s.support_email || "";
+      document.getElementById("f_hours").value = s.support_hours || "";
+      document.getElementById("f_return_hours").value = s.return_window_hours || 48;
+    }
+
+    document.getElementById("btnSaveSettings").addEventListener("click", async () => {
+      const statusEl = document.getElementById("settingsStatus");
+      statusEl.textContent = "Saving…";
+      try {
+        await authedFetch({
+          action: "save_settings",
+          topbar_announcement: document.getElementById("f_topbar").value,
+          support_phone: document.getElementById("f_phone").value,
+          support_email: document.getElementById("f_email").value,
+          support_hours: document.getElementById("f_hours").value,
+          return_window_hours: Number(document.getElementById("f_return_hours").value),
+        });
+        statusEl.textContent = "Saved ✅ — live on the site immediately.";
+      } catch (e) {
+        statusEl.textContent = "Error: " + e.message;
+      }
+    });
+
+    // ── Admin Users ──
+    function renderAdminList(admins) {
+      const list = document.getElementById("adminList");
+      if (!admins.length) {
+        list.innerHTML = '<div class="small" style="opacity:.6;">No admins found.</div>';
+        return;
+      }
+      list.innerHTML = admins.map((a) => `
+        <div class="pm-list-item">
+          <div>
+            <div style="font-weight:800;">${escapeHtml(a.email)}${a.email === currentUserEmail ? ' <span class="small" style="opacity:.5;">(you)</span>' : ""}</div>
+            <div class="small" style="opacity:.5; margin-top:2px;">Added ${new Date(a.created_at).toLocaleDateString("en-IN")}</div>
+          </div>
+          <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-remove="${escapeAttr(a.email)}" ${admins.length <= 1 ? "disabled title=\"Can't remove the last remaining admin\"" : ""}>Remove</button>
+        </div>
+      `).join("");
+
+      list.querySelectorAll("button[data-remove]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          if (!confirm(`Remove admin access for ${btn.dataset.remove}?`)) return;
+          try {
+            await authedFetch({ action: "remove_admin", email: btn.dataset.remove });
+            await loadAdmins();
+          } catch (e) {
+            alert("Could not remove: " + e.message);
+          }
+        });
+      });
+    }
+
+    async function loadAdmins() {
+      const result = await authedFetch({ action: "list_admins" });
+      renderAdminList(result.admins || []);
+    }
+
+    document.getElementById("btnAddAdmin").addEventListener("click", async () => {
+      const statusEl = document.getElementById("adminAddStatus");
+      const email = document.getElementById("f_new_admin_email").value.trim();
+      if (!email) { statusEl.textContent = "Enter an email first."; return; }
+      statusEl.textContent = "Adding…";
+      try {
+        await authedFetch({ action: "add_admin", email });
+        document.getElementById("f_new_admin_email").value = "";
+        statusEl.textContent = "Added ✅";
+        await loadAdmins();
+      } catch (e) {
+        statusEl.textContent = "Error: " + e.message;
+      }
+    });
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+        currentUserEmail = session.user.email.toLowerCase();
+
+        const adminResult = await supabase
+          .from("admin_users")
+          .select("email")
+          .eq("email", currentUserEmail)
+          .maybeSingle();
+
+        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        await Promise.all([loadSettings(), loadAdmins()]);
+      } catch (e) {
+        console.error("Settings admin page error:", e);
+        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

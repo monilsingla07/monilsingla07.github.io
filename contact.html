@@ -39,9 +39,11 @@
      <h1>Contact Us</h1>
 <p>We’d love to hear from you.</p>
 
-<p><strong>Phone:</strong> <a href="tel:9582297550">+91 95822 97550</a></p>
+<p id="contactPhoneLine"><strong>Phone:</strong> <a id="contactPhoneLink" href="tel:9582297550">+91 95822 97550</a></p>
 
-<p>Our team is available Monday to Saturday, 10 AM – 7 PM.</p>
+<p id="contactEmailLine" hidden><strong>Email:</strong> <a id="contactEmailLink" href="#"></a></p>
+
+<p id="contactHoursLine">Our team is available Monday to Saturday, 10 AM – 7 PM.</p>
       
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <a class="btn" href="products.html">Browse Sarees</a>
@@ -58,6 +60,32 @@
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+
+    // Support contact details are admin-managed (Admin → Site Settings) —
+    // patch in the live values on top of the static fallback text above.
+    // Fails silently on any error, leaving the static copy exactly as-is.
+    (async function hydrateContactDetails() {
+      try {
+        const res = await fetch("https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-site-settings");
+        if (!res.ok) return;
+        const { settings } = await res.json();
+        if (!settings) return;
+
+        if (settings.support_phone) {
+          const digits = String(settings.support_phone).replace(/\D/g, "");
+          document.getElementById("contactPhoneLink").textContent = settings.support_phone;
+          if (digits) document.getElementById("contactPhoneLink").href = "tel:" + digits;
+        }
+        if (settings.support_hours) {
+          document.getElementById("contactHoursLine").textContent = "Our team is available " + settings.support_hours + ".";
+        }
+        if (settings.support_email) {
+          document.getElementById("contactEmailLink").textContent = settings.support_email;
+          document.getElementById("contactEmailLink").href = "mailto:" + settings.support_email;
+          document.getElementById("contactEmailLine").hidden = false;
+        }
+      } catch (_) { /* silent — static fallback text stays as-is */ }
+    })();
   </script>
 </body>
 </html>
