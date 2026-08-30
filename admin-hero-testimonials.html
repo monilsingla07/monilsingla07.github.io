@@ -1,0 +1,555 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hero &amp; Testimonials — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+    .pm-row .full { grid-column: 1 / -1; }
+    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-hint { font-size: 11px; opacity: .55; margin-top: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-list-item + .pm-list-item { margin-top: 10px; }
+    .pm-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge.active { background: #dcfce7; color: #166534; }
+    .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
+    .pm-thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: #f3f4f6; flex-shrink: 0; }
+    .aht-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .aht-tab { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border, #e5e7eb); background: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .aht-tab.active { background: var(--brand, #7c1c1c); border-color: var(--brand, #7c1c1c); color: #fff; }
+    .aht-panel { display: none; }
+    .aht-panel.active { display: block; }
+    textarea.input { resize: vertical; min-height: 70px; font-family: inherit; }
+    @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:900px;">
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">Hero &amp; Testimonials</h2>
+          <div class="small" style="opacity:.6; margin-top:4px;">Controls the homepage hero banner carousel and the customer testimonials section. Changes go live immediately — no code changes needed.</div>
+        </div>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="aht-tabs">
+        <button type="button" class="aht-tab active" data-tab="hero">Hero Slides</button>
+        <button type="button" class="aht-tab" data-tab="testimonials">Testimonials</button>
+      </div>
+
+      <!-- ══════════ HERO SLIDES ══════════ -->
+      <div class="aht-panel active" id="panelHero">
+        <div class="pm-card">
+          <div style="font-weight:900;" id="heroFormTitle">New slide</div>
+          <input type="hidden" id="h_id" />
+
+          <div class="pm-row">
+            <div class="full">
+              <label class="pm-label">Title *</label>
+              <input id="h_title" class="input" placeholder="e.g. Sarees woven the way they always were." />
+            </div>
+            <div class="full">
+              <label class="pm-label">Kicker (small label above the title)</label>
+              <input id="h_kicker" class="input" placeholder="e.g. The Autumn Weave, 2026" />
+            </div>
+            <div class="full">
+              <label class="pm-label">Subtitle</label>
+              <input id="h_subtitle" class="input" placeholder="e.g. Each piece carries the hand of its weaver — six yards, months in the making." />
+            </div>
+
+            <div>
+              <label class="pm-label">Desktop image *</label>
+              <input id="h_desktop_file" type="file" accept="image/jpeg,image/png,image/webp" class="input" />
+              <div class="pm-hint">JPEG, PNG, or WEBP, up to 5MB. Wide/landscape works best — this fills the full-width banner.</div>
+              <input type="hidden" id="h_desktop_url" />
+              <div id="heroDesktopPreview" style="margin-top:8px;"></div>
+            </div>
+            <div>
+              <label class="pm-label">Mobile image (optional)</label>
+              <input id="h_mobile_file" type="file" accept="image/jpeg,image/png,image/webp" class="input" />
+              <div class="pm-hint">Shown on phones instead of the desktop image, if provided. Leave empty to reuse the desktop image on mobile too.</div>
+              <input type="hidden" id="h_mobile_url" />
+              <div id="heroMobilePreview" style="margin-top:8px;"></div>
+            </div>
+
+            <div class="full">
+              <label class="pm-label">Image alt text (accessibility / SEO)</label>
+              <input id="h_image_alt" class="input" placeholder="Defaults to the title if left blank" />
+            </div>
+
+            <div>
+              <label class="pm-label">Button text</label>
+              <input id="h_cta_text" class="input" placeholder="e.g. Shop Now" />
+            </div>
+            <div>
+              <label class="pm-label">Button link</label>
+              <input id="h_cta_link" class="input" placeholder="e.g. products.html" />
+            </div>
+
+            <div>
+              <label class="pm-label">Note text (optional, next to the button)</label>
+              <input id="h_note_text" class="input" placeholder="e.g. Use code:" />
+            </div>
+            <div>
+              <label class="pm-label">Note — bold part (optional)</label>
+              <input id="h_note_strong" class="input" placeholder="e.g. WELCOME10" />
+            </div>
+
+            <div>
+              <label class="pm-label">Display order</label>
+              <input id="h_sort_order" class="input" type="number" step="1" value="0" />
+              <div class="pm-hint">Lower numbers show first.</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:22px;">
+              <input id="h_is_active" type="checkbox" style="width:16px; height:16px;" checked />
+              <label for="h_is_active" style="font-size:13px; font-weight:700;">Active (visitors will see this slide)</label>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+            <button id="btnSaveHero" class="btn">Save slide</button>
+            <button id="btnResetHero" class="btn secondary" type="button">New / clear form</button>
+            <div id="heroFormStatus" class="small" style="align-self:center;"></div>
+          </div>
+        </div>
+
+        <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All hero slides</div>
+        <div id="heroList"></div>
+      </div>
+
+      <!-- ══════════ TESTIMONIALS ══════════ -->
+      <div class="aht-panel" id="panelTestimonials">
+        <div class="pm-card">
+          <div style="font-weight:900;" id="tFormTitle">New testimonial</div>
+          <input type="hidden" id="t_id" />
+
+          <div class="pm-row">
+            <div class="full">
+              <label class="pm-label">Quote *</label>
+              <textarea id="t_quote" class="input" placeholder="e.g. Beautiful weave and the saree looked even better in person."></textarea>
+            </div>
+            <div>
+              <label class="pm-label">Customer name *</label>
+              <input id="t_customer_name" class="input" placeholder="e.g. Babita" />
+            </div>
+            <div>
+              <label class="pm-label">Customer place</label>
+              <input id="t_customer_place" class="input" placeholder="e.g. Gurgaon" />
+            </div>
+            <div>
+              <label class="pm-label">Stars (1–5)</label>
+              <input id="t_stars" class="input" type="number" min="1" max="5" step="1" value="5" />
+            </div>
+            <div>
+              <label class="pm-label">Display order</label>
+              <input id="t_sort_order" class="input" type="number" step="1" value="0" />
+              <div class="pm-hint">Lower numbers show first.</div>
+            </div>
+
+            <div class="full">
+              <label class="pm-label">Customer photo (optional)</label>
+              <input id="t_photo_file" type="file" accept="image/jpeg,image/png,image/webp" class="input" />
+              <div class="pm-hint">JPEG, PNG, or WEBP, up to 5MB. If left empty, a letter avatar is shown instead — never a broken image.</div>
+              <input type="hidden" id="t_photo_url" />
+              <div id="testiPhotoPreview" style="margin-top:8px;"></div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+              <input id="t_is_active" type="checkbox" style="width:16px; height:16px;" checked />
+              <label for="t_is_active" style="font-size:13px; font-weight:700;">Active (visitors will see this testimonial)</label>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+            <button id="btnSaveTesti" class="btn">Save testimonial</button>
+            <button id="btnResetTesti" class="btn secondary" type="button">New / clear form</button>
+            <div id="tFormStatus" class="small" style="align-self:center;"></div>
+          </div>
+        </div>
+
+        <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All testimonials</div>
+        <div id="testiList"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml, escapeAttr, safeHref, safeSrc } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-site-content";
+    const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+
+    function showGateError(emoji, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function authedFetch(body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    // ── Tabs ──
+    document.querySelectorAll(".aht-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".aht-tab").forEach(b => b.classList.toggle("active", b === btn));
+        const tab = btn.dataset.tab;
+        document.getElementById("panelHero").classList.toggle("active", tab === "hero");
+        document.getElementById("panelTestimonials").classList.toggle("active", tab === "testimonials");
+      });
+    });
+
+    function renderImagePreview(boxId, hiddenInputId, fileInputId, url) {
+      const box = document.getElementById(boxId);
+      if (!url) {
+        box.innerHTML = '<div class="small" style="opacity:.55;">No image yet.</div>';
+        return;
+      }
+      const src = safeSrc(url);
+      box.innerHTML =
+        '<img src="' + src + '" alt="" style="max-width:180px; max-height:120px; border-radius:8px; object-fit:cover; display:block;" onerror="this.style.opacity=0.3">' +
+        '<button type="button" class="btn secondary" data-remove-img style="margin-top:6px; padding:6px 12px; font-size:12px;">Remove image</button>';
+      box.querySelector("[data-remove-img]").addEventListener("click", () => {
+        document.getElementById(hiddenInputId).value = "";
+        document.getElementById(fileInputId).value = "";
+        renderImagePreview(boxId, hiddenInputId, fileInputId, "");
+      });
+    }
+
+    async function uploadImageIfSelected(entity, fileInputId, hiddenInputId, statusEl) {
+      const file = document.getElementById(fileInputId).files[0];
+      if (!file) return document.getElementById(hiddenInputId).value || "";
+      if (file.size > MAX_IMAGE_BYTES) throw new Error("Image is too large — please keep it under 5MB.");
+      statusEl.textContent = "Uploading image…";
+      const { path, token, publicUrl } = await authedFetch({ action: "get_upload_url", entity, content_type: file.type });
+      const { error } = await supabase.storage.from("site-images").uploadToSignedUrl(path, token, file);
+      if (error) throw new Error("Image upload failed: " + error.message);
+      return publicUrl;
+    }
+
+    /* ══════════ HERO SLIDES ══════════ */
+
+    const heroFormStatus = document.getElementById("heroFormStatus");
+    const heroFormTitle  = document.getElementById("heroFormTitle");
+
+    function clearHeroForm() {
+      document.getElementById("h_id").value = "";
+      document.getElementById("h_title").value = "";
+      document.getElementById("h_kicker").value = "";
+      document.getElementById("h_subtitle").value = "";
+      document.getElementById("h_desktop_url").value = "";
+      document.getElementById("h_desktop_file").value = "";
+      document.getElementById("h_mobile_url").value = "";
+      document.getElementById("h_mobile_file").value = "";
+      document.getElementById("h_image_alt").value = "";
+      document.getElementById("h_cta_text").value = "";
+      document.getElementById("h_cta_link").value = "";
+      document.getElementById("h_note_text").value = "";
+      document.getElementById("h_note_strong").value = "";
+      document.getElementById("h_sort_order").value = "0";
+      document.getElementById("h_is_active").checked = true;
+      renderImagePreview("heroDesktopPreview", "h_desktop_url", "h_desktop_file", "");
+      renderImagePreview("heroMobilePreview", "h_mobile_url", "h_mobile_file", "");
+      heroFormTitle.textContent = "New slide";
+      heroFormStatus.textContent = "";
+    }
+
+    function fillHeroForm(s) {
+      document.getElementById("h_id").value = s.id;
+      document.getElementById("h_title").value = s.title || "";
+      document.getElementById("h_kicker").value = s.kicker || "";
+      document.getElementById("h_subtitle").value = s.subtitle || "";
+      document.getElementById("h_desktop_url").value = s.image_desktop_url || "";
+      document.getElementById("h_desktop_file").value = "";
+      document.getElementById("h_mobile_url").value = s.image_mobile_url || "";
+      document.getElementById("h_mobile_file").value = "";
+      document.getElementById("h_image_alt").value = s.image_alt || "";
+      document.getElementById("h_cta_text").value = s.cta_text || "";
+      document.getElementById("h_cta_link").value = s.cta_link || "";
+      document.getElementById("h_note_text").value = s.note_text || "";
+      document.getElementById("h_note_strong").value = s.note_strong || "";
+      document.getElementById("h_sort_order").value = String(s.sort_order ?? 0);
+      document.getElementById("h_is_active").checked = !!s.is_active;
+      renderImagePreview("heroDesktopPreview", "h_desktop_url", "h_desktop_file", s.image_desktop_url || "");
+      renderImagePreview("heroMobilePreview", "h_mobile_url", "h_mobile_file", s.image_mobile_url || "");
+      heroFormTitle.textContent = "Editing slide";
+      heroFormStatus.textContent = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderHeroList(slides) {
+      const list = document.getElementById("heroList");
+      if (!slides.length) {
+        list.innerHTML = '<div class="small" style="opacity:.6;">No hero slides yet — add one above. (With zero active slides, the homepage banner is simply hidden.)</div>';
+        return;
+      }
+      list.innerHTML = slides.map(s => `
+        <div class="pm-list-item">
+          <img class="pm-thumb" src="${safeSrc(s.image_desktop_url || "")}" alt="" onerror="this.style.visibility='hidden'">
+          <div style="flex:1; min-width:180px;">
+            <div style="font-weight:800;">${escapeHtml(s.title || "Untitled slide")}
+              <span class="pm-badge ${s.is_active ? "active" : "inactive"}" style="margin-left:8px;">${s.is_active ? "Active" : "Inactive"}</span>
+            </div>
+            <div class="small" style="opacity:.65; margin-top:4px;">${escapeHtml(s.kicker || "")}</div>
+            <div class="small" style="opacity:.5; margin-top:2px;">Order ${escapeHtml(String(s.sort_order ?? 0))} · Updated ${new Date(s.updated_at).toLocaleString("en-IN")}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(s.id)}">Edit</button>
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-delete="${escapeAttr(s.id)}">Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      const byId = new Map(slides.map(s => [s.id, s]));
+      list.querySelectorAll("button[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => fillHeroForm(byId.get(btn.dataset.edit)));
+      });
+      list.querySelectorAll("button[data-delete]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("Delete this hero slide? This cannot be undone.")) return;
+          try {
+            await authedFetch({ action: "delete", entity: "hero_slide", id: btn.dataset.delete });
+            clearHeroForm();
+            await loadHeroList();
+          } catch (e) {
+            alert("Delete failed: " + e.message);
+          }
+        });
+      });
+    }
+
+    async function loadHeroList() {
+      const result = await authedFetch({ action: "list", entity: "hero_slide" });
+      renderHeroList(result.items || []);
+    }
+
+    document.getElementById("btnResetHero").addEventListener("click", clearHeroForm);
+
+    document.getElementById("btnSaveHero").addEventListener("click", async () => {
+      heroFormStatus.textContent = "Saving…";
+      try {
+        const image_desktop_url = await uploadImageIfSelected("hero_slide", "h_desktop_file", "h_desktop_url", heroFormStatus);
+        const image_mobile_url  = await uploadImageIfSelected("hero_slide", "h_mobile_file", "h_mobile_url", heroFormStatus);
+
+        const payload = {
+          action: "save",
+          entity: "hero_slide",
+          id: document.getElementById("h_id").value || null,
+          title: document.getElementById("h_title").value,
+          kicker: document.getElementById("h_kicker").value,
+          subtitle: document.getElementById("h_subtitle").value,
+          image_desktop_url,
+          image_mobile_url,
+          image_alt: document.getElementById("h_image_alt").value,
+          cta_text: document.getElementById("h_cta_text").value,
+          cta_link: document.getElementById("h_cta_link").value,
+          note_text: document.getElementById("h_note_text").value,
+          note_strong: document.getElementById("h_note_strong").value,
+          sort_order: Number(document.getElementById("h_sort_order").value || 0),
+          is_active: document.getElementById("h_is_active").checked,
+        };
+        heroFormStatus.textContent = "Saving…";
+        const result = await authedFetch(payload);
+        fillHeroForm(result.item);
+        heroFormStatus.textContent = "Saved ✅";
+        await loadHeroList();
+      } catch (e) {
+        heroFormStatus.textContent = "Error: " + e.message;
+      }
+    });
+
+    /* ══════════ TESTIMONIALS ══════════ */
+
+    const tFormStatus = document.getElementById("tFormStatus");
+    const tFormTitle  = document.getElementById("tFormTitle");
+
+    function clearTestiForm() {
+      document.getElementById("t_id").value = "";
+      document.getElementById("t_quote").value = "";
+      document.getElementById("t_customer_name").value = "";
+      document.getElementById("t_customer_place").value = "";
+      document.getElementById("t_stars").value = "5";
+      document.getElementById("t_sort_order").value = "0";
+      document.getElementById("t_is_active").checked = true;
+      document.getElementById("t_photo_url").value = "";
+      document.getElementById("t_photo_file").value = "";
+      renderImagePreview("testiPhotoPreview", "t_photo_url", "t_photo_file", "");
+      tFormTitle.textContent = "New testimonial";
+      tFormStatus.textContent = "";
+    }
+
+    function fillTestiForm(t) {
+      document.getElementById("t_id").value = t.id;
+      document.getElementById("t_quote").value = t.quote || "";
+      document.getElementById("t_customer_name").value = t.customer_name || "";
+      document.getElementById("t_customer_place").value = t.customer_place || "";
+      document.getElementById("t_stars").value = String(t.stars ?? 5);
+      document.getElementById("t_sort_order").value = String(t.sort_order ?? 0);
+      document.getElementById("t_is_active").checked = !!t.is_active;
+      document.getElementById("t_photo_url").value = t.photo_url || "";
+      document.getElementById("t_photo_file").value = "";
+      renderImagePreview("testiPhotoPreview", "t_photo_url", "t_photo_file", t.photo_url || "");
+      tFormTitle.textContent = "Editing testimonial";
+      tFormStatus.textContent = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderTestiList(items) {
+      const list = document.getElementById("testiList");
+      if (!items.length) {
+        list.innerHTML = '<div class="small" style="opacity:.6;">No testimonials yet — add one above. (With zero active testimonials, the homepage section is simply hidden.)</div>';
+        return;
+      }
+      list.innerHTML = items.map(t => `
+        <div class="pm-list-item">
+          ${t.photo_url ? `<img class="pm-thumb" style="border-radius:50%;" src="${safeSrc(t.photo_url)}" alt="" onerror="this.style.visibility='hidden'">` : `<div class="pm-thumb" style="border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; color:#6b7280;">${escapeHtml((t.customer_name || "?").charAt(0).toUpperCase())}</div>`}
+          <div style="flex:1; min-width:180px;">
+            <div style="font-weight:800;">${escapeHtml(t.customer_name || "")} <span class="small" style="font-weight:400; opacity:.6;">${escapeHtml(t.customer_place || "")}</span>
+              <span class="pm-badge ${t.is_active ? "active" : "inactive"}" style="margin-left:8px;">${t.is_active ? "Active" : "Inactive"}</span>
+            </div>
+            <div class="small" style="opacity:.75; margin-top:4px;">"${escapeHtml(t.quote || "")}"</div>
+            <div class="small" style="opacity:.5; margin-top:2px;">${"★".repeat(Math.max(0, Math.min(5, t.stars || 0)))} · Order ${escapeHtml(String(t.sort_order ?? 0))} · Updated ${new Date(t.updated_at).toLocaleString("en-IN")}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(t.id)}">Edit</button>
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-delete="${escapeAttr(t.id)}">Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      const byId = new Map(items.map(t => [t.id, t]));
+      list.querySelectorAll("button[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => fillTestiForm(byId.get(btn.dataset.edit)));
+      });
+      list.querySelectorAll("button[data-delete]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("Delete this testimonial? This cannot be undone.")) return;
+          try {
+            await authedFetch({ action: "delete", entity: "testimonial", id: btn.dataset.delete });
+            clearTestiForm();
+            await loadTestiList();
+          } catch (e) {
+            alert("Delete failed: " + e.message);
+          }
+        });
+      });
+    }
+
+    async function loadTestiList() {
+      const result = await authedFetch({ action: "list", entity: "testimonial" });
+      renderTestiList(result.items || []);
+    }
+
+    document.getElementById("btnResetTesti").addEventListener("click", clearTestiForm);
+
+    document.getElementById("btnSaveTesti").addEventListener("click", async () => {
+      tFormStatus.textContent = "Saving…";
+      try {
+        const photo_url = await uploadImageIfSelected("testimonial", "t_photo_file", "t_photo_url", tFormStatus);
+
+        const payload = {
+          action: "save",
+          entity: "testimonial",
+          id: document.getElementById("t_id").value || null,
+          quote: document.getElementById("t_quote").value,
+          customer_name: document.getElementById("t_customer_name").value,
+          customer_place: document.getElementById("t_customer_place").value,
+          stars: Number(document.getElementById("t_stars").value || 5),
+          photo_url,
+          sort_order: Number(document.getElementById("t_sort_order").value || 0),
+          is_active: document.getElementById("t_is_active").checked,
+        };
+        tFormStatus.textContent = "Saving…";
+        const result = await authedFetch(payload);
+        fillTestiForm(result.item);
+        tFormStatus.textContent = "Saved ✅";
+        await loadTestiList();
+      } catch (e) {
+        tFormStatus.textContent = "Error: " + e.message;
+      }
+    });
+
+    /* ══════════ AUTH GATE ══════════ */
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+
+        const adminResult = await supabase
+          .from("admin_users")
+          .select("email")
+          .eq("email", session.user.email.toLowerCase())
+          .maybeSingle();
+
+        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        clearHeroForm();
+        clearTestiForm();
+        await Promise.all([loadHeroList(), loadTestiList()]);
+      } catch (e) {
+        console.error("Hero & Testimonials admin page error:", e);
+        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

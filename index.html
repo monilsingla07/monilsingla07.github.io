@@ -31,7 +31,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
     <link rel="icon" href="/favicon.ico">
-    <link rel="preload" as="image" href="assets/images/banners/hero-1-launch.svg" />
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -62,66 +61,12 @@
   <body>
     <div id="header"></div>
 
-    <!-- Hero banner -->
-    <section class="hero-banner">
-      <div class="hero-track" id="heroTrack" aria-label="Promotions">
-
-        <article class="hero-slide" data-slide="1">
-          <picture class="hero-media">
-            <source media="(max-width: 768px)" srcset="assets/images/banners/hero-1-launch-m.svg">
-            <img src="assets/images/banners/hero-1-launch.svg" alt="New Saree Edit" loading="eager" fetchpriority="high">
-          </picture>
-          <div class="hero-deco" aria-hidden="true"></div>
-          <div class="hero-overlay">
-            <div class="hero-kicker">The Autumn Weave, 2026</div>
-            <h1 class="hero-title">Sarees woven the way they always were.</h1>
-            <p class="hero-subtitle">Each piece carries the hand of its weaver &nbsp;—&nbsp; six yards, months in the making.</p>
-            <div class="hero-cta">
-              <a class="btn" href="products.html">Shop Now</a>
-            </div>
-          </div>
-        </article>
-
-        <article class="hero-slide" data-slide="2">
-          <picture class="hero-media">
-            <source media="(max-width: 768px)" srcset="assets/images/banners/hero-2-welcome10-m.svg">
-            <img src="assets/images/banners/hero-2-welcome10.svg" alt="10% Off for New Users" loading="lazy">
-          </picture>
-          <div class="hero-deco" aria-hidden="true"></div>
-          <div class="hero-overlay">
-            <div class="hero-kicker">Welcome Offer</div>
-            <h2 class="hero-title">Flat 10% Off</h2>
-            <p class="hero-subtitle">On your first order &nbsp;·&nbsp; No minimum spend</p>
-            <div class="hero-cta">
-              <a class="btn" href="products.html">Shop Now</a>
-              <span class="hero-note">Use code: <strong>WELCOME10</strong></span>
-            </div>
-          </div>
-        </article>
-
-        <article class="hero-slide" data-slide="3">
-          <picture class="hero-media">
-            <source media="(max-width: 768px)" srcset="assets/images/banners/hero-3-collection-m.svg">
-            <img src="assets/images/banners/hero-3-collection.svg" alt="New Collection" loading="lazy">
-          </picture>
-          <div class="hero-deco" aria-hidden="true"></div>
-          <div class="hero-overlay">
-            <div class="hero-kicker">New Collection</div>
-            <h2 class="hero-title">Fresh arrivals, timeless weaves</h2>
-            <p class="hero-subtitle">Silk-Cotton &nbsp;·&nbsp; Cotton &nbsp;·&nbsp; Festive classics</p>
-            <div class="hero-cta">
-              <a class="btn" href="new-arrivals.html">Explore</a>
-            </div>
-          </div>
-        </article>
-
-      </div>
-
-      <div class="hero-dots" role="tablist" aria-label="Hero carousel controls">
-        <button class="hero-dot" data-go="1" aria-label="Go to slide 1" aria-current="true"></button>
-        <button class="hero-dot" data-go="2" aria-label="Go to slide 2"></button>
-        <button class="hero-dot" data-go="3" aria-label="Go to slide 3"></button>
-      </div>
+    <!-- Hero banner — content is admin-managed (Admin → Hero & Testimonials),
+         rendered by assets/site-content.js's hydrateHero(). Hidden
+         automatically if there are zero active slides. -->
+    <section class="hero-banner" id="heroBannerSection">
+      <div class="hero-track" id="heroTrack" aria-label="Promotions"></div>
+      <div class="hero-dots" id="heroDots" role="tablist" aria-label="Hero carousel controls"></div>
     </section>
 
     <div class="container" style="margin-top:22px;">
@@ -211,8 +156,10 @@
         <div id="instagramReelsStrip" class="reel-strip"></div>
       </section>
 
-      <!-- Testimonials -->
-      <section class="section">
+      <!-- Testimonials — admin-managed (Admin → Hero & Testimonials), see
+           assets/site-content.js's hydrateTestimonials(). Hidden
+           automatically if there are zero active testimonials. -->
+      <section class="section" id="testimonialsSection">
         <div class="section-head">
           <h2 class="section-title">Loved by customers across India</h2>
         </div>
@@ -235,86 +182,17 @@
       import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
       import { hydrateHome } from "./assets/home.js";
       import { hydrateInstagramReels } from "./assets/instagram-reels.js";
+      import { hydrateHero, hydrateTestimonials } from "./assets/site-content.js";
 
       document.getElementById("header").innerHTML = renderHeader("home");
       hydrateHeaderAuth();
       document.getElementById("footer").innerHTML = renderFooter();
 
       // Home page dynamic sections
+      hydrateHero();
       hydrateHome();
       hydrateInstagramReels();
-
-      // Testimonials (static for now)
-      // Testimonials (static for now)
-  const testimonials = [
-    { quote: "Beautiful weave and the saree looked even better in person. Packaging was premium.", name: "Babita", place: "Gurgaon", stars: 5, img: "assets/images/testimonials/babita.jpg" },
-    { quote: "Fast delivery and super helpful support on WhatsApp. Loved the fabric quality.", name: "Sudha", place: "Rewari", stars: 5, img: "assets/images/testimonials/babita.jpg" },
-    { quote: "Exactly as shown. The drape is gorgeous and the blouse piece was perfect.", name: "Neetu", place: "Jamalpur", stars: 5, img: "assets/images/testimonials/babita.jpg" },
-    { quote: "Great gifting experience. My mom loved it and asked for another one!", name: "Nisha", place: "Gurgaon", stars: 5, img: "assets/images/testimonials/babita.jpg" },
-    { quote: "Elegant and lightweight. Perfect for functions and easy to carry.", name: "Shikha", place: "Gurgaon", stars: 5, img: "assets/images/testimonials/babita.jpg" },
-    { quote: "The craftsmanship is excellent. Will definitely order again.", name: "Rachna", place: "Gurgaon", stars: 5, img: "assets/images/testimonials/babita.jpg" },
-  ];
-
-
-      const stars = (n) => "★★★★★".slice(0, Math.max(0, Math.min(5, Number(n || 0))));
-
-      const tGrid = document.getElementById("testimonialsGrid");
-      if (tGrid) {
-        tGrid.innerHTML = testimonials.map(t => `
-          <div class="card t-compact-card">
-            <div class="t-compact-stars">${stars(t.stars)}</div>
-            <div class="t-compact-quote">"${t.quote}"</div>
-            <div class="t-compact-foot">
-              <div class="t-compact-avatar">
-                <img src="${t.img}" alt="${t.name}" loading="lazy"
-                    onerror="this.style.display='none';this.parentElement.dataset.initial='${t.name.charAt(0)}'">
-              </div>
-              <div>
-                <div class="t-compact-name">${t.name}</div>
-                <div class="t-compact-place">${t.place}</div>
-              </div>
-            </div>
-          </div>
-        `).join("");
-      }
-
-
-
-      // Hero carousel
-      const track = document.getElementById("heroTrack");
-      const dots = Array.from(document.querySelectorAll(".hero-dot"));
-      let current = 1;
-      let autoplayTimer;
-
-      function go(n) {
-        current = n;
-        const width = track?.clientWidth ?? 0;
-        if (track && width) track.scrollTo({ left: (n - 1) * width, behavior: "smooth" });
-        dots.forEach((d, i) => d.setAttribute("aria-current", String(i + 1 === n)));
-      }
-
-      function startAutoplay() {
-        clearInterval(autoplayTimer);
-        autoplayTimer = setInterval(() => go((current % 3) + 1), 6500);
-      }
-
-      dots.forEach(d => d.addEventListener("click", () => {
-        go(Number(d.dataset.go));
-        startAutoplay();
-      }));
-
-      // Sync dots on manual swipe
-      track?.addEventListener("scroll", () => {
-        const width = track.clientWidth || 1;
-        const idx = Math.round(track.scrollLeft / width) + 1;
-        if (idx !== current && idx >= 1 && idx <= 3) {
-          current = idx;
-          dots.forEach((d, i) => d.setAttribute("aria-current", String(i + 1 === current)));
-        }
-      }, { passive: true });
-
-      go(1);
-      startAutoplay();
+      hydrateTestimonials();
     </script>
   </body>
   </html>
