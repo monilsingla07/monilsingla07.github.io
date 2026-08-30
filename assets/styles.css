@@ -673,7 +673,7 @@ header .nav {
   font-size: 13.5px;
   transition: color 0.15s, padding-left 0.15s;
 }
-.footer a:hover { color: var(--gold); padding-left: 4px; }
+.footer a:hover { color: var(--brand-hover); padding-left: 4px; } /* was var(--gold) — ~3.77:1 on the footer's light background, under WCAG AA's 4.5:1 for text; --brand-hover measures ~5.27:1 */
 .footer-bottom {
   border-top: 1px solid rgba(240,230,214,0.14);
   padding: 18px 16px;

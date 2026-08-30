@@ -77,24 +77,11 @@ function iconInstagram() {
   </svg>`;
 }
 
-function iconFacebook() {
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-  </svg>`;
-}
-
-function iconPinterest() {
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.04-2.83.18-.77 1.24-5.24 1.24-5.24s-.32-.63-.32-1.57c0-1.47.85-2.57 1.91-2.57.9 0 1.34.68 1.34 1.49 0 .91-.58 2.27-.88 3.53-.25 1.05.52 1.91 1.56 1.91 1.87 0 3.13-2.4 3.13-5.25 0-2.17-1.47-3.69-3.57-3.69-2.43 0-3.86 1.82-3.86 3.71 0 .73.28 1.52.63 1.95.07.08.08.16.06.24-.06.27-.21.85-.24.97-.04.15-.13.19-.29.11-1.08-.5-1.75-2.09-1.75-3.37 0-2.74 1.99-5.26 5.74-5.26 3.01 0 5.35 2.14 5.35 5.02 0 3-1.89 5.41-4.52 5.41-.88 0-1.71-.46-2-.99l-.54 2.03c-.2.75-.72 1.7-1.07 2.27.8.25 1.65.38 2.52.38 5.52 0 10-4.48 10-10S17.52 2 12 2z"/>
-  </svg>`;
-}
-
-function iconYoutube() {
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/>
-    <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/>
-  </svg>`;
-}
+// NOTE: Facebook/Pinterest/YouTube icons were removed from here (and from
+// the footer below) — the site had no real pages on any of those three
+// platforms, so the icons linked out to generic platform homepages instead
+// of anywhere real. Only re-add an icon once there's an actual brand page
+// to link it to.
 
 function iconWhatsApp() {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -112,7 +99,7 @@ export function renderHeader(active = "") {
     <!-- Top bar -->
     <div class="topbar">
       <div class="container topbar-inner">
-        <div class="topbar-left">Complimentary shipping across India</div>
+        <div class="topbar-left" id="topbarAnnouncement">Complimentary shipping across India</div>
         <div class="topbar-right">
           <a href="about.html">About</a>
           <a href="shipping.html">Shipping</a>
@@ -280,15 +267,6 @@ export function renderFooter() {
         <div class="social-links">
           <a href="https://www.instagram.com/ahamstree/" target="_blank" rel="noopener noreferrer" class="instagram" aria-label="Instagram" title="Instagram">
             ${iconInstagram()}
-          </a>
-          <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" class="facebook" aria-label="Facebook" title="Facebook">
-            ${iconFacebook()}
-          </a>
-          <a href="https://www.pinterest.com/" target="_blank" rel="noopener noreferrer" class="pinterest" aria-label="Pinterest" title="Pinterest">
-            ${iconPinterest()}
-          </a>
-          <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" class="youtube" aria-label="YouTube" title="YouTube">
-            ${iconYoutube()}
           </a>
           <a href="https://wa.me/919582297550" target="_blank" rel="noopener noreferrer" class="whatsapp" aria-label="WhatsApp" title="WhatsApp">
             ${iconWhatsApp()}
@@ -461,6 +439,38 @@ function initScrollReveal() {
   }
 }
 
+// ── Site settings (admin-managed, Admin → Site Settings) ──
+// Patches the topbar announcement text (and the matching homepage
+// trust-strip line, when present) after the page's initial static render,
+// same pattern as the auth-state patch below. Previously this text was
+// hardcoded in two places (this file's topbar markup, and index.html's
+// trust strip) with zero admin control. Fails silently on any error — the
+// static fallback text baked into the markup above is what stays visible.
+const SITE_SETTINGS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-site-settings";
+let _siteSettingsHydrated = false;
+
+async function hydrateSiteSettings() {
+  if (_siteSettingsHydrated) return;
+  _siteSettingsHydrated = true;
+  try {
+    const res = await fetch(SITE_SETTINGS_URL);
+    if (!res.ok) return;
+    const { settings } = await res.json();
+    if (!settings || !settings.topbar_announcement) return;
+
+    const text = String(settings.topbar_announcement);
+    const topbarEl = document.getElementById("topbarAnnouncement");
+    if (topbarEl) topbarEl.textContent = text;
+
+    // Homepage trust strip's middle item shows the identical announcement —
+    // kept in sync from the same setting rather than a second hardcoded copy.
+    const trustEl = document.getElementById("trustStripShipping");
+    if (trustEl) trustEl.textContent = text;
+  } catch (_) {
+    // silent — static fallback text already in the markup stays as-is
+  }
+}
+
 export async function hydrateHeaderAuth() {
   initMobileMenu();
   initHeaderOffset();
@@ -471,6 +481,7 @@ export async function hydrateHeaderAuth() {
   try { mountWelcomePopup(); } catch (_) {}
 
   hydrateNavDropdowns();
+  hydrateSiteSettings();
   initScrollReveal();
 
   const aDesktop = document.getElementById("accountLink");
