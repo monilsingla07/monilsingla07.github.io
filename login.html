@@ -35,6 +35,7 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml } from "./assets/safe.js";
+    import { upsertProfileIfPending, ensureProfileFromPhone, ensureProfileFromGoogle } from "./assets/profile-seed.js";
 
 
     document.getElementById("header").innerHTML = renderHeader("login");
@@ -381,73 +382,9 @@ function renderLoggedIn(session) {
 };
 }
 
-async function upsertProfileIfPending(userId) {
-  const raw = localStorage.getItem("pending_profile");
-  if (!raw) return;
-
-  const pending = JSON.parse(raw);
-  localStorage.removeItem("pending_profile");
-
-  // Write profile row (requires RLS policy allowing user to upsert their own profile)
-  await supabase.from("profiles").upsert({
-    user_id: userId,
-    full_name: pending.full_name || null,
-    phone: pending.phone || null,
-  });
-}
-
-// First time a WhatsApp-OTP phone account signs in, seed the saved-profile
-// phone number from the verified auth phone — but never overwrite a phone
-// the person already saved themselves on the Profile page.
-async function ensureProfileFromPhone(session) {
-  const provider = session?.user?.app_metadata?.provider;
-  if (provider !== "phone") return;
-
-  const userId = session.user.id;
-  const authPhone10 = String(session?.user?.phone || "").replace(/\D/g, "").slice(-10);
-  if (!authPhone10) return;
-
-  const { data: existing } = await supabase
-    .from("profiles")
-    .select("phone")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (existing?.phone) return; // already filled in, leave it alone
-
-  await supabase.from("profiles").upsert({
-    user_id: userId,
-    phone: authPhone10,
-  });
-}
-
-// First time a Google account signs in, seed the saved-profile name/email
-// from what Google gave us — but never overwrite anything the person
-// already filled in on the Profile page themselves.
-async function ensureProfileFromGoogle(session) {
-  const provider = session?.user?.app_metadata?.provider;
-  if (provider !== "google") return;
-
-  const userId = session.user.id;
-  const meta = session.user.user_metadata || {};
-  const googleName = meta.full_name || meta.name || null;
-  const googleEmail = session.user.email || null;
-  if (!googleName && !googleEmail) return;
-
-  const { data: existing } = await supabase
-    .from("profiles")
-    .select("full_name, email")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (existing?.full_name && existing?.email) return; // already filled in, leave it alone
-
-  await supabase.from("profiles").upsert({
-    user_id: userId,
-    full_name: existing?.full_name || googleName,
-    email: existing?.email || googleEmail,
-  });
-}
+    // upsertProfileIfPending / ensureProfileFromPhone / ensureProfileFromGoogle
+    // now live in assets/profile-seed.js (imported above) so the sign-in
+    // popup can reuse the exact same seeding logic instead of a second copy.
 
     // Initial render — keyed off having a session at all, since a
     // WhatsApp-OTP (phone) session has no email to check.

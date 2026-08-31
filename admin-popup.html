@@ -116,7 +116,7 @@
 
       <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:32px 0 10px;">Sign-in popup (logged-out visitors only)</div>
       <div class="small" style="opacity:.6; margin:-4px 0 12px;">
-        Shown once per visit window to anyone browsing the site without being signed in. Independent of the popup above — this one is keyed off login status, not dates.
+        Shown once per "reappear" window to anyone browsing the site without being signed in — has its own built-in WhatsApp OTP + Google sign-in form, not just a link. Independent of the popup above, and only ever shows once per window even if the visitor closes it, refreshes, or ignores it — later refreshes in that same window fall through to the popup above instead.
       </div>
       <div class="pm-card">
         <div class="pm-row">
@@ -140,18 +140,10 @@
             <input id="sp_image_url" class="input" placeholder="https://..." />
           </div>
 
-          <div>
-            <label class="pm-label">Button text</label>
-            <input id="sp_button_text" class="input" placeholder="Sign In / Register" />
-          </div>
-          <div>
-            <label class="pm-label">Button link</label>
-            <input id="sp_button_link" class="input" placeholder="/login.html" />
-          </div>
-
-          <div>
-            <label class="pm-label">Reappear after (hours)</label>
+          <div class="full">
+            <label class="pm-label">Show again after (hours)</label>
             <input id="sp_reappear_hours" class="input" type="number" min="1" step="1" placeholder="24" />
+            <div class="small" style="opacity:.55; margin-top:4px;">24 = once per day, which is the default. This is how long after being shown it waits before showing again to the same visitor.</div>
           </div>
         </div>
 
@@ -368,8 +360,6 @@
       document.getElementById("sp_headline").value = c.headline || "";
       document.getElementById("sp_subtext").value = c.subtext || "";
       document.getElementById("sp_image_url").value = c.image_url || "";
-      document.getElementById("sp_button_text").value = c.button_text || "Sign In / Register";
-      document.getElementById("sp_button_link").value = c.button_link || "/login.html";
       document.getElementById("sp_reappear_hours").value = c.reappear_hours || 24;
     }
 
@@ -388,8 +378,6 @@
           headline: document.getElementById("sp_headline").value,
           subtext: document.getElementById("sp_subtext").value,
           image_url: document.getElementById("sp_image_url").value,
-          button_text: document.getElementById("sp_button_text").value,
-          button_link: document.getElementById("sp_button_link").value,
           reappear_hours: document.getElementById("sp_reappear_hours").value,
         };
         const result = await signinAuthedFetch(payload);
@@ -403,13 +391,14 @@
     document.getElementById("spBtnPreview").addEventListener("click", () => {
       const headline = document.getElementById("sp_headline").value.trim();
       const subtext = document.getElementById("sp_subtext").value.trim();
-      const buttonText = document.getElementById("sp_button_text").value.trim() || "Sign In / Register";
-      const buttonLink = document.getElementById("sp_button_link").value.trim() || "/login.html";
       const imageUrl = document.getElementById("sp_image_url").value.trim();
 
       const img = safeUrl(imageUrl, { type: "src" });
-      const link = safeUrl(buttonLink, { type: "href" });
 
+      // This is a copy/layout preview only — it doesn't wire up the real
+      // WhatsApp OTP / Google flow (that would mean sending real OTPs from
+      // the admin panel). The actual sign-in form always looks like this
+      // below the headline/subtext.
       const overlay = document.createElement("div");
       overlay.id = "pmPreviewOverlay";
       overlay.innerHTML = `
@@ -419,7 +408,9 @@
           <div id="pmPreviewBody">
             ${headline ? `<div id="pmPreviewHeadline">${escapeHtml(headline)}</div>` : ""}
             ${subtext ? `<div id="pmPreviewSubtext">${escapeHtml(subtext)}</div>` : ""}
-            <a id="pmPreviewBtn" href="${link}" target="_blank" rel="noopener noreferrer">${escapeHtml(buttonText)}</a>
+            <div class="small" style="opacity:.55; margin-top:10px; border:1px dashed #ddd; border-radius:12px; padding:14px;">
+              [WhatsApp OTP + Google sign-in form appears here on the live site]
+            </div>
           </div>
         </div>
       `;
