@@ -2,6 +2,7 @@
 import { cartCount } from "./cart.js";
 import { supabase } from "./supabase.js";
 import { mountWelcomePopup } from "./welcome-popup.js";
+import { mountSignInPopup } from "./signin-popup.js";
 import { escapeHtml } from "./safe.js";
 
 // ── Header offset (keeps content below fixed header) ──
@@ -479,6 +480,11 @@ export async function hydrateHeaderAuth() {
   // so this is the one place that mounts it without touching every page.
   // Wrapped defensively so a popup problem can never break header hydration.
   try { mountWelcomePopup(); } catch (_) {}
+
+  // Sign-in nudge popup — same wiring, but only ever shows to logged-out
+  // visitors (mountSignInPopup checks the session itself). Also skipped
+  // on its own, defensively.
+  try { mountSignInPopup(); } catch (_) {}
 
   hydrateNavDropdowns();
   hydrateSiteSettings();
