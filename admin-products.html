@@ -279,6 +279,7 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeHref, safeSrc } from "./assets/safe.js";
+    import { resizeImageFile, IMAGE_PRESETS } from "./assets/image-resize.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -485,9 +486,11 @@
         if (!ALLOWED_IMAGE_TYPES.includes(file.type)) { status.textContent = file.name + ": unsupported type, skipped."; continue; }
         if (file.size > MAX_IMAGE_BYTES) { status.textContent = file.name + ": over 8MB, skipped."; continue; }
         try {
+          status.textContent = "Optimizing " + file.name + "…";
+          const optimized = await resizeImageFile(file, IMAGE_PRESETS.productPhoto);
           status.textContent = "Uploading " + file.name + "…";
-          const { path, token, publicUrl } = await authedFetch(PRODUCTS_FN, { action: "get_upload_url", content_type: file.type });
-          const { error } = await supabase.storage.from("product-images").uploadToSignedUrl(path, token, file);
+          const { path, token, publicUrl } = await authedFetch(PRODUCTS_FN, { action: "get_upload_url", content_type: optimized.type });
+          const { error } = await supabase.storage.from("product-images").uploadToSignedUrl(path, token, optimized);
           if (error) throw new Error(error.message);
           editorImages.push({ image_url: publicUrl, alt_text: "" });
           renderImgThumbs();
@@ -872,9 +875,11 @@
           if (!ALLOWED_IMAGE_TYPES.includes(file.type)) { status.textContent = "Unsupported image type."; return; }
           if (file.size > MAX_IMAGE_BYTES) { status.textContent = "Image too large (max 8MB)."; return; }
           try {
+            status.textContent = "Optimizing cover image…";
+            const optimized = await resizeImageFile(file, IMAGE_PRESETS.collectionCover);
             status.textContent = "Uploading cover image…";
-            const { path, token, publicUrl } = await authedFetch(CATALOG_FN, { action: "get_upload_url", content_type: file.type });
-            const { error } = await supabase.storage.from("product-images").uploadToSignedUrl(path, token, file);
+            const { path, token, publicUrl } = await authedFetch(CATALOG_FN, { action: "get_upload_url", content_type: optimized.type });
+            const { error } = await supabase.storage.from("product-images").uploadToSignedUrl(path, token, optimized);
             if (error) throw new Error(error.message);
             document.getElementById(entity + "_f_cover_url").value = publicUrl;
             document.getElementById(entity + "_f_cover_url_text").value = publicUrl;

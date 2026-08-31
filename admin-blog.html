@@ -105,6 +105,7 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
+    import { resizeImageFile, IMAGE_PRESETS } from "./assets/image-resize.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -247,15 +248,18 @@
       if (!file) return document.getElementById("f_cover_url").value || null;
       if (file.size > MAX_COVER_BYTES) throw new Error("Cover image is too large — please keep it under 5MB.");
 
+      formStatus.textContent = "Optimizing cover image…";
+      const optimized = await resizeImageFile(file, IMAGE_PRESETS.blogCover);
+
       formStatus.textContent = "Uploading cover image…";
       const { path, token, public_url } = await authedFetch({
         action: "get_upload_url",
-        content_type: file.type,
+        content_type: optimized.type,
       });
 
       const { error: uploadErr } = await supabase.storage
         .from("site-images")
-        .uploadToSignedUrl(path, token, file);
+        .uploadToSignedUrl(path, token, optimized);
       if (uploadErr) throw new Error("Cover image upload failed: " + uploadErr.message);
 
       return public_url;

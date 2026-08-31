@@ -202,6 +202,7 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeHref, safeSrc } from "./assets/safe.js";
+    import { resizeImageFile, IMAGE_PRESETS } from "./assets/image-resize.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -265,13 +266,25 @@
       });
     }
 
+    // Different upload spots need different sizes: a full-bleed desktop hero
+    // banner can stay large, a mobile hero crop needs far less, and a small
+    // round testimonial avatar needs almost nothing.
+    const RESIZE_PRESET_BY_INPUT = {
+      h_desktop_file: IMAGE_PRESETS.heroDesktop,
+      h_mobile_file: IMAGE_PRESETS.heroMobile,
+      t_photo_file: IMAGE_PRESETS.testimonialPhoto,
+    };
+
     async function uploadImageIfSelected(entity, fileInputId, hiddenInputId, statusEl) {
       const file = document.getElementById(fileInputId).files[0];
       if (!file) return document.getElementById(hiddenInputId).value || "";
       if (file.size > MAX_IMAGE_BYTES) throw new Error("Image is too large — please keep it under 5MB.");
+      statusEl.textContent = "Optimizing image…";
+      const preset = RESIZE_PRESET_BY_INPUT[fileInputId] || IMAGE_PRESETS.blogCover;
+      const optimized = await resizeImageFile(file, preset);
       statusEl.textContent = "Uploading image…";
-      const { path, token, publicUrl } = await authedFetch({ action: "get_upload_url", entity, content_type: file.type });
-      const { error } = await supabase.storage.from("site-images").uploadToSignedUrl(path, token, file);
+      const { path, token, publicUrl } = await authedFetch({ action: "get_upload_url", entity, content_type: optimized.type });
+      const { error } = await supabase.storage.from("site-images").uploadToSignedUrl(path, token, optimized);
       if (error) throw new Error("Image upload failed: " + error.message);
       return publicUrl;
     }
