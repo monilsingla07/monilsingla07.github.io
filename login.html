@@ -85,10 +85,22 @@ document.getElementById("footer").innerHTML = renderFooter();
       <path fill="#EA4335" d="M12 4.76c1.76 0 3.34.61 4.59 1.8l3.44-3.44C17.95 1.19 15.23 0 12 0A12 12 0 0 0 1.26 6.63l4.01 3.1C6.22 6.87 8.87 4.76 12 4.76Z"/>
     </svg>`;
 
+  // Minimal inline icons (keeps this page self-contained)
+  const iconPhone = () => `
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 3h8v18H8V3Z" stroke="currentColor" stroke-width="2"/>
+      <path d="M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>`;
+  const iconWhatsapp = () => `
+    <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#25D366" d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.36 5.07L2 22l5.07-1.33A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2Z"/>
+      <path fill="#fff" d="M9.1 7.28c-.2-.45-.4-.46-.6-.47h-.5c-.18 0-.46.07-.7.34-.24.27-.92.9-.92 2.2s.94 2.55 1.07 2.73c.13.18 1.83 2.93 4.5 4 2.23.88 2.68.7 3.17.66.49-.05 1.57-.64 1.79-1.26.22-.62.22-1.15.15-1.26-.07-.11-.24-.18-.5-.31-.27-.13-1.57-.78-1.82-.86-.24-.09-.42-.13-.6.13-.18.27-.68.86-.84 1.04-.15.18-.31.2-.58.07-.27-.13-1.13-.42-2.15-1.33-.8-.71-1.33-1.59-1.49-1.86-.15-.27-.02-.42.12-.55.12-.12.27-.31.4-.47.13-.16.18-.27.27-.45.09-.18.05-.34-.02-.47-.07-.13-.6-1.49-.85-2.05Z"/>
+    </svg>`;
+
   app.innerHTML = `
     <div style="font-weight:900;">Login</div>
     <div class="small" style="margin-top:6px;">
-      Log in with your email and password, or continue with Google.
+      Continue with Google, or verify with a WhatsApp one-time code.
     </div>
 
     <button id="googleAuthBtn" type="button" class="btn secondary"
@@ -129,276 +141,209 @@ document.getElementById("footer").innerHTML = renderFooter();
       "'": "&#039;",
     }[c]));
 
-  // Minimal inline icons (keeps this page self-contained)
-  const iconMail = () => `
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="2"/>
-      <path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-    </svg>`;
-  const iconLock = () => `
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      <path d="M6 11h12v10H6V11Z" stroke="currentColor" stroke-width="2"/>
-    </svg>`;
-  const iconPhone = () => `
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M8 3h8v18H8V3Z" stroke="currentColor" stroke-width="2"/>
-      <path d="M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-    </svg>`;
-  const iconUser = () => `
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 21a8 8 0 1 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
-    </svg>`;
+  const phoneOk = (v) => {
+    const digits = String(v || "").replace(/\D/g, "");
+    // India mobile: 10 digits starting 6-9 (allow +91 etc.)
+    if (digits.length === 12 && digits.startsWith("91")) return /^[6-9]\d{9}$/.test(digits.slice(2));
+    return /^[6-9]\d{9}$/.test(digits);
+  };
+
+  // Normalizes whatever the user typed (with or without +91/91/0 prefix)
+  // down to the bare 10-digit Indian mobile number.
+  const normalizePhone10 = (raw) => {
+    let d = String(raw || "").replace(/\D/g, "");
+    if (d.startsWith("91") && d.length === 12) d = d.slice(2);
+    if (d.startsWith("0") && d.length === 11) d = d.slice(1);
+    return d;
+  };
+
+  const toE164 = (phone10) => "+91" + phone10;
+
+  // RESEND_COOLDOWN_SECONDS mirrors Supabase Auth's default 60-second
+  // "last request" throttle on /auth/v1/otp — kept in sync here purely so
+  // the button's countdown matches what the server will actually allow.
+  // If that rate limit is changed in Authentication → Rate Limits, update
+  // this constant to match.
+  const RESEND_COOLDOWN_SECONDS = 60;
 
   function renderLogin() {
+    let currentPhone10 = null; // set once an OTP has been sent
+    let cooldownTimer = null;
+
     panel.innerHTML = `
       <div class="form-grid">
         <div class="field">
-          <label for="loginEmail">Email</label>
-          <div class="input-wrap">
-            <span class="input-icon" aria-hidden="true">${iconMail()}</span>
-            <input id="loginEmail" class="input has-icon" type="email" autocomplete="email" placeholder="name@example.com" required />
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="loginPassword">Password</label>
-          <div class="input-wrap">
-            <span class="input-icon" aria-hidden="true">${iconLock()}</span>
-            <input id="loginPassword" class="input has-icon" type="password" autocomplete="current-password" placeholder="Your password" required />
-            <button id="toggleLoginPw" type="button" class="btn secondary"
-              style="position:absolute;right:8px;top:8px;padding:6px 10px;">
-              Show
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-        <button id="doLogin" class="btn">Log in</button>
-        <button id="goSignup" class="btn secondary">New user</button>
-      </div>
-    `;
-
-    const toggleBtn = document.getElementById("toggleLoginPw");
-    toggleBtn.onclick = () => {
-      const pw = document.getElementById("loginPassword");
-      const isHidden = pw.type === "password";
-      pw.type = isHidden ? "text" : "password";
-      toggleBtn.textContent = isHidden ? "Hide" : "Show";
-    };
-
-    document.getElementById("doLogin").onclick = async () => {
-      status.textContent = "";
-
-      const email = document.getElementById("loginEmail").value.trim();
-      const password = document.getElementById("loginPassword").value;
-
-      const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(String(v || "").trim());
-      if (!email) return (status.textContent = "Please enter your email.");
-      if (!emailOk(email)) return (status.textContent = "Please enter a valid email.");
-      if (!password) return (status.textContent = "Please enter your password.");
-
-      status.textContent = "Logging in…";
-
-const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-if (error) {
-  status.textContent = "Error: " + error.message;
-} else {
-  status.textContent = "Logged in ✅ Redirecting…";
-  setTimeout(() => {
-    window.location.href = (NEXT_URL || "/account.html");
-  }, 500);
-}
-
-    };
-
-    document.getElementById("goSignup").onclick = renderSignup;
-  }
-
-  function renderSignup() {
-    panel.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-weight:900;">Create account</div>
-        <button id="goLogin" type="button" class="btn secondary">Back to login</button>
-      </div>
-
-      <div class="small" style="margin-top:6px;">
-        All fields are required. Password must be at least 8 characters.
-      </div>
-
-      <div style="margin-top:14px;" class="form-grid">
-        <div class="row" style="gap:12px;">
-          <div class="field" style="flex:1;min-width:0;">
-            <label for="firstName">First name</label>
-            <div class="input-wrap">
-              <span class="input-icon" aria-hidden="true">${iconUser()}</span>
-              <input id="firstName" class="input has-icon" type="text" autocomplete="given-name" placeholder="e.g., Monil" required />
-            </div>
-            <div id="errFirstName" class="error-text" style="display:none;"></div>
-          </div>
-
-          <div class="field" style="flex:1;min-width:0;">
-            <label for="lastName">Last name</label>
-            <div class="input-wrap">
-              <span class="input-icon" aria-hidden="true">${iconUser()}</span>
-              <input id="lastName" class="input has-icon" type="text" autocomplete="family-name" placeholder="e.g., Gupta" required />
-            </div>
-            <div id="errLastName" class="error-text" style="display:none;"></div>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="phone">Phone</label>
+          <label for="otpPhone">WhatsApp number</label>
           <div class="input-wrap">
             <span class="input-icon" aria-hidden="true">${iconPhone()}</span>
-            <input id="phone" class="input has-icon" type="tel" autocomplete="tel" placeholder="10-digit mobile number" inputmode="numeric" required />
+            <input id="otpPhone" class="input has-icon" type="tel" autocomplete="tel"
+              placeholder="10-digit mobile number" inputmode="numeric" required />
           </div>
-          <div class="help-text">We’ll only use this for delivery updates.</div>
-          <div id="errPhone" class="error-text" style="display:none;"></div>
-        </div>
-
-        <div class="field">
-          <label for="signupEmail">Email</label>
-          <div class="input-wrap">
-            <span class="input-icon" aria-hidden="true">${iconMail()}</span>
-            <input id="signupEmail" class="input has-icon" type="email" autocomplete="email" placeholder="name@example.com" required />
-          </div>
-          <div id="errEmail" class="error-text" style="display:none;"></div>
-        </div>
-
-        <div class="field">
-          <label for="signupPassword">Password</label>
-          <div class="input-wrap">
-            <span class="input-icon" aria-hidden="true">${iconLock()}</span>
-            <input id="signupPassword" class="input has-icon" type="password" autocomplete="new-password" placeholder="Min 8 characters" required />
-            <button id="toggleSignupPw" type="button" class="btn secondary"
-              style="position:absolute;right:8px;top:8px;padding:6px 10px;">
-              Show
-            </button>
-          </div>
-          <div id="errPassword" class="error-text" style="display:none;"></div>
-        </div>
-
-        <div class="field">
-          <label for="signupPassword2">Confirm password</label>
-          <div class="input-wrap">
-            <span class="input-icon" aria-hidden="true">${iconLock()}</span>
-            <input id="signupPassword2" class="input has-icon" type="password" autocomplete="new-password" placeholder="Re-enter password" required />
-            <button id="toggleSignupPw2" type="button" class="btn secondary"
-              style="position:absolute;right:8px;top:8px;padding:6px 10px;">
-              Show
-            </button>
-          </div>
-          <div id="errPassword2" class="error-text" style="display:none;"></div>
+          <div class="help-text">We’ll send a 6-digit code to this number on WhatsApp.</div>
+          <div id="errOtpPhone" class="error-text" style="display:none;"></div>
         </div>
       </div>
 
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-        <button id="doSignup" class="btn">Create account</button>
+        <button id="sendOtpBtn" type="button" class="btn"
+          style="display:flex;align-items:center;justify-content:center;gap:8px;">
+          ${iconWhatsapp()} Send code on WhatsApp
+        </button>
+      </div>
+
+      <div id="otpStep" style="display:none;margin-top:16px;">
+        <div class="field">
+          <label for="otpCode">Enter the 6-digit code</label>
+          <input id="otpCode" class="input" type="text" inputmode="numeric" autocomplete="one-time-code"
+            maxlength="6" placeholder="••••••" style="letter-spacing:4px;font-weight:700;max-width:180px;" />
+          <div id="errOtpCode" class="error-text" style="display:none;"></div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center;">
+          <button id="verifyOtpBtn" class="btn">Verify &amp; continue</button>
+          <button id="resendOtpBtn" type="button" class="btn secondary" disabled>Resend code</button>
+          <button id="changeNumberBtn" type="button" class="btn secondary">Change number</button>
+        </div>
       </div>
     `;
 
-    document.getElementById("goLogin").onclick = renderLogin;
+    const phoneInput = document.getElementById("otpPhone");
+    const sendBtn = document.getElementById("sendOtpBtn");
+    const otpStep = document.getElementById("otpStep");
+    const codeInput = document.getElementById("otpCode");
+    const verifyBtn = document.getElementById("verifyOtpBtn");
+    const resendBtn = document.getElementById("resendOtpBtn");
+    const changeBtn = document.getElementById("changeNumberBtn");
 
-    const toggle = (inputId, btnId) => {
-      const pw = document.getElementById(inputId);
-      const btn = document.getElementById(btnId);
-      btn.onclick = () => {
-        const isHidden = pw.type === "password";
-        pw.type = isHidden ? "text" : "password";
-        btn.textContent = isHidden ? "Hide" : "Show";
-      };
+    const setPhoneError = (msg) => {
+      const err = document.getElementById("errOtpPhone");
+      phoneInput.classList.toggle("is-invalid", !!msg);
+      err.style.display = msg ? "block" : "none";
+      err.textContent = msg || "";
+    };
+    const setCodeError = (msg) => {
+      const err = document.getElementById("errOtpCode");
+      codeInput.classList.toggle("is-invalid", !!msg);
+      err.style.display = msg ? "block" : "none";
+      err.textContent = msg || "";
     };
 
-    toggle("signupPassword", "toggleSignupPw");
-    toggle("signupPassword2", "toggleSignupPw2");
+    function startCooldown(btn) {
+      let remaining = RESEND_COOLDOWN_SECONDS;
+      btn.disabled = true;
+      btn.textContent = `Resend code (${remaining}s)`;
+      if (cooldownTimer) clearInterval(cooldownTimer);
+      cooldownTimer = setInterval(() => {
+        remaining -= 1;
+        if (remaining <= 0) {
+          clearInterval(cooldownTimer);
+          cooldownTimer = null;
+          btn.disabled = false;
+          btn.textContent = "Resend code";
+        } else {
+          btn.textContent = `Resend code (${remaining}s)`;
+        }
+      }, 1000);
+    }
 
-    const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(String(v || "").trim());
-    const phoneOk = (v) => {
-      const digits = String(v || "").replace(/\D/g, "");
-      // India mobile: 10 digits starting 6-9 (allow +91 etc.)
-      if (digits.length === 12 && digits.startsWith("91")) return /^[6-9]\d{9}$/.test(digits.slice(2));
-      return /^[6-9]\d{9}$/.test(digits);
-    };
+    async function sendOtp() {
+      setPhoneError("");
+      const phone10 = normalizePhone10(phoneInput.value);
 
-    const setFieldState = (inputId, ok, errId, msg) => {
-      const el = document.getElementById(inputId);
-      const err = document.getElementById(errId);
-      if (!el) return;
-      el.classList.toggle("is-valid", !!ok);
-      el.classList.toggle("is-invalid", ok === false);
-      if (err) {
-        err.style.display = ok === false ? "block" : "none";
-        err.textContent = ok === false ? (msg || "Invalid value") : "";
+      if (!phoneOk(phone10)) {
+        setPhoneError("Enter a valid 10-digit Indian mobile number.");
+        return;
       }
-    };
 
-    const validateSignup = () => {
-      const first = document.getElementById("firstName").value.trim();
-      const last = document.getElementById("lastName").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const email = document.getElementById("signupEmail").value.trim();
-      const password = document.getElementById("signupPassword").value;
-      const confirm = document.getElementById("signupPassword2").value;
+      sendBtn.disabled = true;
+      status.textContent = "Sending code on WhatsApp…";
 
-      let ok = true;
-
-      if (!first || first.length < 2) { ok = false; setFieldState("firstName", false, "errFirstName", "Enter your first name (min 2 letters)."); }
-      else setFieldState("firstName", true, "errFirstName");
-
-      if (!last || last.length < 2) { ok = false; setFieldState("lastName", false, "errLastName", "Enter your last name (min 2 letters)."); }
-      else setFieldState("lastName", true, "errLastName");
-
-      if (!phoneOk(phone)) { ok = false; setFieldState("phone", false, "errPhone", "Enter a valid 10-digit Indian mobile number."); }
-      else setFieldState("phone", true, "errPhone");
-
-      if (!emailOk(email)) { ok = false; setFieldState("signupEmail", false, "errEmail", "Enter a valid email address."); }
-      else setFieldState("signupEmail", true, "errEmail");
-
-      if (!password) { ok = false; setFieldState("signupPassword", false, "errPassword", "Enter a password."); }
-      else if (password.length < 8) { ok = false; setFieldState("signupPassword", false, "errPassword", "Password must be at least 8 characters."); }
-      else setFieldState("signupPassword", true, "errPassword");
-
-      if (!confirm) { ok = false; setFieldState("signupPassword2", false, "errPassword2", "Please confirm your password."); }
-      else if (password !== confirm) { ok = false; setFieldState("signupPassword2", false, "errPassword2", "Passwords do not match."); }
-      else setFieldState("signupPassword2", true, "errPassword2");
-
-      return ok ? null : "Please fix the highlighted fields.";
-    };
-
-    document.getElementById("doSignup").onclick = async () => {
-      status.textContent = "";
-
-      const err = validateSignup();
-      if (err) return (status.textContent = err);
-
-      const first_name = document.getElementById("firstName").value.trim();
-      const last_name = document.getElementById("lastName").value.trim();
-      const full_name = `${first_name} ${last_name}`.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const email = document.getElementById("signupEmail").value.trim();
-      const password = document.getElementById("signupPassword").value;
-
-      status.textContent = "Creating account… please check your email to verify.";
-
-      // Save profile info temporarily so we can write it after login
-      localStorage.setItem("pending_profile", JSON.stringify({ full_name, phone, first_name, last_name }));
-
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: window.location.origin + (NEXT_URL || "/account.html"),
-        },
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: toE164(phone10),
       });
 
-      status.textContent = error
-        ? ("Error: " + error.message)
-        : "Account created. Please verify your email, then log in.";
+      sendBtn.disabled = false;
+
+      if (error) {
+        status.textContent = "Error: " + error.message;
+        return;
+      }
+
+      currentPhone10 = phone10;
+      status.textContent = `Code sent to +91 ${phone10} on WhatsApp. It expires shortly — enter it below.`;
+      otpStep.style.display = "block";
+      phoneInput.disabled = true;
+      sendBtn.style.display = "none";
+      codeInput.value = "";
+      codeInput.focus();
+      startCooldown(resendBtn);
+    }
+
+    sendBtn.onclick = sendOtp;
+
+    resendBtn.onclick = async () => {
+      if (resendBtn.disabled) return;
+      setCodeError("");
+      status.textContent = "Resending code…";
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: toE164(currentPhone10),
+      });
+      if (error) {
+        status.textContent = "Error: " + error.message;
+        return;
+      }
+      status.textContent = `New code sent to +91 ${currentPhone10} on WhatsApp.`;
+      startCooldown(resendBtn);
     };
+
+    changeBtn.onclick = () => {
+      if (cooldownTimer) clearInterval(cooldownTimer);
+      currentPhone10 = null;
+      status.textContent = "";
+      otpStep.style.display = "none";
+      phoneInput.disabled = false;
+      sendBtn.style.display = "flex";
+      phoneInput.focus();
+    };
+
+    verifyBtn.onclick = async () => {
+      setCodeError("");
+      const code = codeInput.value.trim();
+
+      if (!/^\d{6}$/.test(code)) {
+        setCodeError("Enter the 6-digit code we sent you.");
+        return;
+      }
+      if (!currentPhone10) {
+        status.textContent = "Please request a code first.";
+        return;
+      }
+
+      verifyBtn.disabled = true;
+      status.textContent = "Verifying…";
+
+      const { error } = await supabase.auth.verifyOtp({
+        phone: toE164(currentPhone10),
+        token: code,
+        type: "sms",
+      });
+
+      verifyBtn.disabled = false;
+
+      if (error) {
+        status.textContent = "Error: " + error.message;
+        return;
+      }
+
+      status.textContent = "Logged in ✅ Redirecting…";
+      setTimeout(() => {
+        window.location.href = (NEXT_URL || "/account.html");
+      }, 500);
+    };
+
+    // Allow hitting Enter in either field to trigger the primary action.
+    phoneInput.addEventListener("keydown", (e) => { if (e.key === "Enter") sendOtp(); });
+    codeInput.addEventListener("keydown", (e) => { if (e.key === "Enter") verifyBtn.click(); });
   }
 
   // Default: show login form first
@@ -407,7 +352,7 @@ if (error) {
 
 
 
-function renderLoggedIn(email) {
+function renderLoggedIn(session) {
 
   // Already signed in: take user back to where they wanted to go
   if (NEXT_URL) {
@@ -415,9 +360,13 @@ function renderLoggedIn(email) {
     return;
   }
 
+  const identity = session?.user?.email
+    || (session?.user?.phone ? "+" + session.user.phone.replace(/\D/g, "") : "")
+    || "your account";
+
   app.innerHTML = `
     <div style="font-weight:900;">My Account</div>
-    <div class="small" style="margin-top:6px;">Signed in as ${escapeHtml(email)}</div>
+    <div class="small" style="margin-top:6px;">Signed in as ${escapeHtml(identity)}</div>
 
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
       <a class="btn secondary" href="account.html?view=orders">Orders</a>
@@ -444,6 +393,31 @@ async function upsertProfileIfPending(userId) {
     user_id: userId,
     full_name: pending.full_name || null,
     phone: pending.phone || null,
+  });
+}
+
+// First time a WhatsApp-OTP phone account signs in, seed the saved-profile
+// phone number from the verified auth phone — but never overwrite a phone
+// the person already saved themselves on the Profile page.
+async function ensureProfileFromPhone(session) {
+  const provider = session?.user?.app_metadata?.provider;
+  if (provider !== "phone") return;
+
+  const userId = session.user.id;
+  const authPhone10 = String(session?.user?.phone || "").replace(/\D/g, "").slice(-10);
+  if (!authPhone10) return;
+
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("phone")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existing?.phone) return; // already filled in, leave it alone
+
+  await supabase.from("profiles").upsert({
+    user_id: userId,
+    phone: authPhone10,
   });
 }
 
@@ -475,10 +449,10 @@ async function ensureProfileFromGoogle(session) {
   });
 }
 
-    // Initial render
+    // Initial render — keyed off having a session at all, since a
+    // WhatsApp-OTP (phone) session has no email to check.
     const { data: sessionData } = await supabase.auth.getSession();
-    const userEmail = sessionData?.session?.user?.email;
-  if (userEmail) renderLoggedIn(userEmail);
+  if (sessionData?.session?.user) renderLoggedIn(sessionData.session);
 else renderLoggedOut();
 
 
@@ -487,13 +461,13 @@ else renderLoggedOut();
     supabase.auth.onAuthStateChange(async (_event, session) => {
   hydrateHeaderAuth();
 
-  const e = session?.user?.email;
   const uid = session?.user?.id;
 
-  if (e && uid) {
+  if (uid) {
     await upsertProfileIfPending(uid);
     await ensureProfileFromGoogle(session);
-    renderLoggedIn(e);
+    await ensureProfileFromPhone(session);
+    renderLoggedIn(session);
   } else {
     renderLoggedOut();
   }
