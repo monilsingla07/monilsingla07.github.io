@@ -113,6 +113,54 @@
 
       <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All popups</div>
       <div id="popupList"></div>
+
+      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:32px 0 10px;">Sign-in popup (logged-out visitors only)</div>
+      <div class="small" style="opacity:.6; margin:-4px 0 12px;">
+        Shown once per visit window to anyone browsing the site without being signed in. Independent of the popup above — this one is keyed off login status, not dates.
+      </div>
+      <div class="pm-card">
+        <div class="pm-row">
+          <div class="full" style="display:flex; align-items:center; gap:8px;">
+            <input id="sp_enabled" type="checkbox" style="width:16px; height:16px;" />
+            <label for="sp_enabled" style="font-size:13px; font-weight:700;">Enabled (logged-out visitors will see this popup)</label>
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Headline</label>
+            <input id="sp_headline" class="input" placeholder="e.g. Welcome to Ahamstree" />
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Subtext</label>
+            <input id="sp_subtext" class="input" placeholder="e.g. Sign in for faster checkout, order tracking, and member-only offers." />
+          </div>
+
+          <div class="full">
+            <label class="pm-label">Image URL (optional)</label>
+            <input id="sp_image_url" class="input" placeholder="https://..." />
+          </div>
+
+          <div>
+            <label class="pm-label">Button text</label>
+            <input id="sp_button_text" class="input" placeholder="Sign In / Register" />
+          </div>
+          <div>
+            <label class="pm-label">Button link</label>
+            <input id="sp_button_link" class="input" placeholder="/login.html" />
+          </div>
+
+          <div>
+            <label class="pm-label">Reappear after (hours)</label>
+            <input id="sp_reappear_hours" class="input" type="number" min="1" step="1" placeholder="24" />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+          <button id="spBtnSave" class="btn">Save sign-in popup</button>
+          <button id="spBtnPreview" class="btn secondary" type="button">Preview</button>
+          <div id="spFormStatus" class="small" style="align-self:center;"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -128,6 +176,7 @@
     hydrateHeaderAuth();
 
     const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-popup";
+    const SP_FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-signin-popup";
 
     const loadingState = document.getElementById("loadingState");
     const dashboard    = document.getElementById("dashboard");
@@ -150,6 +199,19 @@
       const { data: sess } = await supabase.auth.getSession();
       const token = sess?.session?.access_token || "";
       const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    async function signinAuthedFetch(body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(SP_FN_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
         body: JSON.stringify(body),
@@ -300,6 +362,73 @@
       overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
     });
 
+    function fillSigninForm(c) {
+      c = c || {};
+      document.getElementById("sp_enabled").checked = !!c.enabled;
+      document.getElementById("sp_headline").value = c.headline || "";
+      document.getElementById("sp_subtext").value = c.subtext || "";
+      document.getElementById("sp_image_url").value = c.image_url || "";
+      document.getElementById("sp_button_text").value = c.button_text || "Sign In / Register";
+      document.getElementById("sp_button_link").value = c.button_link || "/login.html";
+      document.getElementById("sp_reappear_hours").value = c.reappear_hours || 24;
+    }
+
+    async function loadSigninConfig() {
+      const result = await signinAuthedFetch({ action: "get" });
+      fillSigninForm(result.config);
+    }
+
+    document.getElementById("spBtnSave").addEventListener("click", async () => {
+      const spFormStatus = document.getElementById("spFormStatus");
+      spFormStatus.textContent = "Saving…";
+      try {
+        const payload = {
+          action: "save",
+          enabled: document.getElementById("sp_enabled").checked,
+          headline: document.getElementById("sp_headline").value,
+          subtext: document.getElementById("sp_subtext").value,
+          image_url: document.getElementById("sp_image_url").value,
+          button_text: document.getElementById("sp_button_text").value,
+          button_link: document.getElementById("sp_button_link").value,
+          reappear_hours: document.getElementById("sp_reappear_hours").value,
+        };
+        const result = await signinAuthedFetch(payload);
+        fillSigninForm(result.config);
+        spFormStatus.textContent = "Saved ✅";
+      } catch (e) {
+        spFormStatus.textContent = "Error: " + e.message;
+      }
+    });
+
+    document.getElementById("spBtnPreview").addEventListener("click", () => {
+      const headline = document.getElementById("sp_headline").value.trim();
+      const subtext = document.getElementById("sp_subtext").value.trim();
+      const buttonText = document.getElementById("sp_button_text").value.trim() || "Sign In / Register";
+      const buttonLink = document.getElementById("sp_button_link").value.trim() || "/login.html";
+      const imageUrl = document.getElementById("sp_image_url").value.trim();
+
+      const img = safeUrl(imageUrl, { type: "src" });
+      const link = safeUrl(buttonLink, { type: "href" });
+
+      const overlay = document.createElement("div");
+      overlay.id = "pmPreviewOverlay";
+      overlay.innerHTML = `
+        <div id="pmPreviewCard">
+          <button id="pmPreviewClose" type="button">&times;</button>
+          ${img ? `<img id="pmPreviewImg" src="${img}" alt="${escapeAttr(headline || "Preview")}" />` : ""}
+          <div id="pmPreviewBody">
+            ${headline ? `<div id="pmPreviewHeadline">${escapeHtml(headline)}</div>` : ""}
+            ${subtext ? `<div id="pmPreviewSubtext">${escapeHtml(subtext)}</div>` : ""}
+            <a id="pmPreviewBtn" href="${link}" target="_blank" rel="noopener noreferrer">${escapeHtml(buttonText)}</a>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      const close = () => overlay.remove();
+      overlay.querySelector("#pmPreviewClose").addEventListener("click", close);
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+    });
+
     async function initAdmin() {
       try {
         const sessResult = await supabase.auth.getSession();
@@ -322,6 +451,7 @@
 
         clearForm();
         await loadList();
+        await loadSigninConfig();
       } catch (e) {
         console.error("Popup admin page error:", e);
         showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
