@@ -1698,7 +1698,9 @@ header .nav {
 /* Specs */
 /* Light-gray banded spec rows (Color / Material / Craft, Chidiyaa-style) — the
    1px gap + grid background is a CSS trick for hairline row dividers without
-   putting a border on every cell. */
+   putting a border on every cell. Now sits right under the price/tax note
+   (see product.html), so no top margin of its own — the price row already
+   has margin-top. */
 .spec-grid {
   display: grid;
   grid-template-columns: 140px 1fr;
@@ -1710,7 +1712,28 @@ header .nav {
 .spec-k { font-weight: 500; color: var(--text-light); }
 .spec-v { font-weight: 600; color: var(--text); }
 
-/* Accordion */
+/* Delivery-estimate line under the spec table, above the buy buttons —
+   Chidiyaa's "Product will ship within X days" slot, using AhamStree's own
+   real delivery-estimate copy (shipping.html) rather than inventing a new
+   dispatch-time number. */
+.pd-ship-note {
+  margin-top: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-light);
+}
+.pd-ship-note::before {
+  content: "";
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--brand);
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+/* Accordion (legacy — no longer used by product.html as of the Chidiyaa tab
+   restyle below, kept in case anything else references it) */
 .ac-item { border-top: 1px solid var(--border-light); padding: 14px 0; }
 .ac-item:first-child { border-top: none; }
 .ac-btn {
@@ -1725,6 +1748,74 @@ header .nav {
 .ac-item.open .ac-chevron { transform: rotate(180deg); }
 .bullets { padding-left: 18px; margin: 0; }
 .bullets li { margin: 6px 0; }
+
+/* PDP info tab bar (Description / Fabric Care / Size & Fit / Shipping /
+   Return & Exchange Policy) — Chidiyaa's horizontal underline tabs,
+   replacing the old accordion above. */
+.pd-tabs-card { overflow: hidden; }
+.pd-tabbar {
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border-light);
+  margin: 0 -16px 16px;
+  padding: 0 16px;
+}
+.pd-tab-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 4px 2px 12px;
+  margin-bottom: -1px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.pd-tab-btn:hover { color: var(--text); }
+.pd-tab-btn.active { color: var(--brand); border-bottom-color: var(--brand); }
+.pd-tab-panel { display: none; line-height: 1.65; font-size: 14px; opacity: .9; }
+.pd-tab-panel.active { display: block; }
+
+@media (max-width: 560px) {
+  .pd-tabbar { gap: 16px; }
+}
+
+/* PDP bottom "You may also like" strip — New Arrivals / Best Sellers tabs
+   over a product grid, mirrors Chidiyaa's PDP footer carousel. */
+.pd-related-section { margin-top: 56px; }
+.pd-related-tabbar {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 24px;
+}
+.pd-related-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0 2px 14px;
+  margin-bottom: -1px;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.pd-related-tab:hover { color: var(--text); }
+.pd-related-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+.pd-related-grid .p-card-img-empty {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, var(--bg-warm) 0%, var(--border-light) 100%);
+}
 
 /* ═══════════════════════════
    PRODUCTS LISTING
