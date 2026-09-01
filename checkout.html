@@ -242,6 +242,12 @@
     document.getElementById("checkoutGate").style.display = "none";
     document.getElementById("checkoutMain").style.display = "";
 
+    // checkout.html doesn't call hydrateHeaderAuth() (see ui.js), which is
+    // where every other page wires up pageview tracking — call it directly
+    // here instead so checkout visits still show up in Admin → Visitor
+    // Analytics. Fails silently, same as everywhere else it's used.
+    import("./assets/visit-tracker.js").then((m) => m.trackPageview()).catch(() => {});
+
     const statusEl = document.getElementById("status");
     const warnBox  = document.getElementById("warn");
     const warnText = document.getElementById("warnText");

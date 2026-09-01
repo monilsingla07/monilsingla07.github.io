@@ -1,0 +1,276 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Visitor Analytics — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    /* Local overrides — shadow the storefront's decorative .section-title
+       (which adds an underline pseudo-element) with the plain admin-label
+       style used across every other admin page. */
+    .metric-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px; margin-bottom: 22px;
+    }
+    .metric-card {
+      background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px;
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 5px;
+    }
+    .metric-card.highlight { background: var(--brand-light, #fdf2f2); border-color: var(--brand, #7c1c1c); }
+    .metric-label { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .6; }
+    .metric-value { font-size: 24px; font-weight: 900; line-height: 1; font-family: 'Cormorant Garamond', serif; }
+    .metric-sub { font-size: 11px; opacity: .6; }
+
+    .section-title {
+      font-size: 12.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+      opacity: .55; margin: 26px 0 12px;
+    }
+    .section-title::after { content: none; } /* kill storefront underline */
+
+    .panel { background:#fff; border:1px solid var(--border,#e5e7eb); border-radius:16px; padding:16px; }
+    .panel + .panel { margin-top:14px; }
+
+    .bar-row { display:flex; align-items:center; gap:10px; padding:6px 0; font-size:13px; }
+    .bar-row .bar-label { flex: 0 0 auto; min-width: 0; max-width: 44%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .bar-row .bar-track { flex: 1 1 auto; height: 8px; border-radius: 999px; background: #f3f4f6; overflow: hidden; }
+    .bar-row .bar-fill { height: 100%; border-radius: 999px; background: var(--brand, #7c1c1c); }
+    .bar-row .bar-value { flex: 0 0 auto; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 42px; text-align: right; }
+
+    .trend-chart { display: flex; align-items: flex-end; gap: 4px; height: 140px; padding-top: 10px; }
+    .trend-col { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
+    .trend-bar { width: 100%; max-width: 22px; border-radius: 4px 4px 0 0; background: var(--brand, #7c1c1c); min-height: 2px; }
+    .trend-day-label { font-size: 9px; opacity: .55; writing-mode: vertical-rl; transform: rotate(180deg); height: 34px; }
+
+    .day-range { display:flex; gap:6px; }
+    .day-range button {
+      border:1px solid var(--border,#e5e7eb); background:#fff; border-radius:999px; padding:6px 14px;
+      font-size:12.5px; font-weight:700; cursor:pointer; opacity:.65;
+    }
+    .day-range button.active { opacity:1; background: var(--brand-light,#fdf2f2); border-color: var(--brand,#7c1c1c); color: var(--brand,#7c1c1c); }
+
+    .empty-note { font-size: 12.5px; opacity: .55; padding: 8px 0; }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:980px;">
+    <div id="loadingState" style="text-align:center;padding:48px;opacity:.6;font-size:14px;">Verifying admin access…</div>
+
+    <div id="mainContent" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+        <div>
+          <h2 style="margin:0;">Visitor Analytics</h2>
+          <div class="small" style="opacity:.65;margin-top:4px;">
+            AhamStree's own record of site traffic — pages, referrers, devices, and rough visitor location.
+            Not Google Analytics; this lives in your own database.
+          </div>
+        </div>
+        <a class="btn secondary" href="admin.html" style="padding:8px 14px;font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
+        <div class="day-range" id="dayRange">
+          <button data-days="7">7 days</button>
+          <button data-days="30" class="active">30 days</button>
+          <button data-days="90">90 days</button>
+        </div>
+        <button id="btnRefresh" class="btn secondary" style="padding:7px 14px;font-size:12.5px;">↻ Refresh</button>
+      </div>
+
+      <div id="statusMsg" class="small" style="margin:10px 0;opacity:.6;"></div>
+
+      <div class="metric-grid" id="metricsTop"></div>
+
+      <div class="section-title">Daily visitors</div>
+      <div class="panel">
+        <div id="trendChart" class="trend-chart"></div>
+        <div id="trendEmpty" class="empty-note" style="display:none;">No pageviews recorded in this range yet — the tracker only started logging once this update went live, so history will fill in from here.</div>
+      </div>
+
+      <div class="section-title">Top pages &amp; referrers</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;" id="pagesReferrersGrid">
+        <div class="panel">
+          <div class="small" style="font-weight:800; margin-bottom:8px;">Most-viewed pages</div>
+          <div id="topPages"></div>
+        </div>
+        <div class="panel">
+          <div class="small" style="font-weight:800; margin-bottom:8px;">Where visitors come from</div>
+          <div id="topReferrers"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Devices &amp; locations</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+        <div class="panel">
+          <div class="small" style="font-weight:800; margin-bottom:8px;">Device type</div>
+          <div id="deviceBreakdown"></div>
+        </div>
+        <div class="panel">
+          <div class="small" style="font-weight:800; margin-bottom:8px;">Top countries (approximate, from IP)</div>
+          <div id="countryBreakdown"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+    import { escapeHtml } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const loadingState = document.getElementById("loadingState");
+    const mainContent  = document.getElementById("mainContent");
+    const statusMsg    = document.getElementById("statusMsg");
+
+    function showAdminError(emoji, title, message) {
+      loadingState.style.display = "block";
+      mainContent.style.display = "none";
+      loadingState.innerHTML =
+        '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function callFn(name, body) {
+      const { data, error } = await supabase.functions.invoke(name, { body: body || {} });
+      if (error) {
+        if (error.status === 401) { window.location.href = "login.html"; return { ok: false, handled: true }; }
+        if (error.status === 403) { showAdminError("🔒", "Access Denied", "Your account does not have admin access."); return { ok: false, handled: true }; }
+        let msg = error.message || "Function error";
+        try {
+          if (error.context && typeof error.context.json === "function") {
+            const body2 = await error.context.json();
+            if (body2?.details) msg = body2.error ? `${body2.error} (${body2.details})` : String(body2.details);
+            else if (body2?.error) msg = body2.error;
+          }
+        } catch (_) {}
+        throw new Error(msg);
+      }
+      return { ok: true, data };
+    }
+
+    function metricCard(label, value, sub, cls) {
+      sub = sub || ""; cls = cls || "";
+      const subHtml = sub ? `<div class="metric-sub">${sub}</div>` : "";
+      return `<div class="metric-card ${cls}"><div class="metric-label">${label}</div><div class="metric-value">${value}</div>${subHtml}</div>`;
+    }
+
+    function barList(rows, valueKey, labelKey, labelFmt) {
+      if (!rows || !rows.length) return '<div class="empty-note">Nothing recorded in this range yet.</div>';
+      const max = Math.max(...rows.map((r) => r[valueKey] || 0), 1);
+      return rows.map((r) => {
+        const label = labelFmt ? labelFmt(r[labelKey]) : String(r[labelKey] ?? "—");
+        const pct = Math.max(4, Math.round(((r[valueKey] || 0) / max) * 100));
+        return `
+          <div class="bar-row">
+            <div class="bar-label" title="${escapeHtml(label)}">${escapeHtml(label)}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+            <div class="bar-value">${r[valueKey]}</div>
+          </div>`;
+      }).join("");
+    }
+
+    function renderTrend(daily) {
+      const chart = document.getElementById("trendChart");
+      const empty = document.getElementById("trendEmpty");
+      if (!daily || !daily.length) {
+        chart.innerHTML = "";
+        empty.style.display = "block";
+        return;
+      }
+      empty.style.display = "none";
+      const max = Math.max(...daily.map((d) => d.unique_visitors || 0), 1);
+      chart.innerHTML = daily.map((d) => {
+        const h = Math.max(3, Math.round(((d.unique_visitors || 0) / max) * 100));
+        const dayLabel = new Date(d.day).toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+        return `
+          <div class="trend-col" title="${dayLabel}: ${d.unique_visitors} unique visitor${d.unique_visitors === 1 ? "" : "s"}, ${d.pageviews} pageview${d.pageviews === 1 ? "" : "s"}">
+            <div class="trend-bar" style="height:${h}%;"></div>
+            <div class="trend-day-label">${dayLabel}</div>
+          </div>`;
+      }).join("");
+    }
+
+    const deviceLabels = { desktop: "Desktop", mobile: "Mobile", tablet: "Tablet", unknown: "Unknown" };
+
+    let currentDays = 30;
+
+    async function loadStats() {
+      statusMsg.textContent = "Loading…";
+      const res = await callFn("admin-visitor-stats", { days: currentDays });
+      if (!res.ok) return;
+      const s = res.data.stats;
+
+      document.getElementById("metricsTop").innerHTML = [
+        metricCard("Unique Visitors Today", s.unique_visitors_today, s.pageviews_today + " pageviews today", "highlight"),
+        metricCard("Unique Visitors (7d)", s.unique_visitors_7d, "", ""),
+        metricCard("Unique Visitors (30d)", s.unique_visitors_30d, "", ""),
+        metricCard("Total Pageviews", s.total_pageviews, "All time", ""),
+        metricCard("Logged-in Visits (30d)", s.logged_in_visits_30d, "vs. anonymous browsing", ""),
+      ].join("");
+
+      renderTrend(s.daily_trend);
+
+      document.getElementById("topPages").innerHTML = barList(s.top_pages, "views", "page_path");
+      document.getElementById("topReferrers").innerHTML = barList(s.top_referrers, "visits", "referrer");
+      document.getElementById("deviceBreakdown").innerHTML = barList(
+        s.device_breakdown, "visits", "device_type", (v) => deviceLabels[v] || v
+      );
+      document.getElementById("countryBreakdown").innerHTML = barList(s.country_breakdown, "visits", "country");
+
+      statusMsg.textContent = "Last updated: " + new Date().toLocaleTimeString("en-IN");
+    }
+
+    document.querySelectorAll("#dayRange button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#dayRange button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentDays = parseInt(btn.dataset.days, 10);
+        loadStats();
+      });
+    });
+    document.getElementById("btnRefresh").addEventListener("click", loadStats);
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) { showAdminError("⚠️", "Auth Error", sessResult.error.message); return; }
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        loadingState.style.display = "none";
+        mainContent.style.display = "block";
+        loadStats();
+      } catch (e) {
+        console.error("Admin page error:", e);
+        showAdminError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

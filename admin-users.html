@@ -1,0 +1,370 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Registered Users — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .filters-bar { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center; }
+    .filters-bar .input { height:40px;font-size:13px; }
+    .pager { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:14px; justify-content:space-between; }
+    .pager .small { opacity:.7; }
+
+    .tabs { display:flex; gap:6px; border-bottom:1px solid var(--border,#e5e7eb); margin-bottom:18px; }
+    .tab-btn {
+      background:none; border:none; padding:10px 4px; margin-right:14px; font-size:13px; font-weight:700;
+      opacity:.55; cursor:pointer; border-bottom:2px solid transparent;
+    }
+    .tab-btn.active { opacity:1; border-bottom-color: var(--brand,#7c1c1c); color: var(--brand,#7c1c1c); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    .user-card {
+      border:1px solid var(--border,#e5e7eb); border-radius:14px; background:#fff;
+      padding:14px 16px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;
+    }
+    .user-card + .user-card { margin-top:10px; }
+    .user-main { display:flex; flex-direction:column; gap:3px; }
+    .user-name { font-weight:800; font-size:14.5px; }
+    .user-sub { font-size:12.5px; opacity:.65; }
+    .user-meta { display:flex; flex-direction:column; align-items:flex-end; gap:4px; text-align:right; }
+
+    .pill {
+      display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px;
+      font-size:10.5px; font-weight:800; letter-spacing:.02em; gap:4px;
+    }
+    .pill.google  { background:#eff6ff; color:#1d4ed8; }
+    .pill.phone   { background:#f0fdf4; color:#166534; }
+    .pill.email   { background:#fef9c3; color:#854d0e; }
+    .pill.unknown { background:#f3f4f6; color:#6b7280; }
+    .pill.never   { background:#fee2e2; color:#991b1b; }
+
+    .event-row {
+      border:1px solid var(--border,#e5e7eb); border-radius:12px; background:#fff;
+      padding:12px 14px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;
+      font-size:13px;
+    }
+    .event-row + .event-row { margin-top:8px; }
+    .event-left { display:flex; flex-direction:column; gap:2px; }
+    .event-right { text-align:right; opacity:.7; font-size:12px; }
+
+    .filter-chip {
+      display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px;
+      background: var(--brand-light,#fdf2f2); border:1px solid var(--brand,#7c1c1c); font-size:12.5px; font-weight:700;
+      margin-bottom:14px;
+    }
+    .filter-chip button { background:none; border:none; cursor:pointer; font-weight:900; opacity:.6; }
+
+    #toast {
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+      background:#111;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;
+      font-weight:700;opacity:0;transition:all .25s ease;pointer-events:none;z-index:9999;white-space:nowrap;
+    }
+    #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:1000px;">
+    <div id="loadingState" style="text-align:center;padding:48px;opacity:.6;font-size:14px;">Verifying admin access…</div>
+
+    <div id="mainContent" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+        <div>
+          <h2 style="margin:0;">Registered Users</h2>
+          <div class="small" style="opacity:.65;margin-top:4px;">Every account that's signed up, and a full login history for each one.</div>
+        </div>
+        <a class="btn secondary" href="admin.html" style="padding:8px 14px;font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="users">Users</button>
+        <button class="tab-btn" data-tab="history">All Login Activity</button>
+      </div>
+
+      <!-- ── Users tab ── -->
+      <div id="tab-users" class="tab-panel active">
+        <div class="filters-bar">
+          <input id="userSearch" class="input" placeholder="Search name, email, or phone…" style="max-width:320px;" />
+          <button id="btnUserSearch" class="btn secondary" style="padding:8px 16px;font-size:13px;">Search</button>
+          <button id="btnUserRefresh" class="btn secondary" style="padding:8px 16px;font-size:13px;">↻ Refresh</button>
+        </div>
+        <div id="userStatusMsg" class="small" style="margin-bottom:12px;opacity:.6;"></div>
+        <div id="userList" style="display:grid;gap:0;"></div>
+        <div class="pager">
+          <div class="small" id="userPagerInfo"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="userBtnPrev" class="btn secondary" style="padding:8px 14px;font-size:13px;">← Prev</button>
+            <button id="userBtnNext" class="btn secondary" style="padding:8px 14px;font-size:13px;">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Login history tab ── -->
+      <div id="tab-history" class="tab-panel">
+        <div id="historyFilterChip" style="display:none;"></div>
+        <div id="historyStatusMsg" class="small" style="margin-bottom:12px;opacity:.6;"></div>
+        <div id="historyList"></div>
+        <div class="pager">
+          <div class="small" id="historyPagerInfo"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="historyBtnPrev" class="btn secondary" style="padding:8px 14px;font-size:13px;">← Prev</button>
+            <button id="historyBtnNext" class="btn secondary" style="padding:8px 14px;font-size:13px;">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+    import { escapeHtml } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const loadingState = document.getElementById("loadingState");
+    const mainContent  = document.getElementById("mainContent");
+
+    function showAdminError(emoji, title, message) {
+      loadingState.style.display = "block";
+      mainContent.style.display = "none";
+      loadingState.innerHTML =
+        '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    function toast(msg, color = "#111") {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.style.background = color;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 3500);
+    }
+
+    async function callFn(name, body) {
+      const { data, error } = await supabase.functions.invoke(name, { body: body || {} });
+      if (error) {
+        if (error.status === 401) { window.location.href = "login.html"; return { ok: false, handled: true }; }
+        if (error.status === 403) { showAdminError("🔒", "Access Denied", "Your account does not have admin access."); return { ok: false, handled: true }; }
+        let msg = error.message || "Function error";
+        try {
+          if (error.context && typeof error.context.json === "function") {
+            const body2 = await error.context.json();
+            if (body2?.details) msg = body2.error ? `${body2.error} (${body2.details})` : String(body2.details);
+            else if (body2?.error) msg = body2.error;
+          }
+        } catch (_) {}
+        throw new Error(msg);
+      }
+      return { ok: true, data };
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return "—";
+      const d = new Date(iso);
+      return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) +
+        " · " + d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function providerPill(provider) {
+      const p = (provider || "unknown").toLowerCase();
+      const cls = ["google", "phone", "email"].includes(p) ? p : "unknown";
+      const label = p === "phone" ? "WhatsApp OTP" : p === "google" ? "Google" : p === "email" ? "Email" : "Unknown";
+      return `<span class="pill ${cls}">${label}</span>`;
+    }
+
+    // ── Tabs ─────────────────────────────────────────────────────────────
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    function switchToHistoryTab() {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === "history"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("active", p.id === "tab-history"));
+    }
+
+    // ── Users list ───────────────────────────────────────────────────────
+    let userPage = 1;
+    const userPerPage = 25;
+    let userSearchTerm = "";
+
+    async function loadUsers() {
+      const statusMsg = document.getElementById("userStatusMsg");
+      const list = document.getElementById("userList");
+      statusMsg.textContent = "Loading…";
+
+      const res = await callFn("admin-users", { action: "list", page: userPage, per_page: userPerPage, search: userSearchTerm });
+      if (!res.ok) return;
+      const { users, total } = res.data;
+
+      if (!users.length) {
+        list.innerHTML = '<div class="small" style="opacity:.6;padding:24px 0;text-align:center;">No users found.</div>';
+        statusMsg.textContent = "";
+      } else {
+        list.innerHTML = users.map((u) => {
+          const name = u.full_name || "(No name saved)";
+          const contact = [u.email, u.phone].filter(Boolean).join(" · ") || "No contact info";
+          const lastLogin = u.last_sign_in_at
+            ? fmtDate(u.last_sign_in_at) + (u.last_login_provider ? " via " + u.last_login_provider : "")
+            : null;
+          return `
+            <div class="user-card">
+              <div class="user-main">
+                <div class="user-name">${escapeHtml(name)}</div>
+                <div class="user-sub">${escapeHtml(contact)}</div>
+                <div class="user-sub">Signed up ${fmtDate(u.created_at)}${u.city ? " · " + escapeHtml(u.city) + (u.state ? ", " + escapeHtml(u.state) : "") : ""}</div>
+              </div>
+              <div class="user-meta">
+                ${lastLogin ? providerPill(u.provider) : '<span class="pill never">Never logged in</span>'}
+                <div class="small">${lastLogin ? "Last login: " + lastLogin : ""}</div>
+                <div class="small" style="opacity:.6;">${u.login_count} login${u.login_count === 1 ? "" : "s"} logged</div>
+                <button class="btn secondary" style="padding:5px 10px;font-size:11.5px;margin-top:2px;" data-userid="${u.id}" data-username="${escapeHtml(name)}">View login history →</button>
+              </div>
+            </div>`;
+        }).join("");
+        statusMsg.textContent = "";
+
+        list.querySelectorAll("button[data-userid]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            filterUserId = btn.dataset.userid;
+            filterUserName = btn.dataset.username;
+            historyPage = 1;
+            switchToHistoryTab();
+            renderHistoryChip();
+            loadHistory();
+          });
+        });
+      }
+
+      const shown = users.length;
+      const start = (userPage - 1) * userPerPage;
+      document.getElementById("userPagerInfo").textContent =
+        total === 0 ? "" : `Showing ${start + 1}–${start + shown} of ${total}`;
+      document.getElementById("userBtnPrev").disabled = userPage <= 1;
+      document.getElementById("userBtnNext").disabled = start + shown >= total;
+    }
+
+    document.getElementById("btnUserSearch").addEventListener("click", () => {
+      userSearchTerm = document.getElementById("userSearch").value.trim();
+      userPage = 1;
+      loadUsers();
+    });
+    document.getElementById("userSearch").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("btnUserSearch").click();
+    });
+    document.getElementById("btnUserRefresh").addEventListener("click", () => { userPage = 1; loadUsers(); });
+    document.getElementById("userBtnPrev").addEventListener("click", () => { if (userPage > 1) { userPage--; loadUsers(); } });
+    document.getElementById("userBtnNext").addEventListener("click", () => { userPage++; loadUsers(); });
+
+    // ── Login history (global or filtered to one user) ─────────────────
+    let historyPage = 1;
+    const historyPerPage = 25;
+    let filterUserId = null;
+    let filterUserName = null;
+
+    function renderHistoryChip() {
+      const chip = document.getElementById("historyFilterChip");
+      if (!filterUserId) { chip.style.display = "none"; chip.innerHTML = ""; return; }
+      chip.style.display = "block";
+      chip.innerHTML = `<span class="filter-chip">Filtered: ${escapeHtml(filterUserName || "user")} <button id="clearHistoryFilter">✕</button></span>`;
+      document.getElementById("clearHistoryFilter").addEventListener("click", () => {
+        filterUserId = null; filterUserName = null; historyPage = 1;
+        renderHistoryChip();
+        loadHistory();
+      });
+    }
+
+    async function loadHistory() {
+      const statusMsg = document.getElementById("historyStatusMsg");
+      const list = document.getElementById("historyList");
+      statusMsg.textContent = "Loading…";
+
+      const body = { action: "login_history", page: historyPage, per_page: historyPerPage };
+      if (filterUserId) body.user_id = filterUserId;
+
+      const res = await callFn("admin-users", body);
+      if (!res.ok) return;
+      const { events, total } = res.data;
+
+      if (!events.length) {
+        list.innerHTML = '<div class="small" style="opacity:.6;padding:24px 0;text-align:center;">No login activity yet.</div>';
+      } else {
+        list.innerHTML = events.map((e) => {
+          const who = e.full_name || e.email || "Unknown user";
+          const location = [e.city, e.country].filter(Boolean).join(", ");
+          return `
+            <div class="event-row">
+              <div class="event-left">
+                <div><strong>${escapeHtml(who)}</strong> ${providerPill(e.provider)}</div>
+                <div class="small" style="opacity:.6;">${escapeHtml(e.ip_address || "IP unknown")}${location ? " · " + escapeHtml(location) : ""}</div>
+              </div>
+              <div class="event-right">${fmtDate(e.created_at)}</div>
+            </div>`;
+        }).join("");
+      }
+      statusMsg.textContent = "";
+
+      const shown = events.length;
+      const start = (historyPage - 1) * historyPerPage;
+      document.getElementById("historyPagerInfo").textContent =
+        total === 0 ? "" : `Showing ${start + 1}–${start + shown} of ${total}`;
+      document.getElementById("historyBtnPrev").disabled = historyPage <= 1;
+      document.getElementById("historyBtnNext").disabled = start + shown >= total;
+    }
+
+    document.querySelector('.tab-btn[data-tab="history"]').addEventListener("click", () => {
+      if (!document.getElementById("historyList").innerHTML) loadHistory();
+    });
+    document.getElementById("historyBtnPrev").addEventListener("click", () => { if (historyPage > 1) { historyPage--; loadHistory(); } });
+    document.getElementById("historyBtnNext").addEventListener("click", () => { historyPage++; loadHistory(); });
+
+    // ── Boot ─────────────────────────────────────────────────────────────
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) { showAdminError("⚠️", "Auth Error", sessResult.error.message); return; }
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        loadingState.style.display = "none";
+        mainContent.style.display = "block";
+        loadUsers();
+      } catch (e) {
+        console.error("Admin page error:", e);
+        showAdminError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>
