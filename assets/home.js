@@ -11,6 +11,16 @@ import { addToWishlist, removeFromWishlist, isInWishlist } from "./wishlist.js";
  * - Sets hero background from latest product image
  */
 
+// A product counts as "New" for NEW_WINDOW_DAYS from the moment its row was
+// first created (created_at), never from when it was last edited
+// (updated_at) — editing a product's price/stock/description should not
+// reset its "New" clock.
+const NEW_WINDOW_DAYS = 60;
+function isNew(createdAt) {
+  if (!createdAt) return false;
+  return (Date.now() - new Date(createdAt).getTime()) < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+}
+
 function moneyINR(v) {
   const n = Number(v);
   if (!Number.isFinite(n)) return "";
@@ -158,6 +168,9 @@ function productCard(p) {
   const pctOff = hasSale ? Math.round((1 - sale / base) * 100) : 0;
   const available = Number(p.available_qty || 0);
   const soldOut = available <= 0;
+  // Sold Out wins the top-left corner slot over New — once stock hits zero,
+  // "recently added" stops being the useful thing to tell a shopper.
+  const isNewItem = !soldOut && isNew(p.created_at);
 
   const priceHtml = hasSale
     ? `<span class="p-card-original">${moneyINR(base)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
@@ -173,6 +186,7 @@ function productCard(p) {
       <a href="product.html?id=${encodeURIComponent(p.id)}" class="product-link">
         <div class="p-card-img">
           ${imgHtml}
+          ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
           ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
           ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
         </div>
