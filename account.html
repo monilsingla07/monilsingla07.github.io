@@ -122,6 +122,7 @@
             <div style="margin-top:12px;">
               ${navButton("profile", "Profile")}
               ${navButton("orders", "Orders")}
+              ${navButton("wallet", "AhamStree Cash")}
               ${navButton("addresses", "Addresses")}
               ${navButton("wishlist", "Wishlist")}
               ${navButton("support", "Support")}
@@ -255,6 +256,71 @@
       })();
     }
 
+    function renderWalletPanel(user) {
+      document.getElementById("panelTitle").textContent = "AhamStree Cash";
+      const body = document.getElementById("panelBody");
+      body.innerHTML = `<div class="small">Loading…</div>`;
+
+      const money = (v) => "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+
+      const typeLabel = (t) => {
+        const map = {
+          signup_bonus:    "Welcome bonus",
+          redeemed:        "Redeemed on order",
+          refunded:        "Refunded to wallet",
+          admin_adjustment: "Adjustment",
+        };
+        return map[t] || t || "-";
+      };
+
+      const renderLedgerRow = (l) => {
+        const positive = Number(l.amount_inr || 0) >= 0;
+        const amtText = (positive ? "+" : "-") + money(Math.abs(Number(l.amount_inr || 0)));
+        const amtColor = positive ? "#166534" : "#991b1b";
+        const when = l.created_at ? new Date(l.created_at).toLocaleString("en-IN") : "-";
+        const orderBit = l.order_id ? ` • Order ${escapeHtml(String(l.order_id).slice(0, 8))}…` : "";
+
+        return `
+          <div class="acct-card" style="padding:12px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;">
+            <div>
+              <div style="font-weight:800;">${escapeHtml(typeLabel(l.type))}</div>
+              <div class="small nav-muted" style="margin-top:2px;">${when}${orderBit}</div>
+            </div>
+            <div style="font-weight:900;color:${amtColor};white-space:nowrap;">${amtText}</div>
+          </div>
+        `;
+      };
+
+      (async () => {
+        const [{ data: acct, error: acctErr }, { data: ledger, error: ledgerErr }] = await Promise.all([
+          supabase.from("wallet_accounts").select("balance_inr").eq("user_id", user.id).maybeSingle(),
+          supabase.from("wallet_ledger").select("id,type,amount_inr,balance_after_inr,order_id,note,created_at")
+            .eq("user_id", user.id).order("created_at", { ascending: false }),
+        ]);
+
+        if (acctErr || ledgerErr) {
+          body.innerHTML = `<div class="small">Could not load AhamStree Cash: ${escapeHtml((acctErr || ledgerErr)?.message || "")}</div>`;
+          return;
+        }
+
+        const balance = Number(acct?.balance_inr ?? 0);
+        const rows = ledger || [];
+
+        body.innerHTML = `
+          <div class="acct-card" style="padding:16px;text-align:center;">
+            <div class="small nav-muted">Available balance</div>
+            <div style="font-size:28px;font-weight:900;margin-top:6px;">${money(balance)}</div>
+            <div class="small nav-muted" style="margin-top:6px;">Redeemable up to 10% of each order's value at checkout. Can't be combined with a coupon on the same order.</div>
+          </div>
+
+          <div class="small nav-muted" style="margin-top:16px;">History</div>
+          <div style="display:grid;gap:10px;margin-top:8px;">
+            ${rows.length ? rows.map(renderLedgerRow).join("") : `<div class="small nav-muted">No AhamStree Cash activity yet.</div>`}
+          </div>
+        `;
+      })();
+    }
+
     async function renderAddressesPanel(user) {
       document.getElementById("panelTitle").textContent = "Addresses";
       const body = document.getElementById("panelBody");
@@ -375,6 +441,7 @@
         history.replaceState({}, "", u.toString());
       }
       if (viewId === "orders") return renderOrdersPanel();
+      if (viewId === "wallet") return renderWalletPanel(user);
       if (viewId === "addresses") return renderAddressesPanel(user);
       if (viewId === "wishlist") return renderWishlistPanel();
       if (viewId === "support") return renderSupportPanel();
@@ -392,7 +459,7 @@
       // Default: open based on URL (?view=orders|wishlist|...)
       const params = new URLSearchParams(window.location.search);
       const initialView = (params.get("view") || "profile").toLowerCase();
-      const allowed = new Set(["profile","orders","addresses","wishlist","support"]);
+      const allowed = new Set(["profile","orders","wallet","addresses","wishlist","support"]);
       await renderView(allowed.has(initialView) ? initialView : "profile", user, false);
 
       document.querySelectorAll(".nav-item").forEach(btn => {

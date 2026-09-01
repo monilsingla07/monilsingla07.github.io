@@ -1,0 +1,432 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AhamStree Cash — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+    .pm-row .full { grid-column: 1 / -1; }
+    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; cursor: pointer; transition: border-color .15s, background .15s; }
+    .pm-list-item:hover { border-color: var(--brand, #7c1c1c); background: var(--brand-light, #fdf2f2); }
+    .pm-list-item + .pm-list-item { margin-top: 10px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab-btn { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border, #e5e7eb); background: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .tab-btn.active { background: var(--brand, #7c1c1c); color: #fff; border-color: var(--brand, #7c1c1c); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 8px; }
+    .metric-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+    .metric-card.highlight { background: var(--brand-light, #fdf2f2); border-color: var(--brand, #7c1c1c); }
+    .metric-label { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .6; }
+    .metric-value { font-size: 24px; font-weight: 900; line-height: 1; font-family: 'Cormorant Garamond', serif; }
+
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 999px; transition: .15s; }
+    .switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .15s; }
+    .switch input:checked + .slider { background: var(--brand, #7c1c1c); }
+    .switch input:checked + .slider:before { transform: translateX(20px); }
+
+    .ledger-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid #eee; border-radius: 10px; background: #fff; }
+    .ledger-row + .ledger-row { margin-top: 8px; }
+
+    #customerDetail { display: none; margin-top: 18px; }
+
+    @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:900px;">
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">AhamStree Cash</h2>
+          <div class="small" style="opacity:.6; margin-top:4px;">Manage the signup wallet program — bonus amount, redemption rate, and customer balances.</div>
+        </div>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="settings">Program Settings</button>
+        <button class="tab-btn" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="customers">Customers</button>
+      </div>
+
+      <!-- ── Program Settings tab ── -->
+      <div id="tab-settings" class="tab-panel active">
+        <div class="pm-card">
+          <div class="toggle-row">
+            <div>
+              <div style="font-weight:800;">AhamStree Cash program</div>
+              <div class="small" style="opacity:.6; margin-top:2px;">When off, no new signup bonuses are granted and checkout stops offering redemption. Existing balances are untouched.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="f_enabled" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="pm-row">
+            <div class="full">
+              <label class="pm-label">Signup bonus (₹ / points, 1:1) — granted once on a customer's first login</label>
+              <input id="f_signup_bonus" class="input" type="number" min="0" step="1" placeholder="1000" style="max-width:220px;" />
+            </div>
+
+            <div class="full">
+              <label class="pm-label">Redemption rate — max % of an order's subtotal payable with AhamStree Cash</label>
+              <input id="f_redemption_rate" class="input" type="number" min="0" max="100" step="1" placeholder="10" style="max-width:220px;" />
+              <div class="small" style="opacity:.6; margin-top:4px;">Can't be combined with a coupon on the same order — that's fixed, not configurable here.</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+            <button id="btnSaveSettings" class="btn">Save settings</button>
+            <div id="settingsStatus" class="small" style="align-self:center;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Overview tab ── -->
+      <div id="tab-overview" class="tab-panel">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+          <button id="btnRefreshOverview" class="btn secondary" style="padding:8px 14px; font-size:13px;">↻ Refresh</button>
+        </div>
+        <div class="metric-grid" id="overviewMetrics"></div>
+        <div id="overviewStatus" class="small" style="opacity:.5; margin-top:6px;"></div>
+      </div>
+
+      <!-- ── Customers tab ── -->
+      <div id="tab-customers" class="tab-panel">
+        <div class="pm-card">
+          <label class="pm-label">Search by name, email, or phone</label>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <input id="f_search" class="input" placeholder="e.g. priya@example.com or 98765" style="flex:1; min-width:200px;" />
+            <button id="btnSearch" class="btn" type="button">Search</button>
+          </div>
+        </div>
+
+        <div id="customerResults" style="margin-top:14px;"></div>
+
+        <!-- Detail panel for one customer -->
+        <div id="customerDetail" class="pm-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+            <div>
+              <div id="detailName" style="font-weight:900; font-size:16px;"></div>
+              <div id="detailContact" class="small" style="opacity:.6; margin-top:2px;"></div>
+            </div>
+            <div style="text-align:right;">
+              <div class="small" style="opacity:.6;">Balance</div>
+              <div id="detailBalance" style="font-weight:900; font-size:22px; font-family:'Cormorant Garamond', serif;"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px; border-top:1px solid #eee; padding-top:14px;">
+            <div style="font-weight:800; font-size:13px; margin-bottom:8px;">Manual adjustment</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
+              <div>
+                <label class="pm-label">Amount (₹ — negative to debit)</label>
+                <input id="f_adjust_amount" class="input" type="number" step="1" placeholder="e.g. 200 or -200" style="width:160px;" />
+              </div>
+              <div style="flex:1; min-width:200px;">
+                <label class="pm-label">Note (required, kept in the ledger)</label>
+                <input id="f_adjust_note" class="input" placeholder="e.g. Goodwill credit — delayed delivery" />
+              </div>
+              <button id="btnAdjust" class="btn" type="button">Apply</button>
+            </div>
+            <div id="adjustStatus" class="small" style="margin-top:8px;"></div>
+          </div>
+
+          <div style="margin-top:18px;">
+            <div style="font-weight:800; font-size:13px; margin-bottom:8px;">Ledger history</div>
+            <div id="detailLedger"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="statusMsg" class="small" style="margin-top:16px; opacity:.5;"></div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-wallet";
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+
+    function showGateError(emoji, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    function money(v) {
+      return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+    }
+
+    async function authedFetch(body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    // ── Tabs ──
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+        if (btn.dataset.tab === "overview") loadOverview();
+      });
+    });
+
+    // ── Program Settings ──
+    async function loadSettings() {
+      const result = await authedFetch({ action: "get_settings" });
+      const s = result.settings || {};
+      document.getElementById("f_enabled").checked = s.wallet_enabled !== false;
+      document.getElementById("f_signup_bonus").value = s.wallet_signup_bonus_inr ?? 1000;
+      document.getElementById("f_redemption_rate").value = s.wallet_redemption_rate_percent ?? 10;
+    }
+
+    document.getElementById("btnSaveSettings").addEventListener("click", async () => {
+      const statusEl = document.getElementById("settingsStatus");
+      statusEl.textContent = "Saving…";
+      try {
+        await authedFetch({
+          action: "save_settings",
+          enabled: document.getElementById("f_enabled").checked,
+          signup_bonus_inr: Number(document.getElementById("f_signup_bonus").value),
+          redemption_rate_percent: Number(document.getElementById("f_redemption_rate").value),
+        });
+        statusEl.textContent = "Saved ✅ — live on the site immediately.";
+      } catch (e) {
+        statusEl.textContent = "Error: " + e.message;
+      }
+    });
+
+    // ── Overview ──
+    function metricCard(label, value, cls) {
+      cls = cls || "";
+      return '<div class="metric-card ' + cls + '">' +
+        '<div class="metric-label">' + label + '</div>' +
+        '<div class="metric-value">' + value + '</div>' +
+        '</div>';
+    }
+
+    async function loadOverview() {
+      const statusEl = document.getElementById("overviewStatus");
+      statusEl.textContent = "Loading…";
+      try {
+        const result = await authedFetch({ action: "get_overview" });
+        const o = result.overview || {};
+        document.getElementById("overviewMetrics").innerHTML = [
+          metricCard("Total balance liability", money(o.total_liability_inr), "highlight"),
+          metricCard("Wallet accounts", o.account_count || 0, ""),
+          metricCard("Total granted", money(o.total_granted_inr), ""),
+          metricCard("Total redeemed", money(o.total_redeemed_inr), ""),
+          metricCard("Total refunded", money(o.total_refunded_inr), ""),
+          metricCard("Manual adjustments", money(o.total_admin_adjusted_inr), ""),
+        ].join("");
+        statusEl.textContent = "Last updated: " + new Date().toLocaleTimeString("en-IN");
+      } catch (e) {
+        statusEl.textContent = "Error: " + e.message;
+      }
+    }
+
+    document.getElementById("btnRefreshOverview").addEventListener("click", loadOverview);
+
+    // ── Customers ──
+    let currentCustomer = null; // { user_id, full_name, phone, email }
+
+    function customerLabel(c) {
+      return c.full_name || c.email || c.phone || c.user_id.slice(0, 8) + "…";
+    }
+    function customerContact(c) {
+      return [c.email, c.phone].filter(Boolean).join(" • ") || "No contact on file";
+    }
+
+    function renderCustomerResults(customers) {
+      const box = document.getElementById("customerResults");
+      if (!customers.length) {
+        box.innerHTML = '<div class="small" style="opacity:.6; padding:8px 0;">No matching customers.</div>';
+        return;
+      }
+      box.innerHTML = customers.map((c, i) => `
+        <div class="pm-list-item" data-idx="${i}">
+          <div>
+            <div style="font-weight:800;">${escapeHtml(customerLabel(c))}</div>
+            <div class="small" style="opacity:.6; margin-top:2px;">${escapeHtml(customerContact(c))}</div>
+          </div>
+          <div style="font-weight:900;">${money(c.balance_inr)}</div>
+        </div>
+      `).join("");
+
+      box.querySelectorAll(".pm-list-item").forEach((el) => {
+        el.addEventListener("click", () => openCustomer(customers[Number(el.dataset.idx)]));
+      });
+    }
+
+    document.getElementById("btnSearch").addEventListener("click", async () => {
+      const box = document.getElementById("customerResults");
+      box.innerHTML = '<div class="small" style="opacity:.6;">Searching…</div>';
+      try {
+        const result = await authedFetch({ action: "search_customers", query: document.getElementById("f_search").value.trim(), limit: 30 });
+        renderCustomerResults(result.customers || []);
+      } catch (e) {
+        box.innerHTML = '<div class="small" style="color:#b91c1c;">Error: ' + escapeHtml(e.message) + '</div>';
+      }
+    });
+    document.getElementById("f_search").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); document.getElementById("btnSearch").click(); }
+    });
+
+    function renderLedger(ledger) {
+      const box = document.getElementById("detailLedger");
+      if (!ledger.length) {
+        box.innerHTML = '<div class="small" style="opacity:.6;">No activity yet.</div>';
+        return;
+      }
+      const typeLabel = (t) => ({
+        signup_bonus: "Welcome bonus",
+        redeemed: "Redeemed on order",
+        refunded: "Refunded to wallet",
+        admin_adjustment: "Admin adjustment",
+      }[t] || t);
+
+      box.innerHTML = ledger.map((l) => {
+        const positive = Number(l.amount_inr || 0) >= 0;
+        const amtText = (positive ? "+" : "-") + money(Math.abs(Number(l.amount_inr || 0)));
+        const amtColor = positive ? "#166534" : "#991b1b";
+        const when = l.created_at ? new Date(l.created_at).toLocaleString("en-IN") : "-";
+        return `
+          <div class="ledger-row">
+            <div>
+              <div style="font-weight:700; font-size:13px;">${escapeHtml(typeLabel(l.type))}</div>
+              <div class="small" style="opacity:.55; margin-top:2px;">${when}${l.note ? " • " + escapeHtml(l.note) : ""}</div>
+            </div>
+            <div style="font-weight:900; color:${amtColor}; white-space:nowrap;">${amtText}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function openCustomer(c) {
+      currentCustomer = c;
+      const detail = document.getElementById("customerDetail");
+      detail.style.display = "block";
+      document.getElementById("detailName").textContent = customerLabel(c);
+      document.getElementById("detailContact").textContent = customerContact(c);
+      document.getElementById("detailBalance").textContent = "Loading…";
+      document.getElementById("detailLedger").innerHTML = '<div class="small" style="opacity:.6;">Loading…</div>';
+      document.getElementById("adjustStatus").textContent = "";
+      document.getElementById("f_adjust_amount").value = "";
+      document.getElementById("f_adjust_note").value = "";
+      detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+      try {
+        const result = await authedFetch({ action: "get_customer_wallet", user_id: c.user_id });
+        document.getElementById("detailBalance").textContent = money(result.balance_inr);
+        renderLedger(result.ledger || []);
+      } catch (e) {
+        document.getElementById("detailBalance").textContent = "—";
+        document.getElementById("detailLedger").innerHTML = '<div class="small" style="color:#b91c1c;">Error: ' + escapeHtml(e.message) + '</div>';
+      }
+    }
+
+    document.getElementById("btnAdjust").addEventListener("click", async () => {
+      const statusEl = document.getElementById("adjustStatus");
+      if (!currentCustomer) return;
+      const amount = Number(document.getElementById("f_adjust_amount").value);
+      const note = document.getElementById("f_adjust_note").value.trim();
+      if (!amount) { statusEl.textContent = "Enter a non-zero amount."; return; }
+      if (!note) { statusEl.textContent = "A note is required."; return; }
+
+      statusEl.textContent = "Applying…";
+      try {
+        await authedFetch({ action: "adjust_wallet", user_id: currentCustomer.user_id, amount_inr: amount, note });
+        statusEl.textContent = "Applied ✅";
+        await openCustomer(currentCustomer);
+      } catch (e) {
+        statusEl.textContent = "Error: " + e.message;
+      }
+    });
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+        const currentUserEmail = session.user.email.toLowerCase();
+
+        const adminResult = await supabase
+          .from("admin_users")
+          .select("email")
+          .eq("email", currentUserEmail)
+          .maybeSingle();
+
+        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        await loadSettings();
+      } catch (e) {
+        console.error("Wallet admin page error:", e);
+        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

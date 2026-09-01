@@ -174,6 +174,21 @@
           </div>
         </div>
 
+        <!-- AhamStree Cash (signup wallet) — hidden until we know the user has a balance -->
+        <div id="walletBox" style="margin-top:10px; display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid var(--brand);border-radius:12px;padding:12px 14px;background:var(--brand-light);">
+            <div style="min-width:0;">
+              <div style="font-weight:800;font-size:14px;">🪙 AhamStree Cash</div>
+              <div class="small" id="walletBalanceText" style="opacity:.8;margin-top:2px;">Loading…</div>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0;">
+              <input type="checkbox" id="walletToggle" />
+              <span class="small" style="font-weight:700;">Redeem</span>
+            </label>
+          </div>
+          <div id="walletMsg" class="small" style="margin-top:6px; min-height:16px;"></div>
+        </div>
+
         <div style="height:12px;"></div>
         <div style="border-top:1px solid rgba(255,255,255,.08); padding-top:12px;">
           <div style="display:flex; justify-content:space-between; gap:10px;">
@@ -181,7 +196,7 @@
             <div class="small" id="subtotal">₹0</div>
           </div>
           <div id="discountRow" style="display:none; justify-content:space-between; gap:10px; margin-top:6px;">
-            <div class="small">Discount</div>
+            <div class="small" id="discountLabel">Discount</div>
             <div class="small" id="discount">-₹0</div>
           </div>
           <div style="display:flex; justify-content:space-between; gap:10px; margin-top:6px;">
@@ -242,6 +257,11 @@
 
     let cartOk        = true;
     let appliedCoupon = localStorage.getItem("ahamstree_coupon") || "";
+    // AhamStree Cash and a coupon are mutually exclusive on this store — the
+    // toggle below is unchecked by default every checkout, same as the
+    // coupon field, rather than persisted like appliedCoupon: it's a
+    // per-order redemption choice, not a "sticky" preference.
+    let useWalletCash = false;
     let beginCheckoutFired = false; // GA4 begin_checkout should fire once per checkout page load
 
     function money(n) {
@@ -260,7 +280,7 @@
     // NOTE: This is READ-ONLY for display purposes — it does NOT create an order.
     // We pass dummy customer info so the edge fn doesn't reject on missing fields.
     // The real order is created only when the user clicks Pay / Place Order.
-    async function tryServerQuote({ cart, coupon_code }) {
+    async function tryServerQuote({ cart, coupon_code, use_wallet_cash }) {
       try {
         const sbMod = await import("./assets/supabase.js");
 
@@ -273,6 +293,7 @@
           body: {
             cart,
             coupon_code:      coupon_code || null,
+            use_wallet_cash:  !!use_wallet_cash,
             // Minimal valid fields so the function doesn't 400 on missing name/phone
             customer_name:    "Preview",
             customer_phone:   "9999999999",
@@ -292,17 +313,22 @@
       }
     }
 
-    async function renderOrderSummary({ coupon_code = "" } = {}) {
+    async function renderOrderSummary({ coupon_code = "", use_wallet_cash = useWalletCash } = {}) {
       const summaryItems = document.getElementById("summaryItems");
       const subtotalEl   = document.getElementById("subtotal");
       const shippingEl   = document.getElementById("shipping");
       const totalEl      = document.getElementById("total");
       const discountRow  = document.getElementById("discountRow");
+      const discountLabel = document.getElementById("discountLabel");
       const discountEl   = document.getElementById("discount");
       const gstEl        = document.getElementById("gst");
       const gstLabel     = document.getElementById("gstLabel");
       const couponInput  = document.getElementById("couponInput");
       const couponMsg    = document.getElementById("couponMsg");
+      const walletBox         = document.getElementById("walletBox");
+      const walletBalanceText = document.getElementById("walletBalanceText");
+      const walletMsg         = document.getElementById("walletMsg");
+      const walletToggle      = document.getElementById("walletToggle");
 
       if (!summaryItems || !subtotalEl || !shippingEl || !totalEl) return;
 
@@ -416,7 +442,9 @@
       // ✅ FIX: payloadCart was previously referenced inside tryServerQuote (out of scope)
       const payloadCart = items.map(i => ({ product_id: i.product_id, qty: i.qty }));
 
-      const q = await tryServerQuote({ cart: payloadCart, coupon_code: code || null });
+      const q = await tryServerQuote({ cart: payloadCart, coupon_code: code || null, use_wallet_cash });
+
+      let walletApplied = false;
 
       if (q.ok && q.data) {
         subtotal = Number(q.data.subtotal_inr ?? subtotal);
@@ -435,6 +463,27 @@
             couponMsg.textContent = "";
           }
         }
+
+        // ── AhamStree Cash (wallet) ──────────────────────────────────────
+        const w = q.data.wallet;
+        if (w && walletBox) {
+          walletApplied = !!w.applied;
+          if (w.balance_inr > 0) {
+            walletBox.style.display = "block";
+            walletBalanceText.textContent = walletApplied
+              ? `₹${w.redeemable_inr.toLocaleString("en-IN")} redeemed on this order • ₹${(w.balance_inr - w.redeemable_inr).toLocaleString("en-IN")} left after`
+              : `You have ₹${w.balance_inr.toLocaleString("en-IN")} available • redeemable up to ₹${w.redeemable_inr.toLocaleString("en-IN")} on this order`;
+            if (walletToggle) walletToggle.checked = walletApplied;
+          } else {
+            // Nothing to redeem — hide the box rather than show a dead toggle.
+            walletBox.style.display = "none";
+          }
+          if (walletMsg) walletMsg.textContent = w.message || "";
+        } else if (walletBox) {
+          walletBox.style.display = "none";
+        }
+
+        if (discountLabel) discountLabel.textContent = walletApplied ? "AhamStree Cash redeemed" : "Discount";
 
         if (Array.isArray(q.data.issues) && q.data.issues.length) {
           cartOk = false;
@@ -753,6 +802,14 @@
         couponToggle.style.background   = "rgba(34,197,94,0.08)";
         couponToggle.style.borderColor  = "rgba(34,197,94,0.5)";
         couponToggle.style.color        = "#166534";
+
+        // AhamStree Cash and a coupon are mutually exclusive — applying a
+        // coupon turns off any wallet redemption in progress.
+        if (useWalletCash) {
+          useWalletCash = false;
+          const walletToggleEl = document.getElementById("walletToggle");
+          if (walletToggleEl) walletToggleEl.checked = false;
+        }
       } else {
         localStorage.removeItem("ahamstree_coupon");
         if (couponToggleLabel) couponToggleLabel.textContent = "Have a coupon? Tap to apply";
@@ -760,12 +817,34 @@
         couponToggle.style.borderColor = "";
         couponToggle.style.color       = "";
       }
-      await renderOrderSummary({ coupon_code: code });
+      await renderOrderSummary({ coupon_code: code, use_wallet_cash: useWalletCash });
     };
 
     applyCouponBtn?.addEventListener("click", () => applyCouponNow());
     couponInput?.addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); applyCouponNow(); }
+    });
+
+    // ---------- AhamStree Cash (wallet) toggle ----------
+    // Mutually exclusive with the coupon: turning the wallet on clears any
+    // applied coupon (mirrors applyCouponNow's coupon-clearing logic above,
+    // in reverse).
+    const walletToggleEl = document.getElementById("walletToggle");
+    walletToggleEl?.addEventListener("change", async () => {
+      useWalletCash = !!walletToggleEl.checked;
+
+      if (useWalletCash && appliedCoupon) {
+        appliedCoupon = "";
+        localStorage.removeItem("ahamstree_coupon");
+        if (couponInput) couponInput.value = "";
+        if (couponToggleLabel) couponToggleLabel.textContent = "Have a coupon? Tap to apply";
+        couponToggle.style.background  = "";
+        couponToggle.style.borderColor = "";
+        couponToggle.style.color       = "";
+        if (couponMsg) couponMsg.textContent = "";
+      }
+
+      await renderOrderSummary({ coupon_code: appliedCoupon, use_wallet_cash: useWalletCash });
     });
 
     // ── Saved address (login is guaranteed by the gate above) ────────────────
@@ -811,7 +890,7 @@
       });
     })();
 
-    renderOrderSummary({ coupon_code: "" });
+    renderOrderSummary({ coupon_code: "", use_wallet_cash: useWalletCash });
     attachLiveValidation();
     validateAll({ showErrors: false });
 
@@ -888,6 +967,7 @@
           const razorBody = {
             cart:             payloadCart,
             coupon_code:      appliedCoupon || null,
+            use_wallet_cash:  !!useWalletCash,
             customer_name:    shipping.full_name,
             customer_phone:   shipping.phone,
             customer_email:   shipping.email || null,
