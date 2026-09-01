@@ -79,3 +79,25 @@ export async function ensureProfileFromGoogle(session) {
     email: existing?.email || googleEmail,
   });
 }
+
+// AhamStree Cash — grants the one-time 1,000-point (₹1,000) welcome bonus.
+// Safe to call unconditionally on EVERY login, not just a real first-ever
+// signup: the grant-signup-cash edge function calls a DB RPC that only ever
+// inserts its ledger row once per user (a partial unique index enforces
+// this), so every call after the first is a harmless no-op. This mirrors
+// how upsertProfileIfPending/ensureProfileFrom* above are already called on
+// every auth state change rather than trying to detect "is this a brand
+// new signup" client-side.
+export async function grantSignupCashIfEligible(session) {
+  const token = session?.access_token;
+  if (!token) return;
+
+  try {
+    await supabase.functions.invoke("grant-signup-cash", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch (_) {
+    // Never let a wallet-bonus hiccup block login — worst case the bonus
+    // is granted on the next login instead (still idempotent, still safe).
+  }
+}
