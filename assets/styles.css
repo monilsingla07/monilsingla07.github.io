@@ -1528,20 +1528,41 @@ header .nav {
 }
 .pd-thumb:hover, .pd-thumb.is-active { border-color: var(--brand); }
 .pd-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pd-main { position: relative; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-warm); }
-/* Bumped back up from round 5's 460px — the user asked explicitly for a
-   bigger, more prominent saree photo (drew a box around the gallery on a
-   live screenshot asking for "a big view"). Widened .pd-wrap's left column
-   (1.1fr → 1.25fr above) at the same time so the taller crop still shows a
-   proportionate amount of the photo instead of just cropping in tighter. */
-#mainImg { width: 100%; height: 720px; object-fit: cover; display: block; cursor: zoom-in; background: var(--bg-warm); }
-.pd-main-empty, .pd-thumb-empty {
-  width: 100%; height: 720px;
+.pd-main {
+  position: relative; border-radius: var(--radius-md); overflow: hidden;
+  background: var(--bg-warm);
+  display: flex; align-items: center; justify-content: center;
+}
+/* Round 10 made this taller (fixed height + object-fit:cover) to satisfy
+   "a bigger view" — but cover still crops whatever doesn't fit the box, so
+   the top/bottom (or sides) of the actual saree photo were getting cut off.
+   Round 11: show the WHOLE photo — width fills the column, height is auto
+   (the image's own aspect ratio), so nothing is cropped. max-height is only
+   a safety cap for an unusually tall source photo; object-fit:contain means
+   that rare case letterboxes (thin bars in the same warm background) rather
+   than crops. Most product photos will simply render at their natural
+   height and never hit the cap at all. */
+#mainImg {
+  width: 100%;
+  height: auto;
+  max-height: 780px;
+  object-fit: contain;
+  display: block;
+  cursor: zoom-in;
+  background: var(--bg-warm);
+}
+.pd-main-empty {
+  width: 100%; height: 500px;
   background: linear-gradient(135deg, var(--bg-warm) 0%, var(--border-light) 100%);
   display: flex; align-items: center; justify-content: center;
   color: var(--text-light); font-size: 13px;
 }
-.pd-thumb-empty { height: 100%; font-size: 10px; text-align: center; padding: 4px; }
+.pd-thumb-empty {
+  width: 100%; height: 100%; font-size: 10px; text-align: center; padding: 4px;
+  background: linear-gradient(135deg, var(--bg-warm) 0%, var(--border-light) 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-light);
+}
 .pd-badge {
   position: absolute; top: 12px; left: 12px; z-index: 2;
   background: var(--brand); color: #fff; font-size: 10px; font-weight: 700;
@@ -1552,12 +1573,14 @@ header .nav {
   .pd-gallery { grid-template-columns: 1fr; }
   .pd-thumbs { flex-direction: row; max-height: none; overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; }
   .pd-thumb { width: 90px; height: 110px; }
-  #mainImg, .pd-main-empty { height: 560px; }
+  #mainImg { max-height: 620px; }
+  .pd-main-empty { height: 420px; }
 }
 @media (max-width: 560px) {
   .pd-left.card { padding: 0 !important; }
   .pd-thumb { width: 62px; height: 78px; }
-  #mainImg, .pd-main-empty { height: 420px; }
+  #mainImg { max-height: 480px; }
+  .pd-main-empty { height: 320px; }
 }
 
 .pd-title { font-family: var(--font-heading); font-size: 24px; font-weight: 600; line-height: 1.2; }
