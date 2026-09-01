@@ -274,7 +274,25 @@
         };
 
         const { error } = await supabase.from("profiles").upsert(payload);
-        status.textContent = error ? ("Error: " + error.message) : "Saved ✅";
+
+        // Phone/email are paired to one account (DB-level unique indexes,
+        // see the pair_phone_email_uniqueness migration): saving a value
+        // already claimed by a different account fails as a Postgres
+        // unique-violation (23505) rather than silently overwriting or
+        // merging anything. Surface that as a plain-language warning
+        // instead of the raw "duplicate key value violates..." error text.
+        if (!error) {
+          status.textContent = "Saved ✅";
+          clearWarn();
+        } else if (error.code === "23505" && /profiles_phone_unique_idx/.test(error.message || "")) {
+          status.textContent = "";
+          showWarn("That phone number is already saved on a different AhamStree account. Use another number, or sign in to that account instead.");
+        } else if (error.code === "23505" && /profiles_email_unique_idx/.test(error.message || "")) {
+          status.textContent = "";
+          showWarn("That email is already saved on a different AhamStree account. Use another email, or sign in to that account instead.");
+        } else {
+          status.textContent = "Error: " + error.message;
+        }
         saveBtn.disabled = false;
         validateAll({ showErrors: false });
       };
