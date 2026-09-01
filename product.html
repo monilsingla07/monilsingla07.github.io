@@ -64,6 +64,18 @@
               <div id="taxNote" class="pd-tax small">Inclusive of all taxes</div>
             </div>
 
+            <!-- Specs table (Color / Material / Craft, etc.) — moved directly
+                 under the price, above the buy buttons, to mirror Chidiyaa's
+                 PDP flow instead of a separate "Specifications" card far
+                 below the fold. -->
+            <div id="specsCard" style="margin-top:14px;">
+              <div id="specs"></div>
+            </div>
+
+            <!-- Real delivery-estimate copy already used on shipping.html,
+                 not a new invented dispatch-time claim. -->
+            <div id="pdShipNote" class="pd-ship-note">Estimated delivery: 3–5 business days across India</div>
+
             <div class="pd-actions">
               <div class="pd-qty">
                 <span class="small">Qty</span>
@@ -87,18 +99,10 @@
               <a class="pd-cart-link" href="cart.html">View cart</a>
             </div>
 
-            <div class="pd-delivery-check">
-              <div class="pd-delivery-row">
-                <input id="pdPincode" class="input pd-delivery-input" type="text" inputmode="numeric" maxlength="6" placeholder="Enter pincode" aria-label="Pincode" />
-                <button id="pdCheckDelivery" type="button" class="btn secondary pd-delivery-btn">Check</button>
-              </div>
-              <div id="pdDeliveryResult" class="small pd-delivery-result"></div>
-            </div>
-
-            <div id="desc" class="pd-desc"></div>
-
             <!-- Trust strip — same 3 claims as the homepage's trust strip,
-                 restyled as a compact icon row (Chidiyaa's PDP pattern). -->
+                 restyled as a compact icon row, now sitting right under the
+                 buy buttons (Chidiyaa's PDP pattern) instead of after the
+                 description. -->
             <div class="pd-trust-row">
               <div class="pd-trust-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/><circle cx="12" cy="12" r="3.2"/></svg>
@@ -113,17 +117,26 @@
                 <span>Quality checked before dispatch</span>
               </div>
             </div>
+
+            <div class="pd-delivery-check">
+              <div class="pd-delivery-row">
+                <input id="pdPincode" class="input pd-delivery-input" type="text" inputmode="numeric" maxlength="6" placeholder="Enter pincode" aria-label="Pincode" />
+                <button id="pdCheckDelivery" type="button" class="btn secondary pd-delivery-btn">Check</button>
+              </div>
+              <div id="pdDeliveryResult" class="small pd-delivery-result"></div>
+            </div>
           </div>
 
-          <!-- Specs -->
-          <div id="specsCard" class="card" style="margin-top:24px;padding:16px;border-radius:0;">
-            <div style="font-weight:900;font-size:16px;">Specifications</div>
-            <div id="specs" style="margin-top:10px;"></div>
-          </div>
-
-          <!-- Sections / Accordion -->
-          <div id="sectionsCard" class="card" style="margin-top:24px;padding:16px;border-radius:0;">
-            <div id="sections"></div>
+          <!-- Description / Fabric Care / Size & Fit / Shipping / Returns —
+               a Chidiyaa-style horizontal tab bar. "Description" is always
+               the first tab (from the product's own description field);
+               any further tabs come straight from the admin-authored
+               "Additional details" sections (Product Catalogue → Additional
+               details), so naming a section "Fabric Care" or "Return &
+               Exchange Policy" there is what makes it show up as a tab here. -->
+          <div id="infoTabsCard" class="card pd-tabs-card" style="margin-top:24px;padding:16px;border-radius:0;">
+            <div id="infoTabBar" class="pd-tabbar"></div>
+            <div id="infoTabPanels" class="pd-tabpanels"></div>
           </div>
 
           <!-- Available Offers -->
@@ -141,6 +154,21 @@
 
         </div>
       </div>
+
+      <!-- You may also like — New Arrivals / Best Sellers, Chidiyaa-style
+           tabbed strip at the bottom of the PDP. Reuses the same product-card
+           markup/CSS as the homepage grids (assets/home.js's productCard()),
+           duplicated here rather than shared since the codebase already
+           duplicates this per-page (see home.js's own comment on this). -->
+      <section class="section pd-related-section">
+        <div class="pd-related-tabbar">
+          <button type="button" class="pd-related-tab active" data-rel-tab="new">New Arrivals</button>
+          <button type="button" class="pd-related-tab" data-rel-tab="best">Best Sellers</button>
+        </div>
+        <div id="pdRelatedStatus" class="small" style="opacity:.6;"></div>
+        <div id="pdRelatedNew" class="grid grid-4 pd-related-grid"></div>
+        <div id="pdRelatedBest" class="grid grid-4 pd-related-grid" style="display:none;"></div>
+      </section>
     </div>
   </div>
 
@@ -272,6 +300,87 @@
       }
     })();
 
+    // ===== "You may also like" — New Arrivals / Best Sellers strip =====
+    // Independent of loadProduct() below, same pattern as the delivery
+    // check and offers list — a problem here must never break the PDP.
+    // Excludes the current product itself via .neq("id", currentId).
+    (function initRelatedProducts() {
+      const statusEl = document.getElementById("pdRelatedStatus");
+      const newGrid = document.getElementById("pdRelatedNew");
+      const bestGrid = document.getElementById("pdRelatedBest");
+      const tabBtns = document.querySelectorAll(".pd-related-tab");
+      if (!newGrid || !bestGrid) return;
+
+      const currentId = new URLSearchParams(location.search).get("id") || "";
+
+      function moneyINR(v) {
+        const n = Number(v);
+        return Number.isFinite(n) ? "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 }) : "";
+      }
+
+      function relatedCard(p) {
+        const imgs = (p.product_images ?? []).slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+        const imgUrl = imgs[0]?.image_url ?? "";
+        const base = Number(p.price_inr || 0);
+        const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
+        const hasSale = sale != null && sale > 0 && sale < base;
+        const priceHtml = hasSale
+          ? `<span class="p-card-original">${moneyINR(base)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
+          : `<span class="p-card-price">${moneyINR(base)}</span>`;
+        const imgHtml = imgUrl
+          ? `<img src="${safeSrc(imgUrl)}" alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">`
+          : `<div class="p-card-img-empty"></div>`;
+        return `
+          <a href="product.html?id=${encodeURIComponent(p.id)}" class="p-card product-link">
+            <div class="p-card-img">${imgHtml}</div>
+            <div class="p-card-body">
+              <div class="p-card-title">${escapeHtml(p.title ?? "")}</div>
+              <div class="p-card-pricing">${priceHtml}</div>
+            </div>
+          </a>
+        `;
+      }
+
+      async function fetchRelated(orderCol) {
+        const { data, error } = await supabase
+          .from("products")
+          .select("id,title,price_inr,sale_price_inr,is_active,created_at,view_count,product_images(image_url,sort_order)")
+          .eq("is_active", true)
+          .neq("id", currentId)
+          .order(orderCol, { ascending: false })
+          .limit(8);
+        if (error) throw error;
+        return data ?? [];
+      }
+
+      async function load() {
+        try {
+          if (statusEl) statusEl.textContent = "Loading…";
+          const [latest, mostLoved] = await Promise.all([
+            fetchRelated("created_at"),
+            fetchRelated("view_count"),
+          ]);
+          newGrid.innerHTML = latest.map(relatedCard).join("") || `<div class="small" style="opacity:.6;">Nothing to show yet.</div>`;
+          bestGrid.innerHTML = mostLoved.map(relatedCard).join("") || `<div class="small" style="opacity:.6;">Nothing to show yet.</div>`;
+          if (statusEl) statusEl.textContent = "";
+        } catch (e) {
+          if (statusEl) statusEl.textContent = "Could not load recommendations.";
+        }
+      }
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabBtns.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const showNew = btn.dataset.relTab === "new";
+          newGrid.style.display = showNew ? "" : "none";
+          bestGrid.style.display = showNew ? "none" : "";
+        });
+      });
+
+      load();
+    })();
+
     const params = new URLSearchParams(location.search);
     const id = params.get("id");
 
@@ -327,7 +436,6 @@ if (!sessionStorage.getItem(viewKey)) {
 		
       // Basic fields
       document.getElementById("title").textContent = data.title ?? "";
-      document.getElementById("desc").textContent = data.description ?? "";
 
       const skuEl = document.getElementById("sku");
       skuEl.textContent = data.sku ? `SKU: ${data.sku}` : "";
@@ -707,48 +815,60 @@ if (!sessionStorage.getItem(viewKey)) {
         `;
       }
 
-      // ===== Fetch & render sections (accordion) =====
+      // ===== Fetch product_sections, then render Description + those
+      // sections together as a Chidiyaa-style horizontal tab bar (instead
+      // of the old accordion). Description is always tab #1, built from
+      // the product's own description field, not from product_sections. =====
       const { data: sections, error: secErr } = await supabase
         .from("product_sections")
         .select("title,content,content_type,sort_order")
         .eq("product_id", data.id)
         .order("sort_order", { ascending: true });
 
-      const sectionsDiv = document.getElementById("sections");
-      const sectionsCard = document.getElementById("sectionsCard");
-      if (secErr) {
-        sectionsDiv.innerHTML = "<div class='small' style='opacity:.7'>Could not load product details.</div>";
-      } else if (!sections || sections.length === 0) {
-        // Nothing to show — hide the whole card rather than an empty-looking box.
-        sectionsCard.style.display = "none";
+      const tabBar = document.getElementById("infoTabBar");
+      const tabPanels = document.getElementById("infoTabPanels");
+      const tabsCard = document.getElementById("infoTabsCard");
+
+      function sectionContentHtml(raw, contentType) {
+        const isBullets = (contentType || "text") === "bullets";
+        const text = String(raw || "");
+        const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        return isBullets
+          ? `<ul class="bullets">${lines.map(li => `<li>${escapeHtml(li)}</li>`).join("")}</ul>`
+          : `<div>${escapeHtml(text).replace(/\r?\n/g, "<br>")}</div>`;
+      }
+
+      const tabs = [];
+      if (data.description && data.description.trim()) {
+        tabs.push({ title: "Description", html: sectionContentHtml(data.description, "text") });
+      }
+      if (!secErr && Array.isArray(sections)) {
+        for (const sec of sections) {
+          if (!sec.title) continue;
+          tabs.push({ title: sec.title, html: sectionContentHtml(sec.content, sec.content_type) });
+        }
+      }
+
+      if (!tabs.length) {
+        tabsCard.style.display = "none";
       } else {
-        sectionsDiv.innerHTML = sections.map((sec, idx) => {
-          const isBullets = (sec.content_type || "text") === "bullets";
-          const raw = String(sec.content || "");
-          const lines = raw
-            .split(/\r?\n/)
-            .map(s => s.trim())
-            .filter(Boolean);
-
-          const contentHtml = isBullets
-            ? `<ul class="bullets">${lines.map(li => `<li>${escapeHtml(li)}</li>`).join("")}</ul>`
-            : `<div>${escapeHtml(raw).replace(/\r?\n/g, "<br>")}</div>`;
-
-          return `
-            <div class="ac-item ${idx === 0 ? "open" : ""}">
-              <button class="ac-btn" type="button">
-                <span>${escapeHtml(sec.title)}</span>
-                <span class="ac-chevron">▾</span>
-              </button>
-              <div class="ac-content">${contentHtml}</div>
-            </div>
-          `;
-        }).join("");
-
-        Array.from(sectionsDiv.querySelectorAll(".ac-item")).forEach(item => {
-          const btn = item.querySelector(".ac-btn");
-          btn.addEventListener("click", () => item.classList.toggle("open"));
+        tabBar.innerHTML = tabs.map((t, i) =>
+          `<button type="button" class="pd-tab-btn${i === 0 ? " active" : ""}" data-tab-idx="${i}">${escapeHtml(t.title)}</button>`
+        ).join("");
+        tabPanels.innerHTML = tabs.map((t, i) =>
+          `<div class="pd-tab-panel${i === 0 ? " active" : ""}" data-tab-panel="${i}">${t.html}</div>`
+        ).join("");
+        tabBar.querySelectorAll(".pd-tab-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            tabBar.querySelectorAll(".pd-tab-btn").forEach(b => b.classList.remove("active"));
+            tabPanels.querySelectorAll(".pd-tab-panel").forEach(p => p.classList.remove("active"));
+            btn.classList.add("active");
+            tabPanels.querySelector(`[data-tab-panel="${btn.dataset.tabIdx}"]`).classList.add("active");
+          });
         });
+      }
+      if (secErr) {
+        console.error("Could not load product sections:", secErr.message);
       }
 
       // ===== Add to cart (uses qty) =====

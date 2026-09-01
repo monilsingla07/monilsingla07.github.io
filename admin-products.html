@@ -162,11 +162,15 @@
               </div>
               <div>
                 <label class="pm-label">Fabric</label>
-                <select id="f_fabric_id" class="input"><option value="">— None —</option></select>
+                <input id="f_fabric_id" class="input" list="fabricOptions" placeholder="e.g. Georgette" autocomplete="off" />
+                <datalist id="fabricOptions"></datalist>
+                <div class="pm-hint">Leave blank for none. Typing a name that doesn't exist yet creates it automatically — no need to add it in the Fabrics tab first.</div>
               </div>
               <div>
                 <label class="pm-label">Weave line</label>
-                <select id="f_weave_line_id" class="input"><option value="">— None —</option></select>
+                <input id="f_weave_line_id" class="input" list="weaveLineOptions" placeholder="e.g. Banarasi Handloom" autocomplete="off" />
+                <datalist id="weaveLineOptions"></datalist>
+                <div class="pm-hint">Leave blank for none. Typing a name that doesn't exist yet creates it automatically.</div>
               </div>
               <div style="display:flex; align-items:center; gap:8px; margin-top:22px;">
                 <input id="f_is_active" type="checkbox" style="width:16px; height:16px;" />
@@ -249,8 +253,13 @@
             <button id="btnAddSection" type="button" class="btn secondary" style="margin-top:10px; padding:6px 12px; font-size:12px;">+ Add section</button>
 
             <div class="section-title">Collections</div>
-            <div class="pm-hint">Which curated collections this product shows up in.</div>
+            <div class="pm-hint">Which curated collections this product shows up in. Don't see the one you need? Type a name below to create it and add this product to it, without leaving this form.</div>
             <div id="collectionChips" class="chip-check-grid"></div>
+            <div style="display:flex; gap:8px; margin-top:10px; max-width:380px; flex-wrap:wrap;">
+              <input id="f_new_collection" class="input" style="flex:1; min-width:180px;" placeholder="New collection name" autocomplete="off" />
+              <button id="btnAddCollectionInline" type="button" class="btn secondary" style="white-space:nowrap;">+ Add collection</button>
+            </div>
+            <div id="newCollectionStatus" class="small" style="margin-top:4px;"></div>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; align-items:center;">
               <button id="btnSaveProduct" class="btn">Save product</button>
@@ -346,6 +355,29 @@
     function populateSelect(sel, items, placeholder) {
       sel.innerHTML = '<option value="">' + placeholder + '</option>' +
         items.map(it => `<option value="${escapeAttr(it.id)}">${escapeHtml(it.name)}${it.is_active ? "" : " (inactive)"}</option>`).join("");
+    }
+
+    // Fabric / Weave line fields are free-text comboboxes (input + datalist)
+    // rather than selects — see resolveOrCreateCatalogId() below, which is
+    // what turns "type a new name" into an actual new catalog row on save.
+    function populateDatalist(datalistEl, items) {
+      if (!datalistEl) return;
+      datalistEl.innerHTML = items.map(it => `<option value="${escapeAttr(it.name)}">`).join("");
+    }
+
+    // Looks up an existing fabric/weave_line/collection by case-insensitive
+    // exact name match; if none exists, creates it on the spot via
+    // admin-manage-catalog. This is what lets "add a new product" also add
+    // a brand-new fabric/weave/collection in the same step, instead of
+    // forcing a separate trip to that tab first.
+    async function resolveOrCreateCatalogId(entity, rawName, cacheGetter) {
+      const name = String(rawName || "").trim();
+      if (!name) return null;
+      const existing = cacheGetter().find(it => String(it.name || "").trim().toLowerCase() === name.toLowerCase());
+      if (existing) return existing.id;
+      const r = await authedFetch(CATALOG_FN, { action: "save", entity, name });
+      await reloadTaxonomy(entity);
+      return r.item.id;
     }
 
     // ══════════════════════════════════════ PRODUCTS: LIST ══════════════════════════════════════
@@ -575,6 +607,8 @@
       document.getElementById("f_occasion").value = "";
       document.getElementById("reservedHint").textContent = "";
       editorImages = []; editorSpecs = []; editorSections = [];
+      document.getElementById("f_new_collection").value = "";
+      document.getElementById("newCollectionStatus").textContent = "";
       renderImgThumbs(); renderSpecRows(); renderSectionRows(); renderCollectionChips([]);
       document.getElementById("btnDeleteProduct").style.display = "none";
       document.getElementById("editorTitle").textContent = "New product";
@@ -610,8 +644,12 @@
         document.getElementById("f_title").value = p.title || "";
         document.getElementById("f_description").value = p.description || "";
         setCategorySelect(p.category);
-        document.getElementById("f_fabric_id").value = p.fabric_id ?? "";
-        document.getElementById("f_weave_line_id").value = p.weave_line_id ?? "";
+        document.getElementById("f_fabric_id").value = p.fabric_id != null
+          ? (fabricsCache.find(f => String(f.id) === String(p.fabric_id))?.name || "")
+          : "";
+        document.getElementById("f_weave_line_id").value = p.weave_line_id != null
+          ? (weaveLinesCache.find(w => String(w.id) === String(p.weave_line_id))?.name || "")
+          : "";
         document.getElementById("f_is_active").checked = !!p.is_active;
         document.getElementById("f_price_inr").value = p.price_inr ?? "";
         document.getElementById("f_sale_price_inr").value = p.sale_price_inr ?? "";
@@ -649,6 +687,36 @@
     document.getElementById("btnAddProduct").addEventListener("click", () => openProductEditor(null));
     document.getElementById("btnBackToList").addEventListener("click", () => closeProductEditor(false));
 
+    // Inline "+ Add collection" — same auto-create idea as fabric/weave line,
+    // but collections are a checkbox list rather than a single field, so this
+    // is a small explicit control instead of free-text-on-save.
+    document.getElementById("btnAddCollectionInline").addEventListener("click", async () => {
+      const nameInput = document.getElementById("f_new_collection");
+      const status = document.getElementById("newCollectionStatus");
+      const name = nameInput.value.trim();
+      if (!name) { status.textContent = "Enter a collection name first."; return; }
+
+      const existing = collectionsCache.find(c => String(c.name || "").trim().toLowerCase() === name.toLowerCase());
+      if (existing) {
+        status.textContent = "That collection already exists — checked it above for you.";
+        const chip = document.querySelector(`#collectionChips input[value="${CSS.escape(String(existing.id))}"]`);
+        if (chip) chip.checked = true;
+        return;
+      }
+
+      status.textContent = "Creating…";
+      try {
+        const r = await authedFetch(CATALOG_FN, { action: "save", entity: "collection", name });
+        await reloadTaxonomy("collection");
+        const chip = document.querySelector(`#collectionChips input[value="${CSS.escape(String(r.item.id))}"]`);
+        if (chip) chip.checked = true;
+        nameInput.value = "";
+        status.textContent = "Added ✅ — don't forget to Save product below.";
+      } catch (e) {
+        status.textContent = "Error: " + e.message;
+      }
+    });
+
     document.getElementById("btnSaveProduct").addEventListener("click", async () => {
       const status = document.getElementById("editorStatus");
       const title = document.getElementById("f_title").value.trim();
@@ -662,6 +730,13 @@
       const collectionIds = Array.from(document.querySelectorAll("#collectionChips input:checked")).map(i => i.value);
 
       try {
+        status.textContent = "Checking fabric & weave line…";
+        // Fabric/Weave line are free-text fields now — an unrecognized name
+        // gets created as a new catalog entry right here, rather than
+        // failing or requiring a separate trip to those tabs first.
+        const fabric_id = await resolveOrCreateCatalogId("fabric", document.getElementById("f_fabric_id").value, () => fabricsCache);
+        const weave_line_id = await resolveOrCreateCatalogId("weave_line", document.getElementById("f_weave_line_id").value, () => weaveLinesCache);
+
         status.textContent = "Saving product…";
         const saveRes = await authedFetch(PRODUCTS_FN, {
           action: "save",
@@ -669,8 +744,8 @@
           title,
           description: document.getElementById("f_description").value,
           category,
-          fabric_id: document.getElementById("f_fabric_id").value || null,
-          weave_line_id: document.getElementById("f_weave_line_id").value || null,
+          fabric_id,
+          weave_line_id,
           is_active: document.getElementById("f_is_active").checked,
           price_inr: Number(price_inr),
           sale_price_inr: document.getElementById("f_sale_price_inr").value === "" ? null : Number(document.getElementById("f_sale_price_inr").value),
@@ -856,11 +931,15 @@
     async function reloadTaxonomy(entity) {
       const items = await loadCatalogCache(entity);
       setTaxonomyCache(entity, items);
-      renderTaxonomyList(entity);
-      if (entity === "fabric") populateSelect(document.getElementById("f_fabric_id"), fabricsCache, "— None —");
-      if (entity === "weave_line") populateSelect(document.getElementById("f_weave_line_id"), weaveLinesCache, "— None —");
-      if (entity === "collection") {
-        // Collections tab also feeds the product editor's checkbox list; if that's open, refresh selection state.
+      if (document.getElementById(entity + "_list")) renderTaxonomyList(entity);
+      if (entity === "fabric") populateDatalist(document.getElementById("fabricOptions"), fabricsCache);
+      if (entity === "weave_line") populateDatalist(document.getElementById("weaveLineOptions"), weaveLinesCache);
+      if (entity === "collection" && document.getElementById("productEditorView").style.display !== "none") {
+        // Collections tab also feeds the product editor's checkbox list — if
+        // it's open (e.g. a collection was just auto-created from there),
+        // refresh it without losing the boxes already checked.
+        const selected = Array.from(document.querySelectorAll("#collectionChips input:checked")).map(i => i.value);
+        renderCollectionChips(selected);
       }
     }
 
