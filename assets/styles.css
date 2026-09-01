@@ -1495,7 +1495,7 @@ header .nav {
 /* ═══════════════════════════
    PRODUCT PAGE
 ═══════════════════════════ */
-.pd-wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 32px; margin-top: 16px; }
+.pd-wrap { display: grid; grid-template-columns: 1.25fr 0.85fr; gap: 32px; margin-top: 16px; }
 @media (max-width: 980px) { .pd-wrap { grid-template-columns: 1fr; gap: 28px; } }
 
 /* The gallery and info panels used the generic .card (border + shadow-xs +
@@ -1518,7 +1518,7 @@ header .nav {
 .pd-gallery { display: grid; grid-template-columns: 88px 1fr; gap: 14px; align-items: start; }
 .pd-thumbs {
   display: flex; flex-direction: column;
-  gap: 10px; max-height: 560px; overflow: auto; padding-right: 2px;
+  gap: 10px; max-height: 720px; overflow: auto; padding-right: 2px;
 }
 .pd-thumb {
   border: 1px solid var(--border-light);
@@ -1529,9 +1529,14 @@ header .nav {
 .pd-thumb:hover, .pd-thumb.is-active { border-color: var(--brand); }
 .pd-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .pd-main { position: relative; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-warm); }
-#mainImg { width: 100%; height: 460px; object-fit: cover; display: block; cursor: zoom-in; background: var(--bg-warm); }
+/* Bumped back up from round 5's 460px — the user asked explicitly for a
+   bigger, more prominent saree photo (drew a box around the gallery on a
+   live screenshot asking for "a big view"). Widened .pd-wrap's left column
+   (1.1fr → 1.25fr above) at the same time so the taller crop still shows a
+   proportionate amount of the photo instead of just cropping in tighter. */
+#mainImg { width: 100%; height: 720px; object-fit: cover; display: block; cursor: zoom-in; background: var(--bg-warm); }
 .pd-main-empty, .pd-thumb-empty {
-  width: 100%; height: 460px;
+  width: 100%; height: 720px;
   background: linear-gradient(135deg, var(--bg-warm) 0%, var(--border-light) 100%);
   display: flex; align-items: center; justify-content: center;
   color: var(--text-light); font-size: 13px;
@@ -1547,12 +1552,12 @@ header .nav {
   .pd-gallery { grid-template-columns: 1fr; }
   .pd-thumbs { flex-direction: row; max-height: none; overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; }
   .pd-thumb { width: 90px; height: 110px; }
-  #mainImg, .pd-main-empty { height: 400px; }
+  #mainImg, .pd-main-empty { height: 560px; }
 }
 @media (max-width: 560px) {
   .pd-left.card { padding: 0 !important; }
   .pd-thumb { width: 62px; height: 78px; }
-  #mainImg, .pd-main-empty { height: 280px; }
+  #mainImg, .pd-main-empty { height: 420px; }
 }
 
 .pd-title { font-family: var(--font-heading); font-size: 24px; font-weight: 600; line-height: 1.2; }
