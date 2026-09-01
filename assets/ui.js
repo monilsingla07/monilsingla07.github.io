@@ -127,7 +127,7 @@ export function renderHeader(active = "") {
           </div>
 
           <a href="index.html" class="mobile-logo" aria-label="Ahamstree home">
-            <img src="assets/images/ahamstree-logo.png" alt="Ahamstree" decoding="async">
+            <img src="assets/images/ahamstree-logo.png" alt="Ahamstree" width="230" height="220" decoding="async">
           </a>
 
           <div class="header-mobile-right">
@@ -186,7 +186,7 @@ export function renderHeader(active = "") {
 
         <!-- Desktop: Center logo -->
         <a href="index.html" class="site-logo-center" aria-label="Ahamstree home">
-          <img src="assets/images/ahamstree-logo.png" alt="Ahamstree" decoding="async">
+          <img src="assets/images/ahamstree-logo.png" alt="Ahamstree" width="230" height="220" decoding="async">
         </a>
 
         <!-- Desktop: Right utilities -->
@@ -369,10 +369,56 @@ function initNavCarets() {
   });
 }
 
+// Site is a classic multi-page app (every navigation is a full reload), so
+// without caching this Supabase query re-runs on EVERY single page view.
+// The category/weave-line list changes rarely (admin action), so it's safe
+// to reuse a recent result from sessionStorage instead of re-querying on
+// every pageview — cuts one network round trip + DB query per navigation.
+// TTL keeps it fresh enough that an admin change shows up within minutes.
+const NAV_CACHE_KEY = "ahamstree_nav_dropdowns_v1";
+const NAV_CACHE_TTL_MS = 10 * 60 * 1000; // 10 min
+
+function applyNavGroups(linksByCat) {
+  for (const cat of ["saree", "suit"]) {
+    const linksHtml = linksByCat[cat];
+    if (!linksHtml) continue;
+    document.querySelectorAll(`.nav-submenu[data-cat="${cat}"]`).forEach(el => { el.innerHTML = linksHtml; });
+    document.querySelectorAll(`.mobile-drawer-submenu[data-cat-sub="${cat}"]`).forEach(el => { el.innerHTML = linksHtml; });
+    document.querySelectorAll(`.mobile-drawer-caret[data-cat="${cat}"]`).forEach(el => { el.hidden = false; });
+  }
+  initNavCarets();
+}
+
+function readNavCache() {
+  try {
+    const raw = sessionStorage.getItem(NAV_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || (Date.now() - parsed.ts) > NAV_CACHE_TTL_MS) return null;
+    return parsed.linksByCat || null;
+  } catch (_) {
+    return null; // storage unavailable (private mode, etc.) — fall through to network
+  }
+}
+
+function writeNavCache(linksByCat) {
+  try {
+    sessionStorage.setItem(NAV_CACHE_KEY, JSON.stringify({ ts: Date.now(), linksByCat }));
+  } catch (_) {
+    // storage full/unavailable — non-fatal, just means next pageview re-fetches
+  }
+}
+
 async function hydrateNavDropdowns() {
   if (_navDropdownsHydrated) return;
   _navDropdownsHydrated = true;
   try {
+    const cached = readNavCache();
+    if (cached) {
+      applyNavGroups(cached);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("products")
       .select("category, weave_line:weave_lines!inner(id,name,slug,sort_order,is_active)")
@@ -390,21 +436,19 @@ async function hydrateNavDropdowns() {
       if (!groups[cat].has(wl.slug)) groups[cat].set(wl.slug, wl);
     }
 
+    const linksByCat = {};
     for (const cat of ["saree", "suit"]) {
       if (!groups[cat] || groups[cat].size === 0) continue;
       const rows = Array.from(groups[cat].values()).sort((a, b) =>
         (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name))
       );
-      const linksHtml = rows.map(w =>
+      linksByCat[cat] = rows.map(w =>
         `<a href="products.html?type=${encodeURIComponent(cat)}&weave=${encodeURIComponent(w.slug)}">${escapeHtml(w.name)}</a>`
       ).join("");
-
-      document.querySelectorAll(`.nav-submenu[data-cat="${cat}"]`).forEach(el => { el.innerHTML = linksHtml; });
-      document.querySelectorAll(`.mobile-drawer-submenu[data-cat-sub="${cat}"]`).forEach(el => { el.innerHTML = linksHtml; });
-      document.querySelectorAll(`.mobile-drawer-caret[data-cat="${cat}"]`).forEach(el => { el.hidden = false; });
     }
 
-    initNavCarets();
+    applyNavGroups(linksByCat);
+    writeNavCache(linksByCat);
   } catch (_) {
     // silent — the plain "Handloom Sarees" / "Handloom Suits" links still work
   }
@@ -452,23 +496,58 @@ function initScrollReveal() {
 const SITE_SETTINGS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-site-settings";
 let _siteSettingsHydrated = false;
 
+// Same reasoning as the nav-dropdown cache above: this Edge Function call
+// otherwise re-fires on every pageview across the whole multi-page site.
+// Settings only change via an admin action, so a short-lived sessionStorage
+// cache is safe and saves a network round trip on every navigation.
+const SETTINGS_CACHE_KEY = "ahamstree_site_settings_v1";
+const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 min
+
+function applySiteSettings(settings) {
+  if (!settings || !settings.topbar_announcement) return;
+  const text = String(settings.topbar_announcement);
+  const topbarEl = document.getElementById("topbarAnnouncement");
+  if (topbarEl) topbarEl.textContent = text;
+  const trustEl = document.getElementById("trustStripShipping");
+  if (trustEl) trustEl.textContent = text;
+}
+
+function readSettingsCache() {
+  try {
+    const raw = sessionStorage.getItem(SETTINGS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || (Date.now() - parsed.ts) > SETTINGS_CACHE_TTL_MS) return null;
+    return parsed.settings || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function writeSettingsCache(settings) {
+  try {
+    sessionStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify({ ts: Date.now(), settings }));
+  } catch (_) {
+    // non-fatal
+  }
+}
+
 async function hydrateSiteSettings() {
   if (_siteSettingsHydrated) return;
   _siteSettingsHydrated = true;
   try {
+    const cached = readSettingsCache();
+    if (cached) {
+      applySiteSettings(cached);
+      return;
+    }
+
     const res = await fetch(SITE_SETTINGS_URL);
     if (!res.ok) return;
     const { settings } = await res.json();
     if (!settings || !settings.topbar_announcement) return;
-
-    const text = String(settings.topbar_announcement);
-    const topbarEl = document.getElementById("topbarAnnouncement");
-    if (topbarEl) topbarEl.textContent = text;
-
-    // Homepage trust strip's middle item shows the identical announcement —
-    // kept in sync from the same setting rather than a second hardcoded copy.
-    const trustEl = document.getElementById("trustStripShipping");
-    if (trustEl) trustEl.textContent = text;
+    writeSettingsCache(settings);
+    applySiteSettings(settings);
   } catch (_) {
     // silent — static fallback text already in the markup stays as-is
   }
