@@ -194,6 +194,21 @@
       border-radius: 20px;
       z-index: 2;
     }
+    .p-card-status-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 9px;
+      border-radius: 20px;
+      z-index: 4;
+    }
+    .p-card-status-badge.is-new { background: var(--brand); }
+    .p-card-status-badge.is-sold { background: #6b6b6b; }
     .p-card-sold-overlay {
       position: absolute;
       inset: 0;
@@ -311,9 +326,22 @@
       return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
     }
 
+    // A product counts as "New" for NEW_WINDOW_DAYS from the moment its row
+    // was first created (created_at), never from when it was last edited
+    // (updated_at) — editing a product's price/stock/description should not
+    // reset its "New" clock.
+    const NEW_WINDOW_DAYS = 60;
+    function isNew(createdAt) {
+      if (!createdAt) return false;
+      return (Date.now() - new Date(createdAt).getTime()) < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+    }
+
     function productCard(p, idx) {
       const inv = Math.max(0, Number(p.inventory_qty||0) - Number(p.reserved_qty||0));
       const soldOut = inv <= 0;
+      // Sold Out wins the top-left corner slot over New — once stock hits
+      // zero, "recently added" stops being the useful thing to tell a shopper.
+      const isNewItem = !soldOut && isNew(p.created_at);
       const base = Number(p.price_inr || 0);
       const sale = p.sale_price_inr != null ? Number(p.sale_price_inr) : null;
       const hasSale = sale != null && sale > 0 && sale < base;
@@ -332,6 +360,7 @@
           <a href="product.html?id=${encodeURIComponent(p.id)}&from=collection&col=${encodeURIComponent(slug || '')}&colName=${encodeURIComponent(currentColName)}">
             <div class="p-card-img">
               ${imgHtml}
+              ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
               ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
             </div>
             <div class="p-card-body">
@@ -415,7 +444,7 @@
 
       const { data, error } = await supabase
         .from("collection_products")
-        .select("sort_order, product:products(id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active, product_images(image_url, sort_order))")
+        .select("sort_order, product:products(id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order))")
         .eq("collection_id", col.id)
         .order("sort_order", { ascending: true });
 

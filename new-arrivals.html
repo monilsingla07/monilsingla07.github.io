@@ -147,7 +147,7 @@
       height: 260px;
       background: linear-gradient(135deg, var(--bg-warm) 0%, var(--border-light) 100%);
     }
-    /* NEW badge — only on items added in last 14 days */
+    /* NEW badge — only on items added (created_at) in the last NEW_WINDOW_DAYS days */
     .p-card-new-badge {
       position: absolute;
       top: 10px;
@@ -160,7 +160,22 @@
       text-transform: uppercase;
       padding: 4px 9px;
       border-radius: 20px;
-      z-index: 2;
+      z-index: 4;
+    }
+    /* Sold Out takes the same top-left corner slot as New when both would apply */
+    .p-card-sold-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #6b6b6b;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 4px 9px;
+      border-radius: 20px;
+      z-index: 4;
     }
     .p-card-sale-badge {
       position: absolute;
@@ -285,15 +300,22 @@
       return "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
     }
 
+    // A product counts as "New" for NEW_WINDOW_DAYS from the moment its row
+    // was first created (created_at), never from when it was last edited
+    // (updated_at) — editing a product's price/stock/description should not
+    // reset its "New" clock.
+    const NEW_WINDOW_DAYS = 60;
     function isNew(createdAt) {
       if (!createdAt) return false;
-      return (Date.now() - new Date(createdAt).getTime()) < 14 * 24 * 60 * 60 * 1000;
+      return (Date.now() - new Date(createdAt).getTime()) < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
     }
 
     function productCard(p, idx) {
       const inv = Math.max(0, Number(p.inventory_qty||0) - Number(p.reserved_qty||0));
       const soldOut = inv <= 0;
-      const hasNewBadge = isNew(p.created_at);
+      // Sold Out wins the top-left corner slot over New — once stock hits
+      // zero, "recently added" stops being the useful thing to tell a shopper.
+      const hasNewBadge = !soldOut && isNew(p.created_at);
       const base = Number(p.price_inr || 0);
       const sale = p.sale_price_inr != null ? Number(p.sale_price_inr) : null;
       const pctOff = (sale && base) ? Math.round((1 - sale/base) * 100) : 0;
@@ -311,7 +333,7 @@
           <a href="product.html?id=${encodeURIComponent(p.id)}&from=new-arrivals">
             <div class="p-card-img">
               ${imgHtml}
-              ${hasNewBadge ? `<div class="p-card-new-badge">New</div>` : ""}
+              ${soldOut ? `<div class="p-card-sold-badge">Sold Out</div>` : (hasNewBadge ? `<div class="p-card-new-badge">New</div>` : "")}
               ${pctOff > 0 ? `<div class="p-card-sale-badge">${pctOff}% off</div>` : ""}
               ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
             </div>

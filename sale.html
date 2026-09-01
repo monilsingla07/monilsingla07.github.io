@@ -149,7 +149,7 @@
     .p-card-badge {
       position: absolute;
       top: 10px;
-      left: 10px;
+      right: 10px;
       background: var(--brand);
       color: #fff;
       font-size: 10px;
@@ -162,6 +162,20 @@
     .p-card-badge.sale-badge {
       background: linear-gradient(135deg, var(--brand-dark), var(--brand));
     }
+    .p-card-status-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 4px 9px;
+      border-radius: 20px;
+      z-index: 4;
+    }
+    .p-card-status-badge.is-new { background: var(--brand); }
+    .p-card-status-badge.is-sold { background: #6b6b6b; }
     .p-card-sold-overlay {
       position: absolute;
       inset: 0;
@@ -315,12 +329,25 @@
       return off > 0 ? `${off}% OFF` : "";
     }
 
+    // A product counts as "New" for NEW_WINDOW_DAYS from the moment its row
+    // was first created (created_at), never from when it was last edited
+    // (updated_at) — editing a product's price/stock/description should not
+    // reset its "New" clock.
+    const NEW_WINDOW_DAYS = 60;
+    function isNew(createdAt) {
+      if (!createdAt) return false;
+      return (Date.now() - new Date(createdAt).getTime()) < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+    }
+
     function productCard(p, idx) {
       const base = Number(p.price_inr || 0);
       const sale = Number(p.sale_price_inr || 0);
       const badge = pctOff(base, sale);
       const inv = Math.max(0, Number(p.inventory_qty||0) - Number(p.reserved_qty||0));
       const soldOut = inv <= 0;
+      // Sold Out wins the top-left corner slot over New — once stock hits
+      // zero, "recently added" stops being the useful thing to tell a shopper.
+      const isNewItem = !soldOut && isNew(p.created_at);
 
       const imgHtml = p.image_url
         ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title)}" loading="lazy" decoding="async">`
@@ -331,6 +358,7 @@
           <a href="product.html?id=${encodeURIComponent(p.id)}&from=sale">
             <div class="p-card-img">
               ${imgHtml}
+              ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
               ${badge ? `<div class="p-card-badge">${badge}</div>` : ""}
               ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
             </div>
