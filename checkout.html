@@ -985,10 +985,27 @@
             body: razorBody
           });
 
-          // The edge fn returns error.message on 4xx/5xx
+          // The edge fn returns a JSON body ({ error, details, message }) on
+          // 4xx/5xx. FIX: error.context.json is a method (Response#json()),
+          // not a property — reading error?.context?.json?.message always
+          // evaluated to undefined, so every real failure reason (coupon
+          // already used, wallet balance changed, out of stock, Razorpay
+          // decline, etc.) silently fell through to the generic message
+          // below. Same await-the-method pattern already used correctly in
+          // track.html / admin-orders.html / admin-users.html.
           if (error) {
-            // Surface the structured message from the edge fn if available
-            const msg = error?.context?.json?.message || error?.context?.json?.error || error.message || "Payment setup failed.";
+            let msg = error.message || "Payment setup failed.";
+            try {
+              if (error.context && typeof error.context.json === "function") {
+                const body = await error.context.json();
+                if (body?.error && body?.details) msg = `${body.error} (${body.details})`;
+                else if (body?.message) msg = body.message;
+                else if (body?.error) msg = body.error;
+                else if (body?.details) msg = String(body.details);
+              }
+            } catch (_) {
+              // fall back to the generic message above
+            }
             showError(msg);
             return;
           }
