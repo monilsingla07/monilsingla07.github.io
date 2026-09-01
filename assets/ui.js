@@ -5,6 +5,7 @@ import { mountWelcomePopup } from "./welcome-popup.js";
 import { mountSignInPopup } from "./signin-popup.js";
 import { escapeHtml } from "./safe.js";
 import { grantSignupCashIfEligible } from "./profile-seed.js";
+import { trackPageview } from "./visit-tracker.js";
 
 // ── Header offset (keeps content below fixed header) ──
 let _headerOffsetInitDone = false;
@@ -486,6 +487,10 @@ export async function hydrateHeaderAuth() {
   // visitors (mountSignInPopup checks the session itself). Also skipped
   // on its own, defensively.
   try { mountSignInPopup(); } catch (_) {}
+
+  // Pageview tracking for Admin → Visitor Analytics. See visit-tracker.js
+  // for why this lives here instead of on every page individually.
+  try { trackPageview(); } catch (_) {}
 
   hydrateNavDropdowns();
   hydrateSiteSettings();
