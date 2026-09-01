@@ -4,6 +4,7 @@ import { supabase } from "./supabase.js";
 import { mountWelcomePopup } from "./welcome-popup.js";
 import { mountSignInPopup } from "./signin-popup.js";
 import { escapeHtml } from "./safe.js";
+import { grantSignupCashIfEligible } from "./profile-seed.js";
 
 // ── Header offset (keeps content below fixed header) ──
 let _headerOffsetInitDone = false;
@@ -490,15 +491,24 @@ export async function hydrateHeaderAuth() {
   hydrateSiteSettings();
   initScrollReveal();
 
+  const { data } = await supabase.auth.getSession();
+  const loggedIn = !!data?.session?.user;
+
+  // AhamStree Cash — grant the one-time welcome bonus. hydrateHeaderAuth()
+  // runs on every page and re-fires on every auth state change (see the
+  // onAuthStateChange subscription below), so this one call site covers
+  // every sign-in path site-wide (WhatsApp OTP or Google, via login.html or
+  // the sign-in popup) without duplicating the call into each of them.
+  // grantSignupCashIfEligible is itself idempotent server-side, so calling
+  // it again on every page load / every auth event is harmless.
+  if (loggedIn) grantSignupCashIfEligible(data.session);
+
   const aDesktop = document.getElementById("accountLink");
   const aMobile  = document.getElementById("accountLinkMobile");
   const wDesktop = document.getElementById("wishlistLink");
   const wMobile  = document.getElementById("wishlistLinkMobile");
 
   if (!aDesktop && !aMobile) return;
-
-  const { data } = await supabase.auth.getSession();
-  const loggedIn = !!data?.session?.user;
 
   if (aDesktop) {
     aDesktop.textContent = loggedIn ? "Account" : "Login / Sign up";
