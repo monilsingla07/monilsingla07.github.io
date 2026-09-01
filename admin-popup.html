@@ -220,6 +220,23 @@
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
+    // Inverse of toLocalInputValue(): a <input type="datetime-local"> gives
+    // back a naive "YYYY-MM-DDTHH:mm" string with no timezone info, meant
+    // to be read as *this browser's* local wall-clock time. `new Date(...)`
+    // run here, in the browser, correctly resolves that against the
+    // visitor's real local timezone (IST) — so this MUST be done client-side.
+    // Sending the naive string as-is and letting the server call
+    // `new Date(...).toISOString()` is wrong: the Supabase Edge Function
+    // runtime's clock is UTC, so the same naive string gets reinterpreted
+    // as UTC there and silently shifts by the local UTC offset (5.5h for
+    // IST) — a popup meant to start "now" ends up starting hours later.
+    function localInputToISO(val) {
+      if (!val) return null;
+      const d = new Date(val);
+      if (isNaN(d.getTime())) return null;
+      return d.toISOString();
+    }
+
     function clearForm() {
       document.getElementById("f_id").value = "";
       document.getElementById("f_title").value = "";
@@ -311,8 +328,8 @@
           subtext: document.getElementById("f_subtext").value,
           button_text: document.getElementById("f_button_text").value,
           button_link: document.getElementById("f_button_link").value,
-          starts_at: document.getElementById("f_starts_at").value || null,
-          ends_at: document.getElementById("f_ends_at").value || null,
+          starts_at: localInputToISO(document.getElementById("f_starts_at").value),
+          ends_at: localInputToISO(document.getElementById("f_ends_at").value),
           is_active: document.getElementById("f_is_active").checked,
         };
         const result = await authedFetch(payload);
