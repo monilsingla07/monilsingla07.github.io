@@ -188,7 +188,6 @@ function productCard(p) {
           ${imgHtml}
           ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
           ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
-          ${soldOut ? `<div class="p-card-sold-overlay"><span class="p-card-sold-label">Sold Out</span></div>` : ""}
         </div>
         <div class="p-card-body">
           <div class="p-card-title">${escapeHtml(p.title ?? "")}</div>
