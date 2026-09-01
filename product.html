@@ -127,18 +127,15 @@
           </div>
 
           <!-- Available Offers -->
-          <div class="card" style="margin-top:24px;padding:16px;border-radius:0;">
+          <!-- FIX: this used to be a hardcoded WELCOME10 block, so an admin
+               deactivating/editing a coupon in Coupon Manager had no effect
+               on this page. Now pulled live from the same public
+               get-available-coupons endpoint checkout.html uses. Hidden
+               entirely when there are no active, show-on-checkout coupons —
+               never falls back to a fake/static offer. -->
+          <div id="offersCard" class="card" style="margin-top:24px;padding:16px;border-radius:0;display:none;">
             <div style="font-weight:900;font-size:15px;margin-bottom:10px;">🏷️ Available Offers</div>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-              <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg-warm);border-radius:10px;border:1px solid var(--border);">
-                <span style="font-size:18px;line-height:1;flex-shrink:0;">🎁</span>
-                <div>
-                  <span style="font-weight:800;font-size:13px;color:var(--brand);">WELCOME10</span>
-                  <span style="margin-left:6px;font-size:11px;font-weight:700;background:var(--brand);color:#fff;padding:2px 7px;border-radius:999px;">10% off</span>
-                  <div style="font-size:12px;opacity:.7;margin-top:2px;">10% off your first order · No minimum spend</div>
-                </div>
-              </div>
-            </div>
+            <div id="offersList" style="display:flex;flex-direction:column;gap:8px;"></div>
             <div class="small" style="margin-top:10px;opacity:.65;">Apply at checkout · One coupon per order</div>
           </div>
 
@@ -225,6 +222,54 @@
           checkBtn.disabled = false;
         }
       });
+    })();
+
+    // ===== Available Offers (product page) =====
+    // Independent of the product data load below — same pattern as the
+    // delivery check above. Mirrors checkout.html's loadAvailableCoupons():
+    // pulls live from the public get-available-coupons endpoint, which
+    // reflects exactly what admin-coupons.html controls (active +
+    // show_on_checkout + within its date window + under its use limit).
+    // No coupons back → the whole card stays hidden, never a fallback to a
+    // static/fake offer.
+    (async function loadAvailableOffers() {
+      const offersCard = document.getElementById("offersCard");
+      const offersList = document.getElementById("offersList");
+      if (!offersCard || !offersList) return;
+      try {
+        const { data, error } = await supabase.functions.invoke("get-available-coupons", {
+          body: {},
+        });
+        if (error) throw new Error(error.message);
+        const coupons = Array.isArray(data?.coupons) ? data.coupons : [];
+        if (!coupons.length) return; // stays hidden
+
+        offersList.innerHTML = coupons.map(c => {
+          const badge = c.label || (c.type === "percent" ? `${c.value}% off` : `₹${c.value} off`);
+          let desc = c.description;
+          if (!desc) {
+            const bits = [];
+            bits.push(c.min_order_inr ? `Min. order ₹${Number(c.min_order_inr).toLocaleString("en-IN")}` : "No minimum spend");
+            if (c.first_order_only) bits.push("First order only");
+            desc = bits.join(" · ");
+          }
+          return `
+            <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg-warm);border-radius:10px;border:1px solid var(--border);">
+              <span style="font-size:18px;line-height:1;flex-shrink:0;">🎁</span>
+              <div>
+                <span style="font-weight:800;font-size:13px;color:var(--brand);">${escapeHtml(c.code)}</span>
+                <span style="margin-left:6px;font-size:11px;font-weight:700;background:var(--brand);color:#fff;padding:2px 7px;border-radius:999px;">${escapeHtml(badge)}</span>
+                <div style="font-size:12px;opacity:.7;margin-top:2px;">${escapeHtml(desc)}</div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        offersCard.style.display = "";
+      } catch (_e) {
+        // Silent — an offers-list problem must never break the product page.
+        // Card stays hidden (its default state).
+      }
     })();
 
     const params = new URLSearchParams(location.search);
