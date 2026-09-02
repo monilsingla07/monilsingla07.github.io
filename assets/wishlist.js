@@ -45,7 +45,7 @@ function normalizeProducts(rows = []) {
     const imgs = (p.product_images ?? [])
       .slice()
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-    return { ...p, image_url: imgs[0]?.image_url ?? "" };
+    return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: imgs[1]?.image_url ?? "" };
   });
 }
 

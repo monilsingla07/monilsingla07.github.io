@@ -20,8 +20,17 @@ function normalizeProducts(rows = []) {
     const imgs = (p.product_images ?? [])
       .slice()
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-    return { ...p, image_url: imgs[0]?.image_url ?? "" };
+    return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: imgs[1]?.image_url ?? "" };
   });
+}
+
+// Same 60-day "New" window as every other product grid on the site (home.js,
+// products.html, sale.html, ...) — kept as a duplicate here rather than a
+// shared import for the same reason those already are (see home.js).
+const NEW_WINDOW_DAYS = 60;
+function isNew(createdAt) {
+  if (!createdAt) return false;
+  return (Date.now() - new Date(createdAt).getTime()) < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 }
 
 function moneyINR(v) {
@@ -77,44 +86,45 @@ export function renderSearchResults(products) {
   }
 
   return items
-    .map((p) => {
+    .map((p, idx) => {
       const price = Number(p.price_inr || 0);
       const sale =
         p.sale_price_inr === null || p.sale_price_inr === undefined
           ? null
           : Number(p.sale_price_inr || 0);
+      const hasSale = Number.isFinite(sale) && sale > 0 && sale < price && Number.isFinite(price);
+      const pctOff = hasSale ? Math.round((1 - sale / price) * 100) : 0;
 
-      const showSale =
-        Number.isFinite(sale) && sale > 0 && sale < price && Number.isFinite(price);
+      const inv = Number(p.inventory_qty || 0);
+      const res = Number(p.reserved_qty || 0);
+      const available = Math.max(0, inv - res);
+      const soldOut = available <= 0;
+      const isNewItem = !soldOut && isNew(p.created_at);
 
-      const priceHtml = showSale
-        ? `<span style="font-weight:900;">${moneyINR(sale)}</span> <span class="small" style="opacity:.7;text-decoration:line-through;">${moneyINR(
-            price
-          )}</span>`
-        : `<span style="font-weight:900;">${moneyINR(price)}</span>`;
+      const priceHtml = hasSale
+        ? `<span class="p-card-original">${moneyINR(price)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
+        : `<span class="p-card-price">${moneyINR(price)}</span>`;
 
       const imgHtml = p.image_url
-        ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title || "Product")}" loading="lazy">`
-        : `<div style="height:260px;background:#fafafa;border-radius:12px;"></div>`;
+        ? `<img class="${p.image_url_hover ? "p-card-img-primary" : ""}" src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title || "Product")}" loading="lazy" decoding="async">${p.image_url_hover ? `<img class="p-card-img-hover" src="${safeSrc(p.image_url_hover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
+        : `<div class="p-card-img-empty"></div>`;
 
       return `
-        <a href="product.html?id=${encodeURIComponent(
-          p.id
-        )}" class="card product-card" style="text-decoration:none;color:inherit;">
-          ${imgHtml}
-          <div class="p">
-            <div class="product-title">${escapeHtml(p.title || "")}</div>
-            <div class="product-price" style="margin-top:6px;">${priceHtml}</div>
-            <div class="small" style="margin-top:6px; opacity:.75;">
-              ${(() => {
-                const inv = Number(p.inventory_qty || 0);
-                const res = Number(p.reserved_qty || 0);
-                const avail = Math.max(0, inv - res);
-                return (avail > 0) ? "In stock" : "Sold out";
-              })()}
+        <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
+          <a href="product.html?id=${encodeURIComponent(p.id)}&from=search" class="product-link">
+            <div class="p-card-img${p.image_url_hover ? " has-hover-img" : ""}">
+              ${imgHtml}
+              ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
+              ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
             </div>
-          </div>
-        </a>
+            <div class="p-card-body">
+              <div class="p-card-title">${escapeHtml(p.title || "")}</div>
+              <div class="p-card-pricing">${priceHtml}</div>
+              ${!soldOut && available <= 3 ? `<div class="p-card-stock low">Only ${available} left</div>` : ""}
+              ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
+            </div>
+          </a>
+        </div>
       `;
     })
     .join("");

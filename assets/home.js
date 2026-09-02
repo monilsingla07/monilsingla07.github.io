@@ -36,7 +36,7 @@ function normalizeProducts(rows = []) {
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
     const inv = Number(p.inventory_qty || 0);
     const res = Number(p.reserved_qty || 0);
-    return { ...p, image_url: imgs[0]?.image_url ?? "", available_qty: Math.max(0, inv - res) };
+    return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: imgs[1]?.image_url ?? "", available_qty: Math.max(0, inv - res) };
   });
 }
 
@@ -177,14 +177,14 @@ function productCard(p) {
     : `<span class="p-card-price">${moneyINR(base)}</span>`;
 
   const imgHtml = p.image_url
-    ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">`
+    ? `<img class="${p.image_url_hover ? "p-card-img-primary" : ""}" src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">${p.image_url_hover ? `<img class="p-card-img-hover" src="${safeSrc(p.image_url_hover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
     : `<div class="p-card-img-empty"></div>`;
 
   return `
     <div class="p-card">
       <button type="button" class="p-card-wish" data-product-id="${escapeAttr(p.id)}" aria-label="Add to wishlist" aria-pressed="false">${heartIcon()}</button>
       <a href="product.html?id=${encodeURIComponent(p.id)}" class="product-link">
-        <div class="p-card-img">
+        <div class="p-card-img${p.image_url_hover ? " has-hover-img" : ""}">
           ${imgHtml}
           ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
           ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
@@ -299,9 +299,6 @@ export async function hydrateHome() {
   hydrateCategoryTiles();
   hydrateHomeCollections();
   try {
-    setStatus("bestsellersStatus", "Loading…");
-    setStatus("newCollectionStatus", "Loading…");
-
     // Most loved
     const mostLoved = await fetchMostLoved(8);
     renderGrid("bestsellersGrid", mostLoved);

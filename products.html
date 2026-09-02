@@ -491,7 +491,7 @@
       const original_price = Number(p.price_inr || 0);
       const sale_price = (p.sale_price_inr === null || p.sale_price_inr === undefined) ? null : Number(p.sale_price_inr);
       const effective_price = (sale_price && sale_price > 0) ? sale_price : original_price;
-      return { ...p, image_url: imgs[0]?.image_url ?? "", available_qty, _original_price_inr: original_price, _effective_price_inr: effective_price };
+      return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: imgs[1]?.image_url ?? "", available_qty, _original_price_inr: original_price, _effective_price_inr: effective_price };
     });
   }
 
@@ -511,14 +511,14 @@
       : `<span class="p-card-price">${moneyINR(base)}</span>`;
 
     const imgHtml = p.image_url
-      ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title)}" loading="lazy" decoding="async">`
+      ? `<img class="${p.image_url_hover ? "p-card-img-primary" : ""}" src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title)}" loading="lazy" decoding="async">${p.image_url_hover ? `<img class="p-card-img-hover" src="${safeSrc(p.image_url_hover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
       : `<div class="p-card-img-empty"></div>`;
 
     return `
       <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
         <button type="button" class="p-card-wish" data-product-id="${escapeAttr(p.id)}" aria-label="Add to wishlist" aria-pressed="false">${heartIcon()}</button>
         <a class="product-link" href="product.html?id=${encodeURIComponent(p.id)}&from=products&type=${encodeURIComponent(params.get('type') || 'saree')}${params.get('collection') ? '&col=' + encodeURIComponent(params.get('collection')) + '&colName=' + encodeURIComponent(cache.collectionName || '') : ''}">
-          <div class="p-card-img">
+          <div class="p-card-img${p.image_url_hover ? " has-hover-img" : ""}">
             ${imgHtml}
             ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
             ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}

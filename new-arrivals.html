@@ -321,7 +321,7 @@
       const pctOff = (sale && base) ? Math.round((1 - sale/base) * 100) : 0;
 
       const imgHtml = p.image_url
-        ? `<img src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title)}" loading="${idx < 4 ? 'eager' : 'lazy'}">`
+        ? `<img class="${p.image_url_hover ? "p-card-img-primary" : ""}" src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title)}" loading="${idx < 4 ? 'eager' : 'lazy'}">${p.image_url_hover ? `<img class="p-card-img-hover" src="${safeSrc(p.image_url_hover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
         : `<div class="p-card-img-empty"></div>`;
 
       const priceHtml = (sale && sale < base)
@@ -331,7 +331,7 @@
       return `
         <div class="p-card" style="animation-delay:${(idx % 8) * 60}ms">
           <a href="product.html?id=${encodeURIComponent(p.id)}&from=new-arrivals">
-            <div class="p-card-img">
+            <div class="p-card-img${p.image_url_hover ? " has-hover-img" : ""}">
               ${imgHtml}
               ${soldOut ? `<div class="p-card-sold-badge">Sold Out</div>` : (hasNewBadge ? `<div class="p-card-new-badge">New</div>` : "")}
               ${pctOff > 0 ? `<div class="p-card-sale-badge">${pctOff}% off</div>` : ""}
@@ -364,7 +364,7 @@
 
       const rows = (data ?? []).map(p => {
         const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
-        return { ...p, image_url: imgs[0]?.image_url ?? "" };
+        return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: imgs[1]?.image_url ?? "" };
       });
 
       status.textContent = `${rows.length} new arrivals`;

@@ -321,6 +321,7 @@
       function relatedCard(p) {
         const imgs = (p.product_images ?? []).slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
         const imgUrl = imgs[0]?.image_url ?? "";
+        const imgUrlHover = imgs[1]?.image_url ?? "";
         const base = Number(p.price_inr || 0);
         const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
         const hasSale = sale != null && sale > 0 && sale < base;
@@ -333,11 +334,11 @@
           ? `<span class="p-card-original">${moneyINR(base)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
           : `<span class="p-card-price">${moneyINR(base)}</span>`;
         const imgHtml = imgUrl
-          ? `<img src="${safeSrc(imgUrl)}" alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">`
+          ? `<img class="${imgUrlHover ? "p-card-img-primary" : ""}" src="${safeSrc(imgUrl)}" alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">${imgUrlHover ? `<img class="p-card-img-hover" src="${safeSrc(imgUrlHover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
           : `<div class="p-card-img-empty"></div>`;
         return `
           <a href="product.html?id=${encodeURIComponent(p.id)}" class="p-card product-link">
-            <div class="p-card-img">
+            <div class="p-card-img${imgUrlHover ? " has-hover-img" : ""}">
               ${imgHtml}
               ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
             </div>
@@ -531,7 +532,7 @@ if (!sessionStorage.getItem(viewKey)) {
           ? `<img src="${thumbSrc}" alt="${thumbAlt}" loading="lazy" decoding="async">`
           : `<div class="pd-thumb-empty">No image</div>`;
         return `
-          <button class="pd-thumb" data-idx="${idx}" type="button" aria-label="View image ${idx + 1}">
+          <button class="pd-thumb${idx === 0 ? " is-active" : ""}" data-idx="${idx}" type="button" aria-label="View image ${idx + 1}">
             ${inner}
           </button>
         `;
@@ -760,13 +761,25 @@ if (!sessionStorage.getItem(viewKey)) {
         openLightbox(idx);
       });
 
-      // Clicking thumbs switches main image (Nalli-like)
+      // Clicking thumbs switches main image (Nalli-like) — crossfades the
+      // swap instead of an instant cut, and keeps the clicked thumb marked
+      // as the active one (the .pd-thumb.is-active border style already
+      // existed in styles.css but nothing ever applied the class).
       Array.from(thumbs.querySelectorAll("button")).forEach((btn) => {
         btn.addEventListener("click", () => {
           const idx = Number(btn.getAttribute("data-idx") || "0");
-          mainImg.src = safeUrl(images[idx].image_url, { type: "src" }) || "";
-          mainImg.alt = images[idx].alt_text ?? data.title ?? "Product image";
-          mainImg.dataset.idx = String(idx);
+          if (mainImg.dataset.idx === String(idx)) return;
+
+          thumbs.querySelectorAll(".pd-thumb.is-active").forEach((el) => el.classList.remove("is-active"));
+          btn.classList.add("is-active");
+
+          mainImg.classList.add("is-swapping");
+          window.setTimeout(() => {
+            mainImg.src = safeUrl(images[idx].image_url, { type: "src" }) || "";
+            mainImg.alt = images[idx].alt_text ?? data.title ?? "Product image";
+            mainImg.dataset.idx = String(idx);
+            mainImg.classList.remove("is-swapping");
+          }, 140);
         });
 
         // Optional: double-click thumb to open zoom

@@ -71,34 +71,44 @@
         return;
       }
 
-      wishlistGrid.innerHTML = products.map(product => {
+      wishlistGrid.innerHTML = products.map((product, idx) => {
         const price = Number(product.price_inr || 0);
         const sale = product.sale_price_inr === null || product.sale_price_inr === undefined
           ? null
           : Number(product.sale_price_inr || 0);
 
-        const showSale = Number.isFinite(sale) && sale > 0 && sale < price && Number.isFinite(price);
-        const priceHtml = showSale
-          ? `<span style="font-weight:900;">${moneyINR(sale)}</span> <span class="small" style="opacity:.7;text-decoration:line-through;">${moneyINR(price)}</span>`
-          : `<span style="font-weight:900;">${moneyINR(price)}</span>`;
+        const hasSale = Number.isFinite(sale) && sale > 0 && sale < price && Number.isFinite(price);
+        const pctOff = hasSale ? Math.round((1 - sale / price) * 100) : 0;
+        const priceHtml = hasSale
+          ? `<span class="p-card-original">${moneyINR(price)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
+          : `<span class="p-card-price">${moneyINR(price)}</span>`;
+
+        const available = Math.max(0, Number(product.inventory_qty || 0) - Number(product.reserved_qty || 0));
+        const soldOut = available <= 0;
 
         const imgHtml = product.image_url
-          ? `<img src="${safeSrc(product.image_url)}" alt="${escapeAttr(product.title || 'Product')}" loading="lazy">`
-          : `<div style="height:260px;background:#fafafa;border-radius:12px;"></div>`;
+          ? `<img class="${product.image_url_hover ? "p-card-img-primary" : ""}" src="${safeSrc(product.image_url)}" alt="${escapeAttr(product.title || 'Product')}" loading="lazy" decoding="async">${product.image_url_hover ? `<img class="p-card-img-hover" src="${safeSrc(product.image_url_hover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
+          : `<div class="p-card-img-empty"></div>`;
 
         return `
-          <div class="card product-card">
-            <a href="product.html?id=${encodeURIComponent(product.id)}" style="text-decoration:none;color:inherit;">
-              ${imgHtml}
+          <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
+            <a href="product.html?id=${encodeURIComponent(product.id)}&from=wishlist" class="product-link">
+              <div class="p-card-img${product.image_url_hover ? " has-hover-img" : ""}">
+                ${imgHtml}
+                ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : ""}
+                ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
+              </div>
+              <div class="p-card-body">
+                <div class="p-card-title">${escapeHtml(product.title || '')}</div>
+                <div class="p-card-pricing">${priceHtml}</div>
+                ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
+              </div>
             </a>
-            <div class="p">
-              <a href="product.html?id=${encodeURIComponent(product.id)}" style="text-decoration: none; color: inherit;">
-                <div class="product-title">${escapeHtml(product.title || '')}</div>
-                <div class="product-price" style="margin-top:6px;">${priceHtml}</div>
-              </a>
+            <div style="padding:0 14px 16px;">
               <button
+                type="button"
                 class="btn secondary js-remove"
-                style="width: 100%; margin-top: 12px;"
+                style="width: 100%;"
                 data-id="${escapeAttr(product.id)}">
                 Remove
               </button>
