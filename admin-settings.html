@@ -83,6 +83,18 @@
               <input id="f_return_hours" class="input" type="number" min="1" max="720" placeholder="48" style="max-width:160px;" />
               <div class="small" style="opacity:.6; margin-top:4px;">How long a customer has after delivery to report a manufacturing defect and request a return.</div>
             </div>
+
+            <div class="full">
+              <label class="pm-label">Low stock threshold</label>
+              <input id="f_low_stock_threshold" class="input" type="number" min="0" max="1000" placeholder="3" style="max-width:160px;" />
+              <div class="small" style="opacity:.6; margin-top:4px;">A product shows the "Low stock" badge in the catalogue once its quantity drops to this number or below.</div>
+            </div>
+
+            <div class="full">
+              <label class="pm-label">Order notification emails</label>
+              <input id="f_notify_admin_emails" class="input" placeholder="you@example.com, partner@example.com" />
+              <div class="small" style="opacity:.6; margin-top:4px;">Comma-separated. Every address here gets an email the moment a new order (online or walk-in) is placed. Previously this could only be changed by editing a setting directly in Supabase — now it's controlled here.</div>
+            </div>
           </div>
 
           <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
@@ -178,6 +190,8 @@
       document.getElementById("f_email").value = s.support_email || "";
       document.getElementById("f_hours").value = s.support_hours || "";
       document.getElementById("f_return_hours").value = s.return_window_hours || 48;
+      document.getElementById("f_low_stock_threshold").value = s.low_stock_threshold ?? 3;
+      document.getElementById("f_notify_admin_emails").value = s.notify_admin_emails || "";
     }
 
     document.getElementById("btnSaveSettings").addEventListener("click", async () => {
@@ -191,6 +205,8 @@
           support_email: document.getElementById("f_email").value,
           support_hours: document.getElementById("f_hours").value,
           return_window_hours: Number(document.getElementById("f_return_hours").value),
+          low_stock_threshold: Number(document.getElementById("f_low_stock_threshold").value),
+          notify_admin_emails: document.getElementById("f_notify_admin_emails").value,
         });
         statusEl.textContent = "Saved ✅ — live on the site immediately.";
       } catch (e) {

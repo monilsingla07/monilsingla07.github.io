@@ -88,6 +88,38 @@ export async function addToWishlist(productId) {
 }
 
 /**
+ * Merge a guest's localStorage wishlist into their account once they sign
+ * in — previously the guest list was just abandoned on login/signup, so
+ * anything wishlisted before creating an account silently disappeared.
+ * Safe to call on every auth event (same idempotent pattern as
+ * grantSignupCashIfEligible in ui.js): once the local list is merged it's
+ * cleared, so a repeat call is a fast no-op reading an empty array.
+ */
+export async function mergeGuestWishlistIntoAccount() {
+  const ids = getLocalIds();
+  if (ids.length === 0) return { merged: 0 };
+
+  const user = await getUser();
+  if (!user) return { merged: 0 };
+
+  const rows = ids.map((product_id) => ({ user_id: user.id, product_id }));
+  // onConflict + ignoreDuplicates: a product already wishlisted from another
+  // device/session shouldn't error the whole merge, it should just be
+  // skipped — same "already in wishlist" case addToWishlist treats as fine.
+  const { error } = await supabase
+    .from(WISHLIST_TABLE)
+    .upsert(rows, { onConflict: "user_id,product_id", ignoreDuplicates: true });
+
+  if (error) {
+    console.error("mergeGuestWishlistIntoAccount error:", error.message);
+    return { merged: 0, error: error.message };
+  }
+
+  setLocalIds([]);
+  return { merged: ids.length };
+}
+
+/**
  * Remove from wishlist
  */
 export async function removeFromWishlist(productId) {

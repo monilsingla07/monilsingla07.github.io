@@ -36,6 +36,7 @@
 
   <div class="container">
     <div class="card" style="padding:22px;border-radius:18px;">
+      <div id="policyContent">
       <h2 style="margin-top:0;">Returns & Cancellations</h2>
 
       <h3>Returns</h3>
@@ -71,6 +72,7 @@
       <p class="small" style="max-width:72ch;">
         Handled with care, every step of the way.
       </p>
+      </div>
 
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <a class="btn" href="products.html">Browse Sarees</a>
@@ -87,6 +89,21 @@
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+
+    (async () => {
+      try {
+        const res = await fetch("https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-policy-page", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug: "returns" }),
+        });
+        const { page } = await res.json();
+        if (page?.content_html) {
+          document.getElementById("policyContent").innerHTML = page.content_html;
+          if (page.title) document.title = page.title + " — AhamStree";
+        }
+      } catch (_e) { /* keep static fallback content */ }
+    })();
   </script>
 </body>
 </html>

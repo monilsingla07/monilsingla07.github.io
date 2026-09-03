@@ -373,6 +373,15 @@
       retSubmitBtn.disabled = true;
       retStatus.style.color = "#64748b";
 
+      // Photos upload one at a time, sequentially, over several seconds —
+      // navigating away mid-upload previously just silently orphaned
+      // whatever had already reached storage, with the shopper left unsure
+      // whether their return went through. Warn on tab close/nav while this
+      // is in flight; removed in the finally block below regardless of
+      // outcome.
+      const warnBeforeUnload = (e) => { e.preventDefault(); e.returnValue = ""; };
+      window.addEventListener("beforeunload", warnBeforeUnload);
+
       try {
         // ── Step 1: upload each photo via a signed URL, one at a time ──────
         // (this does NOT touch Shiprocket at all — it only stores the
@@ -424,6 +433,8 @@
         retSubmitBtn.disabled = false;
         retStatus.style.color = "crimson";
         retStatus.textContent = "Could not submit: " + err.message;
+      } finally {
+        window.removeEventListener("beforeunload", warnBeforeUnload);
       }
     });
 

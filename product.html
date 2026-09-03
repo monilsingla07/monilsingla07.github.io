@@ -194,7 +194,7 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
-    import { addToCart } from "./assets/cart.js";
+    import { addToCart, getCart } from "./assets/cart.js";
     import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
 	    import { escapeHtml, escapeAttr, safeSrc, safeUrl } from "./assets/safe.js";
     import { setPageMeta, injectJsonLd, buildProductSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
@@ -463,6 +463,17 @@ if (!sessionStorage.getItem(viewKey)) {
       const inv = safeNum(data.inventory_qty, 0);
       const reserved = safeNum(data.reserved_qty, 0);
       const available = Math.max(0, inv - reserved);
+
+      // How many of this product are already sitting in the cart — the qty
+      // stepper below must cap at what's left AFTER that, not the product's
+      // total available stock, or a shopper could push the cart line's
+      // total qty (existing + newly added) past real stock. cart.html does
+      // eventually catch and clamp this on its own next render, but this
+      // avoids ever showing/letting a shopper pick a qty that's already
+      // known to be wrong.
+      const alreadyInCart = getCart().find(i => i.product_id === data.id)?.qty || 0;
+      const remainingForCart = Math.max(0, available - alreadyInCart);
+
       const stockEl = document.getElementById("stock");
       stockEl.textContent = available > 0 ? `${available} available` : "Sold out";
 
@@ -812,21 +823,23 @@ if (!sessionStorage.getItem(viewKey)) {
 
       function getQty() {
         const v = safeNum(qtyInput.value, 1);
-        // Limit qty to available stock (if stock is 0, keep at 1 but button disabled anyway)
-        const max = available > 0 ? available : 1;
+        // Limit qty to what's left after what's already in the cart (if
+        // stock is 0, keep at 1 but button disabled anyway)
+        const max = remainingForCart > 0 ? remainingForCart : 1;
         return clamp(Math.floor(v), 1, max);
       }
 
       function setQty(n) {
-        qtyInput.value = String(getQty() === n ? n : clamp(n, 1, available > 0 ? available : 1));
+        qtyInput.value = String(getQty() === n ? n : clamp(n, 1, remainingForCart > 0 ? remainingForCart : 1));
       }
 
       qtyInput.addEventListener("input", () => setQty(getQty()));
       qtyMinus.addEventListener("click", () => setQty(getQty() - 1));
       qtyPlus.addEventListener("click", () => setQty(getQty() + 1));
 
-      // If sold out, disable qty controls completely
-      if (available <= 0) {
+      // If sold out, or the cart already holds all remaining stock, disable
+      // qty controls completely.
+      if (remainingForCart <= 0) {
         qtyInput.disabled = true;
         qtyMinus.disabled = true;
         qtyPlus.disabled = true;
@@ -916,9 +929,9 @@ if (!sessionStorage.getItem(viewKey)) {
 
       // ===== Add to cart (uses qty) =====
       const addBtn = document.getElementById("addBtn");
-      if (available <= 0) {
+      if (remainingForCart <= 0) {
         addBtn.disabled = true;
-        addBtn.textContent = "Sold out";
+        addBtn.textContent = available <= 0 ? "Sold out" : "Max qty already in cart";
         addBtn.style.background = "#ddd";
         addBtn.style.borderColor = "#ddd";
         addBtn.style.color = "#666";
@@ -934,9 +947,9 @@ if (!sessionStorage.getItem(viewKey)) {
       // of the cart page — same addToCart() call the regular button uses) =====
       const buyNowBtn = document.getElementById("buyNowBtn");
       if (buyNowBtn) {
-        if (available <= 0) {
+        if (remainingForCart <= 0) {
           buyNowBtn.disabled = true;
-          buyNowBtn.textContent = "Sold out";
+          buyNowBtn.textContent = available <= 0 ? "Sold out" : "Max qty already in cart";
         } else {
           buyNowBtn.addEventListener("click", () => {
             const qty = getQty();
@@ -954,9 +967,9 @@ if (!sessionStorage.getItem(viewKey)) {
       const mobileBarPrice = document.getElementById("pdMobileBarPrice");
       const mobileBarBtn = document.getElementById("pdMobileBarBtn");
       mobileBarPrice.innerHTML = priceEl.innerHTML;
-      if (available <= 0) {
+      if (remainingForCart <= 0) {
         mobileBarBtn.disabled = true;
-        mobileBarBtn.textContent = "Sold out";
+        mobileBarBtn.textContent = available <= 0 ? "Sold out" : "Max qty already in cart";
       } else {
         mobileBarBtn.addEventListener("click", () => addBtn.click());
       }

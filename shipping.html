@@ -36,6 +36,7 @@
 
   <div class="container">
     <div class="card" style="padding:22px;border-radius:18px;">
+      <div id="policyContent">
       <h2 style="margin-top:0;">Shipping Policy</h2>
       <p class="small" style="max-width:72ch;">
 We begin processing and shipping your order as soon as it is successfully placed and confirmed with us.
@@ -67,8 +68,8 @@ Delivery timelines may vary slightly during festive seasons, high-demand periods
 <p class="small" style="max-width:72ch;">
 A celebration of craftsmanship, delivered with care.
 </p>
+      </div>
 
-      
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <a class="btn" href="products.html">Browse Sarees</a>
         <a class="btn ghost" href="cart.html">Go to Cart</a>
@@ -84,6 +85,21 @@ A celebration of craftsmanship, delivered with care.
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+
+    (async () => {
+      try {
+        const res = await fetch("https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-policy-page", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug: "shipping" }),
+        });
+        const { page } = await res.json();
+        if (page?.content_html) {
+          document.getElementById("policyContent").innerHTML = page.content_html;
+          if (page.title) document.title = page.title + " — AhamStree";
+        }
+      } catch (_e) { /* keep static fallback content */ }
+    })();
   </script>
 </body>
 </html>

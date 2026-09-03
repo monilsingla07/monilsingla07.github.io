@@ -1,0 +1,216 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Policy Pages — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr; margin-top: 12px; }
+    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    textarea.input { min-height: 420px; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 13px; resize: vertical; }
+    .page-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+    .page-tab { border: 1.5px solid var(--border, #e5e7eb); background: #fff; padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .page-tab.active { background: var(--brand, #7c1c1c); color: #fff; border-color: var(--brand, #7c1c1c); }
+    .page-tab .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #9ca3af; margin-right: 6px; }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:900px;">
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">Policy Pages</h2>
+          <div class="small" style="opacity:.6; margin-top:4px;">Edit Terms of Use, Privacy, Cookies, Returns, Shipping, and FAQ — no code change or redeploy needed. Changes go live on the public pages immediately.</div>
+        </div>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="page-tabs" id="pageTabs"></div>
+
+      <div class="pm-card">
+        <div style="font-weight:900;" id="formTitle">Loading…</div>
+        <div class="small" id="metaLine" style="opacity:.55; margin-top:2px;"></div>
+
+        <div class="pm-row">
+          <div>
+            <label class="pm-label">Page title (shown as the page's H1-equivalent heading and browser tab title)</label>
+            <input id="f_title" class="input" placeholder="e.g. Terms of Use" />
+          </div>
+
+          <div>
+            <label class="pm-label">Content (raw HTML — headings, paragraphs, links; rendered as-is on the public page). The final "Browse Sarees / Go to Cart / Home" button row is added automatically by every policy page and isn't part of this content.</label>
+            <textarea id="f_content" class="input"></textarea>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+          <button id="btnSave" class="btn">Save page</button>
+          <a id="btnPreview" class="btn secondary" target="_blank" rel="noopener">Open live page →</a>
+          <div id="formStatus" class="small" style="align-self:center;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-policies";
+
+    // slug -> the actual public page file, so "Open live page" links correctly.
+    const PAGE_HREF = {
+      terms: "terms.html",
+      privacy: "privacy.html",
+      cookies: "cookies.html",
+      returns: "returns.html",
+      shipping: "shipping.html",
+      faq: "help.html",
+    };
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+    const formStatus   = document.getElementById("formStatus");
+    const formTitle    = document.getElementById("formTitle");
+    const metaLine     = document.getElementById("metaLine");
+
+    function showGateError(emoji, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function authedFetch(body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    let pagesCache = [];
+    let currentSlug = null;
+
+    function renderTabs() {
+      const tabs = document.getElementById("pageTabs");
+      tabs.innerHTML = pagesCache.map(p => `
+        <button type="button" class="page-tab ${p.slug === currentSlug ? "active" : ""}" data-slug="${p.slug}">
+          <span class="dot"></span>${escapeHtml(p.title || p.slug)}
+        </button>
+      `).join("");
+      tabs.querySelectorAll("button[data-slug]").forEach(btn => {
+        btn.addEventListener("click", () => selectPage(btn.dataset.slug));
+      });
+    }
+
+    async function selectPage(slug) {
+      currentSlug = slug;
+      renderTabs();
+      formStatus.textContent = "";
+      formTitle.textContent = "Loading…";
+      try {
+        const result = await authedFetch({ action: "get", slug });
+        const p = result.page;
+        document.getElementById("f_title").value = p.title || "";
+        document.getElementById("f_content").value = p.content_html || "";
+        formTitle.textContent = "Editing: " + (p.title || slug);
+        metaLine.textContent = p.updated_at
+          ? "Last updated " + new Date(p.updated_at).toLocaleString("en-IN") + (p.updated_by ? " by " + p.updated_by : "")
+          : "";
+        document.getElementById("btnPreview").href = PAGE_HREF[slug] || "#";
+      } catch (e) {
+        formTitle.textContent = "Error loading page";
+        formStatus.textContent = e.message;
+      }
+    }
+
+    document.getElementById("btnSave").addEventListener("click", async () => {
+      if (!currentSlug) return;
+      formStatus.textContent = "Saving…";
+      try {
+        const title = document.getElementById("f_title").value.trim();
+        const content_html = document.getElementById("f_content").value;
+        await authedFetch({ action: "save", slug: currentSlug, title, content_html });
+        formStatus.textContent = "Saved ✅ — live on the site immediately.";
+        await loadPagesList();
+        renderTabs();
+      } catch (e) {
+        formStatus.textContent = "Error: " + e.message;
+      }
+    });
+
+    async function loadPagesList() {
+      const result = await authedFetch({ action: "list" });
+      pagesCache = result.pages || [];
+    }
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+
+        const adminResult = await supabase
+          .from("admin_users")
+          .select("email")
+          .eq("email", session.user.email.toLowerCase())
+          .maybeSingle();
+
+        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        await loadPagesList();
+        renderTabs();
+        if (pagesCache.length) await selectPage(pagesCache[0].slug);
+      } catch (e) {
+        console.error("Policy pages admin error:", e);
+        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

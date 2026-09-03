@@ -297,7 +297,7 @@
               <a href="product.html?id=${safePid}" target="_blank" rel="noopener" style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;text-decoration:none;color:inherit;">${safeTitleText}</a>
               <div style="margin-top:6px;opacity:.85;">
                 ${hasSale
-                  ? `<span style="text-decoration:line-through;opacity:.55;margin-right:6px;font-size:13px;">${money(basePrice)}</span><span style="color:var(--brand);font-weight:800;">${money(unitPrice)}</span>`
+                  ? `<span style="text-decoration:line-through;margin-right:6px;font-size:13px;">${money(basePrice)}</span><span style="color:var(--brand);font-weight:800;">${money(unitPrice)}</span>`
                   : money(unitPrice)
                 }
               </div>
@@ -366,6 +366,30 @@
         await render();
       };
     }
+
+    // is-disabled + aria-disabled only stop mouse clicks (via CSS
+    // pointer-events:none) — a keyboard user can still Tab to this <a> and
+    // activate it with Enter, which navigates normally since the element is
+    // still a real link with an href. Bound once here (not inside render(),
+    // which re-runs on every qty/remove change) so it isn't re-attached
+    // repeatedly; reads the live is-disabled class at click time instead of
+    // capturing stale state.
+    document.getElementById("checkoutBtn")?.addEventListener("click", (e) => {
+      const btn = e.currentTarget;
+      if (btn.classList.contains("is-disabled")) {
+        e.preventDefault();
+        document.getElementById("stockMsg")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+
+    // Keep this tab's cart view in sync if the cart is edited in another
+    // tab (localStorage writes otherwise just silently clobber each other
+    // with no cross-tab signal at all). The "storage" event only fires in
+    // OTHER tabs/windows, never the one that made the write, so this can't
+    // loop or fight with this tab's own render() calls.
+    window.addEventListener("storage", (e) => {
+      if (e.key === "ahamstree_cart_v1") render();
+    });
 
     render();
   </script>

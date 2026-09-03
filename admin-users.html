@@ -103,6 +103,7 @@
           <input id="userSearch" class="input" placeholder="Search name, email, or phone…" style="max-width:320px;" />
           <button id="btnUserSearch" class="btn secondary" style="padding:8px 16px;font-size:13px;">Search</button>
           <button id="btnUserRefresh" class="btn secondary" style="padding:8px 16px;font-size:13px;">↻ Refresh</button>
+          <button id="btnUserExportCsv" class="btn secondary" style="padding:8px 16px;font-size:13px;">Export CSV</button>
         </div>
         <div id="userStatusMsg" class="small" style="margin-bottom:12px;opacity:.6;"></div>
         <div id="userList" style="display:grid;gap:0;"></div>
@@ -285,6 +286,48 @@
     document.getElementById("btnUserRefresh").addEventListener("click", () => { userPage = 1; loadUsers(); });
     document.getElementById("userBtnPrev").addEventListener("click", () => { if (userPage > 1) { userPage--; loadUsers(); } });
     document.getElementById("userBtnNext").addEventListener("click", () => { userPage++; loadUsers(); });
+
+    // CSV export — loops through every page of the current search filter
+    // (customers were previously fully trapped in the UI with no export
+    // path at all). Capped at 200 pages (5,000 customers) as a sanity limit.
+    function toCsvCell(v) {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    }
+    document.getElementById("btnUserExportCsv").addEventListener("click", async () => {
+      const btn = document.getElementById("btnUserExportCsv");
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Exporting…";
+      try {
+        let all = [];
+        for (let p = 1; p <= 200; p++) {
+          const res = await callFn("admin-users", { action: "list", page: p, per_page: userPerPage, search: userSearchTerm });
+          if (!res.ok) break;
+          const rows = res.data.users || [];
+          all = all.concat(rows);
+          if (rows.length < userPerPage) break;
+        }
+        const cols = ["id", "full_name", "email", "phone", "city", "state", "created_at", "last_sign_in_at", "login_count"];
+        const header = cols.join(",");
+        const csvRows = all.map(u => cols.map(c => toCsvCell(u[c])).join(","));
+        const csv = [header, ...csvRows].join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ahamstree-customers-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert("Export failed: " + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    });
 
     // ── Login history (global or filtered to one user) ─────────────────
     let historyPage = 1;

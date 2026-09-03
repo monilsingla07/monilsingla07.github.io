@@ -5,6 +5,7 @@ import { mountWelcomePopup } from "./welcome-popup.js";
 import { mountSignInPopup } from "./signin-popup.js";
 import { escapeHtml } from "./safe.js";
 import { grantSignupCashIfEligible } from "./profile-seed.js";
+import { mergeGuestWishlistIntoAccount } from "./wishlist.js";
 import { trackPageview } from "./visit-tracker.js";
 
 // ── Header offset (keeps content below fixed header) ──
@@ -169,6 +170,10 @@ export function renderHeader(active = "") {
                 <a href="sale.html">Sale</a>
               </nav>
 
+              <div class="mobile-drawer-section" id="adminSectionMobile" hidden>
+                <a id="adminLinkMobile" href="admin.html">Admin dashboard</a>
+              </div>
+
               <div class="mobile-drawer-section">
                 <div class="mobile-drawer-section-title">Help & Info</div>
                 <a href="about.html">About Us</a>
@@ -191,6 +196,7 @@ export function renderHeader(active = "") {
 
         <!-- Desktop: Right utilities -->
         <div class="utils utils-desktop">
+          <a id="adminLink" class="util-link admin-link" href="admin.html" title="Admin dashboard" hidden>Admin</a>
           <a class="util-link" href="search.html" title="Search">Search</a>
           <a id="accountLink" class="util-link" href="login.html" title="Account">Login / Sign up</a>
           <a id="wishlistLink" class="util-link ${active === "wishlist" ? "active" : ""}" href="wishlist.html" title="Wishlist">Wishlist</a>
@@ -298,7 +304,18 @@ export function renderFooter() {
 let _authHeaderListenerSet = false;
 let _escListenerSet = false;
 
+// Set by initMobileMenu() to its real close() — which restores focus and
+// removes the Tab-trap listener, neither of which this bare fallback can do
+// since it has no access to that closure's state. The Escape-key handler
+// below needs a way to close the drawer properly even though it's declared
+// at module scope, outside initMobileMenu().
+let _drawerClose = null;
+
 function closeMobileDrawerIfOpen() {
+  if (_drawerClose) { _drawerClose(); return; }
+  // Fallback in case this ever fires before initMobileMenu() has run —
+  // matches the old behavior (no focus restore, since there's nothing to
+  // restore to yet).
   const drawer = document.getElementById("mobileDrawer");
   if (!drawer) return;
   drawer.classList.remove("open");
@@ -306,23 +323,55 @@ function closeMobileDrawerIfOpen() {
   document.body.classList.remove("no-scroll");
 }
 
+// Elements a keyboard user can land on, in DOM/tab order — used to trap Tab
+// inside the open drawer panel instead of letting it wander onto the (still
+// visually hidden behind the overlay) page content underneath.
+function getFocusable(container) {
+  return Array.from(
+    container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])')
+  ).filter(el => el.offsetParent !== null || el === document.activeElement);
+}
+
 function initMobileMenu() {
   const drawer = document.getElementById("mobileDrawer");
+  const panel = drawer?.querySelector(".mobile-drawer-panel");
   const openBtn = document.querySelector(".mobile-menu-btn");
   const closeBtn = document.querySelector(".mobile-drawer-close");
-  if (!drawer || !openBtn || !closeBtn) return;
+  if (!drawer || !panel || !openBtn || !closeBtn) return;
   if (drawer.dataset.menuInit === "1") return;
   drawer.dataset.menuInit = "1";
 
  let savedScrollY = 0;
+ let lastFocused = null;
+
+function trapTab(e) {
+  if (e.key !== "Tab") return;
+  const focusable = getFocusable(panel);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
 
 function open() {
   savedScrollY = window.scrollY;
+  lastFocused = document.activeElement;
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
   document.body.style.position = "fixed";
   document.body.style.top = `-${savedScrollY}px`;
   document.body.style.width = "100%";
+  // Move focus into the dialog (its own close button, per the standard
+  // dialog pattern) rather than leaving it on the trigger button behind an
+  // overlay it can no longer see.
+  closeBtn.focus();
+  panel.addEventListener("keydown", trapTab);
 }
 function close() {
   drawer.classList.remove("open");
@@ -331,7 +380,13 @@ function close() {
   document.body.style.top = "";
   document.body.style.width = "";
   window.scrollTo(0, savedScrollY); // restore position
+  panel.removeEventListener("keydown", trapTab);
+  // Return focus to whatever had it before opening (normally the hamburger
+  // button) instead of leaving it lost on the now-hidden close button.
+  (lastFocused && document.contains(lastFocused) ? lastFocused : openBtn).focus();
 }
+
+  _drawerClose = close;
 
   openBtn.addEventListener("click", open);
   closeBtn.addEventListener("click", close);
@@ -553,6 +608,29 @@ async function hydrateSiteSettings() {
   }
 }
 
+async function showAdminLinkIfAdmin(email) {
+  const adminDesktop = document.getElementById("adminLink");
+  const adminMobileSection = document.getElementById("adminSectionMobile");
+  if (!adminDesktop && !adminMobileSection) return;
+
+  let isAdmin = false;
+  if (email) {
+    try {
+      const { data, error } = await supabase
+        .from("admin_users")
+        .select("email")
+        .eq("email", email.toLowerCase())
+        .maybeSingle();
+      isAdmin = !error && !!data;
+    } catch (_) {
+      isAdmin = false; // fail closed — never show the link on an uncertain check
+    }
+  }
+
+  if (adminDesktop) adminDesktop.hidden = !isAdmin;
+  if (adminMobileSection) adminMobileSection.hidden = !isAdmin;
+}
+
 export async function hydrateHeaderAuth() {
   initMobileMenu();
   initHeaderOffset();
@@ -587,6 +665,10 @@ export async function hydrateHeaderAuth() {
   // it again on every page load / every auth event is harmless.
   if (loggedIn) grantSignupCashIfEligible(data.session);
 
+  // Same reasoning as above: pull in anything the visitor wishlisted as a
+  // guest, on whichever page/auth event first sees them logged in.
+  if (loggedIn) mergeGuestWishlistIntoAccount();
+
   const aDesktop = document.getElementById("accountLink");
   const aMobile  = document.getElementById("accountLinkMobile");
   const wDesktop = document.getElementById("wishlistLink");
@@ -603,6 +685,14 @@ export async function hydrateHeaderAuth() {
   const wishlistHref = loggedIn ? "account.html?view=wishlist" : "wishlist.html";
   if (wDesktop) wDesktop.href = wishlistHref;
   if (wMobile)  wMobile.href  = wishlistHref;
+
+  // Admin link — previously the only way into /admin.html was typing the
+  // URL by hand. Same admin_users lookup admin.html itself already does on
+  // load (a single indexed-email-column row, cheap enough to run on every
+  // page without caching) — this is purely a UX convenience for showing/
+  // hiding the link, NOT a security boundary; every admin-* page still does
+  // its own real check before showing anything sensitive.
+  showAdminLinkIfAdmin(loggedIn ? data.session.user.email : null);
 
   if (!_authHeaderListenerSet) {
     _authHeaderListenerSet = true;

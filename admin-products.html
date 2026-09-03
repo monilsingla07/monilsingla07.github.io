@@ -126,9 +126,30 @@
               <option value="inactive">Inactive only</option>
             </select>
             <div class="spacer"></div>
+            <button id="btnExportCsv" class="btn secondary">Export CSV</button>
             <button id="btnAddProduct" class="btn">+ Add product</button>
           </div>
           <div id="productCount" class="small" style="opacity:.55; margin-bottom:10px;"></div>
+
+          <!-- Bulk actions — only shown once 1+ products are checked. Price
+               and stock changes are relative (+/- %, +/- units) since "set
+               every selected product to the same price" is rarely what's
+               wanted; "10% off this batch" or "restock +5 units" is. -->
+          <div id="bulkBar" style="display:none; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 14px; border-radius:12px; background:var(--brand-light,#fdf2f2); border:1.5px solid var(--brand,#7c1c1c); margin-bottom:12px;">
+            <strong id="bulkCount" style="font-size:13px;"></strong>
+            <button id="bulkActivate" class="btn secondary" style="padding:6px 12px; font-size:12px;">Activate</button>
+            <button id="bulkDeactivate" class="btn secondary" style="padding:6px 12px; font-size:12px;">Deactivate</button>
+            <span style="display:flex; align-items:center; gap:4px;">
+              <input id="bulkPricePct" class="input" type="number" placeholder="e.g. -10" style="width:80px; padding:6px 8px; font-size:12px;" />
+              <button id="bulkApplyPrice" class="btn secondary" style="padding:6px 12px; font-size:12px;">% price</button>
+            </span>
+            <span style="display:flex; align-items:center; gap:4px;">
+              <input id="bulkStockDelta" class="input" type="number" placeholder="e.g. +5" style="width:80px; padding:6px 8px; font-size:12px;" />
+              <button id="bulkApplyStock" class="btn secondary" style="padding:6px 12px; font-size:12px;">± stock</button>
+            </span>
+            <button id="bulkClear" class="btn secondary" style="padding:6px 12px; font-size:12px; margin-left:auto;">Clear selection</button>
+          </div>
+
           <div id="productGrid" class="prod-grid"></div>
         </div>
 
@@ -382,13 +403,29 @@
 
     // ══════════════════════════════════════ PRODUCTS: LIST ══════════════════════════════════════
     let productsCache = [];
+    const selectedIds = new Set();
+
+    // Was a hardcoded <= 3 with no way to change it without editing code —
+    // now reads the admin-configurable value from Site Settings (defaults
+    // to 3, matching the old behavior, if settings haven't loaded yet).
+    let lowStockThreshold = 3;
+    (async () => {
+      try {
+        const res = await fetch("https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-site-settings");
+        const j = await res.json().catch(() => ({}));
+        if (j?.settings?.low_stock_threshold != null) {
+          lowStockThreshold = Number(j.settings.low_stock_threshold);
+          renderProductGrid();
+        }
+      } catch (_e) { /* keep default */ }
+    })();
 
     function productBadges(p) {
       const badges = [];
       badges.push(p.is_active ? '<span class="pm-badge active">Active</span>' : '<span class="pm-badge inactive">Inactive</span>');
       if (p.sale_price_inr != null) badges.push('<span class="pm-badge sale">Sale</span>');
       if ((p.inventory_qty || 0) <= 0) badges.push('<span class="pm-badge out">Out of stock</span>');
-      else if ((p.inventory_qty || 0) <= 3) badges.push('<span class="pm-badge low">Low stock</span>');
+      else if ((p.inventory_qty || 0) <= lowStockThreshold) badges.push('<span class="pm-badge low">Low stock</span>');
       return badges.join("");
     }
 
@@ -416,6 +453,7 @@
       grid.innerHTML = filtered.map(p => `
         <div class="prod-card">
           <div class="prod-thumb-wrap">
+            <input type="checkbox" class="prod-select" data-select="${escapeAttr(p.id)}" ${selectedIds.has(p.id) ? "checked" : ""} style="position:absolute; top:8px; right:8px; z-index:2; width:18px; height:18px;" title="Select for bulk actions" />
             ${p.thumbnail_url ? `<img src="${safeSrc(p.thumbnail_url)}" alt="" />` : `<div class="prod-thumb-empty">No photo</div>`}
             <div class="prod-badges">${productBadges(p)}</div>
           </div>
@@ -439,6 +477,13 @@
 
       grid.querySelectorAll("button[data-edit]").forEach(btn => {
         btn.addEventListener("click", () => openProductEditor(btn.dataset.edit));
+      });
+      grid.querySelectorAll("input[data-select]").forEach(chk => {
+        chk.addEventListener("change", () => {
+          const id = chk.dataset.select;
+          if (chk.checked) selectedIds.add(id); else selectedIds.delete(id);
+          renderBulkBar();
+        });
       });
       grid.querySelectorAll("input[data-toggle]").forEach(chk => {
         chk.addEventListener("change", async () => {
@@ -466,6 +511,69 @@
       productsCache = r.products || [];
       renderProductGrid();
     }
+
+    function renderBulkBar() {
+      const bar = document.getElementById("bulkBar");
+      const n = selectedIds.size;
+      bar.style.display = n > 0 ? "flex" : "none";
+      if (n > 0) document.getElementById("bulkCount").textContent = n + " selected";
+    }
+
+    async function applyBulk(patch, confirmMsg) {
+      const ids = Array.from(selectedIds);
+      if (!ids.length) return;
+      if (confirmMsg && !confirm(confirmMsg.replace("{n}", ids.length))) return;
+      try {
+        const r = await authedFetch(PRODUCTS_FN, { action: "bulk_update", ids, ...patch });
+        selectedIds.clear();
+        await loadProductsList();
+        if (r.updated < r.total) alert(`${r.updated} of ${r.total} products updated — the rest failed (see console for details).`);
+      } catch (e) {
+        alert("Bulk update failed: " + e.message);
+      }
+    }
+
+    document.getElementById("bulkActivate").addEventListener("click", () => applyBulk({ is_active: true }));
+    document.getElementById("bulkDeactivate").addEventListener("click", () => applyBulk({ is_active: false }, "Deactivate {n} selected products?"));
+    document.getElementById("bulkApplyPrice").addEventListener("click", () => {
+      const pct = Number(document.getElementById("bulkPricePct").value);
+      if (!Number.isFinite(pct) || pct === 0) return alert("Enter a non-zero percent, e.g. -10 for 10% off.");
+      applyBulk({ price_delta_pct: pct }, `Apply ${pct > 0 ? "+" : ""}${pct}% price change to {n} selected products?`);
+    });
+    document.getElementById("bulkApplyStock").addEventListener("click", () => {
+      const delta = Number(document.getElementById("bulkStockDelta").value);
+      if (!Number.isFinite(delta) || delta === 0) return alert("Enter a non-zero number, e.g. 5 or -3.");
+      applyBulk({ stock_delta: Math.trunc(delta) }, `Apply ${delta > 0 ? "+" : ""}${delta} stock change to {n} selected products?`);
+    });
+    document.getElementById("bulkClear").addEventListener("click", () => {
+      selectedIds.clear();
+      renderBulkBar();
+      renderProductGrid();
+    });
+
+    // CSV export — client-side, from whatever's currently loaded (all
+    // products; the search/filter boxes only affect the on-screen grid, not
+    // this export, since an export is normally wanted in full for
+    // accounting/reconciliation regardless of the current filter).
+    function toCsvCell(v) {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    }
+    document.getElementById("btnExportCsv").addEventListener("click", () => {
+      const cols = ["id", "title", "sku", "category", "price_inr", "sale_price_inr", "inventory_qty", "reserved_qty", "is_active", "created_at"];
+      const header = cols.join(",");
+      const rows = productsCache.map(p => cols.map(c => toCsvCell(p[c])).join(","));
+      const csv = [header, ...rows].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ahamstree-products-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
 
     document.getElementById("pSearch").addEventListener("input", renderProductGrid);
     document.getElementById("pFilterCategory").addEventListener("change", renderProductGrid);
@@ -779,7 +887,19 @@
         await loadCatalogAndRefreshCollectionCounts();
         closeProductEditor(true);
       } catch (e) {
-        status.textContent = "Error: " + e.message;
+        // The product row itself (action: "save") either succeeded or
+        // failed before any of the 4 follow-up calls (images/specs/
+        // sections/collections) ran. If it succeeded, f_id now holds the
+        // real product id — clicking "Save product" again re-runs as an
+        // UPDATE and safely redoes every step (each one is a full
+        // delete-then-insert of that product's rows, so repeating a
+        // completed step is a harmless no-op, not a duplicate). Say so
+        // explicitly instead of a bare error, since a half-saved product
+        // with no explanation reads as data loss, not a retry-safe state.
+        const productSaved = !!document.getElementById("f_id").value;
+        status.textContent = productSaved
+          ? `Error: ${e.message} — the product itself was saved; click "Save product" again to retry the rest (safe to repeat).`
+          : `Error: ${e.message}`;
       }
     });
 

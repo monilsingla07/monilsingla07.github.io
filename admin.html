@@ -147,11 +147,20 @@
         </div>
       </div>
 
-      <!-- Action needed callout -->
-      <div id="actionNeeded" style="display:none; padding:14px 16px; border-radius:14px; background:#fffbeb; border:1.5px solid #fde68a; margin-bottom:20px;">
+      <!-- Action needed callouts -->
+      <div id="actionNeeded" style="display:none; padding:14px 16px; border-radius:14px; background:#fffbeb; border:1.5px solid #fde68a; margin-bottom:12px;">
         <div style="font-weight:800; font-size:14px; color:#92400e;">⚠️ Action needed</div>
         <div class="small" style="color:#92400e; margin-top:4px;" id="actionNeededText"></div>
         <a href="admin-orders.html?status=cod_pending" class="btn" style="margin-top:10px; padding:8px 14px; font-size:13px; display:inline-block;">View COD orders →</a>
+      </div>
+
+      <!-- Previously the dashboard had zero signal that a customer had even
+           filed a return — an admin would only find out by manually
+           checking the Returns page. Same callout pattern as COD above. -->
+      <div id="returnsNeeded" style="display:none; padding:14px 16px; border-radius:14px; background:#eff6ff; border:1.5px solid #bfdbfe; margin-bottom:20px;">
+        <div style="font-weight:800; font-size:14px; color:#1e40af;">↩️ Returns awaiting review</div>
+        <div class="small" style="color:#1e40af; margin-top:4px;" id="returnsNeededText"></div>
+        <a href="admin-returns.html" class="btn" style="margin-top:10px; padding:8px 14px; font-size:13px; display:inline-block;">Review returns →</a>
       </div>
 
       <!-- Metric cards -->
@@ -161,7 +170,7 @@
       <div class="section-title">Revenue</div>
       <div class="metric-grid" id="metricsRevenue"></div>
 
-      <div class="section-title">Quick actions</div>
+      <div class="section-title">Orders &amp; fulfillment</div>
       <div class="quick-links">
         <a href="admin-orders.html" class="quick-link">
           <span style="font-size:20px;">📋</span>
@@ -198,13 +207,17 @@
             <div class="small" style="font-weight:400; opacity:.6;">Review defect photos & approve/reject returns</div>
           </div>
         </a>
-        <a href="admin-create-order.html" class="quick-link" style="border-style:dashed;">
+        <a href="admin-create-order.html" class="quick-link">
           <span style="font-size:20px;">✏️</span>
           <div>
             <div>Create Order</div>
             <div class="small" style="font-weight:400; opacity:.6;">Place an order for an offline customer</div>
           </div>
         </a>
+      </div>
+
+      <div class="section-title">Catalog &amp; promotions</div>
+      <div class="quick-links">
         <a href="admin-products.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">🧵</span>
           <div>
@@ -226,6 +239,17 @@
             <div class="small" style="font-weight:400; opacity:.6;">Set the signup bonus &amp; redemption rate, view balances, adjust customer wallets</div>
           </div>
         </a>
+      </div>
+
+      <div class="section-title">Site content</div>
+      <div class="quick-links">
+        <a href="admin-hero-testimonials.html" class="quick-link" style="border-style:dashed;">
+          <span style="font-size:20px;">🖼️</span>
+          <div>
+            <div>Hero &amp; Testimonials</div>
+            <div class="small" style="font-weight:400; opacity:.6;">Edit the homepage banner slides and customer testimonials</div>
+          </div>
+        </a>
         <a href="admin-popup.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">🔔</span>
           <div>
@@ -240,11 +264,11 @@
             <div class="small" style="font-weight:400; opacity:.6;">Edit the homepage Instagram reels</div>
           </div>
         </a>
-        <a href="admin-hero-testimonials.html" class="quick-link" style="border-style:dashed;">
-          <span style="font-size:20px;">🖼️</span>
+        <a href="admin-policies.html" class="quick-link" style="border-style:dashed;">
+          <span style="font-size:20px;">📄</span>
           <div>
-            <div>Hero &amp; Testimonials</div>
-            <div class="small" style="font-weight:400; opacity:.6;">Edit the homepage banner slides and customer testimonials</div>
+            <div>Policy Pages</div>
+            <div class="small" style="font-weight:400; opacity:.6;">Edit Terms, Privacy, Cookies, Returns, Shipping &amp; FAQ</div>
           </div>
         </a>
         <a href="admin-blog.html" class="quick-link" style="border-style:dashed;">
@@ -254,6 +278,10 @@
             <div class="small" style="font-weight:400; opacity:.6;">Write, edit, and publish blog posts</div>
           </div>
         </a>
+      </div>
+
+      <div class="section-title">Store &amp; customers</div>
+      <div class="quick-links">
         <a href="admin-settings.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">⚙️</span>
           <div>
@@ -354,6 +382,18 @@
         actionNeeded.style.display = "none";
       }
 
+      // Returns awaiting review callout
+      var returnsNeeded = document.getElementById("returnsNeeded");
+      var pendingReturns = data.pendingReturnsCount || 0;
+      if (pendingReturns > 0) {
+        returnsNeeded.style.display = "block";
+        document.getElementById("returnsNeededText").textContent =
+          pendingReturns + " return" + (pendingReturns > 1 ? "s" : "") +
+          " request" + (pendingReturns === 1 ? "s" : "") + " waiting on a decision.";
+      } else {
+        returnsNeeded.style.display = "none";
+      }
+
       // Order metrics
       document.getElementById("metricsOrders").innerHTML = [
         metricCard("Total Orders",     data.ordersCount || 0,     (data.recentOrders7d || 0) + " in last 7 days", ""),
@@ -364,6 +404,7 @@
         metricCard("Delivered",        data.deliveredCount || 0,  "Completed",             ""),
         metricCard("Payment Pending",  data.pendingCount || 0,    "Online payment awaited",""),
         metricCard("Failed/Cancelled", (data.failedCount || 0) + (data.cancelledCount || 0), "", ""),
+        metricCard("Pending Returns",  pendingReturns,             "Awaiting review",       pendingReturns > 0 ? "warn" : ""),
         metricCard("Registered Users", data.usersCount || "—",   "Total accounts",        ""),
       ].join("");
 

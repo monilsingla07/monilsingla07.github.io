@@ -25,6 +25,7 @@
   <div class="container">
     <div class="card" style="padding:22px;border-radius:18px;max-width:80ch;">
 
+      <div id="policyContent">
       <div style="padding:14px 16px;border-radius:14px;background:#fffbeb;border:1.5px solid #fde68a;margin-bottom:20px;">
         <div style="font-weight:800;font-size:13px;color:#92400e;">⚠️ Draft — not reviewed by a lawyer</div>
         <div class="small" style="color:#92400e;margin-top:4px;">
@@ -95,6 +96,7 @@
       <p class="small">
         Questions about this policy, or requests about your data, can be sent via our <a href="contact.html">Contact Us</a> page.
       </p>
+      </div>
 
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <a class="btn" href="products.html">Browse Sarees</a>
@@ -111,6 +113,21 @@
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+
+    (async () => {
+      try {
+        const res = await fetch("https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-policy-page", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug: "privacy" }),
+        });
+        const { page } = await res.json();
+        if (page?.content_html) {
+          document.getElementById("policyContent").innerHTML = page.content_html;
+          if (page.title) document.title = page.title + " — AhamStree";
+        }
+      } catch (_e) { /* keep static fallback content */ }
+    })();
   </script>
 </body>
 </html>

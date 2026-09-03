@@ -419,7 +419,7 @@
               <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeTitle}</div>
               <div class="small" style="opacity:.75;">
                 ${hasSale
-                  ? `<span style="text-decoration:line-through;opacity:.55;margin-right:5px;">${money(basePrice)}</span><span style="color:var(--brand);font-weight:700;">${money(unitPrice)}</span>`
+                  ? `<span style="text-decoration:line-through;margin-right:5px;">${money(basePrice)}</span><span style="color:var(--brand);font-weight:700;">${money(unitPrice)}</span>`
                   : money(unitPrice)
                 } × ${qty}
               </div>
@@ -752,7 +752,7 @@
       return bits.join(" • ");
     }
 
-    async function loadAvailableCoupons() {
+    async function loadAvailableCoupons(isRetry = false) {
       if (!couponOptions) return;
       try {
         const res = await fetch(COUPONS_ENDPOINT, {
@@ -760,6 +760,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({}),
         });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json().catch(() => ({}));
         const coupons = Array.isArray(json.coupons) ? json.coupons : [];
         if (!coupons.length) { couponOptions.innerHTML = ""; return; }
@@ -786,7 +787,15 @@
           });
         });
       } catch (_e) {
-        // Silent — the manual coupon-code input still works even if the chip list fails to load.
+        // A transient network blip shouldn't just cost the shopper a real
+        // discount with zero signal — one quiet retry before giving up.
+        // Still silent on the second failure (manual coupon-code entry
+        // works regardless) — same non-alarming degrade-quietly pattern
+        // used for every other promo widget on the site (popup, reels).
+        if (!isRetry) {
+          setTimeout(() => loadAvailableCoupons(true), 1200);
+          return;
+        }
         couponOptions.innerHTML = "";
       }
     }
