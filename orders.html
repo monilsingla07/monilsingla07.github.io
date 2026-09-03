@@ -539,9 +539,57 @@
       btn.disabled = false;
     }
 
+    // ══════════════════════════════════════════════════════════════════════
+    // INVOICE DOWNLOAD
+    // ══════════════════════════════════════════════════════════════════════
+    async function downloadInvoice(orderId) {
+      const btn = document.getElementById(`inv-btn-${orderId}`);
+      if (!btn) return;
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Preparing…";
+      try {
+        const { data, error } = await supabase.functions.invoke("get-order-invoice", {
+          body: { order_id: orderId }
+        });
+        if (error || data?.error) {
+          throw new Error(data?.error || error?.message || "Could not generate invoice");
+        }
+        window.open(data.invoice_url, "_blank", "noopener,noreferrer");
+      } catch (err) {
+        alert("Could not open invoice: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // SELF-CANCEL
+    // ══════════════════════════════════════════════════════════════════════
+    async function cancelOrder(orderId) {
+      if (!confirm("Cancel this order? This can't be undone.")) return;
+      const btn = document.getElementById(`cancel-btn-${orderId}`);
+      if (btn) { btn.disabled = true; btn.textContent = "Cancelling…"; }
+      try {
+        const { data, error } = await supabase.functions.invoke("cancel-order", {
+          body: { order_id: orderId }
+        });
+        if (error || data?.error) {
+          throw new Error(data?.error || error?.message || "Could not cancel order");
+        }
+        loadOrders();
+      } catch (err) {
+        alert("Could not cancel order: " + err.message);
+        if (btn) { btn.disabled = false; btn.textContent = "Cancel order"; }
+      }
+    }
+
     // Expose to onclick attrs in rendered HTML
-    window.__track  = (oid, awb) => toggleTracker(oid, awb);
-    window.__return = (oid)      => openReturnModal(oid);
+    window.__track   = (oid, awb) => toggleTracker(oid, awb);
+    window.__return  = (oid)      => openReturnModal(oid);
+    window.__invoice = (oid)      => downloadInvoice(oid);
+    window.__cancel  = (oid)      => cancelOrder(oid);
 
     function renderOrder(o) {
       const isCod    = o.payment_method === "cod";
@@ -569,6 +617,11 @@
       const isDelivered = o.status === "delivered";
       const rs          = o.return_status;
       const canReturn   = isDelivered && !rs;
+
+      const CANCELLABLE_STATUSES = ["cod_pending", "confirmed", "paid", "payment_pending", "payment_link_created"];
+      const canCancel  = !awb && CANCELLABLE_STATUSES.includes(o.status);
+      const INVOICEABLE_STATUSES = ["confirmed", "paid", "shipped", "delivered"];
+      const canInvoice = INVOICEABLE_STATUSES.includes(o.status);
 
       const items = (o.order_items || [])
         .map(it => `
@@ -665,6 +718,26 @@
                      type="button"
                      onclick="window.__return('${o.id}')">
                      ↩ Return
+                   </button>`
+                : ""}
+              ${canInvoice
+                ? `<button
+                     id="inv-btn-${o.id}"
+                     class="btn secondary"
+                     style="padding:8px 14px; font-size:13px;"
+                     type="button"
+                     onclick="window.__invoice('${o.id}')">
+                     📄 Invoice
+                   </button>`
+                : ""}
+              ${canCancel
+                ? `<button
+                     id="cancel-btn-${o.id}"
+                     class="btn secondary"
+                     style="padding:8px 14px; font-size:13px; color:crimson; border-color:crimson;"
+                     type="button"
+                     onclick="window.__cancel('${o.id}')">
+                     Cancel order
                    </button>`
                 : ""}
             </div>

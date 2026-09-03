@@ -555,6 +555,11 @@
                   Mark shipped →
                 </button>
               </div>
+              <div class="small" style="color:#64748b;margin:10px 0 6px;">— or, if you're delivering this in person (no courier) —</div>
+              <button class="btn secondary" style="padding:9px 16px;font-size:13px;"
+                      data-action="update-status" data-id="${escapeAttr(o.id)}" data-status="delivered">
+                ✅ Mark delivered (self / in-person)
+              </button>
             </div>` : ""}
 
             ${isShipped && o.shiprocket_awb ? `
