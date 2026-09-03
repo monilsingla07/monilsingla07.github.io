@@ -836,8 +836,10 @@
             try {
               const result = await updateStatus(id, newStatus);
               const razorpay = result?.refund?.razorpay;
+              const deduction = result?.refund?.deduction_inr || 0;
+              const deductionNote = deduction > 0 ? ` (₹${deduction} deducted for shipping)` : "";
               const toastMsg =
-                razorpay === "processed" ? `Order ${newStatus} ✅ — payment refunded via Razorpay` :
+                razorpay === "processed" ? `Order ${newStatus} ✅ — ₹${result.refund.refund_amount_inr} refunded via Razorpay${deductionNote}` :
                 razorpay === "failed"    ? `Order ${newStatus} ✅ — refund FAILED, check Razorpay dashboard` :
                 `Order ${newStatus} ✅`;
               toast(toastMsg, razorpay === "failed" ? "#dc2626" : "#166534");

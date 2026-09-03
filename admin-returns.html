@@ -203,7 +203,7 @@
 
             ${canRefund ? `
             <div class="action-bar">
-              <div class="small" style="color:#64748b;margin-bottom:8px;">Once the returned item is back with you, refund the customer:</div>
+              <div class="small" style="color:#64748b;margin-bottom:8px;">Once the returned item is back with you, refund the customer. Shipping and the return-to-origin charge (set in Settings) are deducted automatically.</div>
               <button class="btn" style="padding:9px 16px;font-size:13px;" data-action="refund" data-id="${escapeAttr(r.id)}">
                 💰 Refund customer
               </button>
@@ -251,8 +251,10 @@
               const r = await callFn("refund", { order_id: id });
               if (!r.ok) { if (!r.handled) throw new Error("Refund failed"); return; }
               const razorpay = r.data.refund?.razorpay;
+              const deduction = r.data.refund?.deduction_inr || 0;
+              const deductionNote = deduction > 0 ? ` (₹${deduction} deducted)` : "";
               toast(
-                razorpay === "processed" ? "Refund issued ✅" :
+                razorpay === "processed" ? `Refund issued: ₹${r.data.refund.refund_amount_inr}${deductionNote} ✅` :
                 razorpay === "failed" ? "Refund failed — check Razorpay dashboard" :
                 "Marked refunded (no online payment to refund)",
                 razorpay === "failed" ? "#dc2626" : "#166534"

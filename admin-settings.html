@@ -91,6 +91,12 @@
             </div>
 
             <div class="full">
+              <label class="pm-label">Return-to-origin shipping charge (₹)</label>
+              <input id="f_return_shipping_charge" class="input" type="number" min="0" max="100000" placeholder="0" style="max-width:160px;" />
+              <div class="small" style="opacity:.6; margin-top:4px;">Deducted from the refund when an order is cancelled after it's already shipped, or when a return is refunded — covers the outbound delivery already paid for plus getting the item back. Leave at 0 to always refund in full.</div>
+            </div>
+
+            <div class="full">
               <label class="pm-label">Order notification emails</label>
               <input id="f_notify_admin_emails" class="input" placeholder="you@example.com, partner@example.com" />
               <div class="small" style="opacity:.6; margin-top:4px;">Comma-separated. Every address here gets an email the moment a new order (online or walk-in) is placed. Previously this could only be changed by editing a setting directly in Supabase — now it's controlled here.</div>
@@ -191,6 +197,7 @@
       document.getElementById("f_hours").value = s.support_hours || "";
       document.getElementById("f_return_hours").value = s.return_window_hours || 48;
       document.getElementById("f_low_stock_threshold").value = s.low_stock_threshold ?? 3;
+      document.getElementById("f_return_shipping_charge").value = s.return_shipping_charge_inr ?? 0;
       document.getElementById("f_notify_admin_emails").value = s.notify_admin_emails || "";
     }
 
@@ -206,6 +213,7 @@
           support_hours: document.getElementById("f_hours").value,
           return_window_hours: Number(document.getElementById("f_return_hours").value),
           low_stock_threshold: Number(document.getElementById("f_low_stock_threshold").value),
+          return_shipping_charge_inr: Number(document.getElementById("f_return_shipping_charge").value),
           notify_admin_emails: document.getElementById("f_notify_admin_emails").value,
         });
         statusEl.textContent = "Saved ✅ — live on the site immediately.";
