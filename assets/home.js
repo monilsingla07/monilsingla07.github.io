@@ -299,13 +299,19 @@ export async function hydrateHome() {
   hydrateCategoryTiles();
   hydrateHomeCollections();
   try {
-    // Most loved
-    const mostLoved = await fetchMostLoved(8);
+    // FIX: these two queries are fully independent (different sort orders,
+    // no shared data) but were awaited one after another — the New
+    // Arrivals section (and the hero background, which depends on it)
+    // couldn't even start fetching until the bestsellers query finished,
+    // doubling the wait for the second half of the homepage for no reason.
+    const [mostLoved, latest] = await Promise.all([
+      fetchMostLoved(8),
+      fetchLatestActive(8),
+    ]);
+
     renderGrid("bestsellersGrid", mostLoved);
     setStatus("bestsellersStatus", "");
 
-    // New Arrivals (latest active products)
-    const latest = await fetchLatestActive(8);
     renderGrid("newCollectionGrid", latest);
     setStatus("newCollectionStatus", "");
 

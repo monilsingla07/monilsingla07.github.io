@@ -856,12 +856,23 @@ if (!sessionStorage.getItem(viewKey)) {
       }
 
 
-      // ===== Fetch & render specs =====
-      const { data: specs, error: specsErr } = await supabase
-        .from("product_specs")
-        .select("label,value,sort_order")
-        .eq("product_id", data.id)
-        .order("sort_order", { ascending: true });
+      // ===== Fetch specs + sections together — independent queries against
+      // different tables, no reason for the second to wait on the first. =====
+      const [
+        { data: specs, error: specsErr },
+        { data: sections, error: secErr },
+      ] = await Promise.all([
+        supabase
+          .from("product_specs")
+          .select("label,value,sort_order")
+          .eq("product_id", data.id)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("product_sections")
+          .select("title,content,content_type,sort_order")
+          .eq("product_id", data.id)
+          .order("sort_order", { ascending: true }),
+      ]);
 
       const specsDiv = document.getElementById("specs");
       const specsCard = document.getElementById("specsCard");
@@ -881,16 +892,11 @@ if (!sessionStorage.getItem(viewKey)) {
         `;
       }
 
-      // ===== Fetch product_sections, then render Description + those
-      // sections together as a Chidiyaa-style horizontal tab bar (instead
-      // of the old accordion). Description is always tab #1, built from
-      // the product's own description field, not from product_sections. =====
-      const { data: sections, error: secErr } = await supabase
-        .from("product_sections")
-        .select("title,content,content_type,sort_order")
-        .eq("product_id", data.id)
-        .order("sort_order", { ascending: true });
-
+      // Description + product_sections render together as a Chidiyaa-style
+      // horizontal tab bar (instead of the old accordion). Description is
+      // always tab #1, built from the product's own description field, not
+      // from product_sections. (sections was fetched together with specs
+      // above.)
       const tabBar = document.getElementById("infoTabBar");
       const tabPanels = document.getElementById("infoTabPanels");
       const tabsCard = document.getElementById("infoTabsCard");
