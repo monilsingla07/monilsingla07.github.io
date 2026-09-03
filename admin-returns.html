@@ -22,6 +22,7 @@
     .rbadge.requested { background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe; }
     .rbadge.approved  { background:#f0fdf4;color:#14532d;border:1px solid #86efac; }
     .rbadge.rejected  { background:#fee2e2;color:#991b1b; }
+    .rbadge.refunded  { background:#faf5ff;color:#6b21a8;border:1px solid #e9d5ff; }
 
     .return-card { border-radius:16px;overflow:hidden;border:1px solid var(--border,#e5e7eb);background:#fff; }
     .action-bar { padding:12px 16px;border-top:1px solid var(--border-light,#f3f4f6); }
@@ -159,6 +160,12 @@
         ).join("");
 
         const isPending = r.return_status === "requested";
+        const canRefund = r.return_status === "approved" && r.refund_status !== "processed";
+        const refundLine = r.refund_status === "processed"
+          ? `<div class="small" style="margin-top:8px;color:#6b21a8;">💰 Refunded ${money(r.refunded_amount_inr)}</div>`
+          : r.refund_status === "failed"
+          ? `<div class="small" style="margin-top:8px;color:#dc2626;">⚠ Refund attempt failed — retry below.</div>`
+          : "";
 
         return `
           <div class="return-card" data-return-id="${escapeAttr(r.id)}">
@@ -181,6 +188,7 @@
               <div class="evidence-row">${evidence || `<div class="small" style="opacity:.6;">No photos attached.</div>`}</div>
               ${r.return_admin_note ? `<div class="small" style="margin-top:8px;color:#9a3412;">Admin note: ${escapeHtml(r.return_admin_note)}</div>` : ""}
               ${r.return_awb ? `<div class="small" style="margin-top:8px;color:#1e40af;">Return AWB: <strong>${escapeHtml(r.return_awb)}</strong></div>` : ""}
+              ${refundLine}
             </div>
 
             ${isPending ? `
@@ -190,6 +198,14 @@
               </button>
               <button class="btn secondary" style="padding:9px 16px;font-size:13px;color:crimson;border-color:crimson;" data-action="reject" data-id="${escapeAttr(r.id)}">
                 Reject
+              </button>
+            </div>` : ""}
+
+            ${canRefund ? `
+            <div class="action-bar">
+              <div class="small" style="color:#64748b;margin-bottom:8px;">Once the returned item is back with you, refund the customer:</div>
+              <button class="btn" style="padding:9px 16px;font-size:13px;" data-action="refund" data-id="${escapeAttr(r.id)}">
+                💰 Refund customer
               </button>
             </div>` : ""}
           </div>
@@ -215,6 +231,32 @@
               const r = await callFn("approve", { order_id: id });
               if (!r.ok) { if (!r.handled) throw new Error("Approve failed"); return; }
               toast(`Return approved — AWB ${r.data.awb || "pending"} 🚚`, "#166534");
+              load();
+            } catch (e) {
+              toast("Error: " + e.message, "#dc2626");
+              btn.disabled = false;
+              btn.textContent = oldText;
+            }
+          });
+        });
+
+        list.querySelectorAll("button[data-action='refund']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            if (!confirm(`Refund order ${id.slice(0,8).toUpperCase()}? This charges the refund back to the customer's original payment method via Razorpay and can't be undone.`)) return;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Refunding…";
+            try {
+              const r = await callFn("refund", { order_id: id });
+              if (!r.ok) { if (!r.handled) throw new Error("Refund failed"); return; }
+              const razorpay = r.data.refund?.razorpay;
+              toast(
+                razorpay === "processed" ? "Refund issued ✅" :
+                razorpay === "failed" ? "Refund failed — check Razorpay dashboard" :
+                "Marked refunded (no online payment to refund)",
+                razorpay === "failed" ? "#dc2626" : "#166534"
+              );
               load();
             } catch (e) {
               toast("Error: " + e.message, "#dc2626");

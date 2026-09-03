@@ -115,6 +115,7 @@
     .status-badge.ret-ok   { background: #f0fdf4; color: #14532d; border: 1px solid #86efac; }
     .status-badge.ret-pick { background: #f0fdf4; color: #14532d; }
     .status-badge.ret-rej  { background: #fee2e2; color: #991b1b; }
+    .status-badge.ret-refunded { background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
   </style>
 </head>
 
@@ -268,6 +269,7 @@
         approved  : { label: "↩ Return Approved",  cls: "ret-ok"   },
         picked    : { label: "↩ Item Picked Up",    cls: "ret-pick" },
         rejected  : { label: "↩ Return Rejected",   cls: "ret-rej"  },
+        refunded  : { label: "💰 Refunded",          cls: "ret-refunded" },
       };
       const s = map[rs] || { label: "↩ " + rs, cls: "ret-req" };
       return `<span class="status-badge ${s.cls}">${s.label}</span>`;
@@ -578,6 +580,7 @@
         if (error || data?.error) {
           throw new Error(data?.error || error?.message || "Could not cancel order");
         }
+        if (data?.message) alert(data.message);
         loadOrders();
       } catch (err) {
         alert("Could not cancel order: " + err.message);

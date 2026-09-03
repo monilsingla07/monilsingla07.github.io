@@ -834,8 +834,13 @@
             const oldText = btn.textContent;
             btn.textContent = "Saving…";
             try {
-              await updateStatus(id, newStatus);
-              toast(`Order ${newStatus} ✅`, "#166534");
+              const result = await updateStatus(id, newStatus);
+              const razorpay = result?.refund?.razorpay;
+              const toastMsg =
+                razorpay === "processed" ? `Order ${newStatus} ✅ — payment refunded via Razorpay` :
+                razorpay === "failed"    ? `Order ${newStatus} ✅ — refund FAILED, check Razorpay dashboard` :
+                `Order ${newStatus} ✅`;
+              toast(toastMsg, razorpay === "failed" ? "#dc2626" : "#166534");
               load();
             } catch (e) {
               toast("Error: " + e.message, "#dc2626");
