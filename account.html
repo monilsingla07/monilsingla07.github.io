@@ -66,7 +66,7 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
-    import { escapeHtml, safeHref } from "./assets/safe.js";
+    import { escapeHtml } from "./assets/safe.js";
     import { getWishlist, removeFromWishlist } from "./assets/wishlist.js";
 
     document.getElementById("header").innerHTML = renderHeader("account");
@@ -176,84 +176,87 @@
 
         <div class="acct-row">
           <a class="btn secondary" href="profile.html">Edit profile</a>
-          <a class="btn secondary" href="account.html?view=orders">View orders</a>
+        </div>
+
+        <div id="recentOrderSlot" style="margin-top:20px;"></div>
+      `;
+
+      renderRecentOrderTeaser(user);
+    }
+
+    // ── Recent order teaser (shown on the Profile tab) ─────────────────────
+    // Gives the person the one thing they actually came here for — "where's
+    // my order" — without duplicating orders.html's full card (tracking,
+    // invoice, cancel, returns). That page is the single place those live;
+    // this is just a pointer to it with enough context to be useful on its
+    // own.
+    async function renderRecentOrderTeaser(user) {
+      const slot = document.getElementById("recentOrderSlot");
+      if (!slot) return;
+
+      const money = (v) => "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+      const statusLabel = (st) => ({
+        cod_pending: "Order received",
+        confirmed: "Confirmed",
+        paid: "Paid",
+        payment_link_created: "Payment pending",
+        shipped: "Shipped",
+        delivered: "Delivered",
+        cancelled: "Cancelled",
+      }[st] || (st || "").replace(/_/g, " "));
+
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id,status,total_inr,created_at,order_items(qty)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) return; // Silent — this is a teaser, not the primary view.
+
+      const order = (data || [])[0];
+
+      if (!order) {
+        slot.innerHTML = `
+          <div class="acct-card" style="text-align:center;padding:22px;">
+            <div style="font-weight:900;">No orders yet</div>
+            <div class="small nav-muted" style="margin-top:6px;">When you place one, it'll show up here.</div>
+            <div class="acct-row" style="justify-content:center;margin-top:14px;">
+              <a class="btn" href="products.html?type=saree">Browse sarees</a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const itemCount = (order.order_items || []).reduce((n, it) => n + Number(it.qty || 0), 0);
+      const shortId = escapeHtml(order.id.slice(0, 8).toUpperCase());
+      const placed = order.created_at
+        ? new Date(order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+        : "—";
+
+      slot.innerHTML = `
+        <div class="small nav-muted" style="margin-bottom:8px;">Most recent order</div>
+        <a href="orders.html#order-${escapeHtml(order.id)}" class="acct-card" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;text-decoration:none;color:inherit;">
+          <div>
+            <div style="font-weight:900;">Order #${shortId}</div>
+            <div class="small nav-muted" style="margin-top:4px;">
+              ${itemCount} item${itemCount === 1 ? "" : "s"} · ${money(order.total_inr)} · Placed ${placed}
+            </div>
+          </div>
+          <div class="small" style="font-weight:800;">${escapeHtml(statusLabel(order.status))}</div>
+        </a>
+        <div class="acct-row">
+          <a class="btn secondary" href="orders.html">View all orders</a>
         </div>
       `;
     }
 
+    // Orders has its own full page (tracking, invoice download, return
+    // requests, self-cancel, payment countdowns) — that logic isn't
+    // duplicated here. This tab is a signpost, not a second implementation.
     function renderOrdersPanel() {
-      document.getElementById("panelTitle").textContent = "Orders";
-      const body = document.getElementById("panelBody");
-      body.innerHTML = `<div class="small">Loading…</div>`;
-
-      const money = (v) => "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
-      const badge = (st) => {
-        const map = {
-          paid: "Paid",
-          payment_link_created: "Payment pending",
-          payment_failed: "Payment failed",
-          expired: "Payment expired",
-          cancelled: "Cancelled",
-          fulfilled: "Fulfilled",
-          shipped: "Shipped",
-          delivered: "Delivered",
-        };
-        return map[st] || (st || "-");
-      };
-
-      const renderOrder = (o) => {
-        const items = (o.order_items || [])
-          .map(it => `<div class="small">${Number(it.qty || 0)} × ${escapeHtml(it.title)} — ${money(it.price_inr)}</div>`)
-          .join("");
-
-        const payLink = safeHref(o.razorpay_payment_link_url);
-        const canPay = (o.status === "payment_link_created" || o.status === "payment_failed" || o.status === "expired") && !!payLink;
-
-        // Optional: if you add shiprocket_awb in your orders table, we show a Track button.
-        const trackHref = o.shiprocket_awb ? `track.html?awb=${encodeURIComponent(o.shiprocket_awb)}` : "";
-
-        return `
-          <div class="acct-card" style="padding:14px;">
-            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
-              <div>
-                <div style="font-weight:900;">Order ${escapeHtml(o.id)}</div>
-                <div class="small" style="margin-top:6px;">Status: <b>${escapeHtml(badge(o.status))}</b> • Total: <b>${money(o.total_inr)}</b></div>
-                <div class="small">Placed: ${o.created_at ? new Date(o.created_at).toLocaleString("en-IN") : "-"}</div>
-              </div>
-
-              <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                ${canPay ? `<a class="btn" href="${payLink}" target="_blank" rel="noopener noreferrer">Pay now</a>` : ``}
-                ${trackHref ? `<a class="btn secondary" href="${trackHref}">Track</a>` : ``}
-              </div>
-            </div>
-            <hr />
-            ${items || `<div class="small" style="opacity:.75;">No items found for this order.</div>`}
-          </div>
-        `;
-      };
-
-      (async () => {
-        const { data: sess } = await supabase.auth.getSession();
-        const user = sess?.session?.user;
-        if (!user) return redirectToLogin();
-
-        const { data, error } = await supabase
-          .from("orders")
-          // If you add a tracking column (e.g. shiprocket_awb) in Supabase, you can include it in this select.
-          .select("id,status,total_inr,created_at,razorpay_payment_link_url, order_items(qty,title,price_inr)")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          body.innerHTML = `<div class="small">Could not load orders: ${escapeHtml(error.message)}</div>`;
-          return;
-        }
-
-        const orders = data ?? [];
-        body.innerHTML = orders.length
-          ? `<div style="display:grid;gap:12px;">${orders.map(renderOrder).join("")}</div>`
-          : `<div class="small nav-muted">You have no orders yet.</div>`;
-      })();
+      window.location.href = "orders.html";
     }
 
     function renderWalletPanel(user) {
