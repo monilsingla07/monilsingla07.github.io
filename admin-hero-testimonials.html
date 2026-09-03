@@ -21,11 +21,11 @@
     .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
-    .pm-hint { font-size: 11px; opacity: .55; margin-top: 4px; }
+    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
+    .pm-hint { font-size: 12px; opacity: .74; margin-top: 4px; }
     .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
-    .pm-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
     .pm-badge.active { background: #dcfce7; color: #166534; }
     .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
     .pm-thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: #f3f4f6; flex-shrink: 0; }
@@ -43,13 +43,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:900px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Hero &amp; Testimonials</h2>
-          <div class="small" style="opacity:.6; margin-top:4px;">Controls the homepage hero banner carousel and the customer testimonials section. Changes go live immediately — no code changes needed.</div>
+          <div class="small" style="opacity:.76; margin-top:4px;">Controls the homepage hero banner carousel and the customer testimonials section. Changes go live immediately — no code changes needed.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
@@ -135,7 +135,7 @@
           </div>
         </div>
 
-        <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All hero slides</div>
+        <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:24px 0 10px;">All hero slides</div>
         <div id="heroList"></div>
       </div>
 
@@ -189,7 +189,7 @@
           </div>
         </div>
 
-        <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All testimonials</div>
+        <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:24px 0 10px;">All testimonials</div>
         <div id="testiList"></div>
       </div>
 
@@ -221,7 +221,7 @@
         '<div class="admin-gate">' +
           '<div style="font-size:48px;">' + emoji + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
-          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }
@@ -252,7 +252,7 @@
     function renderImagePreview(boxId, hiddenInputId, fileInputId, url) {
       const box = document.getElementById(boxId);
       if (!url) {
-        box.innerHTML = '<div class="small" style="opacity:.55;">No image yet.</div>';
+        box.innerHTML = '<div class="small" style="opacity:.74;">No image yet.</div>';
         return;
       }
       const src = safeSrc(url);
@@ -342,7 +342,7 @@
     function renderHeroList(slides) {
       const list = document.getElementById("heroList");
       if (!slides.length) {
-        list.innerHTML = '<div class="small" style="opacity:.6;">No hero slides yet — add one above. (With zero active slides, the homepage banner is simply hidden.)</div>';
+        list.innerHTML = '<div class="small" style="opacity:.76;">No hero slides yet — add one above. (With zero active slides, the homepage banner is simply hidden.)</div>';
         return;
       }
       list.innerHTML = slides.map(s => `
@@ -352,8 +352,8 @@
             <div style="font-weight:800;">${escapeHtml(s.title || "Untitled slide")}
               <span class="pm-badge ${s.is_active ? "active" : "inactive"}" style="margin-left:8px;">${s.is_active ? "Active" : "Inactive"}</span>
             </div>
-            <div class="small" style="opacity:.65; margin-top:4px;">${escapeHtml(s.kicker || "")}</div>
-            <div class="small" style="opacity:.5; margin-top:2px;">Order ${escapeHtml(String(s.sort_order ?? 0))} · Updated ${new Date(s.updated_at).toLocaleString("en-IN")}</div>
+            <div class="small" style="opacity:.78; margin-top:4px;">${escapeHtml(s.kicker || "")}</div>
+            <div class="small" style="opacity:.72; margin-top:2px;">Order ${escapeHtml(String(s.sort_order ?? 0))} · Updated ${new Date(s.updated_at).toLocaleString("en-IN")}</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(s.id)}">Edit</button>
@@ -459,18 +459,18 @@
     function renderTestiList(items) {
       const list = document.getElementById("testiList");
       if (!items.length) {
-        list.innerHTML = '<div class="small" style="opacity:.6;">No testimonials yet — add one above. (With zero active testimonials, the homepage section is simply hidden.)</div>';
+        list.innerHTML = '<div class="small" style="opacity:.76;">No testimonials yet — add one above. (With zero active testimonials, the homepage section is simply hidden.)</div>';
         return;
       }
       list.innerHTML = items.map(t => `
         <div class="pm-list-item">
           ${t.photo_url ? `<img class="pm-thumb" style="border-radius:50%;" src="${safeSrc(t.photo_url)}" alt="" onerror="this.style.visibility='hidden'">` : `<div class="pm-thumb" style="border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; color:#6b7280;">${escapeHtml((t.customer_name || "?").charAt(0).toUpperCase())}</div>`}
           <div style="flex:1; min-width:180px;">
-            <div style="font-weight:800;">${escapeHtml(t.customer_name || "")} <span class="small" style="font-weight:400; opacity:.6;">${escapeHtml(t.customer_place || "")}</span>
+            <div style="font-weight:800;">${escapeHtml(t.customer_name || "")} <span class="small" style="font-weight:400; opacity:.76;">${escapeHtml(t.customer_place || "")}</span>
               <span class="pm-badge ${t.is_active ? "active" : "inactive"}" style="margin-left:8px;">${t.is_active ? "Active" : "Inactive"}</span>
             </div>
             <div class="small" style="opacity:.75; margin-top:4px;">"${escapeHtml(t.quote || "")}"</div>
-            <div class="small" style="opacity:.5; margin-top:2px;">${"★".repeat(Math.max(0, Math.min(5, t.stars || 0)))} · Order ${escapeHtml(String(t.sort_order ?? 0))} · Updated ${new Date(t.updated_at).toLocaleString("en-IN")}</div>
+            <div class="small" style="opacity:.72; margin-top:2px;">${"★".repeat(Math.max(0, Math.min(5, t.stars || 0)))} · Order ${escapeHtml(String(t.sort_order ?? 0))} · Updated ${new Date(t.updated_at).toLocaleString("en-IN")}</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(t.id)}">Edit</button>

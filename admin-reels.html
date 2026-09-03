@@ -21,11 +21,11 @@
     .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
-    .pm-hint { font-size: 11px; opacity: .55; margin-top: 4px; }
+    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
+    .pm-hint { font-size: 12px; opacity: .74; margin-top: 4px; }
     .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
-    .pm-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
     .pm-badge.active { background: #dcfce7; color: #166534; }
     .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
     @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
@@ -36,13 +36,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:840px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Reel Manager</h2>
-          <div class="small" style="opacity:.6; margin-top:4px;">Controls the "From Our Instagram" section on the homepage. Changes go live immediately — no code changes needed.</div>
+          <div class="small" style="opacity:.76; margin-top:4px;">Controls the "From Our Instagram" section on the homepage. Changes go live immediately — no code changes needed.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
@@ -91,7 +91,7 @@
         </div>
       </div>
 
-      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All reels</div>
+      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:24px 0 10px;">All reels</div>
       <div id="reelList"></div>
     </div>
   </div>
@@ -121,7 +121,7 @@
         '<div class="admin-gate">' +
           '<div style="font-size:48px;">' + emoji + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
-          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }
@@ -142,7 +142,7 @@
     function renderVideoPreview(videoUrl) {
       const box = document.getElementById("videoPreviewBox");
       if (!videoUrl) {
-        box.innerHTML = '<div class="small" style="opacity:.55;">No video uploaded yet.</div>';
+        box.innerHTML = '<div class="small" style="opacity:.74;">No video uploaded yet.</div>';
         return;
       }
       box.innerHTML =
@@ -188,7 +188,7 @@
     function renderList(reels) {
       const list = document.getElementById("reelList");
       if (!reels.length) {
-        list.innerHTML = '<div class="small" style="opacity:.6;">No reels yet — add one above.</div>';
+        list.innerHTML = '<div class="small" style="opacity:.76;">No reels yet — add one above.</div>';
         return;
       }
       list.innerHTML = reels.map(r => `
@@ -198,10 +198,10 @@
               <span class="pm-badge ${r.is_active ? "active" : "inactive"}" style="margin-left:8px;">${r.is_active ? "Active" : "Inactive"}</span>
               <span class="pm-badge" style="margin-left:6px; background:${r.video_url ? "#dbeafe" : "#fef3c7"}; color:${r.video_url ? "#1e40af" : "#92400e"};">${r.video_url ? "🎬 Video attached" : "⚠ No video — link only"}</span>
             </div>
-            <div class="small" style="opacity:.65; margin-top:4px; word-break:break-all;">
+            <div class="small" style="opacity:.78; margin-top:4px; word-break:break-all;">
               <a href="${safeHref(r.reel_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(r.reel_url || "")} ↗</a>
             </div>
-            <div class="small" style="opacity:.5; margin-top:2px;">Order ${escapeHtml(String(r.sort_order ?? 0))} · Updated ${new Date(r.updated_at).toLocaleString("en-IN")}</div>
+            <div class="small" style="opacity:.72; margin-top:2px;">Order ${escapeHtml(String(r.sort_order ?? 0))} · Updated ${new Date(r.updated_at).toLocaleString("en-IN")}</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(r.id)}">Edit</button>

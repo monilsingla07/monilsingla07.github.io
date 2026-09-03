@@ -21,7 +21,7 @@
     .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
     .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -37,13 +37,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:840px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Site Settings</h2>
-          <div class="small" style="opacity:.6; margin-top:4px;">Store-wide text and business parameters that used to require a code change — plus who can log into this admin area.</div>
+          <div class="small" style="opacity:.76; margin-top:4px;">Store-wide text and business parameters that used to require a code change — plus who can log into this admin area.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
@@ -60,7 +60,7 @@
             <div class="full">
               <label class="pm-label">Topbar &amp; homepage announcement text</label>
               <input id="f_topbar" class="input" placeholder="e.g. Complimentary shipping across India" />
-              <div class="small" style="opacity:.6; margin-top:4px;">Shown in the thin bar at the very top of every page, and as the middle line of the homepage trust strip.</div>
+              <div class="small" style="opacity:.76; margin-top:4px;">Shown in the thin bar at the very top of every page, and as the middle line of the homepage trust strip.</div>
             </div>
 
             <div class="full">
@@ -81,25 +81,25 @@
             <div class="full">
               <label class="pm-label">Return request window (hours after delivery)</label>
               <input id="f_return_hours" class="input" type="number" min="1" max="720" placeholder="48" style="max-width:160px;" />
-              <div class="small" style="opacity:.6; margin-top:4px;">How long a customer has after delivery to report a manufacturing defect and request a return.</div>
+              <div class="small" style="opacity:.76; margin-top:4px;">How long a customer has after delivery to report a manufacturing defect and request a return.</div>
             </div>
 
             <div class="full">
               <label class="pm-label">Low stock threshold</label>
               <input id="f_low_stock_threshold" class="input" type="number" min="0" max="1000" placeholder="3" style="max-width:160px;" />
-              <div class="small" style="opacity:.6; margin-top:4px;">A product shows the "Low stock" badge in the catalogue once its quantity drops to this number or below.</div>
+              <div class="small" style="opacity:.76; margin-top:4px;">A product shows the "Low stock" badge in the catalogue once its quantity drops to this number or below.</div>
             </div>
 
             <div class="full">
               <label class="pm-label">Return-to-origin shipping charge (₹)</label>
               <input id="f_return_shipping_charge" class="input" type="number" min="0" max="100000" placeholder="0" style="max-width:160px;" />
-              <div class="small" style="opacity:.6; margin-top:4px;">Deducted from the refund when an order is cancelled after it's already shipped, or when a return is refunded — covers the outbound delivery already paid for plus getting the item back. Leave at 0 to always refund in full.</div>
+              <div class="small" style="opacity:.76; margin-top:4px;">Deducted from the refund when an order is cancelled after it's already shipped, or when a return is refunded — covers the outbound delivery already paid for plus getting the item back. Leave at 0 to always refund in full.</div>
             </div>
 
             <div class="full">
               <label class="pm-label">Order notification emails</label>
               <input id="f_notify_admin_emails" class="input" placeholder="you@example.com, partner@example.com" />
-              <div class="small" style="opacity:.6; margin-top:4px;">Comma-separated. Every address here gets an email the moment a new order (online or walk-in) is placed. Previously this could only be changed by editing a setting directly in Supabase — now it's controlled here.</div>
+              <div class="small" style="opacity:.76; margin-top:4px;">Comma-separated. Every address here gets an email the moment a new order (online or walk-in) is placed. Previously this could only be changed by editing a setting directly in Supabase — now it's controlled here.</div>
             </div>
           </div>
 
@@ -120,17 +120,17 @@
                 <input id="f_new_admin_email" class="input" placeholder="teammate@example.com" style="flex:1; min-width:220px;" />
                 <button id="btnAddAdmin" class="btn" type="button">Grant admin access</button>
               </div>
-              <div class="small" style="opacity:.6; margin-top:4px;">They must already have a regular AhamStree account (sign up at login.html first) — this just grants that account access to /admin* pages.</div>
+              <div class="small" style="opacity:.76; margin-top:4px;">They must already have a regular AhamStree account (sign up at login.html first) — this just grants that account access to /admin* pages.</div>
             </div>
           </div>
           <div id="adminAddStatus" class="small" style="margin-top:8px;"></div>
         </div>
 
-        <div class="small" style="font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:20px 0 10px;">Current admins</div>
+        <div class="small" style="font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:20px 0 10px;">Current admins</div>
         <div id="adminList"></div>
       </div>
 
-      <div id="statusMsg" class="small" style="margin-top:16px; opacity:.5;"></div>
+      <div id="statusMsg" class="small" style="margin-top:16px; opacity:.72;"></div>
     </div>
   </div>
 
@@ -157,7 +157,7 @@
         '<div class="admin-gate">' +
           '<div style="font-size:48px;">' + emoji + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
-          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }
@@ -226,14 +226,14 @@
     function renderAdminList(admins) {
       const list = document.getElementById("adminList");
       if (!admins.length) {
-        list.innerHTML = '<div class="small" style="opacity:.6;">No admins found.</div>';
+        list.innerHTML = '<div class="small" style="opacity:.76;">No admins found.</div>';
         return;
       }
       list.innerHTML = admins.map((a) => `
         <div class="pm-list-item">
           <div>
-            <div style="font-weight:800;">${escapeHtml(a.email)}${a.email === currentUserEmail ? ' <span class="small" style="opacity:.5;">(you)</span>' : ""}</div>
-            <div class="small" style="opacity:.5; margin-top:2px;">Added ${new Date(a.created_at).toLocaleDateString("en-IN")}</div>
+            <div style="font-weight:800;">${escapeHtml(a.email)}${a.email === currentUserEmail ? ' <span class="small" style="opacity:.72;">(you)</span>' : ""}</div>
+            <div class="small" style="opacity:.72; margin-top:2px;">Added ${new Date(a.created_at).toLocaleDateString("en-IN")}</div>
           </div>
           <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-remove="${escapeAttr(a.email)}" ${admins.length <= 1 ? "disabled title=\"Can't remove the last remaining admin\"" : ""}>Remove</button>
         </div>

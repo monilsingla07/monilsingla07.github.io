@@ -21,10 +21,10 @@
     .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
     .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
-    .pm-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
     .pm-badge.active { background: #dcfce7; color: #166534; }
     .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
     #pmPreviewOverlay { position: fixed; inset: 0; z-index: 9999; background: rgba(20,14,10,.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -43,13 +43,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:840px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Popup Manager</h2>
-          <div class="small" style="opacity:.6; margin-top:4px;">Controls the welcome popup shown across the site. Changes go live immediately — no code changes needed.</div>
+          <div class="small" style="opacity:.76; margin-top:4px;">Controls the welcome popup shown across the site. Changes go live immediately — no code changes needed.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
@@ -111,11 +111,11 @@
         </div>
       </div>
 
-      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All popups</div>
+      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:24px 0 10px;">All popups</div>
       <div id="popupList"></div>
 
-      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:32px 0 10px;">Sign-in popup (logged-out visitors only)</div>
-      <div class="small" style="opacity:.6; margin:-4px 0 12px;">
+      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:32px 0 10px;">Sign-in popup (logged-out visitors only)</div>
+      <div class="small" style="opacity:.76; margin:-4px 0 12px;">
         Shown once per "reappear" window to anyone browsing the site without being signed in — has its own built-in WhatsApp OTP + Google sign-in form, not just a link. Independent of the popup above, and only ever shows once per window even if the visitor closes it, refreshes, or ignores it — later refreshes in that same window fall through to the popup above instead.
       </div>
       <div class="pm-card">
@@ -143,7 +143,7 @@
           <div class="full">
             <label class="pm-label">Show again after (hours)</label>
             <input id="sp_reappear_hours" class="input" type="number" min="1" step="1" placeholder="24" />
-            <div class="small" style="opacity:.55; margin-top:4px;">24 = once per day, which is the default. This is how long after being shown it waits before showing again to the same visitor.</div>
+            <div class="small" style="opacity:.74; margin-top:4px;">24 = once per day, which is the default. This is how long after being shown it waits before showing again to the same visitor.</div>
           </div>
         </div>
 
@@ -182,7 +182,7 @@
         '<div class="admin-gate">' +
           '<div style="font-size:48px;">' + emoji + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
-          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }
@@ -271,7 +271,7 @@
     function renderList(popups) {
       const list = document.getElementById("popupList");
       if (!popups.length) {
-        list.innerHTML = '<div class="small" style="opacity:.6;">No popups yet — create one above.</div>';
+        list.innerHTML = '<div class="small" style="opacity:.76;">No popups yet — create one above.</div>';
         return;
       }
       list.innerHTML = popups.map(p => `
@@ -280,8 +280,8 @@
             <div style="font-weight:800;">${escapeHtml(p.title || "Untitled popup")}
               <span class="pm-badge ${p.is_active ? "active" : "inactive"}" style="margin-left:8px;">${p.is_active ? "Active" : "Inactive"}</span>
             </div>
-            <div class="small" style="opacity:.65; margin-top:4px;">${escapeHtml(p.headline || "")}</div>
-            <div class="small" style="opacity:.5; margin-top:2px;">Updated ${new Date(p.updated_at).toLocaleString("en-IN")}</div>
+            <div class="small" style="opacity:.78; margin-top:4px;">${escapeHtml(p.headline || "")}</div>
+            <div class="small" style="opacity:.72; margin-top:2px;">Updated ${new Date(p.updated_at).toLocaleString("en-IN")}</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(p.id)}">Edit</button>
@@ -425,7 +425,7 @@
           <div id="pmPreviewBody">
             ${headline ? `<div id="pmPreviewHeadline">${escapeHtml(headline)}</div>` : ""}
             ${subtext ? `<div id="pmPreviewSubtext">${escapeHtml(subtext)}</div>` : ""}
-            <div class="small" style="opacity:.55; margin-top:10px; border:1px dashed #ddd; border-radius:12px; padding:14px;">
+            <div class="small" style="opacity:.74; margin-top:10px; border:1px dashed #ddd; border-radius:12px; padding:14px;">
               [WhatsApp OTP + Google sign-in form appears here on the live site]
             </div>
           </div>

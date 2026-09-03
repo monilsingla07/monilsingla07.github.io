@@ -21,12 +21,12 @@
     .filters-bar { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center; }
     .filters-bar .input { height:40px;font-size:13px; }
     .pager { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:14px; justify-content:space-between; }
-    .pager .small { opacity:.7; }
+    .pager .small { opacity:.8; }
 
     .tabs { display:flex; gap:6px; border-bottom:1px solid var(--border,#e5e7eb); margin-bottom:18px; }
     .tab-btn {
       background:none; border:none; padding:10px 4px; margin-right:14px; font-size:13px; font-weight:700;
-      opacity:.55; cursor:pointer; border-bottom:2px solid transparent;
+      opacity:.74; cursor:pointer; border-bottom:2px solid transparent;
     }
     .tab-btn.active { opacity:1; border-bottom-color: var(--brand,#7c1c1c); color: var(--brand,#7c1c1c); }
     .tab-panel { display:none; }
@@ -39,7 +39,7 @@
     .user-card + .user-card { margin-top:10px; }
     .user-main { display:flex; flex-direction:column; gap:3px; }
     .user-name { font-weight:800; font-size:14.5px; }
-    .user-sub { font-size:12.5px; opacity:.65; }
+    .user-sub { font-size:12.5px; opacity:.78; }
     .user-meta { display:flex; flex-direction:column; align-items:flex-end; gap:4px; text-align:right; }
 
     .pill {
@@ -59,14 +59,14 @@
     }
     .event-row + .event-row { margin-top:8px; }
     .event-left { display:flex; flex-direction:column; gap:2px; }
-    .event-right { text-align:right; opacity:.7; font-size:12px; }
+    .event-right { text-align:right; opacity:.8; font-size:12px; }
 
     .filter-chip {
       display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px;
       background: var(--brand-light,#fdf2f2); border:1px solid var(--brand,#7c1c1c); font-size:12.5px; font-weight:700;
       margin-bottom:14px;
     }
-    .filter-chip button { background:none; border:none; cursor:pointer; font-weight:900; opacity:.6; }
+    .filter-chip button { background:none; border:none; cursor:pointer; font-weight:900; opacity:.76; }
 
     #toast {
       position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
@@ -81,13 +81,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:1000px;">
-    <div id="loadingState" style="text-align:center;padding:48px;opacity:.6;font-size:14px;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center;padding:48px;opacity:.76;font-size:14px;">Verifying admin access…</div>
 
     <div id="mainContent" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
         <div>
           <h2 style="margin:0;">Registered Users</h2>
-          <div class="small" style="opacity:.65;margin-top:4px;">Every account that's signed up, and a full login history for each one.</div>
+          <div class="small" style="opacity:.78;margin-top:4px;">Every account that's signed up, and a full login history for each one.</div>
         </div>
         <a class="btn secondary" href="admin.html" style="padding:8px 14px;font-size:13px;">← Dashboard</a>
       </div>
@@ -105,7 +105,7 @@
           <button id="btnUserRefresh" class="btn secondary" style="padding:8px 16px;font-size:13px;">↻ Refresh</button>
           <button id="btnUserExportCsv" class="btn secondary" style="padding:8px 16px;font-size:13px;">Export CSV</button>
         </div>
-        <div id="userStatusMsg" class="small" style="margin-bottom:12px;opacity:.6;"></div>
+        <div id="userStatusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
         <div id="userList" style="display:grid;gap:0;"></div>
         <div class="pager">
           <div class="small" id="userPagerInfo"></div>
@@ -119,7 +119,7 @@
       <!-- ── Login history tab ── -->
       <div id="tab-history" class="tab-panel">
         <div id="historyFilterChip" style="display:none;"></div>
-        <div id="historyStatusMsg" class="small" style="margin-bottom:12px;opacity:.6;"></div>
+        <div id="historyStatusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
         <div id="historyList"></div>
         <div class="pager">
           <div class="small" id="historyPagerInfo"></div>
@@ -154,7 +154,7 @@
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
           '<div style="font-size:48px;">' + emoji + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
-          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }
@@ -229,7 +229,7 @@
       const { users, total } = res.data;
 
       if (!users.length) {
-        list.innerHTML = '<div class="small" style="opacity:.6;padding:24px 0;text-align:center;">No users found.</div>';
+        list.innerHTML = '<div class="small" style="opacity:.76;padding:24px 0;text-align:center;">No users found.</div>';
         statusMsg.textContent = "";
       } else {
         list.innerHTML = users.map((u) => {
@@ -248,7 +248,7 @@
               <div class="user-meta">
                 ${lastLogin ? providerPill(u.provider) : '<span class="pill never">Never logged in</span>'}
                 <div class="small">${lastLogin ? "Last login: " + lastLogin : ""}</div>
-                <div class="small" style="opacity:.6;">${u.login_count} login${u.login_count === 1 ? "" : "s"} logged</div>
+                <div class="small" style="opacity:.76;">${u.login_count} login${u.login_count === 1 ? "" : "s"} logged</div>
                 <button class="btn secondary" style="padding:5px 10px;font-size:11.5px;margin-top:2px;" data-userid="${u.id}" data-username="${escapeHtml(name)}">View login history →</button>
               </div>
             </div>`;
@@ -360,7 +360,7 @@
       const { events, total } = res.data;
 
       if (!events.length) {
-        list.innerHTML = '<div class="small" style="opacity:.6;padding:24px 0;text-align:center;">No login activity yet.</div>';
+        list.innerHTML = '<div class="small" style="opacity:.76;padding:24px 0;text-align:center;">No login activity yet.</div>';
       } else {
         list.innerHTML = events.map((e) => {
           const who = e.full_name || e.email || "Unknown user";
@@ -369,7 +369,7 @@
             <div class="event-row">
               <div class="event-left">
                 <div><strong>${escapeHtml(who)}</strong> ${providerPill(e.provider)}</div>
-                <div class="small" style="opacity:.6;">${escapeHtml(e.ip_address || "IP unknown")}${location ? " · " + escapeHtml(location) : ""}</div>
+                <div class="small" style="opacity:.76;">${escapeHtml(e.ip_address || "IP unknown")}${location ? " · " + escapeHtml(location) : ""}</div>
               </div>
               <div class="event-right">${fmtDate(e.created_at)}</div>
             </div>`;

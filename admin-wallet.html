@@ -21,7 +21,7 @@
     .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
     .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; cursor: pointer; transition: border-color .15s, background .15s; }
     .pm-list-item:hover { border-color: var(--brand, #7c1c1c); background: var(--brand-light, #fdf2f2); }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
@@ -34,7 +34,7 @@
     .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 8px; }
     .metric-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
     .metric-card.highlight { background: var(--brand-light, #fdf2f2); border-color: var(--brand, #7c1c1c); }
-    .metric-label { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .6; }
+    .metric-label { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .76; }
     .metric-value { font-size: 24px; font-weight: 900; line-height: 1; font-family: 'Cormorant Garamond', serif; }
 
     .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -58,13 +58,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:900px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">AhamStree Cash</h2>
-          <div class="small" style="opacity:.6; margin-top:4px;">Manage the signup wallet program — bonus amount, redemption rate, and customer balances.</div>
+          <div class="small" style="opacity:.76; margin-top:4px;">Manage the signup wallet program — bonus amount, redemption rate, and customer balances.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
@@ -81,7 +81,7 @@
           <div class="toggle-row">
             <div>
               <div style="font-weight:800;">AhamStree Cash program</div>
-              <div class="small" style="opacity:.6; margin-top:2px;">When off, no new signup bonuses are granted and checkout stops offering redemption. Existing balances are untouched.</div>
+              <div class="small" style="opacity:.76; margin-top:2px;">When off, no new signup bonuses are granted and checkout stops offering redemption. Existing balances are untouched.</div>
             </div>
             <label class="switch">
               <input type="checkbox" id="f_enabled" />
@@ -98,7 +98,7 @@
             <div class="full">
               <label class="pm-label">Redemption rate — max % of an order's subtotal payable with AhamStree Cash</label>
               <input id="f_redemption_rate" class="input" type="number" min="0" max="100" step="1" placeholder="10" style="max-width:220px;" />
-              <div class="small" style="opacity:.6; margin-top:4px;">Can't be combined with a coupon on the same order — that's fixed, not configurable here.</div>
+              <div class="small" style="opacity:.76; margin-top:4px;">Can't be combined with a coupon on the same order — that's fixed, not configurable here.</div>
             </div>
           </div>
 
@@ -115,7 +115,7 @@
           <button id="btnRefreshOverview" class="btn secondary" style="padding:8px 14px; font-size:13px;">↻ Refresh</button>
         </div>
         <div class="metric-grid" id="overviewMetrics"></div>
-        <div id="overviewStatus" class="small" style="opacity:.5; margin-top:6px;"></div>
+        <div id="overviewStatus" class="small" style="opacity:.72; margin-top:6px;"></div>
       </div>
 
       <!-- ── Customers tab ── -->
@@ -135,10 +135,10 @@
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
             <div>
               <div id="detailName" style="font-weight:900; font-size:16px;"></div>
-              <div id="detailContact" class="small" style="opacity:.6; margin-top:2px;"></div>
+              <div id="detailContact" class="small" style="opacity:.76; margin-top:2px;"></div>
             </div>
             <div style="text-align:right;">
-              <div class="small" style="opacity:.6;">Balance</div>
+              <div class="small" style="opacity:.76;">Balance</div>
               <div id="detailBalance" style="font-weight:900; font-size:22px; font-family:'Cormorant Garamond', serif;"></div>
             </div>
           </div>
@@ -166,7 +166,7 @@
         </div>
       </div>
 
-      <div id="statusMsg" class="small" style="margin-top:16px; opacity:.5;"></div>
+      <div id="statusMsg" class="small" style="margin-top:16px; opacity:.72;"></div>
     </div>
   </div>
 
@@ -193,7 +193,7 @@
         '<div class="admin-gate">' +
           '<div style="font-size:48px;">' + emoji + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
-          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }
@@ -295,14 +295,14 @@
     function renderCustomerResults(customers) {
       const box = document.getElementById("customerResults");
       if (!customers.length) {
-        box.innerHTML = '<div class="small" style="opacity:.6; padding:8px 0;">No matching customers.</div>';
+        box.innerHTML = '<div class="small" style="opacity:.76; padding:8px 0;">No matching customers.</div>';
         return;
       }
       box.innerHTML = customers.map((c, i) => `
         <div class="pm-list-item" data-idx="${i}">
           <div>
             <div style="font-weight:800;">${escapeHtml(customerLabel(c))}</div>
-            <div class="small" style="opacity:.6; margin-top:2px;">${escapeHtml(customerContact(c))}</div>
+            <div class="small" style="opacity:.76; margin-top:2px;">${escapeHtml(customerContact(c))}</div>
           </div>
           <div style="font-weight:900;">${money(c.balance_inr)}</div>
         </div>
@@ -315,7 +315,7 @@
 
     document.getElementById("btnSearch").addEventListener("click", async () => {
       const box = document.getElementById("customerResults");
-      box.innerHTML = '<div class="small" style="opacity:.6;">Searching…</div>';
+      box.innerHTML = '<div class="small" style="opacity:.76;">Searching…</div>';
       try {
         const result = await authedFetch({ action: "search_customers", query: document.getElementById("f_search").value.trim(), limit: 30 });
         renderCustomerResults(result.customers || []);
@@ -330,7 +330,7 @@
     function renderLedger(ledger) {
       const box = document.getElementById("detailLedger");
       if (!ledger.length) {
-        box.innerHTML = '<div class="small" style="opacity:.6;">No activity yet.</div>';
+        box.innerHTML = '<div class="small" style="opacity:.76;">No activity yet.</div>';
         return;
       }
       const typeLabel = (t) => ({
@@ -349,7 +349,7 @@
           <div class="ledger-row">
             <div>
               <div style="font-weight:700; font-size:13px;">${escapeHtml(typeLabel(l.type))}</div>
-              <div class="small" style="opacity:.55; margin-top:2px;">${when}${l.note ? " • " + escapeHtml(l.note) : ""}</div>
+              <div class="small" style="opacity:.74; margin-top:2px;">${when}${l.note ? " • " + escapeHtml(l.note) : ""}</div>
             </div>
             <div style="font-weight:900; color:${amtColor}; white-space:nowrap;">${amtText}</div>
           </div>
@@ -364,7 +364,7 @@
       document.getElementById("detailName").textContent = customerLabel(c);
       document.getElementById("detailContact").textContent = customerContact(c);
       document.getElementById("detailBalance").textContent = "Loading…";
-      document.getElementById("detailLedger").innerHTML = '<div class="small" style="opacity:.6;">Loading…</div>';
+      document.getElementById("detailLedger").innerHTML = '<div class="small" style="opacity:.76;">Loading…</div>';
       document.getElementById("adjustStatus").textContent = "";
       document.getElementById("f_adjust_amount").value = "";
       document.getElementById("f_adjust_note").value = "";

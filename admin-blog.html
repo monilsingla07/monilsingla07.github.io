@@ -21,10 +21,10 @@
     .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
     .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
-    .pm-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
     .pm-badge.active { background: #dcfce7; color: #166534; }
     .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
     textarea.input { min-height: 220px; font-family: inherit; resize: vertical; }
@@ -37,13 +37,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:900px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Blog Manager</h2>
-          <div class="small" style="opacity:.6; margin-top:4px;">Write, edit, and publish/unpublish blog posts — no more editing rows directly in the database.</div>
+          <div class="small" style="opacity:.76; margin-top:4px;">Write, edit, and publish/unpublish blog posts — no more editing rows directly in the database.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
@@ -73,7 +73,7 @@
             <input id="f_cover_file" type="file" accept="image/jpeg,image/png,image/webp" />
             <input type="hidden" id="f_cover_url" />
             <img id="coverPreview" alt="Cover preview" />
-            <div class="small" style="opacity:.6; margin-top:4px;">JPEG, PNG, or WEBP, up to 5MB.</div>
+            <div class="small" style="opacity:.76; margin-top:4px;">JPEG, PNG, or WEBP, up to 5MB.</div>
           </div>
 
           <div class="full">
@@ -94,7 +94,7 @@
         </div>
       </div>
 
-      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin:24px 0 10px;">All posts</div>
+      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:24px 0 10px;">All posts</div>
       <div id="postList"></div>
     </div>
   </div>
@@ -125,7 +125,7 @@
         '<div class="admin-gate">' +
           '<div style="font-size:48px;">' + emoji + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
-          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }
@@ -183,7 +183,7 @@
     function renderList(posts) {
       const list = document.getElementById("postList");
       if (!posts.length) {
-        list.innerHTML = '<div class="small" style="opacity:.6;">No posts yet — create one above.</div>';
+        list.innerHTML = '<div class="small" style="opacity:.76;">No posts yet — create one above.</div>';
         return;
       }
       list.innerHTML = posts.map(p => `
@@ -192,8 +192,8 @@
             <div style="font-weight:800;">${escapeHtml(p.title || "Untitled post")}
               <span class="pm-badge ${p.is_published ? "active" : "inactive"}" style="margin-left:8px;">${p.is_published ? "Published" : "Draft"}</span>
             </div>
-            <div class="small" style="opacity:.65; margin-top:4px;">/${escapeHtml(p.slug || "")}</div>
-            <div class="small" style="opacity:.5; margin-top:2px;">${p.published_at ? new Date(p.published_at).toLocaleDateString("en-IN") : "No date"}</div>
+            <div class="small" style="opacity:.78; margin-top:4px;">/${escapeHtml(p.slug || "")}</div>
+            <div class="small" style="opacity:.72; margin-top:2px;">${p.published_at ? new Date(p.published_at).toLocaleDateString("en-IN") : "No date"}</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(p.id)}">Edit</button>

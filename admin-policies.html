@@ -20,7 +20,7 @@
     .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
     .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr; margin-top: 12px; }
-    .pm-label { font-size: 12px; opacity: .7; display: block; margin-bottom: 4px; }
+    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
     textarea.input { min-height: 420px; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 13px; resize: vertical; }
     .page-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
     .page-tab { border: 1.5px solid var(--border, #e5e7eb); background: #fff; padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; cursor: pointer; }
@@ -33,13 +33,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:900px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.6;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Policy Pages</h2>
-          <div class="small" style="opacity:.6; margin-top:4px;">Edit Terms of Use, Privacy, Cookies, Returns, Shipping, and FAQ — no code change or redeploy needed. Changes go live on the public pages immediately.</div>
+          <div class="small" style="opacity:.76; margin-top:4px;">Edit Terms of Use, Privacy, Cookies, Returns, Shipping, and FAQ — no code change or redeploy needed. Changes go live on the public pages immediately.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
@@ -48,7 +48,7 @@
 
       <div class="pm-card">
         <div style="font-weight:900;" id="formTitle">Loading…</div>
-        <div class="small" id="metaLine" style="opacity:.55; margin-top:2px;"></div>
+        <div class="small" id="metaLine" style="opacity:.74; margin-top:2px;"></div>
 
         <div class="pm-row">
           <div>
@@ -107,7 +107,7 @@
         '<div class="admin-gate">' +
           '<div style="font-size:48px;">' + emoji + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
-          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }

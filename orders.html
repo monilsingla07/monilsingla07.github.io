@@ -30,7 +30,7 @@
     .status-badge.cancelled { background: #f3f4f6; color: #6b7280; }
     .payment-pill {
       display: inline-flex; align-items: center; gap: 4px;
-      padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700;
       background: #f3f4f6; color: #374151;
     }
     .payment-pill.cod    { background: #fff7ed; color: #9a3412; }
@@ -75,13 +75,13 @@
       background: #e2e8f0; border: 2px solid #cbd5e1;
       flex-shrink: 0; margin-top: 1px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 10px;
+      font-size: 12px;
     }
     .tl-dot.latest { background: #1e40af; border-color: #1e40af; color: #fff; }
     .tl-body { padding-bottom: 18px; }
     .tl-act  { font-size: 13px; font-weight: 700; line-height: 1.35; color: #1e293b; }
     .tl-act.dim { color: #64748b; font-weight: 500; }
-    .tl-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .tl-meta { font-size: 12px; color: #64748b; margin-top: 2px; }
 
     /* ── Return modal ───────────────────────────────────────────────────── */
     .modal-overlay {
@@ -300,7 +300,7 @@
         <div style="position:relative; width:64px; height:64px; border-radius:10px; overflow:hidden; border:1.5px solid var(--border-light);">
           <img src="${URL.createObjectURL(f)}" style="width:100%; height:100%; object-fit:cover; display:block;" />
           <button type="button" data-i="${i}" class="ret-photo-remove"
-            style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; border:none; background:rgba(0,0,0,0.65); color:#fff; font-size:11px; line-height:1; cursor:pointer;">✕</button>
+            style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; border:none; background:rgba(0,0,0,0.65); color:#fff; font-size:12px; line-height:1; cursor:pointer;">✕</button>
         </div>
       `).join("");
       retPhotoPreviews.querySelectorAll(".ret-photo-remove").forEach(btn => {
@@ -639,7 +639,7 @@
           const thumbUrl = imgs[0]?.image_url ? safeSrc(imgs[0].image_url) : "";
           const thumbHtml = thumbUrl
             ? `<img src="${thumbUrl}" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;">`
-            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-light,#999);font-size:9px;text-align:center;">No image</div>`;
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-light,#999);font-size:12px;text-align:center;">No image</div>`;
           const isDiscontinued = it.product && it.product.is_active === false;
 
           const rowInner = `
@@ -665,7 +665,7 @@
 
       const discountRow = (Number(o.discount_inr) > 0)
         ? `<div style="display:flex;justify-content:space-between;gap:8px;margin-top:4px;">
-             <div class="small" style="opacity:.7;">Discount</div>
+             <div class="small" style="opacity:.8;">Discount</div>
              <div class="small" style="color:green; font-weight:700;">−${money(o.discount_inr)}</div>
            </div>`
         : "";
@@ -680,7 +680,7 @@
                 Your items are reserved. Complete payment before the timer runs out.
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
-                <div class="small" style="opacity:.7;">Time left:</div>
+                <div class="small" style="opacity:.8;">Time left:</div>
                 <div id="${countdownId}" style="font-size:20px; font-weight:900; color:var(--brand); letter-spacing:1px; min-width:60px;">--:--</div>
               </div>
             </div>
@@ -717,7 +717,7 @@
                 ${statusBadge(effectiveStatus)}
                 ${paymentPill(o.payment_method)}
               </div>
-              <div class="small" style="opacity:.65;">${formatDate(o.created_at)}</div>
+              <div class="small" style="opacity:.78;">${formatDate(o.created_at)}</div>
             </div>
 
             <!-- Action buttons (non-pending states) -->
@@ -782,14 +782,14 @@
 
           <!-- Items -->
           <div style="padding:12px 16px;">
-            ${items || `<div class="small" style="opacity:.6;">No items found.</div>`}
+            ${items || `<div class="small" style="opacity:.76;">No items found.</div>`}
           </div>
 
           <!-- Totals -->
           <div style="padding:12px 16px; border-top:1px solid var(--border-light); background:#fafafa;">
             ${discountRow}
             <div style="display:flex; justify-content:space-between; gap:8px; margin-top:4px;">
-              <div class="small" style="opacity:.7;">Shipping</div>
+              <div class="small" style="opacity:.8;">Shipping</div>
               <div class="small">${money(o.shipping_inr)}</div>
             </div>
             <div style="display:flex; justify-content:space-between; gap:8px; margin-top:8px; font-weight:900;">

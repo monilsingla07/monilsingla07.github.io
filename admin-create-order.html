@@ -102,7 +102,7 @@
     .search-result:hover { background: var(--brand-light, #fdf2f2); }
     .search-result-info { flex: 1; min-width: 0; }
     .search-result-title { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .search-result-price { font-size: 12px; opacity: .65; margin-top: 2px; }
+    .search-result-price { font-size: 12px; opacity: .78; margin-top: 2px; }
 
     /* ── Cart items ── */
     .cart-item {
@@ -120,7 +120,7 @@
       background: none;
       border: none;
       cursor: pointer;
-      opacity: .4;
+      opacity: .68;
       font-size: 18px;
       line-height: 1;
       padding: 4px;
@@ -135,7 +135,7 @@
       gap: 8px;
       margin-top: 4px;
     }
-    .price-override-row label { font-size: 11px; opacity: .6; white-space: nowrap; }
+    .price-override-row label { font-size: 12px; opacity: .76; white-space: nowrap; }
     .price-override-row input { width: 90px; font-size: 13px; }
 
     /* ── Quick sale rows ── */
@@ -181,7 +181,7 @@
     .choice-option input[type="radio"] { accent-color: var(--brand, #7c1c1c); flex-shrink: 0; }
     .choice-option-text { flex: 1; }
     .choice-option-title { font-weight: 800; font-size: 14px; }
-    .choice-option-sub { font-size: 12px; opacity: .65; margin-top: 2px; }
+    .choice-option-sub { font-size: 12px; opacity: .78; margin-top: 2px; }
 
     /* Sub-selector (Cash/Card/UPI/Other pills) */
     .subpill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border, #e5e7eb); }
@@ -247,8 +247,8 @@
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    .field-label { font-size: 12px; font-weight: 700; opacity: .6; margin-bottom: 4px; display: block; }
-    .empty-cart { text-align: center; padding: 24px; opacity: .5; font-size: 13px; }
+    .field-label { font-size: 12px; font-weight: 700; opacity: .76; margin-bottom: 4px; display: block; }
+    .empty-cart { text-align: center; padding: 24px; opacity: .72; font-size: 13px; }
   </style>
 </head>
 
@@ -257,14 +257,14 @@
 
   <div class="container" style="max-width: 1040px;">
 
-    <div id="loadingState" style="text-align:center;padding:48px;opacity:.6;font-size:14px;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center;padding:48px;opacity:.76;font-size:14px;">Verifying admin access…</div>
 
     <div id="mainContent" style="display:none;">
 
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
         <div>
           <h2 style="margin:0;">Create Order</h2>
-          <div class="small" style="opacity:.65; margin-top:4px;">
+          <div class="small" style="opacity:.78; margin-top:4px;">
             Ring up a walk-in sale or place an order for a customer who needs it shipped.
           </div>
         </div>
@@ -280,7 +280,7 @@
           <div class="section-card">
             <div class="section-header">
               <h3 id="itemsHeading">🛍 Products</h3>
-              <span class="small" id="cartCount" style="opacity:.6;">0 items</span>
+              <span class="small" id="cartCount" style="opacity:.76;">0 items</span>
             </div>
             <div class="section-body">
               <div class="mode-toggle" style="margin-bottom:14px;">
@@ -295,13 +295,13 @@
                   <input class="input" id="productSearch" placeholder="Type to search…" autocomplete="off" />
                   <div id="searchDropdown"></div>
                 </div>
-                <div id="searchMsg" class="small" style="margin-top:6px; min-height:14px; opacity:.6;"></div>
+                <div id="searchMsg" class="small" style="margin-top:6px; min-height:14px; opacity:.76;"></div>
                 <div id="cartItems" style="margin-top:14px;"></div>
               </div>
 
               <!-- Quick sale mode -->
               <div id="quickPanel" style="display:none;">
-                <div class="small" style="opacity:.6; margin-bottom:10px;">
+                <div class="small" style="opacity:.76; margin-bottom:10px;">
                   For a custom or one-off item that isn't in your product catalog — e.g. a custom-tailored piece or an alteration charge. Not tracked in inventory.
                 </div>
                 <div id="quickRows"></div>
@@ -402,12 +402,12 @@
             </div>
             <div class="section-body">
               <div id="summaryItems" style="margin-bottom:10px; min-height:20px;">
-                <div class="small" style="opacity:.4;">No items added yet.</div>
+                <div class="small" style="opacity:.68;">No items added yet.</div>
               </div>
               <div id="summaryTotals" style="display:none;">
-                <div class="summary-row"><span style="opacity:.7;">Subtotal</span><span id="sSubtotal">₹0</span></div>
-                <div class="summary-row" id="sShippingRow"><span style="opacity:.7;">Shipping</span><span id="sShipping">₹0</span></div>
-                <div class="summary-row"><span style="opacity:.7;" id="sGstLabel">GST</span><span id="sGst">₹0</span></div>
+                <div class="summary-row"><span style="opacity:.8;">Subtotal</span><span id="sSubtotal">₹0</span></div>
+                <div class="summary-row" id="sShippingRow"><span style="opacity:.8;">Shipping</span><span id="sShipping">₹0</span></div>
+                <div class="summary-row"><span style="opacity:.8;" id="sGstLabel">GST</span><span id="sGst">₹0</span></div>
                 <div class="summary-row total"><span>Total</span><span id="sTotal">₹0</span></div>
               </div>
             </div>
@@ -464,7 +464,7 @@
           <button class="btn" id="submitBtn" style="width:100%; padding:14px; font-size:15px; font-weight:900;">
             Complete Sale &amp; Generate Invoice
           </button>
-          <div id="submitMsg" class="small" style="margin-top:8px; text-align:center; min-height:16px; opacity:.7;"></div>
+          <div id="submitMsg" class="small" style="margin-top:8px; text-align:center; min-height:16px; opacity:.8;"></div>
 
           <div id="resultPanel">
             <div id="resultContent"></div>
@@ -497,7 +497,7 @@
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
           '<div style="font-size:48px;">' + emoji + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
-          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }
@@ -684,7 +684,7 @@
         <div class="cart-item" data-pid="${escapeAttr(c.product_id)}">
           <div>
             <div class="cart-item-name">${escapeHtml(c.title)}</div>
-            <div class="small" style="opacity:.5;">Unit: ${money(c.price_override ?? c.unit_price)}</div>
+            <div class="small" style="opacity:.72;">Unit: ${money(c.price_override ?? c.unit_price)}</div>
           </div>
           <input type="number" class="input qty-input" value="${c.qty}" min="1" max="999"
                  data-pid="${escapeAttr(c.product_id)}" style="width:64px;text-align:center;" />
@@ -697,7 +697,7 @@
             <input type="number" class="input override-input" placeholder="${c.unit_price}"
                    value="${c.price_override ?? ""}" min="0" step="1"
                    data-pid="${escapeAttr(c.product_id)}" style="width:90px;font-size:13px;" />
-            <span class="small" style="opacity:.5;">leave blank for default ${money(c.unit_price)}</span>
+            <span class="small" style="opacity:.72;">leave blank for default ${money(c.unit_price)}</span>
           </div>
         </div>
       `).join("");
@@ -812,7 +812,7 @@
       const items = activeLineItems();
 
       if (!items.length) {
-        summaryItems.innerHTML  = `<div class="small" style="opacity:.4;">No items added yet.</div>`;
+        summaryItems.innerHTML  = `<div class="small" style="opacity:.68;">No items added yet.</div>`;
         summaryTotals.style.display = "none";
         return;
       }
@@ -976,7 +976,7 @@
               <div class="small" style="font-weight:700; margin-bottom:4px;">Payment Link:</div>
               <a href="${safeHref(link)}" target="_blank" rel="noopener noreferrer" style="color:var(--brand); font-size:13px;">${escapeHtml(link)}</a>
             </div>
-            <div class="small" style="opacity:.65; margin-bottom:10px;">
+            <div class="small" style="opacity:.78; margin-bottom:10px;">
               Once the customer pays, this order will show a 🚀 Ship Now button in Admin → Orders.
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -1061,13 +1061,13 @@
           <input type="radio" name="courier-choice-2" value="${escapeAttr(String(c.courier_id))}" ${i === 0 ? "checked" : ""} style="margin:0;flex-shrink:0;" />
           <span style="flex:1;font-size:13px;">
             <strong>${escapeHtml(c.courier_name || "Courier")}</strong>
-            ${c.is_recommended ? `<span style="margin-left:6px;font-size:11px;font-weight:800;color:#166534;">★ Recommended</span>` : ""}
+            ${c.is_recommended ? `<span style="margin-left:6px;font-size:12px;font-weight:800;color:#166534;">★ Recommended</span>` : ""}
             <br><span style="color:#64748b;font-size:12px;">₹${Number(c.rate || 0).toFixed(2)}${c.etd_days ? ` • Est. ${escapeHtml(String(c.etd_days))}` : ""}</span>
           </span>
         </label>`).join("");
 
       const weightNote = weightKg != null
-        ? `<div style="font-size:11px;color:#64748b;margin-bottom:8px;">Rates based on ${Number(weightKg).toFixed(2)} kg chargeable weight (packed product weight vs. box size, whichever is higher)</div>`
+        ? `<div style="font-size:12px;color:#64748b;margin-bottom:8px;">Rates based on ${Number(weightKg).toFixed(2)} kg chargeable weight (packed product weight vs. box size, whichever is higher)</div>`
         : "";
 
       slot.innerHTML = `

@@ -30,13 +30,13 @@
       padding: 14px 16px; display: flex; flex-direction: column; gap: 5px;
     }
     .metric-card.highlight { background: var(--brand-light, #fdf2f2); border-color: var(--brand, #7c1c1c); }
-    .metric-label { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .6; }
+    .metric-label { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .76; }
     .metric-value { font-size: 24px; font-weight: 900; line-height: 1; font-family: 'Cormorant Garamond', serif; }
-    .metric-sub { font-size: 11px; opacity: .6; }
+    .metric-sub { font-size: 12px; opacity: .76; }
 
     .section-title {
       font-size: 12.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
-      opacity: .55; margin: 26px 0 12px;
+      opacity: .74; margin: 26px 0 12px;
     }
     .section-title::after { content: none; } /* kill storefront underline */
 
@@ -52,16 +52,16 @@
     .trend-chart { display: flex; align-items: flex-end; gap: 4px; height: 140px; padding-top: 10px; }
     .trend-col { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
     .trend-bar { width: 100%; max-width: 22px; border-radius: 4px 4px 0 0; background: var(--brand, #7c1c1c); min-height: 2px; }
-    .trend-day-label { font-size: 9px; opacity: .55; writing-mode: vertical-rl; transform: rotate(180deg); height: 34px; }
+    .trend-day-label { font-size: 12px; opacity: .74; writing-mode: vertical-rl; transform: rotate(180deg); height: 34px; }
 
     .day-range { display:flex; gap:6px; }
     .day-range button {
       border:1px solid var(--border,#e5e7eb); background:#fff; border-radius:999px; padding:6px 14px;
-      font-size:12.5px; font-weight:700; cursor:pointer; opacity:.65;
+      font-size:12.5px; font-weight:700; cursor:pointer; opacity:.78;
     }
     .day-range button.active { opacity:1; background: var(--brand-light,#fdf2f2); border-color: var(--brand,#7c1c1c); color: var(--brand,#7c1c1c); }
 
-    .empty-note { font-size: 12.5px; opacity: .55; padding: 8px 0; }
+    .empty-note { font-size: 12.5px; opacity: .74; padding: 8px 0; }
   </style>
 </head>
 
@@ -69,13 +69,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:980px;">
-    <div id="loadingState" style="text-align:center;padding:48px;opacity:.6;font-size:14px;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center;padding:48px;opacity:.76;font-size:14px;">Verifying admin access…</div>
 
     <div id="mainContent" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
         <div>
           <h2 style="margin:0;">Visitor Analytics</h2>
-          <div class="small" style="opacity:.65;margin-top:4px;">
+          <div class="small" style="opacity:.78;margin-top:4px;">
             AhamStree's own record of site traffic — pages, referrers, devices, and rough visitor location.
             Not Google Analytics; this lives in your own database.
           </div>
@@ -92,7 +92,7 @@
         <button id="btnRefresh" class="btn secondary" style="padding:7px 14px;font-size:12.5px;">↻ Refresh</button>
       </div>
 
-      <div id="statusMsg" class="small" style="margin:10px 0;opacity:.6;"></div>
+      <div id="statusMsg" class="small" style="margin:10px 0;opacity:.76;"></div>
 
       <div class="metric-grid" id="metricsTop"></div>
 
@@ -150,7 +150,7 @@
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
           '<div style="font-size:48px;">' + emoji + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
-          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }
