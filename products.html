@@ -203,8 +203,18 @@
       </div>
 
       <div class="filter-block" id="fabricBlock">
-        <div class="filter-title">Category</div>
+        <div class="filter-title">Fabric</div>
         <div id="fabricList" class="filter-list small">Loading…</div>
+      </div>
+
+      <div class="filter-block hidden" id="colourBlock">
+        <div class="filter-title">Colour</div>
+        <div id="colourList" class="filter-list small">Loading…</div>
+      </div>
+
+      <div class="filter-block hidden" id="occasionBlock">
+        <div class="filter-title">Occasion</div>
+        <div id="occasionList" class="filter-list small">Loading…</div>
       </div>
 
       <div class="filter-block">
@@ -312,21 +322,40 @@
   overlay.addEventListener("click", closeDrawer);
   window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
 
+  // FIX: Sarees and Suits used to share one unfiltered list of collections
+  // and fabrics — a collection or fabric that only had suits in it still
+  // showed up as a filter option while browsing sarees (and just led to
+  // "No products in this collection yet"). Both are now scoped to products
+  // of the type actually being browsed, via the same ?type= this page
+  // already filters its product grid by.
+  const currentType = (params.get("type") || "saree").toLowerCase();
+
   async function loadCollections(){
     const box = document.getElementById("collectionList");
     const selected = params.get("collection") || "";
     const { data, error } = await supabase
-      .from("collections")
-      .select("id,name,slug")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
+      .from("collection_products")
+      .select("collections!inner(id,name,slug,sort_order,created_at,is_active), products!inner(is_active,category)")
+      .eq("collections.is_active", true)
+      .eq("products.is_active", true)
+      .eq("products.category", currentType);
     if (error){ box.textContent = "Could not load collections."; return; }
+
+    const seen = new Map();
+    for (const row of (data ?? [])) {
+      const c = row.collections;
+      if (c && !seen.has(c.id)) seen.set(c.id, c);
+    }
+    const rows = Array.from(seen.values()).sort((a, b) =>
+      (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(b.created_at).localeCompare(String(a.created_at))
+    );
+
     box.innerHTML = `
       <label class="filter-option">
         <input type="radio" name="col" value="" ${selected ? "" : "checked"} />
         <span>All</span>
       </label>
-    ` + (data ?? []).map(c => `
+    ` + rows.map(c => `
       <label class="filter-option">
         <input type="radio" name="col" value="${escapeAttr(c.slug)}" ${c.slug === selected ? "checked" : ""} />
         <span>${escapeHtml(c.name)}</span>
@@ -342,14 +371,24 @@
     const selected = params.get("fabric") || "";
     try{
       const { data, error } = await supabase
-        .from("fabrics")
-        .select("id,name,slug,description,sort_order,is_active")
+        .from("products")
+        .select("fabrics!inner(id,name,slug,sort_order,is_active)")
         .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("name", { ascending: true });
+        .eq("category", currentType)
+        .eq("fabrics.is_active", true);
       if (error) throw error;
-      const rows = data ?? [];
+
+      const seen = new Map();
+      for (const row of (data ?? [])) {
+        const f = row.fabrics;
+        if (f && !seen.has(f.id)) seen.set(f.id, f);
+      }
+      const rows = Array.from(seen.values()).sort((a, b) =>
+        (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name))
+      );
+
       if (rows.length === 0){ document.getElementById("fabricBlock")?.classList.add("hidden"); return; }
+      document.getElementById("fabricBlock")?.classList.remove("hidden");
       box.innerHTML = `
         <label class="filter-option">
           <input type="radio" name="fab" value="" ${selected === "" ? "checked" : ""} />
@@ -367,6 +406,52 @@
       });
     } catch(e){ document.getElementById("fabricBlock")?.classList.add("hidden"); }
   }
+
+  // Colour and Occasion are free-text fields on the product itself (set in
+  // admin-products.html) rather than their own lookup tables — most
+  // products don't have them filled in yet, so these filters only ever
+  // show up once there are at least a couple of distinct values to choose
+  // between for the type being browsed. As more products get tagged with a
+  // colour/occasion in admin, these fill in on their own — nothing else to
+  // wire up.
+  async function loadTextAttributeFilter(column, paramName, boxId, blockId, inputName){
+    const box = document.getElementById(boxId);
+    const selected = params.get(paramName) || "";
+    try{
+      const { data, error } = await supabase
+        .from("products")
+        .select(column)
+        .eq("is_active", true)
+        .eq("category", currentType)
+        .not(column, "is", null);
+      if (error) throw error;
+
+      const values = Array.from(new Set(
+        (data ?? []).map(r => String(r[column] || "").trim()).filter(Boolean)
+      )).sort((a, b) => a.localeCompare(b));
+
+      if (values.length < 2){ document.getElementById(blockId)?.classList.add("hidden"); return; }
+      document.getElementById(blockId)?.classList.remove("hidden");
+      box.innerHTML = `
+        <label class="filter-option">
+          <input type="radio" name="${inputName}" value="" ${selected ? "" : "checked"} />
+          <span>All</span>
+        </label>
+        ${values.map(v => `
+          <label class="filter-option">
+            <input type="radio" name="${inputName}" value="${escapeAttr(v)}" ${v === selected ? "checked" : ""} />
+            <span>${escapeHtml(v)}</span>
+          </label>
+        `).join("")}
+      `;
+      Array.from(box.querySelectorAll(`input[name='${inputName}']`)).forEach(r => {
+        r.addEventListener("change", () => setParam(paramName, r.value));
+      });
+    } catch(e){ document.getElementById(blockId)?.classList.add("hidden"); }
+  }
+
+  const loadColours   = () => loadTextAttributeFilter("colour", "colour", "colourList", "colourBlock", "colour");
+  const loadOccasions = () => loadTextAttributeFilter("occasion", "occasion", "occasionList", "occasionBlock", "occasion");
 
   const PAGE_SIZE = 24;
   let offset = 0;
@@ -604,6 +689,8 @@
     const selectedSlug = params.get("collection") || "";
     const selectedFabricSlug = params.get("fabric") || "";
     const selectedWeaveSlug = params.get("weave") || "";
+    const selectedColour = params.get("colour") || "";
+    const selectedOccasion = params.get("occasion") || "";
     const min = numOrNull(params.get("min"));
     const max = numOrNull(params.get("max"));
     const sort = params.get("sort") || "newest";
@@ -638,6 +725,8 @@
         if (selectedSlug) countQ = countQ.in("id", cache.productIds);
         if (fab && cache.fabricId) countQ = countQ.eq("fabric_id", cache.fabricId);
         if (weave && cache.weaveId) countQ = countQ.eq("weave_line_id", cache.weaveId);
+        if (selectedColour) countQ = countQ.eq("colour", selectedColour);
+        if (selectedOccasion) countQ = countQ.eq("occasion", selectedOccasion);
         if (min !== null) countQ = countQ.gte("price_inr", min);
         if (max !== null) countQ = countQ.lte("price_inr", max);
         if (inStockOnly) countQ = countQ.gt("inventory_qty", 0);
@@ -661,6 +750,8 @@
     if (selectedSlug) query = query.in("id", cache.productIds);
     if (fab && cache.fabricId) query = query.eq("fabric_id", cache.fabricId);
     if (weave && cache.weaveId) query = query.eq("weave_line_id", cache.weaveId);
+    if (selectedColour) query = query.eq("colour", selectedColour);
+    if (selectedOccasion) query = query.eq("occasion", selectedOccasion);
     if (min !== null) query = query.gte("price_inr", min);
     if (max !== null) query = query.lte("price_inr", max);
     if (inStockOnly) query = query.gt("inventory_qty", 0);
@@ -760,19 +851,25 @@
   });
 
   document.getElementById("clearAll").addEventListener("click", () => {
-    params.delete("collection"); params.delete("fabric"); params.delete("min"); params.delete("max"); params.delete("sort"); params.delete("inStock");
+    params.delete("collection"); params.delete("fabric"); params.delete("colour"); params.delete("occasion");
+    params.delete("min"); params.delete("max"); params.delete("sort"); params.delete("inStock");
     history.replaceState({}, "", url.pathname);
     document.getElementById("minPrice").value = "";
     document.getElementById("maxPrice").value = "";
     document.getElementById("sortBy").value = "newest";
     document.getElementById("inStockOnly").checked = false;
     loadCollections();
+    loadFabrics();
+    loadColours();
+    loadOccasions();
     resetAndLoad();
     closeDrawer();
   });
 
   loadCollections();
   loadFabrics();
+  loadColours();
+  loadOccasions();
   resetAndLoad();
 
   loadMoreBtn.addEventListener("click", () => loadNextPage(false));
