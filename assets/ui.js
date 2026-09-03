@@ -3,6 +3,7 @@ import { cartCount } from "./cart.js";
 import { supabase } from "./supabase.js";
 import { mountWelcomePopup } from "./welcome-popup.js";
 import { mountSignInPopup, openSignInModal } from "./signin-popup.js";
+import { openSearchOverlay } from "./search-overlay.js";
 import { escapeHtml } from "./safe.js";
 import { grantSignupCashIfEligible } from "./profile-seed.js";
 import { mergeGuestWishlistIntoAccount } from "./wishlist.js";
@@ -122,7 +123,7 @@ export function renderHeader(active = "") {
             <button class="icon-btn mobile-menu-btn" type="button" aria-label="Open menu">
               ${iconHamburger()}
             </button>
-            <a class="icon-link" href="search.html" aria-label="Search">
+            <a id="searchLinkMobile" class="icon-link" href="search.html" aria-label="Search">
               ${iconSearch()}
             </a>
           </div>
@@ -197,7 +198,7 @@ export function renderHeader(active = "") {
         <!-- Desktop: Right utilities -->
         <div class="utils utils-desktop">
           <a id="adminLink" class="util-link admin-link" href="admin.html" title="Admin dashboard" hidden>Admin</a>
-          <a class="util-link" href="search.html" title="Search">Search</a>
+          <a id="searchLink" class="util-link" href="search.html" title="Search">Search</a>
           <a id="accountLink" class="util-link" href="login.html" title="Account">Login / Sign up</a>
           <a id="wishlistLink" class="util-link ${active === "wishlist" ? "active" : ""}" href="wishlist.html" title="Wishlist">Wishlist</a>
           <a class="util-link ${active === "cart" ? "active" : ""}" href="cart.html" title="Cart">Cart (${count})</a>
@@ -696,6 +697,26 @@ export async function hydrateHeaderAuth() {
       if (el.getAttribute("href") === "login.html" && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) {
         e.preventDefault();
         openSignInModal();
+      }
+    });
+  });
+
+  // Search — was a full-page navigation to search.html with nothing on it
+  // until you typed; now opens an in-place dropdown with live results
+  // (search.html itself still exists, reachable via the overlay's "View
+  // all results" link, direct URL, or Enter in the overlay's input).
+  // Always intercepts regardless of login state (unlike the account link
+  // above) and is only ever rendered once per page, but bound the same
+  // guarded way for consistency.
+  const searchDesktop = document.getElementById("searchLink");
+  const searchMobile  = document.getElementById("searchLinkMobile");
+  [searchDesktop, searchMobile].forEach((el) => {
+    if (!el || el.dataset.searchOverlayBound === "1") return;
+    el.dataset.searchOverlayBound = "1";
+    el.addEventListener("click", (e) => {
+      if (!e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) {
+        e.preventDefault();
+        openSearchOverlay();
       }
     });
   });

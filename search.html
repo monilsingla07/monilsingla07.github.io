@@ -56,13 +56,25 @@
       gap: 20px;
       margin-top: 32px;
     }
-    
+
     @media (max-width: 768px) {
       .results-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
       }
     }
+
+    /* Shown before a query is entered (2+ chars) — was previously just a
+       blank page below the input. Same "browse instead" quick links as the
+       header search overlay, for anyone landing here directly. */
+    .search-prompt-quicklinks {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px;
+    }
+    .search-prompt-quicklinks a {
+      font-size: 13px; font-weight: 600; text-decoration: none; color: var(--text);
+      border: 1.5px solid var(--border); border-radius: 999px; padding: 9px 18px;
+    }
+    .search-prompt-quicklinks a:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-lighter); }
   </style>
 </head>
 
@@ -90,6 +102,15 @@
     </div>
 
     <div id="searchStatus" class="search-status"></div>
+    <div id="searchPrompt">
+      <div class="search-prompt-quicklinks">
+        <a href="products.html?type=saree">Sarees</a>
+        <a href="products.html?type=suit">Suits</a>
+        <a href="new-arrivals.html">New Arrivals</a>
+        <a href="collections.html">Collections</a>
+        <a href="sale.html">Sale</a>
+      </div>
+    </div>
     <div id="searchResults" class="results-grid"></div>
   </div>
 
@@ -107,6 +128,7 @@
     const searchInput = document.getElementById('searchInput');
     const searchResults = document.getElementById('searchResults');
     const searchStatus = document.getElementById('searchStatus');
+    const searchPrompt = document.getElementById('searchPrompt');
 
     let debounceTimer;
 
@@ -115,13 +137,14 @@
     const initialQuery = urlParams.get('q');
     if (initialQuery) {
       searchInput.value = initialQuery;
+      searchPrompt.style.display = 'none';
       performSearch(initialQuery);
     }
 
     // Search when user types
     searchInput.addEventListener('input', (e) => {
       const query = e.target.value;
-      
+
       // Update URL
       const url = new URL(window.location);
       if (query) {
@@ -133,15 +156,17 @@
 
       // Debounce search
       clearTimeout(debounceTimer);
-      
+
       if (query.trim().length < 2) {
         searchResults.innerHTML = '';
         searchStatus.textContent = '';
+        searchPrompt.style.display = '';
         return;
       }
 
+      searchPrompt.style.display = 'none';
       searchStatus.textContent = 'Searching...';
-      
+
       debounceTimer = setTimeout(() => {
         performSearch(query);
       }, 300);

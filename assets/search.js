@@ -70,6 +70,37 @@ export async function searchProducts(query) {
 }
 
 /**
+ * Compact result rows for the header search overlay (thumbnail + title +
+ * price, one per line) — distinct from renderSearchResults()'s full .p-card
+ * grid, which is for the dedicated search.html results page. A dropdown
+ * panel needs a scannable list, not full product cards.
+ */
+export function renderSearchPreview(products) {
+  return (products || [])
+    .map((p) => {
+      const price = Number(p.price_inr || 0);
+      const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
+      const hasSale = Number.isFinite(sale) && sale > 0 && sale < price;
+      const priceHtml = hasSale
+        ? `<span style="text-decoration:line-through;opacity:.55;margin-right:6px;">${moneyINR(price)}</span><span style="color:var(--brand);font-weight:700;">${moneyINR(sale)}</span>`
+        : `<span style="font-weight:700;">${moneyINR(price)}</span>`;
+      const imgHtml = p.image_url
+        ? `<img src="${safeSrc(p.image_url)}" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;">`
+        : "";
+      return `
+        <a href="product.html?id=${encodeURIComponent(p.id)}&from=search" class="search-preview-row">
+          <div class="search-preview-thumb">${imgHtml}</div>
+          <div class="search-preview-info">
+            <div class="search-preview-title">${escapeHtml(p.title || "")}</div>
+            <div class="search-preview-price">${priceHtml}</div>
+          </div>
+        </a>
+      `;
+    })
+    .join("");
+}
+
+/**
  * Render search results
  */
 export function renderSearchResults(products) {
