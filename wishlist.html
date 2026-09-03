@@ -92,7 +92,7 @@
 
         return `
           <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
-            <a href="product.html?id=${encodeURIComponent(product.id)}&from=wishlist" class="product-link">
+            <a href="${product.slug ? `product.html?slug=${encodeURIComponent(product.slug)}` : `product.html?id=${encodeURIComponent(product.id)}`}&from=wishlist" class="product-link">
               <div class="p-card-img${product.image_url_hover ? " has-hover-img" : ""}">
                 ${imgHtml}
                 ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : ""}

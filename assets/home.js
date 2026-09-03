@@ -183,7 +183,7 @@ function productCard(p) {
   return `
     <div class="p-card">
       <button type="button" class="p-card-wish" data-product-id="${escapeAttr(p.id)}" aria-label="Add to wishlist" aria-pressed="false">${heartIcon()}</button>
-      <a href="product.html?id=${encodeURIComponent(p.id)}" class="product-link">
+      <a href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}" class="product-link">
         <div class="p-card-img${p.image_url_hover ? " has-hover-img" : ""}">
           ${imgHtml}
           ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
@@ -267,7 +267,7 @@ async function fetchMostLoved(limit = 6) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count, product_images(image_url, sort_order)"
+      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count, product_images(image_url, sort_order)"
     )
     .eq("is_active", true)
     .order("view_count", { ascending: false })
@@ -283,7 +283,7 @@ async function fetchLatestActive(limit = 6) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
+      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
     )
     .eq("is_active", true)
     .order("created_at", { ascending: false })

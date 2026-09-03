@@ -330,7 +330,7 @@
 
       return `
         <div class="p-card" style="animation-delay:${(idx % 8) * 60}ms">
-          <a href="product.html?id=${encodeURIComponent(p.id)}&from=new-arrivals">
+          <a href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}&from=new-arrivals">
             <div class="p-card-img${p.image_url_hover ? " has-hover-img" : ""}">
               ${imgHtml}
               ${soldOut ? `<div class="p-card-sold-badge">Sold Out</div>` : (hasNewBadge ? `<div class="p-card-new-badge">New</div>` : "")}
@@ -353,7 +353,7 @@
 
       const { data, error } = await supabase
         .from("products")
-        .select("id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)")
+        .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(24);

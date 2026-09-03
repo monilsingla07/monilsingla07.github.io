@@ -57,7 +57,7 @@ export async function searchProducts(query) {
     .select(
       // NOTE: Your current schema does NOT have a `fabric` column.
       // If you add it later, you can include it again.
-      "id,title,description,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
+      "id,slug,title,description,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
     )
     .eq("is_active", true)
     .or(
@@ -88,7 +88,7 @@ export function renderSearchPreview(products) {
         ? `<img src="${safeSrc(p.image_url)}" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;">`
         : "";
       return `
-        <a href="product.html?id=${encodeURIComponent(p.id)}&from=search" class="search-preview-row">
+        <a href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}&from=search" class="search-preview-row">
           <div class="search-preview-thumb">${imgHtml}</div>
           <div class="search-preview-info">
             <div class="search-preview-title">${escapeHtml(p.title || "")}</div>
@@ -142,7 +142,7 @@ export function renderSearchResults(products) {
 
       return `
         <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
-          <a href="product.html?id=${encodeURIComponent(p.id)}&from=search" class="product-link">
+          <a href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}&from=search" class="product-link">
             <div class="p-card-img${p.image_url_hover ? " has-hover-img" : ""}">
               ${imgHtml}
               ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}

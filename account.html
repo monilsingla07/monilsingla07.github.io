@@ -371,21 +371,24 @@
         return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
       };
 
-      const renderItem = (p) => `
+      const renderItem = (p) => {
+        const href = p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`;
+        return `
         <div class="acct-card" style="display:flex;gap:12px;align-items:center;">
-          <a href="product.html?id=${encodeURIComponent(p.id)}" style="display:block;flex:0 0 86px;">
+          <a href="${href}" style="display:block;flex:0 0 86px;">
             <img src="${escapeHtml(p.image_url || "")}" alt="${escapeHtml(p.title || "")}" style="width:86px;height:110px;object-fit:cover;border-radius:12px;border:1px solid #eee;background:#fafafa;" />
           </a>
           <div style="flex:1;min-width:180px;">
             <div style="font-weight:900;">${escapeHtml(p.title || "")}</div>
             <div class="small" style="margin-top:4px;">${money(p)}</div>
             <div class="acct-row" style="margin-top:10px;">
-              <a class="btn secondary" href="product.html?id=${encodeURIComponent(p.id)}">View</a>
+              <a class="btn secondary" href="${href}">View</a>
               <button class="btn" data-remove="${escapeHtml(p.id)}" type="button">Remove</button>
             </div>
           </div>
         </div>
       `;
+      };
 
       (async () => {
         const { data, error } = await getWishlist();

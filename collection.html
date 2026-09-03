@@ -357,7 +357,7 @@
 
       return `
         <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
-          <a href="product.html?id=${encodeURIComponent(p.id)}&from=collection&col=${encodeURIComponent(slug || '')}&colName=${encodeURIComponent(currentColName)}">
+          <a href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}&from=collection&col=${encodeURIComponent(slug || '')}&colName=${encodeURIComponent(currentColName)}">
             <div class="p-card-img${p.image_url_hover ? " has-hover-img" : ""}">
               ${imgHtml}
               ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
@@ -443,7 +443,7 @@
 
       const { data, error } = await supabase
         .from("collection_products")
-        .select("sort_order, product:products(id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order))")
+        .select("sort_order, product:products(id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order))")
         .eq("collection_id", col.id)
         .order("sort_order", { ascending: true });
 
@@ -475,7 +475,7 @@
       injectJsonLd("ld-collection", buildCollectionSchema({
         name: currentColName,
         path: `/collection.html?slug=${encodeURIComponent(slug)}`,
-        products: normalized.map(p => ({ title: p.title, path: `/product.html?id=${encodeURIComponent(p.id)}` })),
+        products: normalized.map(p => ({ title: p.title, path: p.slug ? `/product.html?slug=${encodeURIComponent(p.slug)}` : `/product.html?id=${encodeURIComponent(p.id)}` })),
       }));
 
       // Restore scroll if user navigated back

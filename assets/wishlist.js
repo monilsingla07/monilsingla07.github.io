@@ -183,7 +183,7 @@ export async function getWishlist() {
     const { data, error } = await supabase
       .from("products")
       .select(
-        "id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
+        "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
       )
       .in("id", ids)
       .eq("is_active", true);
@@ -205,7 +205,7 @@ export async function getWishlist() {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
+      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
     )
     .in("id", ids)
     .eq("is_active", true);

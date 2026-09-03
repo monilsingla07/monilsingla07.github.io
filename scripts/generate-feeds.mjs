@@ -65,7 +65,7 @@ function cdata(s) {
 async function main() {
   const [products, collections, blogPosts, fabrics, weaveLines] = await Promise.all([
     supaGet(
-      "products?select=id,title,description,category,price_inr,sale_price_inr,sku,inventory_qty,is_active,colour,print_type,craft,motif,border_type,zari,occasion,updated_at,fabric:fabrics(name),weave_line:weave_lines(name),product_images(image_url,sort_order)&is_active=eq.true&order=updated_at.desc"
+      "products?select=id,slug,title,description,category,price_inr,sale_price_inr,sku,inventory_qty,is_active,colour,print_type,craft,motif,border_type,zari,occasion,updated_at,fabric:fabrics(name),weave_line:weave_lines(name),product_images(image_url,sort_order)&is_active=eq.true&order=updated_at.desc"
     ),
     supaGet("collections?select=slug,name,updated_at:created_at&is_active=eq.true"),
     supaGet("blog_posts?select=slug,title,published_at&is_published=eq.true&order=published_at.desc"),
@@ -108,7 +108,7 @@ async function main() {
   }));
 
   const productUrls = products.map((p) => ({
-    loc: `/product.html?id=${encodeURIComponent(p.id)}`,
+    loc: p.slug ? `/product.html?slug=${encodeURIComponent(p.slug)}` : `/product.html?id=${encodeURIComponent(p.id)}`,
     lastmod: p.updated_at ? p.updated_at.slice(0, 10) : today,
     priority: "0.7",
   }));
@@ -144,7 +144,13 @@ async function main() {
       const mainImage = images[0]?.image_url;
       if (!mainImage) return null; // Merchant Center requires an image; skip products with none rather than fake one.
 
-      const link = `${SITE_URL}/product.html?id=${encodeURIComponent(p.id)}`;
+      // g:id below stays the permanent UUID (Merchant Center tracks a product
+      // by that id across feed refreshes — changing it would look like a
+      // brand-new product and lose review/performance history). Only the
+      // landing-page link itself uses the SEO slug.
+      const link = p.slug
+        ? `${SITE_URL}/product.html?slug=${encodeURIComponent(p.slug)}`
+        : `${SITE_URL}/product.html?id=${encodeURIComponent(p.id)}`;
       const price = p.price_inr;
       const salePrice = p.sale_price_inr && p.sale_price_inr > 0 && p.sale_price_inr < price ? p.sale_price_inr : null;
       const availability = (p.inventory_qty ?? 0) > 0 ? "in_stock" : "out_of_stock";

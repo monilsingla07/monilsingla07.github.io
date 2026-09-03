@@ -312,6 +312,7 @@
       if (!newGrid || !bestGrid) return;
 
       const currentId = new URLSearchParams(location.search).get("id") || "";
+      const currentSlug = new URLSearchParams(location.search).get("slug") || "";
 
       function moneyINR(v) {
         const n = Number(v);
@@ -336,8 +337,9 @@
         const imgHtml = imgUrl
           ? `<img class="${imgUrlHover ? "p-card-img-primary" : ""}" src="${safeSrc(imgUrl)}" alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">${imgUrlHover ? `<img class="p-card-img-hover" src="${safeSrc(imgUrlHover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
           : `<div class="p-card-img-empty"></div>`;
+        const href = p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`;
         return `
-          <a href="product.html?id=${encodeURIComponent(p.id)}" class="p-card product-link">
+          <a href="${href}" class="p-card product-link">
             <div class="p-card-img${imgUrlHover ? " has-hover-img" : ""}">
               ${imgHtml}
               ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
@@ -352,13 +354,12 @@
       }
 
       async function fetchRelated(orderCol) {
-        const { data, error } = await supabase
+        let q = supabase
           .from("products")
-          .select("id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,product_images(image_url,sort_order)")
-          .eq("is_active", true)
-          .neq("id", currentId)
-          .order(orderCol, { ascending: false })
-          .limit(8);
+          .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,product_images(image_url,sort_order)")
+          .eq("is_active", true);
+        q = currentSlug ? q.neq("slug", currentSlug) : q.neq("id", currentId);
+        const { data, error } = await q.order(orderCol, { ascending: false }).limit(8);
         if (error) throw error;
         return data ?? [];
       }
@@ -392,6 +393,13 @@
     })();
 
     const params = new URLSearchParams(location.search);
+    // Slug is now the canonical way to reach a product (product.html?slug=...,
+    // set on every card/link site-wide) — see the products.slug column and
+    // admin-manage-products, which generates one for every product going
+    // forward. ?id=... still works for any link/bookmark/search result
+    // indexed before this change; loadProduct() below swaps the visible URL
+    // to the slug version once it knows it, so old links self-heal.
+    const slugParam = params.get("slug");
     const id = params.get("id");
 
     function safeNum(v, fallback = 0) {
@@ -414,23 +422,35 @@
     async function loadProduct() {
       const status = document.getElementById("status");
 
-      if (!id) {
+      if (!slugParam && !id) {
         status.textContent = "Product not found.";
         return;
       }
 
       // 1) Product + images (you already had this)
-      const { data, error } = await supabase
+      let productQuery = supabase
         .from("products")
         .select(`
-          id,title,description,category,price_inr,sale_price_inr,sku,inventory_qty,reserved_qty,is_active,created_at,
+          id,slug,title,description,category,price_inr,sale_price_inr,sku,inventory_qty,reserved_qty,is_active,created_at,
           colour,print_type,craft,motif,border_type,zari,occasion,
           fabric:fabrics(name),
           weave_line:weave_lines(name),
           product_images(image_url, sort_order, alt_text)
-        `)
-        .eq("id", id)
-        .maybeSingle();
+        `);
+      productQuery = slugParam ? productQuery.eq("slug", slugParam) : productQuery.eq("id", id);
+      const { data, error } = await productQuery.maybeSingle();
+
+      // A legacy ?id=... link that resolved fine: swap the visible URL to
+      // the canonical ?slug=... version (no reload — same loaded page),
+      // so a reshared/re-bookmarked link from here on is the SEO-friendly
+      // one. Crawlers/social previews still get the canonical <link> tag
+      // set below regardless of which form was requested.
+      if (!error && data?.slug && !slugParam) {
+        const cleanUrl = new URL(location.href);
+        cleanUrl.searchParams.delete("id");
+        cleanUrl.searchParams.set("slug", data.slug);
+        history.replaceState({}, "", cleanUrl.pathname + cleanUrl.search);
+      }
 
       if (error || !data) {
         status.textContent = "Product not found.";
@@ -448,10 +468,10 @@
       document.getElementById("status").style.display = "none";
       document.getElementById("content").style.display = "block";
 // Increment view count — fire and forget, don't block page render
-const viewKey = `viewed_${id}`;
+const viewKey = `viewed_${data.id}`;
 if (!sessionStorage.getItem(viewKey)) {
   sessionStorage.setItem(viewKey, "1");
-  supabase.rpc("increment_view_count", { p_id: id }).then(() => {}).catch(() => {});
+  supabase.rpc("increment_view_count", { p_id: data.id }).then(() => {}).catch(() => {});
 }
 		
       // Basic fields
@@ -602,6 +622,14 @@ if (!sessionStorage.getItem(viewKey)) {
 
       // ── SEO: dynamic title/meta/canonical/OG + Product & Breadcrumb JSON-LD ──
       (function applySeo() {
+        // Canonical path always points at the slug URL, even when this page
+        // was actually reached via a legacy ?id=... link — that's the whole
+        // point of a canonical tag: tell crawlers/search results there's one
+        // real URL for this product, and it's the readable one.
+        const canonicalPath = data.slug
+          ? `/product.html?slug=${encodeURIComponent(data.slug)}`
+          : `/product.html?id=${encodeURIComponent(data.id)}`;
+
         const weaveName = data.weave_line?.name || "";
         const fabricName = data.fabric?.name || "";
         const descriptor = [weaveName, fabricName].filter(Boolean).join(" ");
@@ -614,7 +642,7 @@ if (!sessionStorage.getItem(viewKey)) {
         setPageMeta({
           title: pageTitle,
           description: metaDesc,
-          path: `/product.html?id=${encodeURIComponent(id)}`,
+          path: canonicalPath,
           image: images[0]?.image_url,
           type: "product",
         });
@@ -626,13 +654,13 @@ if (!sessionStorage.getItem(viewKey)) {
             fabric_name: fabricName || undefined,
           },
           images,
-          `/product.html?id=${encodeURIComponent(id)}`
+          canonicalPath
         ));
 
         injectJsonLd("ld-breadcrumb", buildBreadcrumbSchema([
           { name: "Home", path: "/" },
           { name: breadcrumb.label, path: breadcrumb.href },
-          { name: data.title, path: `/product.html?id=${encodeURIComponent(id)}` },
+          { name: data.title, path: canonicalPath },
         ]));
       })();
 

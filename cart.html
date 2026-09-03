@@ -113,7 +113,7 @@
 
       const { data, error } = await supabase
         .from("products")
-        .select("id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active, product_images(image_url, sort_order)")
+        .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active, product_images(image_url, sort_order)")
         .in("id", ids);
 
       const map = new Map();
@@ -137,7 +137,7 @@
 
       const { data, error } = await supabase
         .from("products")
-        .select("id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active, created_at, view_count, product_images(image_url, sort_order)")
+        .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active, created_at, view_count, product_images(image_url, sort_order)")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(12);
@@ -190,7 +190,7 @@
 
         return `
           <div class="card product-card" style="overflow:hidden;">
-            <a class="product-link" href="product.html?id=${encodeURIComponent(p.id)}" style="text-decoration:none;color:inherit;">
+            <a class="product-link" href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}" style="text-decoration:none;color:inherit;">
               ${img ? `<img src="${img}" alt="${alt}" loading="lazy" style="height:260px;">` : `<div style="height:260px;background:#fafafa;"></div>`}
               <div class="p">
                 <div class="product-title" style="font-weight:900;">${title}</div>
@@ -287,14 +287,15 @@
         const safeAlt = escapeAttr(title);
         const safeImg = safeSrc(imgUrl);
         const safePid = escapeAttr(i.product_id);
+        const productHref = p?.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${safePid}`;
 
         html += `
           <div class="card" style="padding:12px;border-radius:14px;display:flex;gap:12px;margin-bottom:12px;">
-            <a href="product.html?id=${safePid}" target="_blank" rel="noopener" style="width:72px;height:90px;border-radius:12px;overflow:hidden;background:#fafafa;display:block;flex-shrink:0;">
+            <a href="${productHref}" target="_blank" rel="noopener" style="width:72px;height:90px;border-radius:12px;overflow:hidden;background:#fafafa;display:block;flex-shrink:0;">
               ${safeImg ? `<img src="${safeImg}" alt="${safeAlt}" style="width:100%;height:100%;object-fit:cover;">` : ``}
             </a>
             <div style="flex:1;min-width:0;">
-              <a href="product.html?id=${safePid}" target="_blank" rel="noopener" style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;text-decoration:none;color:inherit;">${safeTitleText}</a>
+              <a href="${productHref}" target="_blank" rel="noopener" style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;text-decoration:none;color:inherit;">${safeTitleText}</a>
               <div style="margin-top:6px;opacity:.85;">
                 ${hasSale
                   ? `<span style="text-decoration:line-through;margin-right:6px;font-size:13px;">${money(basePrice)}</span><span style="color:var(--brand);font-weight:800;">${money(unitPrice)}</span>`

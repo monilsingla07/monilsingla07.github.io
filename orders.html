@@ -653,8 +653,12 @@
             <div class="small" style="font-weight:700; flex-shrink:0; align-self:center;">${money(it.price_inr)}</div>
           `;
 
-          return it.product_id
-            ? `<a href="product.html?id=${encodeURIComponent(it.product_id)}&from=orders" style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-light); text-decoration:none; color:inherit;">${rowInner}</a>`
+          const productHref = it.product?.slug
+            ? `product.html?slug=${encodeURIComponent(it.product.slug)}&from=orders`
+            : it.product_id ? `product.html?id=${encodeURIComponent(it.product_id)}&from=orders` : null;
+
+          return productHref
+            ? `<a href="${productHref}" style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-light); text-decoration:none; color:inherit;">${rowInner}</a>`
             : `<div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-light);">${rowInner}</div>`;
         })
         .join("");
@@ -901,7 +905,7 @@
           razorpay_payment_link_url, shiprocket_awb,
           return_status, return_reason,
           created_at,
-          order_items(qty, title, price_inr, product_id, product:products(is_active, product_images(image_url, sort_order)))
+          order_items(qty, title, price_inr, product_id, product:products(slug, is_active, product_images(image_url, sort_order)))
         `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
