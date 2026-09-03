@@ -897,7 +897,7 @@ if (!sessionStorage.getItem(viewKey)) {
           .order("sort_order", { ascending: true }),
         supabase
           .from("product_sections")
-          .select("title,content,content_type,sort_order")
+          .select("title,content,content_type,sort_order,template_id,template:section_templates(name,content,content_type)")
           .eq("product_id", data.id)
           .order("sort_order", { ascending: true }),
       ]);
@@ -956,8 +956,16 @@ if (!sessionStorage.getItem(viewKey)) {
       }
       if (!secErr && Array.isArray(sections)) {
         for (const sec of sections) {
-          if (!sec.title) continue;
-          tabs.push({ title: sec.title, html: sectionContentHtml(sec.content, sec.content_type) });
+          // Template-linked sections (Fabric Care, Shipping Details, etc.)
+          // always show the *current* template content, not the snapshot
+          // taken when this product was last saved — so editing the shared
+          // template once updates every product using it immediately.
+          const live = sec.template_id && sec.template ? sec.template : null;
+          const title = live ? live.name : sec.title;
+          const content = live ? live.content : sec.content;
+          const contentType = live ? live.content_type : sec.content_type;
+          if (!title) continue;
+          tabs.push({ title, html: sectionContentHtml(content, contentType) });
         }
       }
 

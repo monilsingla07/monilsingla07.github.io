@@ -111,6 +111,7 @@
         <button class="tab-btn" data-tab="fabrics">Fabrics</button>
         <button class="tab-btn" data-tab="weaves">Weave Lines</button>
         <button class="tab-btn" data-tab="collections">Collections</button>
+        <button class="tab-btn" data-tab="sectionTemplates">Section Templates</button>
       </div>
 
       <!-- ═══════════════════════ PRODUCTS TAB ═══════════════════════ -->
@@ -269,9 +270,13 @@
             <button id="btnAddSpec" type="button" class="btn secondary" style="margin-top:10px; padding:6px 12px; font-size:12px;">+ Add specification</button>
 
             <div class="section-title">Additional details</div>
-            <div class="pm-hint">Free-form sections shown further down the product page (e.g. "Care Instructions", "Fit &amp; Sizing").</div>
+            <div class="pm-hint">Shown as tabs further down the product page (e.g. "Fabric Care", "Shipping Details"). Tick any that apply from the reusable library below — write those once in the Section Templates tab and every product using them stays in sync. Only use "Custom section" for something specific to this one product.</div>
+            <div id="sectionTemplateChips" class="chip-check-grid"></div>
+            <div class="small" style="opacity:.74; margin-top:6px;">Don't see the one you need? <a href="#" id="lnkGoToSectionTemplates">Add it in Section Templates →</a></div>
+
+            <div class="pm-hint" style="margin-top:14px;">Custom, one-off sections for just this product:</div>
             <div id="sectionRows"></div>
-            <button id="btnAddSection" type="button" class="btn secondary" style="margin-top:10px; padding:6px 12px; font-size:12px;">+ Add section</button>
+            <button id="btnAddSection" type="button" class="btn secondary" style="margin-top:10px; padding:6px 12px; font-size:12px;">+ Add custom section</button>
 
             <div class="section-title">Collections</div>
             <div class="pm-hint">Which curated collections this product shows up in. Don't see the one you need? Type a name below to create it and add this product to it, without leaving this form.</div>
@@ -300,6 +305,9 @@
       <!-- ═══════════════════════ COLLECTIONS TAB ═══════════════════════ -->
       <div class="tab-panel" id="panel-collections"></div>
 
+      <!-- ═══════════════════════ SECTION TEMPLATES TAB ═══════════════════════ -->
+      <div class="tab-panel" id="panel-sectionTemplates"></div>
+
     </div>
   </div>
 
@@ -321,7 +329,7 @@
     const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
     const MAX_IMAGES = 12;
     const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-    const ENTITY_LABEL = { fabric: "Fabric", weave_line: "Weave line", collection: "Collection" };
+    const ENTITY_LABEL = { fabric: "Fabric", weave_line: "Weave line", collection: "Collection", section_template: "Section template" };
 
     const loadingState = document.getElementById("loadingState");
     const dashboard    = document.getElementById("dashboard");
@@ -356,17 +364,23 @@
     }
 
     // ══════════════════════════════════════ TABS ══════════════════════════════════════
+    function activateTab(tab) {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add("active");
+      document.getElementById("panel-" + tab).classList.add("active");
+    }
     document.querySelectorAll(".tab-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-        btn.classList.add("active");
-        document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
-      });
+      btn.addEventListener("click", () => activateTab(btn.dataset.tab));
+    });
+    document.getElementById("lnkGoToSectionTemplates").addEventListener("click", (e) => {
+      e.preventDefault();
+      activateTab("sectionTemplates");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
     // ══════════════════════════════════════ CATALOG CACHES ══════════════════════════════════════
-    let fabricsCache = [], weaveLinesCache = [], collectionsCache = [];
+    let fabricsCache = [], weaveLinesCache = [], collectionsCache = [], sectionTemplatesCache = [];
 
     async function loadCatalogCache(entity) {
       const r = await authedFetch(CATALOG_FN, { action: "list", entity });
@@ -691,6 +705,18 @@
       `).join("");
     }
 
+    function renderSectionTemplateChips(selectedIds) {
+      const box = document.getElementById("sectionTemplateChips");
+      if (!sectionTemplatesCache.length) { box.innerHTML = '<div class="small" style="opacity:.74;">No section templates yet — add one in the Section Templates tab.</div>'; return; }
+      const sel = new Set((selectedIds || []).map(String));
+      box.innerHTML = sectionTemplatesCache.map(t => `
+        <label class="chip-check">
+          <input type="checkbox" value="${escapeAttr(t.id)}" ${sel.has(String(t.id)) ? "checked" : ""} />
+          ${escapeHtml(t.name)}${t.is_active ? "" : " (inactive)"}
+        </label>
+      `).join("");
+    }
+
     function resetEditorForm() {
       document.getElementById("f_id").value = "";
       document.getElementById("f_title").value = "";
@@ -717,7 +743,7 @@
       editorImages = []; editorSpecs = []; editorSections = [];
       document.getElementById("f_new_collection").value = "";
       document.getElementById("newCollectionStatus").textContent = "";
-      renderImgThumbs(); renderSpecRows(); renderSectionRows(); renderCollectionChips([]);
+      renderImgThumbs(); renderSpecRows(); renderSectionRows(); renderCollectionChips([]); renderSectionTemplateChips([]);
       document.getElementById("btnDeleteProduct").style.display = "none";
       document.getElementById("editorTitle").textContent = "New product";
       document.getElementById("editorStatus").textContent = "";
@@ -775,8 +801,13 @@
 
         editorImages = (r.images || []).map(im => ({ image_url: im.image_url, alt_text: im.alt_text || "" }));
         editorSpecs = (r.specs || []).map(s => ({ label: s.label, value: s.value }));
-        editorSections = (r.sections || []).map(s => ({ title: s.title, content: s.content, content_type: s.content_type || "text" }));
-        renderImgThumbs(); renderSpecRows(); renderSectionRows(); renderCollectionChips(r.collection_ids || []);
+        // Template-linked sections (template_id set) are shown/edited via the
+        // chip picker above, not the free-form rows — only genuinely custom,
+        // one-off sections belong in editorSections.
+        const allSections = r.sections || [];
+        editorSections = allSections.filter(s => s.template_id == null).map(s => ({ title: s.title, content: s.content, content_type: s.content_type || "text" }));
+        const attachedTemplateIds = allSections.filter(s => s.template_id != null).map(s => s.template_id);
+        renderImgThumbs(); renderSpecRows(); renderSectionRows(); renderCollectionChips(r.collection_ids || []); renderSectionTemplateChips(attachedTemplateIds);
 
         document.getElementById("editorTitle").textContent = "Editing: " + p.title;
         document.getElementById("btnDeleteProduct").style.display = "inline-block";
@@ -878,7 +909,12 @@
         await authedFetch(PRODUCTS_FN, { action: "save_specs", product_id: productId, specs: editorSpecs });
 
         status.textContent = "Saving details…";
-        await authedFetch(PRODUCTS_FN, { action: "save_sections", product_id: productId, sections: editorSections });
+        const selectedTemplateIds = Array.from(document.querySelectorAll("#sectionTemplateChips input:checked")).map(i => Number(i.value));
+        const sectionsPayload = [
+          ...selectedTemplateIds.map(template_id => ({ template_id })),
+          ...editorSections,
+        ];
+        await authedFetch(PRODUCTS_FN, { action: "save_sections", product_id: productId, sections: sectionsPayload });
 
         status.textContent = "Saving collections…";
         await authedFetch(PRODUCTS_FN, { action: "save_collections", product_id: productId, collection_ids: collectionIds });
@@ -922,19 +958,38 @@
     function taxonomyPanelHtml(entity) {
       const label = ENTITY_LABEL[entity];
       const isCollection = entity === "collection";
+      const isSectionTemplate = entity === "section_template";
       return `
         <div class="pm-card">
+          ${isSectionTemplate ? `
+          <div class="pm-hint" style="margin-bottom:10px;">
+            A reusable "Additional details" tab — write it once here, then attach it to
+            any product from the product editor. Editing the content below updates it
+            everywhere it's attached, no need to touch each product.
+          </div>` : ""}
           <div style="font-weight:900;" id="${entity}_formTitle">New ${label.toLowerCase()}</div>
           <input type="hidden" id="${entity}_f_id" />
           <div class="pm-row">
             <div class="full">
-              <label class="pm-label">Name</label>
-              <input id="${entity}_f_name" class="input" placeholder="e.g. ${entity === "fabric" ? "Georgette" : entity === "weave_line" ? "Banarasi Handloom" : "Festive Edit"}" />
+              <label class="pm-label">${isSectionTemplate ? "Tab title" : "Name"}</label>
+              <input id="${entity}_f_name" class="input" placeholder="e.g. ${entity === "fabric" ? "Georgette" : entity === "weave_line" ? "Banarasi Handloom" : isSectionTemplate ? "Fabric Care" : "Festive Edit"}" />
             </div>
+            ${isSectionTemplate ? `
+            <div class="full">
+              <label class="pm-label">Content</label>
+              <textarea id="${entity}_f_content" class="input" style="min-height:110px; resize:vertical;" placeholder="Shown on the product page under this tab. One line per bullet if using the Bullets format below."></textarea>
+            </div>
+            <div>
+              <label class="pm-label">Format</label>
+              <select id="${entity}_f_content_type" class="input">
+                <option value="text">Text (line breaks kept)</option>
+                <option value="bullets">Bullets (one per line)</option>
+              </select>
+            </div>` : `
             <div class="full">
               <label class="pm-label">Description (optional)</label>
               <textarea id="${entity}_f_description" class="input" style="min-height:60px; resize:vertical;"></textarea>
-            </div>
+            </div>`}
             ${isCollection ? `
             <div class="full">
               <label class="pm-label">Cover image</label>
@@ -950,7 +1005,7 @@
             </div>
             <div style="display:flex; align-items:center; gap:8px; margin-top:22px;">
               <input id="${entity}_f_is_active" type="checkbox" style="width:16px; height:16px;" checked />
-              <label for="${entity}_f_is_active" style="font-size:13px; font-weight:700;">Active</label>
+              <label for="${entity}_f_is_active" style="font-size:13px; font-weight:700;">Active${isSectionTemplate ? " (available to attach to products)" : ""}</label>
             </div>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center;">
@@ -967,12 +1022,14 @@
     function taxonomyItemsCacheRef(entity) {
       if (entity === "fabric") return () => fabricsCache;
       if (entity === "weave_line") return () => weaveLinesCache;
+      if (entity === "section_template") return () => sectionTemplatesCache;
       return () => collectionsCache;
     }
 
     function setTaxonomyCache(entity, items) {
       if (entity === "fabric") fabricsCache = items;
       else if (entity === "weave_line") weaveLinesCache = items;
+      else if (entity === "section_template") sectionTemplatesCache = items;
       else collectionsCache = items;
     }
 
@@ -989,7 +1046,7 @@
                 <span class="pm-badge ${it.is_active ? "active" : "inactive"}" style="margin-left:8px;">${it.is_active ? "Active" : "Inactive"}</span>
                 <span class="pm-badge neutral" style="margin-left:6px;">${escapeHtml(String(it.product_count))} product${it.product_count === 1 ? "" : "s"}</span>
               </div>
-              <div class="small" style="opacity:.74; margin-top:2px;">/${escapeHtml(it.slug)}${it.description ? " · " + escapeHtml(it.description) : ""}</div>
+              <div class="small" style="opacity:.74; margin-top:2px;">${entity === "section_template" ? escapeHtml((it.content || "").slice(0, 90)) + ((it.content || "").length > 90 ? "…" : "") : "/" + escapeHtml(it.slug) + (it.description ? " · " + escapeHtml(it.description) : "")}</div>
             </div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -1013,9 +1070,14 @@
     function clearTaxonomyForm(entity) {
       document.getElementById(entity + "_f_id").value = "";
       document.getElementById(entity + "_f_name").value = "";
-      document.getElementById(entity + "_f_description").value = "";
       document.getElementById(entity + "_f_sort_order").value = "0";
       document.getElementById(entity + "_f_is_active").checked = true;
+      if (entity === "section_template") {
+        document.getElementById(entity + "_f_content").value = "";
+        document.getElementById(entity + "_f_content_type").value = "text";
+      } else {
+        document.getElementById(entity + "_f_description").value = "";
+      }
       if (entity === "collection") {
         document.getElementById(entity + "_f_cover_url").value = "";
         document.getElementById(entity + "_f_cover_url_text").value = "";
@@ -1029,9 +1091,14 @@
     function fillTaxonomyForm(entity, it) {
       document.getElementById(entity + "_f_id").value = it.id;
       document.getElementById(entity + "_f_name").value = it.name || "";
-      document.getElementById(entity + "_f_description").value = it.description || "";
       document.getElementById(entity + "_f_sort_order").value = String(it.sort_order ?? 0);
       document.getElementById(entity + "_f_is_active").checked = !!it.is_active;
+      if (entity === "section_template") {
+        document.getElementById(entity + "_f_content").value = it.content || "";
+        document.getElementById(entity + "_f_content_type").value = it.content_type || "text";
+      } else {
+        document.getElementById(entity + "_f_description").value = it.description || "";
+      }
       if (entity === "collection") {
         document.getElementById(entity + "_f_cover_url").value = it.cover_image_url || "";
         document.getElementById(entity + "_f_cover_url_text").value = it.cover_image_url || "";
@@ -1060,6 +1127,10 @@
         // refresh it without losing the boxes already checked.
         const selected = Array.from(document.querySelectorAll("#collectionChips input:checked")).map(i => i.value);
         renderCollectionChips(selected);
+      }
+      if (entity === "section_template" && document.getElementById("productEditorView").style.display !== "none") {
+        const selected = Array.from(document.querySelectorAll("#sectionTemplateChips input:checked")).map(i => i.value);
+        renderSectionTemplateChips(selected);
       }
     }
 
@@ -1098,16 +1169,25 @@
         const status = document.getElementById(entity + "_formStatus");
         const name = document.getElementById(entity + "_f_name").value.trim();
         if (!name) { status.textContent = "Name is required."; return; }
+        if (entity === "section_template" && !document.getElementById(entity + "_f_content").value.trim()) {
+          status.textContent = "Content is required.";
+          return;
+        }
         const payload = {
           action: "save",
           entity,
           id: document.getElementById(entity + "_f_id").value || null,
           name,
-          description: document.getElementById(entity + "_f_description").value,
           sort_order: Number(document.getElementById(entity + "_f_sort_order").value || 0),
           is_active: document.getElementById(entity + "_f_is_active").checked,
         };
         if (entity === "collection") payload.cover_image_url = document.getElementById(entity + "_f_cover_url").value;
+        if (entity === "section_template") {
+          payload.content = document.getElementById(entity + "_f_content").value;
+          payload.content_type = document.getElementById(entity + "_f_content_type").value;
+        } else {
+          payload.description = document.getElementById(entity + "_f_description").value;
+        }
 
         try {
           status.textContent = "Saving…";
@@ -1149,12 +1229,14 @@
         document.getElementById("panel-fabrics").innerHTML = taxonomyPanelHtml("fabric");
         document.getElementById("panel-weaves").innerHTML = taxonomyPanelHtml("weave_line");
         document.getElementById("panel-collections").innerHTML = taxonomyPanelHtml("collection");
+        document.getElementById("panel-sectionTemplates").innerHTML = taxonomyPanelHtml("section_template");
         wireTaxonomyPanel("fabric");
         wireTaxonomyPanel("weave_line");
         wireTaxonomyPanel("collection");
-        clearTaxonomyForm("fabric"); clearTaxonomyForm("weave_line"); clearTaxonomyForm("collection");
+        wireTaxonomyPanel("section_template");
+        clearTaxonomyForm("fabric"); clearTaxonomyForm("weave_line"); clearTaxonomyForm("collection"); clearTaxonomyForm("section_template");
 
-        await Promise.all([reloadTaxonomy("fabric"), reloadTaxonomy("weave_line"), reloadTaxonomy("collection")]);
+        await Promise.all([reloadTaxonomy("fabric"), reloadTaxonomy("weave_line"), reloadTaxonomy("collection"), reloadTaxonomy("section_template")]);
         resetEditorForm();
         await loadProductsList();
       } catch (e) {
