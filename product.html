@@ -902,17 +902,29 @@ if (!sessionStorage.getItem(viewKey)) {
           .order("sort_order", { ascending: true }),
       ]);
 
+      // Color / Material / Craft come from the product's own columns (set in
+      // admin-products.html's "SEO attributes" section + the Fabric
+      // dropdown) — shown first, automatically, whenever they're actually
+      // filled in, rather than requiring an admin to also re-type them as
+      // separate Specifications rows. Any real product_specs rows the admin
+      // has added still follow underneath.
+      const autoSpecs = [];
+      if (data.colour) autoSpecs.push({ label: "Color", value: data.colour });
+      if (data.fabric?.name) autoSpecs.push({ label: "Material", value: data.fabric.name });
+      if (data.craft) autoSpecs.push({ label: "Craft", value: data.craft });
+      const allSpecs = [...autoSpecs, ...(specsErr ? [] : (specs || []))];
+
       const specsDiv = document.getElementById("specs");
       const specsCard = document.getElementById("specsCard");
-      if (specsErr) {
+      if (specsErr && autoSpecs.length === 0) {
         specsDiv.innerHTML = "<div class='small' style='opacity:.7'>Could not load specifications.</div>";
-      } else if (!specs || specs.length === 0) {
+      } else if (allSpecs.length === 0) {
         // Nothing to show — hide the whole card rather than an empty-looking box.
         specsCard.style.display = "none";
       } else {
         specsDiv.innerHTML = `
           <div class="spec-grid">
-            ${specs.map(s => `
+            ${allSpecs.map(s => `
               <div class="spec-k">${escapeHtml(s.label)}</div>
               <div class="spec-v">${escapeHtml(s.value)}</div>
             `).join("")}
