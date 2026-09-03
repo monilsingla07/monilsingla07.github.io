@@ -1070,7 +1070,16 @@
       const byId = new Map(items.map(it => [String(it.id), it]));
       list.querySelectorAll("button[data-tedit]").forEach(btn => btn.addEventListener("click", () => fillTaxonomyForm(entity, byId.get(btn.dataset.tedit))));
       list.querySelectorAll("button[data-tdelete]").forEach(btn => btn.addEventListener("click", async () => {
-        if (!confirm("Delete this " + ENTITY_LABEL[entity].toLowerCase() + "?")) return;
+        const it = byId.get(btn.dataset.tdelete);
+        // Collections are just curated listings, not a real product
+        // attribute — deleting one only removes the listing membership, the
+        // products themselves are untouched. Still worth a heads-up when
+        // products are actually in it, since that's a one-click action now
+        // instead of having to empty it product-by-product first.
+        const msg = entity === "collection" && it?.product_count > 0
+          ? `Delete "${it.name}"? It will be removed from ${it.product_count} product${it.product_count === 1 ? "" : "s"} — those products themselves are not affected, only this collection listing.`
+          : "Delete this " + ENTITY_LABEL[entity].toLowerCase() + "?";
+        if (!confirm(msg)) return;
         try {
           await authedFetch(CATALOG_FN, { action: "delete", entity, id: btn.dataset.tdelete });
           await reloadTaxonomy(entity);
