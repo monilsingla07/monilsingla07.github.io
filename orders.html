@@ -205,7 +205,7 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
-    import { escapeHtml, safeHref } from "./assets/safe.js";
+    import { escapeHtml, safeHref, safeSrc } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("account");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -626,12 +626,37 @@
       const INVOICEABLE_STATUSES = ["confirmed", "paid", "shipped", "delivered"];
       const canInvoice = INVOICEABLE_STATUSES.includes(o.status);
 
+      // Each line links through to the product page — including when the
+      // product has since been deactivated by an admin (a "no longer
+      // available" state renders there instead of a dead "Product not
+      // found") or is completely sold out (that's a normal product-page
+      // state too, not a reason to block the link).
       const items = (o.order_items || [])
-        .map(it => `
-          <div style="display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-light);">
-            <div class="small" style="flex:1;">${Number(it.qty || 0)} × ${escapeHtml(it.title)}</div>
-            <div class="small" style="font-weight:700; flex-shrink:0;">${money(it.price_inr)}</div>
-          </div>`)
+        .map(it => {
+          const imgs = (it.product?.product_images || [])
+            .slice()
+            .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+          const thumbUrl = imgs[0]?.image_url ? safeSrc(imgs[0].image_url) : "";
+          const thumbHtml = thumbUrl
+            ? `<img src="${thumbUrl}" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;">`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-light,#999);font-size:9px;text-align:center;">No image</div>`;
+          const isDiscontinued = it.product && it.product.is_active === false;
+
+          const rowInner = `
+            <div style="width:52px;height:66px;flex-shrink:0;border-radius:8px;overflow:hidden;background:var(--bg-warm,#f7f5f2);border:1px solid var(--border-light);">
+              ${thumbHtml}
+            </div>
+            <div class="small" style="flex:1;min-width:0;">
+              <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${Number(it.qty || 0)} × ${escapeHtml(it.title)}</div>
+              ${isDiscontinued ? `<div class="small" style="color:#9a3412;margin-top:2px;">No longer available</div>` : ""}
+            </div>
+            <div class="small" style="font-weight:700; flex-shrink:0; align-self:center;">${money(it.price_inr)}</div>
+          `;
+
+          return it.product_id
+            ? `<a href="product.html?id=${encodeURIComponent(it.product_id)}&from=orders" style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-light); text-decoration:none; color:inherit;">${rowInner}</a>`
+            : `<div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-light);">${rowInner}</div>`;
+        })
         .join("");
 
       const shortId    = escapeHtml(o.id.slice(0, 8).toUpperCase());
@@ -876,7 +901,7 @@
           razorpay_payment_link_url, shiprocket_awb,
           return_status, return_reason,
           created_at,
-          order_items(qty, title, price_inr)
+          order_items(qty, title, price_inr, product_id, product:products(is_active, product_images(image_url, sort_order)))
         `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });

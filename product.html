@@ -462,7 +462,13 @@ if (!sessionStorage.getItem(viewKey)) {
 
       const inv = safeNum(data.inventory_qty, 0);
       const reserved = safeNum(data.reserved_qty, 0);
-      const available = Math.max(0, inv - reserved);
+      // A product an admin has taken off the catalogue is never purchasable
+      // again, no matter what its stock numbers say — this page still needs
+      // to render for it (someone who ordered it before it was discontinued
+      // should be able to look back at what they bought), just never as a
+      // buyable state.
+      const isDiscontinued = data.is_active === false;
+      const available = isDiscontinued ? 0 : Math.max(0, inv - reserved);
 
       // How many of this product are already sitting in the cart — the qty
       // stepper below must cap at what's left AFTER that, not the product's
@@ -475,7 +481,9 @@ if (!sessionStorage.getItem(viewKey)) {
       const remainingForCart = Math.max(0, available - alreadyInCart);
 
       const stockEl = document.getElementById("stock");
-      stockEl.textContent = available > 0 ? `${available} available` : "Sold out";
+      stockEl.textContent = isDiscontinued
+        ? "No longer available"
+        : (available > 0 ? `${available} available` : "Sold out");
 
       // Price: show sale if present
       const priceEl = document.getElementById("price");
@@ -498,7 +506,9 @@ if (!sessionStorage.getItem(viewKey)) {
       // based (never updated_at), 60-day window.
       const isSoldOut = available <= 0;
       const isNewItem = !isSoldOut && isNew(data.created_at);
-      if (isSoldOut) {
+      if (isDiscontinued) {
+        document.querySelector(".pd-main").insertAdjacentHTML("afterbegin", `<div class="pd-status-badge is-sold">No Longer Available</div>`);
+      } else if (isSoldOut) {
         document.querySelector(".pd-main").insertAdjacentHTML("afterbegin", `<div class="pd-status-badge is-sold">Sold Out</div>`);
       } else if (isNewItem) {
         document.querySelector(".pd-main").insertAdjacentHTML("afterbegin", `<div class="pd-status-badge is-new">New</div>`);
@@ -931,7 +941,7 @@ if (!sessionStorage.getItem(viewKey)) {
       const addBtn = document.getElementById("addBtn");
       if (remainingForCart <= 0) {
         addBtn.disabled = true;
-        addBtn.textContent = available <= 0 ? "Sold out" : "Max qty already in cart";
+        addBtn.textContent = isDiscontinued ? "No longer available" : (available <= 0 ? "Sold out" : "Max qty already in cart");
         addBtn.style.background = "#ddd";
         addBtn.style.borderColor = "#ddd";
         addBtn.style.color = "#666";
@@ -949,7 +959,7 @@ if (!sessionStorage.getItem(viewKey)) {
       if (buyNowBtn) {
         if (remainingForCart <= 0) {
           buyNowBtn.disabled = true;
-          buyNowBtn.textContent = available <= 0 ? "Sold out" : "Max qty already in cart";
+          buyNowBtn.textContent = isDiscontinued ? "No longer available" : (available <= 0 ? "Sold out" : "Max qty already in cart");
         } else {
           buyNowBtn.addEventListener("click", () => {
             const qty = getQty();
@@ -969,7 +979,7 @@ if (!sessionStorage.getItem(viewKey)) {
       mobileBarPrice.innerHTML = priceEl.innerHTML;
       if (remainingForCart <= 0) {
         mobileBarBtn.disabled = true;
-        mobileBarBtn.textContent = available <= 0 ? "Sold out" : "Max qty already in cart";
+        mobileBarBtn.textContent = isDiscontinued ? "No longer available" : (available <= 0 ? "Sold out" : "Max qty already in cart");
       } else {
         mobileBarBtn.addEventListener("click", () => addBtn.click());
       }
