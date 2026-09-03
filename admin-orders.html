@@ -19,8 +19,6 @@
 
   <style>
     .sbadge { display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;gap:4px; }
-    .sbadge.cod_pending  { background:#fff7ed;color:#9a3412;border:1px solid #fed7aa; }
-    .sbadge.confirmed    { background:#dcfce7;color:#166534; }
     .sbadge.paid         { background:#dcfce7;color:#166534; }
     .sbadge.shipped      { background:#dbeafe;color:#1e40af; }
     .sbadge.delivered    { background:#f0fdf4;color:#14532d;border:1px solid #86efac; }
@@ -30,11 +28,10 @@
     .sbadge.refunded     { background:#f5f3ff;color:#5b21b6; }
 
     .pm-pill { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700; }
-    .pm-pill.cod    { background:#fff7ed;color:#9a3412; }
-    .pm-pill.online { background:#eff6ff;color:#1d4ed8; }
+    .pm-pill.instore { background:#fff7ed;color:#9a3412; }
+    .pm-pill.online  { background:#eff6ff;color:#1d4ed8; }
 
     .action-bar { padding:12px 16px;border-top:1px solid var(--border-light,#f3f4f6); }
-    .action-bar.cod-confirm { background:#fff7ed;border-top-color:#fed7aa; }
     .action-bar.ship-bar    { background:#f0f9ff;border-top-color:#bae6fd; }
 
     .awb-row { display:flex;gap:8px;align-items:center;margin-top:8px; }
@@ -80,8 +77,6 @@
       <div class="filters-bar">
         <select id="statusFilter" class="input" style="max-width:260px;">
           <option value="">All statuses</option>
-          <option value="cod_pending">COD Pending (confirm first)</option>
-          <option value="confirmed">COD Confirmed (ship now)</option>
           <option value="paid">Paid Online (ship now)</option>
           <option value="payment_pending_all">Payment pending (all)</option>
           <option value="payment_link_created">Payment link created</option>
@@ -95,24 +90,11 @@
           <option value="">All payment types</option>
           <option value="razorpay">Online (Razorpay)</option>
           <option value="manual">Manual / In-store</option>
-          <option value="cod">Cash on Delivery</option>
         </select>
 
         <input id="search" class="input" placeholder="Search phone or order ID…" style="max-width:260px;" />
         <button id="btnLoad" class="btn" style="padding:8px 16px;font-size:13px;">Refresh</button>
         <button id="btnExportCsv" class="btn secondary" style="padding:8px 16px;font-size:13px;">Export CSV</button>
-      </div>
-
-      <!-- Bulk-confirm COD orders — the one bulk action safe to automate
-           without any per-order judgment call (unlike shipping, which needs
-           a courier picked per order's serviceability/rate, this is a pure
-           status flip). Only ever shows checkboxes on orders actually in
-           cod_pending, so there's no risk of bulk-touching an order in some
-           other state. -->
-      <div id="bulkOrdersBar" style="display:none; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 14px; border-radius:12px; background:#fffbeb; border:1.5px solid #fde68a; margin-bottom:12px;">
-        <strong id="bulkOrdersCount" style="font-size:13px; color:#92400e;"></strong>
-        <button id="bulkConfirmCod" class="btn secondary" style="padding:6px 12px; font-size:12px;">Confirm selected COD orders</button>
-        <button id="bulkOrdersClear" class="btn secondary" style="padding:6px 12px; font-size:12px; margin-left:auto;">Clear selection</button>
       </div>
 
       <div id="statusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
@@ -154,7 +136,6 @@
     let lastTotal = 0;
     let lastShown = 0;
     let currentOrders = [];
-    const selectedOrderIds = new Set();
 
     function showAdminError(emoji, title, message) {
       loadingState.style.display = "block";
@@ -233,8 +214,6 @@
 
       function statusBadge(st) {
         const map = {
-          cod_pending:          { label: "💵 COD Pending",     cls: "cod_pending" },
-          confirmed:            { label: "✅ COD Confirmed",   cls: "confirmed"   },
           paid:                 { label: "✅ Paid",            cls: "paid"        },
           payment_link_created: { label: "⏳ Payment pending", cls: "pending"     },
           payment_pending:      { label: "⏳ Payment pending", cls: "pending"     },
@@ -254,10 +233,9 @@
       const MANUAL_VIA_LABEL = { cash: "💵 Cash", card: "💳 Card", upi: "📱 UPI", other: "🏪 In-store" };
 
       function paymentPill(method, receivedVia) {
-        if (method === "cod") return `<span class="pm-pill cod">💵 COD</span>`;
         if (method === "manual") {
           const label = MANUAL_VIA_LABEL[receivedVia] || "🏪 In-store";
-          return `<span class="pm-pill cod">${label}</span>`;
+          return `<span class="pm-pill instore">${label}</span>`;
         }
         return `<span class="pm-pill online">💳 Online</span>`;
       }
@@ -449,14 +427,11 @@
       }
 
       function renderOrder(o) {
-        const isCod         = o.payment_method === "cod";
-        const isManual      = o.payment_method === "manual";
         const isOnline      = o.payment_method === "razorpay";
         const shortId       = (o.id || "").slice(0, 8).toUpperCase();
         const phone         = o.customer_phone || "";
 
-        const isCodPending  = o.status === "cod_pending";
-        const needsShipping = ["confirmed", "paid"].includes(o.status) && !o.shiprocket_awb;
+        const needsShipping = o.status === "paid" && !o.shiprocket_awb;
         const isShipped     = ["shipped", "delivered"].includes(o.status) || !!o.shiprocket_awb;
 
         const canRegen      = isOnline && ["payment_link_created", "payment_link_failed", "created", "failed", "payment_pending"].includes(o.status);
@@ -468,10 +443,9 @@
         // landed in a terminal status — matches admin-edit-order's own guard.
         const isAdminCreated = !!o.order_type;
         const isEditable     = isAdminCreated && !o.shiprocket_awb &&
-          ["paid", "confirmed", "payment_link_created", "cod_pending"].includes(o.status);
+          ["paid", "payment_link_created"].includes(o.status);
 
         const siteRoot      = window.location.origin;
-        const confirmMsg    = `Hi ${o.customer_name || "there"}, your AhamStree Cash on Delivery order #${shortId} is confirmed! Total: ${money(o.total_inr)}. We'll dispatch it soon. 🙏`;
         const shippedMsg    = `Hi ${o.customer_name || "there"}, your AhamStree order #${shortId} has been shipped! 🎉 Track here: ${siteRoot}/track.html?awb=${encodeURIComponent(o.shiprocket_awb || "")}`;
         const reminderMsg   = `Hi ${o.customer_name || "there"}, your AhamStree order #${shortId} payment is pending. Complete it here: ${o.razorpay_payment_link_url || ""}`;
 
@@ -487,11 +461,9 @@
             <div style="padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
               <div>
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-                  ${isCodPending ? `<input type="checkbox" class="order-select" data-select-cod="${escapeAttr(o.id)}" ${selectedOrderIds.has(o.id) ? "checked" : ""} title="Select for bulk confirm" style="width:16px;height:16px;" />` : ""}
                   <span style="font-weight:900;font-size:15px;">Order #${shortId}</span>
                   ${statusBadge(o.status)}
                   ${paymentPill(o.payment_method, o.payment_received_via)}
-                  ${isCodPending  ? `<span style="background:#fef3c7;color:#b45309;font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px;">⚠ Needs confirmation</span>` : ""}
                   ${needsShipping ? `<span style="background:#dbeafe;color:#1e40af;font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px;">📦 Ready to ship</span>` : ""}
                 </div>
                 <div class="small" style="opacity:.76;">${new Date(o.created_at).toLocaleString("en-IN", { day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" })}</div>
@@ -517,22 +489,6 @@
                 <span>Total</span><span>${money(o.total_inr)}</span>
               </div>
             </div>
-
-            ${isCodPending ? `
-            <div class="action-bar cod-confirm">
-              <div style="font-weight:800;font-size:13px;margin-bottom:6px;">💵 Confirm this COD order</div>
-              <div class="small" style="color:#92400e;margin-bottom:10px;">
-                Confirm you've spoken to the customer and the order is valid. This changes status to "Confirmed".
-              </div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <button class="btn" style="padding:9px 16px;font-size:13px;" data-action="confirm-cod" data-id="${escapeAttr(o.id)}">
-                  ✅ Confirm COD order
-                </button>
-                <button class="btn secondary" style="padding:9px 16px;font-size:13px;color:crimson;border-color:crimson;" data-action="update-status" data-id="${escapeAttr(o.id)}" data-status="cancelled">
-                  Cancel order
-                </button>
-              </div>
-            </div>` : ""}
 
             ${needsShipping ? `
             <div class="action-bar ship-bar">
@@ -584,19 +540,10 @@
               </div>
             </div>` : ""}
 
-            ${o.status === "confirmed" ? `
-            <div class="action-bar">
-              <div class="status-row">
-                <button class="btn secondary" style="padding:7px 12px;font-size:12px;color:crimson;border-color:crimson;" data-action="update-status" data-id="${escapeAttr(o.id)}" data-status="cancelled">
-                  Cancel order
-                </button>
-              </div>
-            </div>` : ""}
 
             ${phone ? `
             <div style="padding:10px 16px;border-top:1px solid #f3f4f6;display:flex;gap:8px;flex-wrap:wrap;">
               <div class="section-lbl" style="width:100%;margin-bottom:2px;">WhatsApp</div>
-              ${isCod ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${safeHref(waLink(phone, confirmMsg))}" target="_blank" rel="noopener noreferrer">✅ Confirm COD</a>` : ""}
               ${o.shiprocket_awb ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${safeHref(waLink(phone, shippedMsg))}" target="_blank" rel="noopener noreferrer">🚚 Share tracking</a>` : ""}
               ${isOnline && canRegen ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${safeHref(waLink(phone, reminderMsg))}" target="_blank" rel="noopener noreferrer">🔔 Payment reminder</a>` : ""}
               <a class="btn secondary" data-wa-invoice href="#" style="padding:7px 12px;font-size:12px;opacity:.72;" data-phone="${escapeAttr(phone)}" data-id="${escapeAttr(o.id)}">📄 Send invoice</a>
@@ -762,35 +709,6 @@
       }
 
       function wireEvents() {
-        // Bulk-select checkboxes (COD-pending orders only)
-        list.querySelectorAll("input[data-select-cod]").forEach(chk => {
-          chk.addEventListener("change", () => {
-            const id = chk.dataset.selectCod;
-            if (chk.checked) selectedOrderIds.add(id); else selectedOrderIds.delete(id);
-            renderBulkOrdersBar();
-          });
-        });
-
-        // Confirm COD
-        list.querySelectorAll("button[data-action='confirm-cod']").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const id = btn.dataset.id;
-            btn.disabled = true;
-            const oldText = btn.textContent;
-            btn.textContent = "Confirming…";
-            try {
-              await updateStatus(id, "confirmed");
-              toast("COD order confirmed ✅", "#166534");
-              load();
-            } catch (e) {
-              toast("Error: " + e.message, "#dc2626");
-              btn.disabled = false;
-            } finally {
-              btn.textContent = oldText;
-            }
-          });
-        });
-
         // Ship Now — choose courier: step 1 loads live courier options,
         // step 2 (after picking one) actually creates the shipment/AWB/pickup.
         list.querySelectorAll("button[data-action='ship-options']").forEach(wireShipOptionsButton);
@@ -987,34 +905,6 @@
         var sel = document.getElementById("statusFilter");
         if ([...sel.options].some(o => o.value === urlStatus)) sel.value = urlStatus;
       }
-
-      // ── Bulk-confirm selected COD orders ──────────────────────────────
-      function renderBulkOrdersBar() {
-        const bar = document.getElementById("bulkOrdersBar");
-        const n = selectedOrderIds.size;
-        bar.style.display = n > 0 ? "flex" : "none";
-        if (n > 0) document.getElementById("bulkOrdersCount").textContent = n + " COD order" + (n > 1 ? "s" : "") + " selected";
-      }
-      document.getElementById("bulkOrdersClear").onclick = () => {
-        selectedOrderIds.clear();
-        renderBulkOrdersBar();
-        load();
-      };
-      document.getElementById("bulkConfirmCod").onclick = async () => {
-        const ids = Array.from(selectedOrderIds);
-        if (!ids.length) return;
-        if (!confirm(`Confirm ${ids.length} selected COD order(s)?`)) return;
-        const btn = document.getElementById("bulkConfirmCod");
-        btn.disabled = true;
-        let okCount = 0;
-        for (const id of ids) {
-          try { await updateStatus(id, "confirmed"); okCount++; } catch (_e) { /* keep going */ }
-        }
-        selectedOrderIds.clear();
-        btn.disabled = false;
-        toast(`${okCount} of ${ids.length} order(s) confirmed`, okCount === ids.length ? "#166534" : "#dc2626");
-        load();
-      };
 
       // ── CSV export — loops through every page of the CURRENT filter (not
       // just what's on screen), since an export is normally wanted in full

@@ -22,7 +22,6 @@
       padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800;
     }
     .status-badge.paid      { background: #dcfce7; color: #166534; }
-    .status-badge.confirmed { background: #dcfce7; color: #166534; }
     .status-badge.shipped   { background: #dbeafe; color: #1e40af; }
     .status-badge.delivered { background: #f0fdf4; color: #14532d; border:1px solid #86efac; }
     .status-badge.pending   { background: #fef9c3; color: #854d0e; }
@@ -33,7 +32,6 @@
       padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700;
       background: #f3f4f6; color: #374151;
     }
-    .payment-pill.cod    { background: #fff7ed; color: #9a3412; }
     .payment-pill.online { background: #eff6ff; color: #1d4ed8; }
 
     /* Pulsing border for urgent pending orders */
@@ -224,7 +222,6 @@
     function statusBadge(st) {
       const map = {
         paid:                  { label: "Paid",             cls: "paid"      },
-        confirmed:             { label: "Confirmed",        cls: "confirmed" },
         payment_link_created:  { label: "Payment pending",  cls: "pending"   },
         payment_link_failed:   { label: "Link failed",      cls: "failed"    },
         created:               { label: "Payment pending",  cls: "pending"   },
@@ -238,8 +235,7 @@
       return `<span class="status-badge ${s.cls}">${s.label}</span>`;
     }
 
-    function paymentPill(method) {
-      if (method === "cod") return `<span class="payment-pill cod">💵 Cash on Delivery</span>`;
+    function paymentPill() {
       return `<span class="payment-pill online">💳 Online Payment</span>`;
     }
 
@@ -595,23 +591,20 @@
     window.__cancel  = (oid)      => cancelOrder(oid);
 
     function renderOrder(o) {
-      const isCod    = o.payment_method === "cod";
-      const isOnline = !isCod;
-
       const payLink     = o.razorpay_payment_link_url;
       const safePayHref = safeHref(payLink);
 
       // Pending online payment (Payment Link created)
       // We treat it as *expired* on the UI once the reservation TTL has passed,
       // even if the DB status hasn't yet been updated.
-      const isPendingPayment = isOnline && o.status === "payment_link_created" && !!safePayHref;
+      const isPendingPayment = o.status === "payment_link_created" && !!safePayHref;
       const expiryMs         = isPendingPayment ? getExpiryMs(o) : 0;
       const isStillActive    = isPendingPayment && (expiryMs - Date.now() > 0);
       const effectiveStatus  = (isPendingPayment && !isStillActive) ? "expired" : o.status;
 
       // "Retry" for failed/expired links (no countdown — link may still work or
       // the user can go back to checkout to create a new one)
-      const canRetryFailed = isOnline &&
+      const canRetryFailed =
         ["payment_link_failed", "failed"].includes(o.status) &&
         !!safePayHref;
 
@@ -621,9 +614,9 @@
       const rs          = o.return_status;
       const canReturn   = isDelivered && !rs;
 
-      const CANCELLABLE_STATUSES = ["cod_pending", "confirmed", "paid", "payment_pending", "payment_link_created"];
+      const CANCELLABLE_STATUSES = ["paid", "payment_pending", "payment_link_created"];
       const canCancel  = !awb && CANCELLABLE_STATUSES.includes(o.status);
-      const INVOICEABLE_STATUSES = ["confirmed", "paid", "shipped", "delivered"];
+      const INVOICEABLE_STATUSES = ["paid", "shipped", "delivered"];
       const canInvoice = INVOICEABLE_STATUSES.includes(o.status);
 
       // Each line links through to the product page — including when the
@@ -807,15 +800,6 @@
 
           <!-- Expired payment banner -->
           ${expiredBanner}
-
-          <!-- COD pending note -->
-          ${(isCod && o.status === "confirmed")
-            ? `<div style="padding:10px 16px; background:#fff7ed; border-top:1px solid #fed7aa;">
-                 <div class="small" style="color:#9a3412;">
-                   📦 COD order — our team will contact you to confirm dispatch.
-                 </div>
-               </div>`
-            : ""}
 
           <!-- Shipping info -->
           ${awb

@@ -147,16 +147,9 @@
         </div>
       </div>
 
-      <!-- Action needed callouts -->
-      <div id="actionNeeded" style="display:none; padding:14px 16px; border-radius:14px; background:#fffbeb; border:1.5px solid #fde68a; margin-bottom:12px;">
-        <div style="font-weight:800; font-size:14px; color:#92400e;">⚠️ Action needed</div>
-        <div class="small" style="color:#92400e; margin-top:4px;" id="actionNeededText"></div>
-        <a href="admin-orders.html?status=cod_pending" class="btn" style="margin-top:10px; padding:8px 14px; font-size:13px; display:inline-block;">View COD orders →</a>
-      </div>
-
       <!-- Previously the dashboard had zero signal that a customer had even
            filed a return — an admin would only find out by manually
-           checking the Returns page. Same callout pattern as COD above. -->
+           checking the Returns page. -->
       <div id="returnsNeeded" style="display:none; padding:14px 16px; border-radius:14px; background:#eff6ff; border:1.5px solid #bfdbfe; margin-bottom:20px;">
         <div style="font-weight:800; font-size:14px; color:#1e40af;">↩️ Returns awaiting review</div>
         <div class="small" style="color:#1e40af; margin-top:4px;" id="returnsNeededText"></div>
@@ -177,13 +170,6 @@
           <div>
             <div>All Orders</div>
             <div class="small" style="font-weight:400; opacity:.76;">View and manage every order</div>
-          </div>
-        </a>
-        <a href="admin-orders.html?status=cod_pending" class="quick-link">
-          <span style="font-size:20px;">💵</span>
-          <div>
-            <div>COD Orders</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Confirm cash on delivery orders</div>
           </div>
         </a>
         <a href="admin-orders.html?status=paid" class="quick-link">
@@ -377,18 +363,6 @@
         return;
       }
 
-      // Action needed callout
-      var actionNeeded = document.getElementById("actionNeeded");
-      var needsAction = (data.codPendingCount || 0) + (data.confirmedCount || 0);
-      if (needsAction > 0) {
-        actionNeeded.style.display = "block";
-        document.getElementById("actionNeededText").textContent =
-          needsAction + " COD order" + (needsAction > 1 ? "s" : "") +
-          " need" + (needsAction === 1 ? "s" : "") + " to be confirmed and shipped.";
-      } else {
-        actionNeeded.style.display = "none";
-      }
-
       // Returns awaiting review callout
       var returnsNeeded = document.getElementById("returnsNeeded");
       var pendingReturns = data.pendingReturnsCount || 0;
@@ -404,8 +378,6 @@
       // Order metrics
       document.getElementById("metricsOrders").innerHTML = [
         metricCard("Total Orders",     data.ordersCount || 0,     (data.recentOrders7d || 0) + " in last 7 days", ""),
-        metricCard("COD Pending",      data.codPendingCount || 0, "Awaiting confirmation", data.codPendingCount > 0 ? "warn" : ""),
-        metricCard("COD Confirmed",    data.confirmedCount || 0,  "Ready to ship",         data.confirmedCount > 0 ? "warn" : ""),
         metricCard("Paid (Online)",    data.paidCount || 0,       "Ready to ship",         ""),
         metricCard("Shipped",          data.shippedCount || 0,    "In transit",            ""),
         metricCard("Delivered",        data.deliveredCount || 0,  "Completed",             ""),
@@ -417,10 +389,7 @@
 
       // Revenue metrics
       document.getElementById("metricsRevenue").innerHTML = [
-        metricCard("Paid Revenue",  money(data.revenuePaidInr),      "From paid + shipped + delivered", "highlight"),
-        metricCard("COD Pipeline",  money(data.revenueConfirmedInr), "From confirmed COD orders",       ""),
-        metricCard("COD Orders",    data.codOrders || 0,             "Total placed",                    ""),
-        metricCard("Online Orders", data.onlineOrders || 0,          "Via Razorpay",                    ""),
+        metricCard("Paid Revenue",  money(data.revenuePaidInr), "From paid + shipped + delivered", "highlight"),
       ].join("");
 
       statusMsg.textContent = "Last updated: " + new Date().toLocaleTimeString("en-IN");
