@@ -425,6 +425,51 @@ function renderPopup(config) {
   });
 }
 
+// Default content shown when a visitor deliberately clicks "Login / Sign
+// up" (or another "please sign in to continue" prompt) but the admin
+// hasn't configured any Sign-in Popup marketing copy — unlike the
+// auto-nudge below, a user-initiated login attempt must always open
+// *something* usable, it can't just silently no-op for lack of config.
+const DEFAULT_MODAL_CONFIG = {
+  headline: "Sign in to AhamStree",
+  subtext: "",
+  image_url: null,
+  reappear_hours: 24,
+};
+
+// General-purpose login modal — call this from anywhere a visitor
+// deliberately tries to log in (the header's "Login / Sign up" link, a
+// "please sign in to continue" prompt on checkout, etc.) instead of
+// navigating to login.html. Because it's an overlay on the current page
+// rather than a page navigation, "return the visitor to where they were"
+// needs no special handling: WhatsApp OTP never leaves the page at all,
+// and Google OAuth's redirectTo is already set to the current URL (see
+// renderPopup's googleBtn handler) — the visitor ends up back exactly
+// where they started either way, automatically.
+export async function openSignInModal() {
+  try {
+    const { data: sess } = await supabase.auth.getSession();
+    if (sess?.session?.user) return; // already logged in — nothing to do
+
+    let config = null;
+    try {
+      const res = await fetch(FUNCTIONS_URL, { method: "GET" });
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        config = data?.config || null;
+      }
+    } catch (_) {
+      // fall through to the default below
+    }
+
+    renderPopup(config || DEFAULT_MODAL_CONFIG);
+  } catch (_) {
+    // Never let a popup failure strand the visitor — worst case, the
+    // "Login / Sign up" click just does nothing, no worse than before
+    // this feature existed.
+  }
+}
+
 function waitForWelcomePopupToClear(cb, attemptsLeft = 60) {
   const blocking = document.getElementById("welcomePopupOverlay");
   if (!blocking || attemptsLeft <= 0) { cb(); return; }

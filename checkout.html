@@ -31,7 +31,7 @@
       <div class="small" style="opacity:.75;">
         An AhamStree account keeps your order history, saved address and delivery updates in one place. Log in or create an account to continue.
       </div>
-      <a class="btn" href="login.html?next=checkout.html" style="padding:10px 22px;">Log in / Create account →</a>
+      <button type="button" id="checkoutLoginBtn" class="btn" style="padding:10px 22px;">Log in / Create account →</button>
       <a class="small" href="cart.html" style="opacity:.6;">← Back to cart</a>
     </div>
   </div>
@@ -237,6 +237,21 @@
     if (!checkoutUser) {
       document.getElementById("checkoutGate").style.display = "block";
       document.getElementById("checkoutMain").style.display = "none";
+
+      // Open the sign-in modal in place instead of navigating to
+      // login.html?next=checkout.html — checkout's own init logic below
+      // this throw never runs at all while logged out (not just hidden
+      // UI), so rather than try to hand-resume a payment page's in-flight
+      // state after login, just reload once a session appears: same URL,
+      // "returns to where they were" trivially, and re-enters this script
+      // from the top with a real session so the full checkout form renders
+      // exactly as if they'd been logged in the whole time.
+      const { openSignInModal } = await import("./assets/signin-popup.js");
+      document.getElementById("checkoutLoginBtn").addEventListener("click", () => openSignInModal());
+      sbModAuthGate.supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) window.location.reload();
+      });
+
       throw new Error("login_required_for_checkout");
     }
     document.getElementById("checkoutGate").style.display = "none";

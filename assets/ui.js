@@ -2,7 +2,7 @@
 import { cartCount } from "./cart.js";
 import { supabase } from "./supabase.js";
 import { mountWelcomePopup } from "./welcome-popup.js";
-import { mountSignInPopup } from "./signin-popup.js";
+import { mountSignInPopup, openSignInModal } from "./signin-popup.js";
 import { escapeHtml } from "./safe.js";
 import { grantSignupCashIfEligible } from "./profile-seed.js";
 import { mergeGuestWishlistIntoAccount } from "./wishlist.js";
@@ -681,6 +681,24 @@ export async function hydrateHeaderAuth() {
     aDesktop.href = loggedIn ? "account.html" : "login.html";
   }
   if (aMobile) aMobile.href = loggedIn ? "account.html" : "login.html";
+
+  // Open the sign-in modal in place instead of navigating to login.html —
+  // href stays pointed at login.html regardless (middle-click/open-in-new-
+  // tab, JS-disabled, right-click "copy link" all keep working), this only
+  // intercepts a plain left-click. Bound once per element via a dataset
+  // flag since hydrateHeaderAuth() re-runs on every auth state change.
+  // Only intercepts while logged OUT — once logged in the link's href/text
+  // above already point at account.html and should navigate normally.
+  [aDesktop, aMobile].forEach((el) => {
+    if (!el || el.dataset.loginModalBound === "1") return;
+    el.dataset.loginModalBound = "1";
+    el.addEventListener("click", (e) => {
+      if (el.getAttribute("href") === "login.html" && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) {
+        e.preventDefault();
+        openSignInModal();
+      }
+    });
+  });
 
   const wishlistHref = loggedIn ? "account.html?view=wishlist" : "wishlist.html";
   if (wDesktop) wDesktop.href = wishlistHref;
