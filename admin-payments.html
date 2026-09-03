@@ -1,0 +1,331 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Payments — AhamStree</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .pbadge { display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;gap:4px;white-space:nowrap; }
+    .pbadge.paid       { background:#dcfce7;color:#166534; }
+    .pbadge.cancelled  { background:#f3f4f6;color:#6b7280; }
+    .pbadge.failed     { background:#fee2e2;color:#991b1b; }
+    .pbadge.shipped    { background:#dbeafe;color:#1e40af; }
+    .pbadge.delivered  { background:#f0fdf4;color:#14532d;border:1px solid #86efac; }
+    .pbadge.refunded   { background:#faf5ff;color:#6b21a8;border:1px solid #e9d5ff; }
+    .pbadge.pending    { background:#fef9c3;color:#854d0e; }
+    .pbadge.unknown    { background:#f3f4f6;color:#6b7280; }
+
+    .filter-tabs { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px; }
+    .filter-tab {
+      padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;
+      border:1.5px solid var(--border,#e5e7eb);background:#fff;cursor:pointer;
+    }
+    .filter-tab.active { background:#111;color:#fff;border-color:#111; }
+
+    .pay-card { border-radius:16px;overflow:hidden;border:1px solid var(--border,#e5e7eb);background:#fff; }
+    .pay-row { padding:10px 16px;border-top:1px solid var(--border-light,#f3f4f6);font-size:13px; }
+    .rz-panel { padding:12px 16px;background:#f8fafc;border-top:1px solid var(--border-light,#f3f4f6); }
+    .rz-panel .small { font-size:12.5px; }
+
+    #toast {
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+      background:#111;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;
+      font-weight:700;opacity:0;transition:all .25s ease;pointer-events:none;z-index:9999;
+      white-space:nowrap;
+    }
+    #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:900px;">
+    <div id="loadingState" style="text-align:center;padding:48px;opacity:.6;font-size:14px;">Verifying admin access…</div>
+
+    <div id="mainContent" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+        <div>
+          <h2 style="margin:0;">Admin — Payments &amp; Refunds</h2>
+          <div class="small" style="opacity:.65;margin-top:4px;">Our own records vs. what Razorpay actually shows for each order.</div>
+        </div>
+        <a class="btn secondary" href="admin.html" style="padding:8px 14px;font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all" type="button">All</button>
+        <button class="filter-tab" data-filter="needs_refund_check" type="button">Needs refund check</button>
+        <button class="filter-tab" data-filter="refund_failed" type="button">Refund failed</button>
+        <button class="filter-tab" data-filter="refunded" type="button">Refunded</button>
+        <button class="filter-tab" data-filter="cancelled_or_returned" type="button">Cancelled / returned</button>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        <button id="btnSyncFlagged" class="btn secondary" style="padding:8px 14px;font-size:13px;" type="button">
+          🔄 Check all flagged orders with Razorpay
+        </button>
+      </div>
+
+      <div id="statusMsg" class="small" style="margin-bottom:12px;opacity:.6;">Loading…</div>
+      <div id="list" style="display:grid;gap:14px;"></div>
+
+      <div id="pagerRow" style="display:flex;justify-content:center;gap:10px;margin-top:20px;"></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase } from "./assets/supabase.js";
+    import { escapeHtml } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const loadingState = document.getElementById("loadingState");
+    const mainContent  = document.getElementById("mainContent");
+    const statusMsg    = document.getElementById("statusMsg");
+    const list         = document.getElementById("list");
+    const toastEl      = document.getElementById("toast");
+    const pagerRow     = document.getElementById("pagerRow");
+
+    function toast(msg, color) {
+      toastEl.textContent = msg;
+      toastEl.style.background = color || "#111";
+      toastEl.classList.add("show");
+      setTimeout(() => toastEl.classList.remove("show"), 2800);
+    }
+
+    function showAdminError(emoji, title, message) {
+      loadingState.style.display = "block";
+      mainContent.style.display = "none";
+      loadingState.innerHTML =
+        '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
+          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.7;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) { showAdminError("⚠️", "Auth Error", sessResult.error.message); return; }
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        loadingState.style.display = "none";
+        mainContent.style.display  = "block";
+        setupPage();
+      } catch (e) {
+        console.error("Admin page error:", e);
+        showAdminError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    function setupPage() {
+      let currentFilter = "all";
+      let currentOffset = 0;
+      const PAGE_SIZE = 25;
+
+      async function callFn(action, extra) {
+        const { data, error } = await supabase.functions.invoke("admin-payments", {
+          body: { action, ...(extra || {}) },
+        });
+        if (error) {
+          if (error.status === 401) { window.location.href = "login.html"; return { ok: false, handled: true }; }
+          if (error.status === 403) { showAdminError("🔒", "Access Denied", "Your account does not have admin access."); return { ok: false, handled: true }; }
+          throw new Error(error.message || "Function error");
+        }
+        if (data?.error) throw new Error(data.error + (data.details ? " — " + data.details : ""));
+        return { ok: true, data };
+      }
+
+      function money(v) {
+        return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+      }
+      function formatDate(iso) {
+        if (!iso) return "—";
+        return new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+      }
+
+      const ORDER_STATUS_LABEL = {
+        payment_link_created: "Payment pending", paid: "Paid", confirmed: "Confirmed",
+        shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled",
+        refunded: "Refunded", failed: "Failed", payment_link_failed: "Link failed",
+      };
+      const ORDER_STATUS_CLASS = {
+        paid: "paid", confirmed: "paid", shipped: "shipped", delivered: "delivered",
+        cancelled: "cancelled", refunded: "refunded", failed: "failed",
+        payment_link_failed: "failed", payment_link_created: "pending",
+      };
+
+      function ourRefundBadge(o) {
+        if (o.refund_status === "processed") {
+          return `<span class="pbadge refunded">💰 Refunded ${money(o.refunded_amount_inr)}</span>`;
+        }
+        if (o.refund_status === "failed") {
+          return `<span class="pbadge failed">⚠ Refund failed</span>`;
+        }
+        if (["cancelled", "refunded", "failed"].includes(o.status)) {
+          return `<span class="pbadge pending">No refund recorded</span>`;
+        }
+        return `<span class="pbadge unknown">N/A — not cancelled</span>`;
+      }
+
+      function renderRazorpayPanel(r) {
+        if (!r) return "";
+        if (!r.ok) {
+          return `<div class="rz-panel"><div class="small" style="color:#dc2626;">Could not check Razorpay: ${escapeHtml(r.details || r.reason || "unknown error")}</div></div>`;
+        }
+        const refundRows = (r.razorpay_refunds || []).map(rf =>
+          `<div class="small">Refund ${escapeHtml(rf.id)} — ${money(rf.amount_inr)} — <b>${escapeHtml(rf.status)}</b></div>`
+        ).join("") || `<div class="small" style="opacity:.6;">No refund records on Razorpay for this payment.</div>`;
+
+        return `
+          <div class="rz-panel">
+            <div class="small" style="font-weight:800;margin-bottom:6px;">Live from Razorpay</div>
+            <div class="small">Payment status: <b>${escapeHtml(r.razorpay_payment_status)}</b></div>
+            <div class="small">Charged: ${money(r.razorpay_amount_paise / 100)} &nbsp;•&nbsp; Refunded so far: ${money(r.razorpay_amount_refunded_paise / 100)}</div>
+            <div style="margin-top:6px;">${refundRows}</div>
+            ${r.reconciled ? `<div class="small" style="color:#166534;font-weight:700;margin-top:6px;">✅ Our records were out of date — updated to match Razorpay.</div>` : ""}
+          </div>
+        `;
+      }
+
+      function renderOrder(o) {
+        const shortId = escapeHtml(o.id.slice(0, 8).toUpperCase());
+        const statusLabel = ORDER_STATUS_LABEL[o.status] || o.status;
+        const statusClass = ORDER_STATUS_CLASS[o.status] || "unknown";
+
+        return `
+          <div class="pay-card" data-order-id="${escapeHtml(o.id)}">
+            <div style="padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                  <span style="font-weight:900;font-size:15px;">Order #${shortId}</span>
+                  <span class="pbadge ${statusClass}">${escapeHtml(statusLabel)}</span>
+                  ${ourRefundBadge(o)}
+                </div>
+                <div class="small" style="opacity:.65;">${escapeHtml(o.customer_name || "")} · ${escapeHtml(o.customer_email || "")}</div>
+                <div class="small" style="opacity:.65;">Placed ${formatDate(o.created_at)}</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-weight:900;">${money(o.total_inr)}</div>
+                <button class="btn secondary" style="padding:7px 12px;font-size:12px;margin-top:8px;" data-action="sync" data-id="${escapeHtml(o.id)}" type="button">
+                  Check with Razorpay
+                </button>
+              </div>
+            </div>
+            <div class="rz-slot" data-rz-slot="${escapeHtml(o.id)}"></div>
+          </div>
+        `;
+      }
+
+      function wireEvents() {
+        list.querySelectorAll("button[data-action='sync']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Checking…";
+            try {
+              const r = await callFn("sync_one", { order_id: id });
+              if (!r.ok) { if (!r.handled) throw new Error("Check failed"); return; }
+              const slot = list.querySelector(`.rz-slot[data-rz-slot="${id}"]`);
+              if (slot) slot.innerHTML = renderRazorpayPanel(r.data.result);
+              if (r.data.result.reconciled) {
+                toast("Records updated to match Razorpay ✅", "#166534");
+              }
+            } catch (e) {
+              toast("Error: " + e.message, "#dc2626");
+            } finally {
+              btn.disabled = false;
+              btn.textContent = oldText;
+            }
+          });
+        });
+      }
+
+      function renderPager(total) {
+        const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        const currentPage = Math.floor(currentOffset / PAGE_SIZE) + 1;
+        if (totalPages <= 1) { pagerRow.innerHTML = ""; return; }
+        pagerRow.innerHTML = `
+          <button class="btn secondary" style="padding:7px 14px;font-size:12px;" ${currentPage <= 1 ? "disabled" : ""} id="pagerPrev" type="button">← Prev</button>
+          <div class="small" style="align-self:center;">Page ${currentPage} of ${totalPages}</div>
+          <button class="btn secondary" style="padding:7px 14px;font-size:12px;" ${currentPage >= totalPages ? "disabled" : ""} id="pagerNext" type="button">Next →</button>
+        `;
+        document.getElementById("pagerPrev")?.addEventListener("click", () => { currentOffset = Math.max(0, currentOffset - PAGE_SIZE); load(); });
+        document.getElementById("pagerNext")?.addEventListener("click", () => { currentOffset += PAGE_SIZE; load(); });
+      }
+
+      async function load() {
+        statusMsg.textContent = "Loading…";
+        list.innerHTML = "";
+        try {
+          const r = await callFn("list", { filter: currentFilter, limit: PAGE_SIZE, offset: currentOffset });
+          if (!r.ok) return;
+          const orders = r.data.orders || [];
+          statusMsg.textContent = orders.length
+            ? `${r.data.total} order${r.data.total === 1 ? "" : "s"} for this filter`
+            : "No orders match this filter.";
+          list.innerHTML = orders.map(renderOrder).join("");
+          wireEvents();
+          renderPager(r.data.total || 0);
+        } catch (e) {
+          statusMsg.textContent = "Could not load orders: " + e.message;
+        }
+      }
+
+      document.querySelectorAll(".filter-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+          tab.classList.add("active");
+          currentFilter = tab.dataset.filter;
+          currentOffset = 0;
+          load();
+        });
+      });
+
+      document.getElementById("btnSyncFlagged").addEventListener("click", async () => {
+        const btn = document.getElementById("btnSyncFlagged");
+        btn.disabled = true;
+        const oldText = btn.textContent;
+        btn.textContent = "Checking flagged orders…";
+        try {
+          const r = await callFn("sync_flagged", { limit: 20 });
+          if (!r.ok) { if (!r.handled) throw new Error("Sync failed"); return; }
+          toast(`Checked ${r.data.checked} order(s) — ${r.data.reconciled} updated to match Razorpay`, "#166534");
+          load();
+        } catch (e) {
+          toast("Error: " + e.message, "#dc2626");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = oldText;
+        }
+      });
+
+      load();
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>
