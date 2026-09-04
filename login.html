@@ -79,6 +79,13 @@ document.getElementById("footer").innerHTML = renderFooter();
 
     const NEXT_URL = getNextUrl();
 
+    // Set true while the mandatory Name+PIN setup step is showing, so the
+    // page-wide auth-state listener near the bottom of this file doesn't
+    // wipe #app (destroying nameSetupStep) or bounce to NEXT_URL out from
+    // under the visitor the instant verifyOtp()'s SIGNED_IN event reaches
+    // it. Cleared right before the setup flow's own redirect.
+    let suppressAuthRedirect = false;
+
 
         function renderLoggedOut() {
   const iconGoogle = () => `
@@ -348,6 +355,10 @@ document.getElementById("footer").innerHTML = renderFooter();
         linkedElsewhereStep.style.display = "block";
         return;
       }
+      if (result === "unavailable") {
+        setPhoneError("Couldn't verify this number right now — please try again in a moment.");
+        return;
+      }
       // "otp" or "error" (fail safe — fall back to normal OTP flow)
       needsPinSetup = true;
       await sendOtp();
@@ -367,7 +378,10 @@ document.getElementById("footer").innerHTML = renderFooter();
       const result = await signInWithPin(currentPhone10, pin);
       pinSubmitBtn.disabled = false;
       if (!result.ok) {
-        setPinError("Incorrect PIN. Try again, or use WhatsApp OTP instead.");
+        const isBadCredentials = /invalid|credential/i.test(result.message || "");
+        setPinError(isBadCredentials
+          ? "Incorrect PIN. Try again, or use WhatsApp OTP instead."
+          : "Couldn't sign in: " + result.message);
         status.textContent = "";
         return;
       }
@@ -384,6 +398,7 @@ document.getElementById("footer").innerHTML = renderFooter();
     linkedElsewhereBackBtn.addEventListener("click", () => {
       hideAllSteps();
       currentPhone10 = null;
+      needsPinSetup = false;
       phoneInput.value = "";
       phoneInput.focus();
     });
@@ -449,10 +464,22 @@ document.getElementById("footer").innerHTML = renderFooter();
       // Mandatory name + PIN step — pre-fill name if this is a PIN reset
       // on an account that already has one saved, rather than a true
       // first-time signup.
+      //
+      // suppressAuthRedirect stops the page-wide onAuthStateChange listener
+      // from calling renderLoggedIn() the instant this SIGNED_IN event
+      // reaches it — renderLoggedIn() replaces #app entirely (or redirects
+      // to NEXT_URL), which would destroy or navigate away from this very
+      // step before the visitor can see it.
+      suppressAuthRedirect = true;
       status.textContent = "";
       hideAllSteps();
       nameSetupStep.style.display = "block";
       setNameSetupError("");
+      // Setup is mandatory: hide every other way to leave this screen.
+      phoneInput.closest(".form-grid").style.display = "none";
+      continueBtn.parentElement.style.display = "none";
+      const googleBtnEl = document.getElementById("googleAuthBtn");
+      if (googleBtnEl) googleBtnEl.style.display = "none";
       newPinInput.value = "";
       confirmPinInput.value = "";
       try {
@@ -470,12 +497,15 @@ document.getElementById("footer").innerHTML = renderFooter();
 
     finishSetupBtn.addEventListener("click", async () => {
       setNameSetupError("");
+      document.getElementById("errName").style.display = "none";
       const name = nameInput.value.trim();
       const pin = newPinInput.value.trim();
       const confirmPin = confirmPinInput.value.trim();
 
       if (!name) {
-        setNameSetupError("Enter your name.");
+        const errName = document.getElementById("errName");
+        errName.style.display = "block";
+        errName.textContent = "Enter your name.";
         return;
       }
       if (!/^\d{4}$/.test(pin)) {
@@ -504,6 +534,7 @@ document.getElementById("footer").innerHTML = renderFooter();
         return;
       }
 
+      suppressAuthRedirect = false;
       status.textContent = "All set ✅ Redirecting…";
       setTimeout(() => { window.location.href = (NEXT_URL || "/account.html"); }, 500);
     });
@@ -566,6 +597,10 @@ else renderLoggedOut();
     await upsertProfileIfPending(uid);
     await ensureProfileFromGoogle(session);
     await ensureProfileFromPhone(session);
+    // While the mandatory Name+PIN step is showing (set in renderLogin's
+    // verifyBtn handler), don't let this listener wipe it out from under
+    // the visitor — see the comment at that call site.
+    if (suppressAuthRedirect) return;
     renderLoggedIn(session);
   } else {
     renderLoggedOut();

@@ -124,9 +124,10 @@ const CHECK_PHONE_LOGIN_METHOD_URL =
   "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/check-phone-login-method";
 
 // Asks check-phone-login-method which sign-in path to show for this phone
-// number. Returns "error" (never throws) on any network/response problem,
-// so callers can fail safe — falling back to the normal OTP flow — rather
-// than getting stuck with no way forward.
+// number. Never throws. Returns "error" on a genuine network/parse
+// failure (callers fail safe — fall back to the normal OTP flow); returns
+// "unavailable" on a 429/5xx from the function itself (callers must NOT
+// fall back to OTP here — see the comment at the call site).
 export async function checkPhoneLoginMethod(phone10) {
   try {
     const res = await fetch(CHECK_PHONE_LOGIN_METHOD_URL, {
@@ -134,6 +135,11 @@ export async function checkPhoneLoginMethod(phone10) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phone: phone10 }),
     });
+    // 429 (rate limited) or 5xx (server/outage) — do NOT treat this the
+    // same as a genuine network failure. Callers must NOT fall back to
+    // sending an OTP on this status, or the duplicate-account protection
+    // this function exists for gets silently disabled under load/outage.
+    if (res.status === 429 || res.status >= 500) return "unavailable";
     const data = await res.json().catch(() => null);
     if (!res.ok || !data?.status) return "error";
     if (data.status === "otp" || data.status === "pin" || data.status === "linked_elsewhere") {
@@ -163,15 +169,21 @@ export async function signInWithPin(phone10, pin) {
 // attaches the PIN as this same phone identity's password — no new auth
 // identity is created, it's the exact account that just verified via OTP.
 export async function saveNameAndPin({ userId, name, pin }) {
+  // Attach the password credential FIRST. If this fails (e.g. the
+  // project's minimum-password-length setting rejects a 4-digit PIN),
+  // has_pin must stay false — otherwise the account would claim to have a
+  // PIN it doesn't, and the visitor would be stuck seeing "Incorrect PIN"
+  // with no way to know why. Failing here just falls back to the OTP path
+  // next time, which is a safe, self-correcting state.
+  const { error: pwErr } = await supabase.auth.updateUser({ password: pin });
+  if (pwErr) return { ok: false, message: pwErr.message };
+
   const { error: profileErr } = await supabase.from("profiles").upsert({
     user_id: userId,
     full_name: name,
     has_pin: true,
   });
   if (profileErr) return { ok: false, message: profileErr.message };
-
-  const { error: pwErr } = await supabase.auth.updateUser({ password: pin });
-  if (pwErr) return { ok: false, message: pwErr.message };
 
   return { ok: true };
 }

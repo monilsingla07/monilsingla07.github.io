@@ -264,7 +264,7 @@ function renderPopup(config) {
 
   let closed = false;
   function close() {
-    if (closed) return;
+    if (closed || pinSetupPending) return;
     closed = true;
     overlay.remove();
     document.body.style.overflow = prevOverflow;
@@ -309,6 +309,12 @@ function renderPopup(config) {
   const errNameSetupEl    = overlay.querySelector("#signinPopupErrNameSetup");
 
   let currentPhone10 = null;
+  // Set true while the mandatory Name+PIN setup step is showing. Guarded
+  // in close() below so no dismissal path (X, "Maybe later", backdrop,
+  // Escape, or the auto-close-on-sign-in-elsewhere listener at the bottom
+  // of this file) can close the popup out from under an unfinished
+  // mandatory setup. Cleared right before the setup flow's own close().
+  let pinSetupPending = false;
   let cooldownTimer = null;
   let needsPinSetup = false;
 
@@ -398,6 +404,10 @@ function renderPopup(config) {
       linkedElsewhere.style.display = "block";
       return;
     }
+    if (result === "unavailable") {
+      setPhoneError("Couldn't verify this number right now — please try again in a moment.");
+      return;
+    }
     needsPinSetup = true;
     await sendOtp();
   });
@@ -415,7 +425,10 @@ function renderPopup(config) {
     const result = await signInWithPin(currentPhone10, pin);
     pinSubmitBtn.disabled = false;
     if (!result.ok) {
-      setPinError("Incorrect PIN. Try again, or use WhatsApp OTP instead.");
+      const isBadCredentials = /invalid|credential/i.test(result.message || "");
+      setPinError(isBadCredentials
+        ? "Incorrect PIN. Try again, or use WhatsApp OTP instead."
+        : "Couldn't sign in: " + result.message);
       status.textContent = "";
       return;
     }
@@ -432,6 +445,7 @@ function renderPopup(config) {
   linkedBackBtn.addEventListener("click", () => {
     hideAllSteps();
     currentPhone10 = null;
+    needsPinSetup = false;
     phoneInput.value = "";
     phoneInput.focus();
   });
@@ -507,6 +521,9 @@ function renderPopup(config) {
       return;
     }
 
+    // pinSetupPending blocks every dismissal path (see the flag's
+    // declaration above) until the visitor finishes this mandatory step.
+    pinSetupPending = true;
     status.textContent = "";
     hideAllSteps();
     nameSetupStep.style.display = "block";
@@ -560,6 +577,7 @@ function renderPopup(config) {
       return;
     }
 
+    pinSetupPending = false;
     status.textContent = "All set ✅";
     setTimeout(close, 700);
   });
