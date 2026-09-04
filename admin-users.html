@@ -95,6 +95,7 @@
       <div class="tabs">
         <button class="tab-btn active" data-tab="users">Users</button>
         <button class="tab-btn" data-tab="history">All Login Activity</button>
+        <button class="tab-btn" data-tab="visits">Pages Visited</button>
       </div>
 
       <!-- ── Users tab ── -->
@@ -129,6 +130,23 @@
           </div>
         </div>
       </div>
+
+      <!-- ── Pages visited tab — which links a registered user has clicked
+           through the site, sourced from the same site_visits tracking
+           already powering Visitor Analytics, just filterable to one
+           person instead of only aggregate charts. ── -->
+      <div id="tab-visits" class="tab-panel">
+        <div id="visitsFilterChip" style="display:none;"></div>
+        <div id="visitsStatusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
+        <div id="visitsList"></div>
+        <div class="pager">
+          <div class="small" id="visitsPagerInfo"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="visitsBtnPrev" class="btn secondary" style="padding:8px 14px;font-size:13px;">← Prev</button>
+            <button id="visitsBtnNext" class="btn secondary" style="padding:8px 14px;font-size:13px;">Next →</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -138,7 +156,7 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
-    import { escapeHtml } from "./assets/safe.js";
+    import { escapeHtml, safeHref } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -214,6 +232,11 @@
       document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("active", p.id === "tab-history"));
     }
 
+    function switchToVisitsTab() {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === "visits"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("active", p.id === "tab-visits"));
+    }
+
     // ── Users list ───────────────────────────────────────────────────────
     let userPage = 1;
     const userPerPage = 25;
@@ -249,7 +272,10 @@
                 ${lastLogin ? providerPill(u.provider) : '<span class="pill never">Never logged in</span>'}
                 <div class="small">${lastLogin ? "Last login: " + lastLogin : ""}</div>
                 <div class="small" style="opacity:.76;">${u.login_count} login${u.login_count === 1 ? "" : "s"} logged</div>
-                <button class="btn secondary" style="padding:5px 10px;font-size:11.5px;margin-top:2px;" data-userid="${u.id}" data-username="${escapeHtml(name)}">View login history →</button>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn secondary" style="padding:5px 10px;font-size:11.5px;margin-top:2px;" data-userid="${u.id}" data-username="${escapeHtml(name)}">View login history →</button>
+                  <button class="btn secondary" style="padding:5px 10px;font-size:11.5px;margin-top:2px;" data-visits-userid="${u.id}" data-visits-username="${escapeHtml(name)}">Pages visited →</button>
+                </div>
               </div>
             </div>`;
         }).join("");
@@ -263,6 +289,17 @@
             switchToHistoryTab();
             renderHistoryChip();
             loadHistory();
+          });
+        });
+
+        list.querySelectorAll("button[data-visits-userid]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            visitsFilterUserId = btn.dataset.visitsUserid;
+            visitsFilterUserName = btn.dataset.visitsUsername;
+            visitsPage = 1;
+            switchToVisitsTab();
+            renderVisitsChip();
+            loadVisits();
           });
         });
       }
@@ -390,6 +427,69 @@
     });
     document.getElementById("historyBtnPrev").addEventListener("click", () => { if (historyPage > 1) { historyPage--; loadHistory(); } });
     document.getElementById("historyBtnNext").addEventListener("click", () => { historyPage++; loadHistory(); });
+
+    // ── Pages visited (global feed of registered-user visits, or filtered
+    // to one user via the "Pages visited →" button on their user card) ────
+    let visitsPage = 1;
+    const visitsPerPage = 25;
+    let visitsFilterUserId = null;
+    let visitsFilterUserName = null;
+
+    function renderVisitsChip() {
+      const chip = document.getElementById("visitsFilterChip");
+      if (!visitsFilterUserId) { chip.style.display = "none"; chip.innerHTML = ""; return; }
+      chip.style.display = "block";
+      chip.innerHTML = `<span class="filter-chip">Filtered: ${escapeHtml(visitsFilterUserName || "user")} <button id="clearVisitsFilter">✕</button></span>`;
+      document.getElementById("clearVisitsFilter").addEventListener("click", () => {
+        visitsFilterUserId = null; visitsFilterUserName = null; visitsPage = 1;
+        renderVisitsChip();
+        loadVisits();
+      });
+    }
+
+    async function loadVisits() {
+      const statusMsg = document.getElementById("visitsStatusMsg");
+      const list = document.getElementById("visitsList");
+      statusMsg.textContent = "Loading…";
+
+      const body = { action: "page_visits", page: visitsPage, per_page: visitsPerPage };
+      if (visitsFilterUserId) body.user_id = visitsFilterUserId;
+
+      const res = await callFn("admin-users", body);
+      if (!res.ok) return;
+      const { visits, total } = res.data;
+
+      if (!visits.length) {
+        list.innerHTML = '<div class="small" style="opacity:.76;padding:24px 0;text-align:center;">No page visits recorded yet.</div>';
+      } else {
+        list.innerHTML = visits.map((v) => {
+          const who = v.full_name || v.email || "Unknown user";
+          const location = [v.city, v.country].filter(Boolean).join(", ");
+          return `
+            <div class="event-row">
+              <div class="event-left">
+                <div><strong><a href="${safeHref(v.page_path)}" target="_blank" rel="noopener">${escapeHtml(v.page_path)}</a></strong></div>
+                <div class="small" style="opacity:.76;">${escapeHtml(who)}${location ? " · " + escapeHtml(location) : ""}${v.device_type ? " · " + escapeHtml(v.device_type) : ""}</div>
+              </div>
+              <div class="event-right">${fmtDate(v.created_at)}</div>
+            </div>`;
+        }).join("");
+      }
+      statusMsg.textContent = "";
+
+      const shown = visits.length;
+      const start = (visitsPage - 1) * visitsPerPage;
+      document.getElementById("visitsPagerInfo").textContent =
+        total === 0 ? "" : `Showing ${start + 1}–${start + shown} of ${total}`;
+      document.getElementById("visitsBtnPrev").disabled = visitsPage <= 1;
+      document.getElementById("visitsBtnNext").disabled = start + shown >= total;
+    }
+
+    document.querySelector('.tab-btn[data-tab="visits"]').addEventListener("click", () => {
+      if (!document.getElementById("visitsList").innerHTML) loadVisits();
+    });
+    document.getElementById("visitsBtnPrev").addEventListener("click", () => { if (visitsPage > 1) { visitsPage--; loadVisits(); } });
+    document.getElementById("visitsBtnNext").addEventListener("click", () => { visitsPage++; loadVisits(); });
 
     // ── Boot ─────────────────────────────────────────────────────────────
     async function initAdmin() {
