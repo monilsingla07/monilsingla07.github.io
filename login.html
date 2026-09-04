@@ -35,7 +35,10 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml } from "./assets/safe.js";
-    import { upsertProfileIfPending, ensureProfileFromPhone, ensureProfileFromGoogle } from "./assets/profile-seed.js";
+    import {
+      upsertProfileIfPending, ensureProfileFromPhone, ensureProfileFromGoogle,
+      phoneOk, normalizePhone10, toE164, checkPhoneLoginMethod, signInWithPin, saveNameAndPin,
+    } from "./assets/profile-seed.js";
 
 
     document.getElementById("header").innerHTML = renderHeader("login");
@@ -142,24 +145,6 @@ document.getElementById("footer").innerHTML = renderFooter();
       "'": "&#039;",
     }[c]));
 
-  const phoneOk = (v) => {
-    const digits = String(v || "").replace(/\D/g, "");
-    // India mobile: 10 digits starting 6-9 (allow +91 etc.)
-    if (digits.length === 12 && digits.startsWith("91")) return /^[6-9]\d{9}$/.test(digits.slice(2));
-    return /^[6-9]\d{9}$/.test(digits);
-  };
-
-  // Normalizes whatever the user typed (with or without +91/91/0 prefix)
-  // down to the bare 10-digit Indian mobile number.
-  const normalizePhone10 = (raw) => {
-    let d = String(raw || "").replace(/\D/g, "");
-    if (d.startsWith("91") && d.length === 12) d = d.slice(2);
-    if (d.startsWith("0") && d.length === 11) d = d.slice(1);
-    return d;
-  };
-
-  const toE164 = (phone10) => "+91" + phone10;
-
   // RESEND_COOLDOWN_SECONDS mirrors Supabase Auth's default 60-second
   // "last request" throttle on /auth/v1/otp — kept in sync here purely so
   // the button's countdown matches what the server will actually allow.
@@ -180,16 +165,36 @@ document.getElementById("footer").innerHTML = renderFooter();
             <input id="otpPhone" class="input has-icon" type="tel" autocomplete="tel"
               placeholder="10-digit mobile number" inputmode="numeric" required />
           </div>
-          <div class="help-text">We’ll send a 6-digit code to this number on WhatsApp.</div>
+          <div class="help-text">We'll send a 6-digit code to this number on WhatsApp, or you can enter your PIN if you've set one up.</div>
           <div id="errOtpPhone" class="error-text" style="display:none;"></div>
         </div>
       </div>
 
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-        <button id="sendOtpBtn" type="button" class="btn"
+        <button id="continueBtn" type="button" class="btn"
           style="display:flex;align-items:center;justify-content:center;gap:8px;">
-          ${iconWhatsapp()} Send code on WhatsApp
+          Continue
         </button>
+      </div>
+
+      <div id="pinStep" style="display:none;margin-top:16px;">
+        <div class="field">
+          <label for="pinInput">Enter your 4-digit PIN</label>
+          <input id="pinInput" class="input" type="password" inputmode="numeric"
+            maxlength="4" placeholder="••••" style="letter-spacing:6px;font-weight:700;max-width:140px;" />
+          <div id="errPin" class="error-text" style="display:none;"></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center;">
+          <button id="pinSubmitBtn" class="btn">Sign in</button>
+          <button id="forgotPinBtn" type="button" style="background:none;border:none;opacity:.6;text-decoration:underline;cursor:pointer;font-size:13px;">Forgot PIN? Use WhatsApp OTP instead</button>
+        </div>
+      </div>
+
+      <div id="linkedElsewhereStep" style="display:none;margin-top:16px;">
+        <div class="small" style="opacity:.85;">
+          This number is already linked to an AhamStree account. Please log in the way you originally signed up (e.g. Google), or use a different number.
+        </div>
+        <button id="linkedElsewhereBackBtn" type="button" class="btn secondary" style="margin-top:10px;">Try a different number</button>
       </div>
 
       <div id="otpStep" style="display:none;margin-top:16px;">
@@ -206,15 +211,52 @@ document.getElementById("footer").innerHTML = renderFooter();
           <button id="changeNumberBtn" type="button" class="btn secondary">Change number</button>
         </div>
       </div>
+
+      <div id="nameSetupStep" style="display:none;margin-top:16px;">
+        <div class="small" style="font-weight:700;margin-bottom:8px;">Welcome! Set up your account</div>
+        <div class="field">
+          <label for="nameInput">Your name</label>
+          <input id="nameInput" class="input" type="text" autocomplete="name" placeholder="Full name" required />
+          <div id="errName" class="error-text" style="display:none;"></div>
+        </div>
+        <div class="field" style="margin-top:10px;">
+          <label for="newPinInput">Set a 4-digit PIN (use this to sign in faster next time)</label>
+          <input id="newPinInput" class="input" type="password" inputmode="numeric"
+            maxlength="4" placeholder="••••" style="letter-spacing:6px;font-weight:700;max-width:140px;" />
+        </div>
+        <div class="field" style="margin-top:10px;">
+          <label for="confirmPinInput">Confirm PIN</label>
+          <input id="confirmPinInput" class="input" type="password" inputmode="numeric"
+            maxlength="4" placeholder="••••" style="letter-spacing:6px;font-weight:700;max-width:140px;" />
+          <div id="errNameSetup" class="error-text" style="display:none;"></div>
+        </div>
+        <button id="finishSetupBtn" class="btn" style="margin-top:12px;">Continue</button>
+      </div>
     `;
 
-    const phoneInput = document.getElementById("otpPhone");
-    const sendBtn = document.getElementById("sendOtpBtn");
-    const otpStep = document.getElementById("otpStep");
-    const codeInput = document.getElementById("otpCode");
-    const verifyBtn = document.getElementById("verifyOtpBtn");
-    const resendBtn = document.getElementById("resendOtpBtn");
-    const changeBtn = document.getElementById("changeNumberBtn");
+    const phoneInput   = document.getElementById("otpPhone");
+    const continueBtn  = document.getElementById("continueBtn");
+    const pinStep       = document.getElementById("pinStep");
+    const pinInput       = document.getElementById("pinInput");
+    const pinSubmitBtn   = document.getElementById("pinSubmitBtn");
+    const forgotPinBtn   = document.getElementById("forgotPinBtn");
+    const linkedElsewhereStep    = document.getElementById("linkedElsewhereStep");
+    const linkedElsewhereBackBtn = document.getElementById("linkedElsewhereBackBtn");
+    const otpStep      = document.getElementById("otpStep");
+    const codeInput    = document.getElementById("otpCode");
+    const verifyBtn    = document.getElementById("verifyOtpBtn");
+    const resendBtn    = document.getElementById("resendOtpBtn");
+    const changeBtn    = document.getElementById("changeNumberBtn");
+    const nameSetupStep   = document.getElementById("nameSetupStep");
+    const nameInput       = document.getElementById("nameInput");
+    const newPinInput     = document.getElementById("newPinInput");
+    const confirmPinInput = document.getElementById("confirmPinInput");
+    const finishSetupBtn  = document.getElementById("finishSetupBtn");
+
+    // currentPhone10 is already declared above (top of renderLogin()) — reuse it, don't re-declare.
+    let needsPinSetup = false; // set true whenever OTP step is entered for
+                                // an account that doesn't have has_pin yet,
+                                // or via "Forgot PIN" (which always re-sets it)
 
     const setPhoneError = (msg) => {
       const err = document.getElementById("errOtpPhone");
@@ -228,6 +270,24 @@ document.getElementById("footer").innerHTML = renderFooter();
       err.style.display = msg ? "block" : "none";
       err.textContent = msg || "";
     };
+    const setPinError = (msg) => {
+      const err = document.getElementById("errPin");
+      pinInput.classList.toggle("is-invalid", !!msg);
+      err.style.display = msg ? "block" : "none";
+      err.textContent = msg || "";
+    };
+    const setNameSetupError = (msg) => {
+      const err = document.getElementById("errNameSetup");
+      err.style.display = msg ? "block" : "none";
+      err.textContent = msg || "";
+    };
+
+    function hideAllSteps() {
+      pinStep.style.display = "none";
+      linkedElsewhereStep.style.display = "none";
+      otpStep.style.display = "none";
+      nameSetupStep.style.display = "none";
+    }
 
     function startCooldown(btn) {
       let remaining = RESEND_COOLDOWN_SECONDS;
@@ -248,47 +308,91 @@ document.getElementById("footer").innerHTML = renderFooter();
     }
 
     async function sendOtp() {
-      setPhoneError("");
-      const phone10 = normalizePhone10(phoneInput.value);
-
-      if (!phoneOk(phone10)) {
-        setPhoneError("Enter a valid 10-digit Indian mobile number.");
-        return;
-      }
-
-      sendBtn.disabled = true;
       status.textContent = "Sending code on WhatsApp…";
-
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: toE164(phone10),
-      });
-
-      sendBtn.disabled = false;
-
+      const { error } = await supabase.auth.signInWithOtp({ phone: toE164(currentPhone10) });
       if (error) {
         status.textContent = "Error: " + error.message;
         return;
       }
-
-      currentPhone10 = phone10;
-      status.textContent = `Code sent to +91 ${phone10} on WhatsApp. It expires shortly — enter it below.`;
+      status.textContent = `Code sent to +91 ${currentPhone10} on WhatsApp. It expires shortly — enter it below.`;
+      hideAllSteps();
       otpStep.style.display = "block";
-      phoneInput.disabled = true;
-      sendBtn.style.display = "none";
       codeInput.value = "";
       codeInput.focus();
       startCooldown(resendBtn);
     }
 
-    sendBtn.onclick = sendOtp;
+    continueBtn.addEventListener("click", async () => {
+      setPhoneError("");
+      const phone10 = normalizePhone10(phoneInput.value);
+      if (!phoneOk(phone10)) {
+        setPhoneError("Enter a valid 10-digit Indian mobile number.");
+        return;
+      }
+      currentPhone10 = phone10;
+      continueBtn.disabled = true;
+      status.textContent = "Checking…";
+      const result = await checkPhoneLoginMethod(phone10);
+      continueBtn.disabled = false;
+      status.textContent = "";
+
+      if (result === "pin") {
+        hideAllSteps();
+        pinStep.style.display = "block";
+        pinInput.value = "";
+        pinInput.focus();
+        return;
+      }
+      if (result === "linked_elsewhere") {
+        hideAllSteps();
+        linkedElsewhereStep.style.display = "block";
+        return;
+      }
+      // "otp" or "error" (fail safe — fall back to normal OTP flow)
+      needsPinSetup = true;
+      await sendOtp();
+    });
+
+    phoneInput.addEventListener("keydown", (e) => { if (e.key === "Enter") continueBtn.click(); });
+
+    pinSubmitBtn.addEventListener("click", async () => {
+      setPinError("");
+      const pin = pinInput.value.trim();
+      if (!/^\d{4}$/.test(pin)) {
+        setPinError("Enter your 4-digit PIN.");
+        return;
+      }
+      pinSubmitBtn.disabled = true;
+      status.textContent = "Signing in…";
+      const result = await signInWithPin(currentPhone10, pin);
+      pinSubmitBtn.disabled = false;
+      if (!result.ok) {
+        setPinError("Incorrect PIN. Try again, or use WhatsApp OTP instead.");
+        status.textContent = "";
+        return;
+      }
+      status.textContent = "Logged in ✅ Redirecting…";
+      setTimeout(() => { window.location.href = (NEXT_URL || "/account.html"); }, 500);
+    });
+    pinInput.addEventListener("keydown", (e) => { if (e.key === "Enter") pinSubmitBtn.click(); });
+
+    forgotPinBtn.addEventListener("click", async () => {
+      needsPinSetup = true; // successful OTP verify from here always re-sets the PIN
+      await sendOtp();
+    });
+
+    linkedElsewhereBackBtn.addEventListener("click", () => {
+      hideAllSteps();
+      currentPhone10 = null;
+      phoneInput.value = "";
+      phoneInput.focus();
+    });
 
     resendBtn.onclick = async () => {
       if (resendBtn.disabled) return;
       setCodeError("");
       status.textContent = "Resending code…";
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: toE164(currentPhone10),
-      });
+      const { error } = await supabase.auth.signInWithOtp({ phone: toE164(currentPhone10) });
       if (error) {
         status.textContent = "Error: " + error.message;
         return;
@@ -300,10 +404,10 @@ document.getElementById("footer").innerHTML = renderFooter();
     changeBtn.onclick = () => {
       if (cooldownTimer) clearInterval(cooldownTimer);
       currentPhone10 = null;
+      needsPinSetup = false;
       status.textContent = "";
-      otpStep.style.display = "none";
-      phoneInput.disabled = false;
-      sendBtn.style.display = "flex";
+      hideAllSteps();
+      phoneInput.value = "";
       phoneInput.focus();
     };
 
@@ -336,15 +440,73 @@ document.getElementById("footer").innerHTML = renderFooter();
         return;
       }
 
-      status.textContent = "Logged in ✅ Redirecting…";
-      setTimeout(() => {
-        window.location.href = (NEXT_URL || "/account.html");
-      }, 500);
+      if (!needsPinSetup) {
+        status.textContent = "Logged in ✅ Redirecting…";
+        setTimeout(() => { window.location.href = (NEXT_URL || "/account.html"); }, 500);
+        return;
+      }
+
+      // Mandatory name + PIN step — pre-fill name if this is a PIN reset
+      // on an account that already has one saved, rather than a true
+      // first-time signup.
+      status.textContent = "";
+      hideAllSteps();
+      nameSetupStep.style.display = "block";
+      setNameSetupError("");
+      newPinInput.value = "";
+      confirmPinInput.value = "";
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        const uid = sess?.session?.user?.id;
+        if (uid) {
+          const { data: existing } = await supabase.from("profiles").select("full_name").eq("user_id", uid).maybeSingle();
+          nameInput.value = existing?.full_name || "";
+        }
+      } catch (_) { /* non-fatal — leave name blank */ }
+      nameInput.focus();
     };
 
-    // Allow hitting Enter in either field to trigger the primary action.
-    phoneInput.addEventListener("keydown", (e) => { if (e.key === "Enter") sendOtp(); });
     codeInput.addEventListener("keydown", (e) => { if (e.key === "Enter") verifyBtn.click(); });
+
+    finishSetupBtn.addEventListener("click", async () => {
+      setNameSetupError("");
+      const name = nameInput.value.trim();
+      const pin = newPinInput.value.trim();
+      const confirmPin = confirmPinInput.value.trim();
+
+      if (!name) {
+        setNameSetupError("Enter your name.");
+        return;
+      }
+      if (!/^\d{4}$/.test(pin)) {
+        setNameSetupError("PIN must be exactly 4 digits.");
+        return;
+      }
+      if (pin !== confirmPin) {
+        setNameSetupError("PINs don't match.");
+        return;
+      }
+
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess?.session?.user?.id;
+      if (!uid) {
+        setNameSetupError("Session expired — please log in again.");
+        return;
+      }
+
+      finishSetupBtn.disabled = true;
+      status.textContent = "Saving…";
+      const result = await saveNameAndPin({ userId: uid, name, pin });
+      finishSetupBtn.disabled = false;
+
+      if (!result.ok) {
+        setNameSetupError("Couldn't save: " + result.message + " — you're still logged in, try again.");
+        return;
+      }
+
+      status.textContent = "All set ✅ Redirecting…";
+      setTimeout(() => { window.location.href = (NEXT_URL || "/account.html"); }, 500);
+    });
   }
 
   // Default: show login form first
