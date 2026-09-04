@@ -101,3 +101,77 @@ export async function grantSignupCashIfEligible(session) {
     // is granted on the next login instead (still idempotent, still safe).
   }
 }
+
+// ── Phone helpers — the one place these live. login.html and
+// assets/signin-popup.js both import these instead of keeping their own
+// duplicate copies (previously duplicated in both files).
+export const phoneOk = (v) => {
+  const digits = String(v || "").replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) return /^[6-9]\d{9}$/.test(digits.slice(2));
+  return /^[6-9]\d{9}$/.test(digits);
+};
+
+export const normalizePhone10 = (raw) => {
+  let d = String(raw || "").replace(/\D/g, "");
+  if (d.startsWith("91") && d.length === 12) d = d.slice(2);
+  if (d.startsWith("0") && d.length === 11) d = d.slice(1);
+  return d;
+};
+
+export const toE164 = (phone10) => "+91" + phone10;
+
+const CHECK_PHONE_LOGIN_METHOD_URL =
+  "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/check-phone-login-method";
+
+// Asks check-phone-login-method which sign-in path to show for this phone
+// number. Returns "error" (never throws) on any network/response problem,
+// so callers can fail safe — falling back to the normal OTP flow — rather
+// than getting stuck with no way forward.
+export async function checkPhoneLoginMethod(phone10) {
+  try {
+    const res = await fetch(CHECK_PHONE_LOGIN_METHOD_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: phone10 }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data?.status) return "error";
+    if (data.status === "otp" || data.status === "pin" || data.status === "linked_elsewhere") {
+      return data.status;
+    }
+    return "error";
+  } catch (_) {
+    return "error";
+  }
+}
+
+// Signs in to an existing PIN account. The account's phone identity already
+// exists in auth.users — this just supplies the password credential
+// attached to it (see saveNameAndPin below).
+export async function signInWithPin(phone10, pin) {
+  const { error } = await supabase.auth.signInWithPassword({
+    phone: toE164(phone10),
+    password: pin,
+  });
+  if (error) return { ok: false, message: error.message };
+  return { ok: true };
+}
+
+// Completes first-time (or reset) PIN setup for the CURRENTLY authenticated
+// session — call only right after a successful OTP verify, while that
+// session is still active. Saves the name, marks has_pin true, then
+// attaches the PIN as this same phone identity's password — no new auth
+// identity is created, it's the exact account that just verified via OTP.
+export async function saveNameAndPin({ userId, name, pin }) {
+  const { error: profileErr } = await supabase.from("profiles").upsert({
+    user_id: userId,
+    full_name: name,
+    has_pin: true,
+  });
+  if (profileErr) return { ok: false, message: profileErr.message };
+
+  const { error: pwErr } = await supabase.auth.updateUser({ password: pin });
+  if (pwErr) return { ok: false, message: pwErr.message };
+
+  return { ok: true };
+}
