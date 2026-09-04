@@ -442,6 +442,17 @@ document.getElementById("footer").innerHTML = renderFooter();
       verifyBtn.disabled = true;
       status.textContent = "Verifying…";
 
+      // suppressAuthRedirect MUST be set before calling verifyOtp(), not
+      // after it resolves: supabase-js's verifyOtp() internally awaits
+      // every onAuthStateChange subscriber (including the page-wide
+      // listener below) to completion as part of firing SIGNED_IN, before
+      // its own promise resolves. Setting the flag after `await
+      // verifyOtp(...)` is therefore always one step too late — the
+      // listener has already run with the flag still false. needsPinSetup
+      // is already known at this point (set when the OTP was requested),
+      // so it's safe to decide this up front.
+      if (needsPinSetup) suppressAuthRedirect = true;
+
       const { error } = await supabase.auth.verifyOtp({
         phone: toE164(currentPhone10),
         token: code,
@@ -451,6 +462,7 @@ document.getElementById("footer").innerHTML = renderFooter();
       verifyBtn.disabled = false;
 
       if (error) {
+        suppressAuthRedirect = false;
         status.textContent = "Error: " + error.message;
         return;
       }
@@ -464,13 +476,6 @@ document.getElementById("footer").innerHTML = renderFooter();
       // Mandatory name + PIN step — pre-fill name if this is a PIN reset
       // on an account that already has one saved, rather than a true
       // first-time signup.
-      //
-      // suppressAuthRedirect stops the page-wide onAuthStateChange listener
-      // from calling renderLoggedIn() the instant this SIGNED_IN event
-      // reaches it — renderLoggedIn() replaces #app entirely (or redirects
-      // to NEXT_URL), which would destroy or navigate away from this very
-      // step before the visitor can see it.
-      suppressAuthRedirect = true;
       status.textContent = "";
       hideAllSteps();
       nameSetupStep.style.display = "block";

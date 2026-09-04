@@ -489,6 +489,16 @@ function renderPopup(config) {
     verifyBtn.disabled = true;
     status.textContent = "Verifying…";
 
+    // pinSetupPending MUST be set before calling verifyOtp(), not after it
+    // resolves: supabase-js's verifyOtp() internally awaits every
+    // onAuthStateChange subscriber (including this file's own auto-close
+    // listener below) to completion as part of firing SIGNED_IN, before its
+    // own promise resolves. Setting the flag after `await verifyOtp(...)`
+    // is therefore always one step too late — close() has already run with
+    // the flag still false. needsPinSetup is already known at this point
+    // (set when the OTP was requested), so it's safe to decide this up front.
+    if (needsPinSetup) pinSetupPending = true;
+
     const { error } = await supabase.auth.verifyOtp({
       phone: toE164(currentPhone10),
       token: code,
@@ -498,6 +508,7 @@ function renderPopup(config) {
     verifyBtn.disabled = false;
 
     if (error) {
+      pinSetupPending = false;
       status.textContent = "Error: " + error.message;
       return;
     }
@@ -521,9 +532,9 @@ function renderPopup(config) {
       return;
     }
 
-    // pinSetupPending blocks every dismissal path (see the flag's
-    // declaration above) until the visitor finishes this mandatory step.
-    pinSetupPending = true;
+    // pinSetupPending was already set true above, before verifyOtp() was
+    // called — see that comment. It blocks every dismissal path (see the
+    // flag's declaration) until the visitor finishes this mandatory step.
     status.textContent = "";
     hideAllSteps();
     nameSetupStep.style.display = "block";
