@@ -32,7 +32,10 @@
 
 import { escapeHtml, escapeAttr, safeUrl } from "./safe.js";
 import { supabase } from "./supabase.js";
-import { upsertProfileIfPending, ensureProfileFromPhone } from "./profile-seed.js";
+import {
+  upsertProfileIfPending, ensureProfileFromPhone,
+  phoneOk, normalizePhone10, toE164, checkPhoneLoginMethod, signInWithPin, saveNameAndPin,
+} from "./profile-seed.js";
 
 const FUNCTIONS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-signin-popup-config";
 const SHOWN_KEY = "ahamstree_signin_popup_shown";
@@ -73,22 +76,6 @@ function markShown() {
     // will just show again next time — acceptable fallback.
   }
 }
-
-// ── Phone helpers — mirror login.html's WhatsApp OTP flow exactly ──────
-const phoneOk = (v) => {
-  const digits = String(v || "").replace(/\D/g, "");
-  if (digits.length === 12 && digits.startsWith("91")) return /^[6-9]\d{9}$/.test(digits.slice(2));
-  return /^[6-9]\d{9}$/.test(digits);
-};
-
-const normalizePhone10 = (raw) => {
-  let d = String(raw || "").replace(/\D/g, "");
-  if (d.startsWith("91") && d.length === 12) d = d.slice(2);
-  if (d.startsWith("0") && d.length === 11) d = d.slice(1);
-  return d;
-};
-
-const toE164 = (phone10) => "+91" + phone10;
 
 // Mirrors Supabase Auth's default 60-second "last request" throttle on
 // /auth/v1/otp — kept in sync purely so the resend countdown matches what
@@ -200,9 +187,29 @@ function renderPopup(config) {
           <div id="signinPopupErrPhone" class="error-text" style="display:none;"></div>
         </div>
 
-        <button id="signinPopupSendBtn" type="button" class="btn" style="margin-top:10px;">
-          ${iconWhatsapp()} Send code on WhatsApp
+        <button id="signinPopupContinueBtn" type="button" class="btn" style="margin-top:10px;">
+          Continue
         </button>
+
+        <div id="signinPopupPinStep" style="display:none;margin-top:14px;">
+          <div class="field">
+            <label for="signinPopupPin">Enter your 4-digit PIN</label>
+            <input id="signinPopupPin" class="input" type="password" inputmode="numeric"
+              maxlength="4" placeholder="••••" style="letter-spacing:6px;font-weight:700;max-width:120px;" />
+            <div id="signinPopupErrPin" class="error-text" style="display:none;"></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center;">
+            <button id="signinPopupPinSubmitBtn" class="btn" style="flex:1;">Sign in</button>
+          </div>
+          <button id="signinPopupForgotPinBtn" type="button" style="background:none;border:none;opacity:.6;text-decoration:underline;cursor:pointer;font-size:12px;margin-top:8px;">Forgot PIN? Use WhatsApp OTP instead</button>
+        </div>
+
+        <div id="signinPopupLinkedElsewhere" style="display:none;margin-top:14px;">
+          <div class="small" style="opacity:.85;">
+            This number is already linked to an AhamStree account. Please log in the way you originally signed up (e.g. Google), or use a different number.
+          </div>
+          <button id="signinPopupLinkedBackBtn" type="button" class="btn secondary" style="margin-top:10px;">Try a different number</button>
+        </div>
 
         <div id="signinPopupOtpStep">
           <div class="field">
@@ -218,6 +225,26 @@ function renderPopup(config) {
             <button id="signinPopupResendBtn" type="button" class="btn secondary" style="padding:6px 12px;font-size:12px;" disabled>Resend code</button>
             <button id="signinPopupChangeBtn" type="button" style="background:none;border:none;opacity:.6;text-decoration:underline;cursor:pointer;font-size:12px;">Change number</button>
           </div>
+        </div>
+
+        <div id="signinPopupNameSetupStep" style="display:none;margin-top:14px;">
+          <div class="small" style="font-weight:700;margin-bottom:8px;">Welcome! Set up your account</div>
+          <div class="field">
+            <label for="signinPopupName">Your name</label>
+            <input id="signinPopupName" class="input" type="text" autocomplete="name" placeholder="Full name" required />
+          </div>
+          <div class="field" style="margin-top:8px;">
+            <label for="signinPopupNewPin">Set a 4-digit PIN (faster sign-in next time)</label>
+            <input id="signinPopupNewPin" class="input" type="password" inputmode="numeric"
+              maxlength="4" placeholder="••••" style="letter-spacing:6px;font-weight:700;max-width:120px;" />
+          </div>
+          <div class="field" style="margin-top:8px;">
+            <label for="signinPopupConfirmPin">Confirm PIN</label>
+            <input id="signinPopupConfirmPin" class="input" type="password" inputmode="numeric"
+              maxlength="4" placeholder="••••" style="letter-spacing:6px;font-weight:700;max-width:120px;" />
+            <div id="signinPopupErrNameSetup" class="error-text" style="display:none;"></div>
+          </div>
+          <button id="signinPopupFinishSetupBtn" class="btn" style="margin-top:10px;width:100%;">Continue</button>
         </div>
 
         <div id="signinPopupDivider"><span class="line"></span>or<span class="line"></span></div>
@@ -257,7 +284,13 @@ function renderPopup(config) {
 
   // ── Wire up the inline WhatsApp OTP flow (mirrors login.html) ────────
   const phoneInput  = overlay.querySelector("#signinPopupPhone");
-  const sendBtn     = overlay.querySelector("#signinPopupSendBtn");
+  const continueBtn = overlay.querySelector("#signinPopupContinueBtn");
+  const pinStep         = overlay.querySelector("#signinPopupPinStep");
+  const pinInput         = overlay.querySelector("#signinPopupPin");
+  const pinSubmitBtn     = overlay.querySelector("#signinPopupPinSubmitBtn");
+  const forgotPinBtn     = overlay.querySelector("#signinPopupForgotPinBtn");
+  const linkedElsewhere    = overlay.querySelector("#signinPopupLinkedElsewhere");
+  const linkedBackBtn      = overlay.querySelector("#signinPopupLinkedBackBtn");
   const otpStep     = overlay.querySelector("#signinPopupOtpStep");
   const codeInput   = overlay.querySelector("#signinPopupCode");
   const verifyBtn   = overlay.querySelector("#signinPopupVerifyBtn");
@@ -267,9 +300,17 @@ function renderPopup(config) {
   const status      = overlay.querySelector("#signinPopupStatus");
   const errPhoneEl  = overlay.querySelector("#signinPopupErrPhone");
   const errCodeEl   = overlay.querySelector("#signinPopupErrCode");
+  const errPinEl    = overlay.querySelector("#signinPopupErrPin");
+  const nameSetupStep    = overlay.querySelector("#signinPopupNameSetupStep");
+  const nameInput         = overlay.querySelector("#signinPopupName");
+  const newPinInput       = overlay.querySelector("#signinPopupNewPin");
+  const confirmPinInput   = overlay.querySelector("#signinPopupConfirmPin");
+  const finishSetupBtn    = overlay.querySelector("#signinPopupFinishSetupBtn");
+  const errNameSetupEl    = overlay.querySelector("#signinPopupErrNameSetup");
 
   let currentPhone10 = null;
   let cooldownTimer = null;
+  let needsPinSetup = false;
 
   const setPhoneError = (msg) => {
     phoneInput.classList.toggle("is-invalid", !!msg);
@@ -281,6 +322,22 @@ function renderPopup(config) {
     errCodeEl.style.display = msg ? "block" : "none";
     errCodeEl.textContent = msg || "";
   };
+  const setPinError = (msg) => {
+    pinInput.classList.toggle("is-invalid", !!msg);
+    errPinEl.style.display = msg ? "block" : "none";
+    errPinEl.textContent = msg || "";
+  };
+  const setNameSetupError = (msg) => {
+    errNameSetupEl.style.display = msg ? "block" : "none";
+    errNameSetupEl.textContent = msg || "";
+  };
+
+  function hideAllSteps() {
+    pinStep.style.display = "none";
+    linkedElsewhere.style.display = "none";
+    otpStep.style.display = "none";
+    nameSetupStep.style.display = "none";
+  }
 
   function startCooldown(btn) {
     let remaining = RESEND_COOLDOWN_SECONDS;
@@ -301,38 +358,83 @@ function renderPopup(config) {
   }
 
   async function sendOtp() {
-    setPhoneError("");
-    const phone10 = normalizePhone10(phoneInput.value);
-
-    if (!phoneOk(phone10)) {
-      setPhoneError("Enter a valid 10-digit Indian mobile number.");
-      return;
-    }
-
-    sendBtn.disabled = true;
     status.textContent = "Sending code on WhatsApp…";
-
-    const { error } = await supabase.auth.signInWithOtp({ phone: toE164(phone10) });
-
-    sendBtn.disabled = false;
-
+    const { error } = await supabase.auth.signInWithOtp({ phone: toE164(currentPhone10) });
     if (error) {
       status.textContent = "Error: " + error.message;
       return;
     }
-
-    currentPhone10 = phone10;
-    status.textContent = `Code sent to +91 ${phone10} on WhatsApp.`;
+    status.textContent = `Code sent to +91 ${currentPhone10} on WhatsApp.`;
+    hideAllSteps();
     otpStep.style.display = "block";
-    phoneInput.disabled = true;
-    sendBtn.style.display = "none";
     codeInput.value = "";
     codeInput.focus();
     startCooldown(resendBtn);
   }
 
-  sendBtn.addEventListener("click", sendOtp);
-  phoneInput.addEventListener("keydown", (e) => { if (e.key === "Enter") sendOtp(); });
+  continueBtn.addEventListener("click", async () => {
+    setPhoneError("");
+    const phone10 = normalizePhone10(phoneInput.value);
+    if (!phoneOk(phone10)) {
+      setPhoneError("Enter a valid 10-digit Indian mobile number.");
+      return;
+    }
+    currentPhone10 = phone10;
+    continueBtn.disabled = true;
+    status.textContent = "Checking…";
+    const result = await checkPhoneLoginMethod(phone10);
+    continueBtn.disabled = false;
+    status.textContent = "";
+
+    if (result === "pin") {
+      hideAllSteps();
+      pinStep.style.display = "block";
+      pinInput.value = "";
+      pinInput.focus();
+      return;
+    }
+    if (result === "linked_elsewhere") {
+      hideAllSteps();
+      linkedElsewhere.style.display = "block";
+      return;
+    }
+    needsPinSetup = true;
+    await sendOtp();
+  });
+  phoneInput.addEventListener("keydown", (e) => { if (e.key === "Enter") continueBtn.click(); });
+
+  pinSubmitBtn.addEventListener("click", async () => {
+    setPinError("");
+    const pin = pinInput.value.trim();
+    if (!/^\d{4}$/.test(pin)) {
+      setPinError("Enter your 4-digit PIN.");
+      return;
+    }
+    pinSubmitBtn.disabled = true;
+    status.textContent = "Signing in…";
+    const result = await signInWithPin(currentPhone10, pin);
+    pinSubmitBtn.disabled = false;
+    if (!result.ok) {
+      setPinError("Incorrect PIN. Try again, or use WhatsApp OTP instead.");
+      status.textContent = "";
+      return;
+    }
+    status.textContent = "Logged in ✅";
+    setTimeout(close, 700);
+  });
+  pinInput.addEventListener("keydown", (e) => { if (e.key === "Enter") pinSubmitBtn.click(); });
+
+  forgotPinBtn.addEventListener("click", async () => {
+    needsPinSetup = true;
+    await sendOtp();
+  });
+
+  linkedBackBtn.addEventListener("click", () => {
+    hideAllSteps();
+    currentPhone10 = null;
+    phoneInput.value = "";
+    phoneInput.focus();
+  });
 
   resendBtn.addEventListener("click", async () => {
     if (resendBtn.disabled || !currentPhone10) return;
@@ -350,10 +452,10 @@ function renderPopup(config) {
   changeBtn.addEventListener("click", () => {
     if (cooldownTimer) clearInterval(cooldownTimer);
     currentPhone10 = null;
+    needsPinSetup = false;
     status.textContent = "";
-    otpStep.style.display = "none";
-    phoneInput.disabled = false;
-    sendBtn.style.display = "flex";
+    hideAllSteps();
+    phoneInput.value = "";
     phoneInput.focus();
   });
 
@@ -386,8 +488,6 @@ function renderPopup(config) {
       return;
     }
 
-    status.textContent = "Logged in ✅";
-
     // Same first-login profile seeding login.html does — shared helper so
     // the two never drift out of sync.
     try {
@@ -401,6 +501,66 @@ function renderPopup(config) {
       // Never let profile seeding block the login itself.
     }
 
+    if (!needsPinSetup) {
+      status.textContent = "Logged in ✅";
+      setTimeout(close, 700);
+      return;
+    }
+
+    status.textContent = "";
+    hideAllSteps();
+    nameSetupStep.style.display = "block";
+    setNameSetupError("");
+    newPinInput.value = "";
+    confirmPinInput.value = "";
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess?.session?.user?.id;
+      if (uid) {
+        const { data: existing } = await supabase.from("profiles").select("full_name").eq("user_id", uid).maybeSingle();
+        nameInput.value = existing?.full_name || "";
+      }
+    } catch (_) { /* non-fatal */ }
+    nameInput.focus();
+  });
+
+  finishSetupBtn.addEventListener("click", async () => {
+    setNameSetupError("");
+    const name = nameInput.value.trim();
+    const pin = newPinInput.value.trim();
+    const confirmPin = confirmPinInput.value.trim();
+
+    if (!name) {
+      setNameSetupError("Enter your name.");
+      return;
+    }
+    if (!/^\d{4}$/.test(pin)) {
+      setNameSetupError("PIN must be exactly 4 digits.");
+      return;
+    }
+    if (pin !== confirmPin) {
+      setNameSetupError("PINs don't match.");
+      return;
+    }
+
+    const { data: sess } = await supabase.auth.getSession();
+    const uid = sess?.session?.user?.id;
+    if (!uid) {
+      setNameSetupError("Session expired — please refresh and log in again.");
+      return;
+    }
+
+    finishSetupBtn.disabled = true;
+    status.textContent = "Saving…";
+    const result = await saveNameAndPin({ userId: uid, name, pin });
+    finishSetupBtn.disabled = false;
+
+    if (!result.ok) {
+      setNameSetupError("Couldn't save: " + result.message + " — you're still logged in, try again.");
+      return;
+    }
+
+    status.textContent = "All set ✅";
     setTimeout(close, 700);
   });
 
