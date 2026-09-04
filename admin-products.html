@@ -148,7 +148,43 @@
               <input id="bulkStockDelta" class="input" type="number" placeholder="e.g. +5" style="width:80px; padding:6px 8px; font-size:12px;" />
               <button id="bulkApplyStock" class="btn secondary" style="padding:6px 12px; font-size:12px;">± stock</button>
             </span>
+            <button id="bulkMoreToggle" class="btn secondary" style="padding:6px 12px; font-size:12px;">More bulk actions ▾</button>
             <button id="bulkClear" class="btn secondary" style="padding:6px 12px; font-size:12px; margin-left:auto;">Clear selection</button>
+          </div>
+
+          <!-- Fabric / weave line / collections / section templates, applied
+               across every selected product at once — the whole point being
+               not needing to open each product individually just to set
+               these. -->
+          <div id="bulkMorePanel" style="display:none; margin-bottom:12px; padding:16px; border-radius:12px; background:#fff; border:1.5px solid var(--border-light,#e5e5e5);">
+            <div class="pm-row" style="align-items:flex-end;">
+              <div>
+                <label class="pm-label">Fabric</label>
+                <select id="bulkFabricSelect" class="input"><option value="">Select fabric…</option></select>
+              </div>
+              <div>
+                <button id="bulkApplyFabric" class="btn secondary" style="padding:8px 14px; font-size:12px;">Set fabric on selected</button>
+              </div>
+              <div>
+                <label class="pm-label">Weave line</label>
+                <select id="bulkWeaveLineSelect" class="input"><option value="">Select weave line…</option></select>
+              </div>
+              <div>
+                <button id="bulkApplyWeaveLine" class="btn secondary" style="padding:8px 14px; font-size:12px;">Set weave line on selected</button>
+              </div>
+            </div>
+
+            <div style="margin-top:16px;">
+              <label class="pm-label">Collections — adds selected products to whichever collections you check here (keeps any collections they're already in)</label>
+              <div id="bulkCollectionChips" class="chip-check-grid"></div>
+              <button id="bulkApplyCollections" class="btn secondary" style="padding:8px 14px; font-size:12px; margin-top:8px;">Add to collections</button>
+            </div>
+
+            <div style="margin-top:16px;">
+              <label class="pm-label" style="color:#b45309;">Section templates — REPLACES every selected product's whole "Additional details" list (including any one-off custom blocks) with just the template(s) checked here</label>
+              <div id="bulkSectionTemplateChips" class="chip-check-grid"></div>
+              <button id="bulkApplySections" class="btn secondary" style="padding:8px 14px; font-size:12px; margin-top:8px;">Replace sections on selected</button>
+            </div>
           </div>
 
           <div id="productGrid" class="prod-grid"></div>
@@ -531,6 +567,7 @@
       const n = selectedIds.size;
       bar.style.display = n > 0 ? "flex" : "none";
       if (n > 0) document.getElementById("bulkCount").textContent = n + " selected";
+      else document.getElementById("bulkMorePanel").style.display = "none";
     }
 
     async function applyBulk(patch, confirmMsg) {
@@ -563,6 +600,87 @@
       selectedIds.clear();
       renderBulkBar();
       renderProductGrid();
+    });
+
+    // ── "More bulk actions" — fabric / weave line / collections / section
+    // templates applied across every selected product at once, so setting
+    // these no longer means opening each product individually. Fabric and
+    // weave line reuse bulk_update (applyBulk) since they're plain columns;
+    // collections and section templates are join-table operations with
+    // their own actions on the backend. ──
+    function renderBulkMorePanel() {
+      const fabricSel = document.getElementById("bulkFabricSelect");
+      const weaveSel  = document.getElementById("bulkWeaveLineSelect");
+      fabricSel.innerHTML = '<option value="">Select fabric…</option>' +
+        fabricsCache.map(f => `<option value="${escapeAttr(f.id)}">${escapeHtml(f.name)}</option>`).join("");
+      weaveSel.innerHTML = '<option value="">Select weave line…</option>' +
+        weaveLinesCache.map(w => `<option value="${escapeAttr(w.id)}">${escapeHtml(w.name)}</option>`).join("");
+
+      const collBox = document.getElementById("bulkCollectionChips");
+      collBox.innerHTML = collectionsCache.length
+        ? collectionsCache.map(c => `
+            <label class="chip-check">
+              <input type="checkbox" value="${escapeAttr(c.id)}" />
+              ${escapeHtml(c.name)}
+            </label>
+          `).join("")
+        : '<div class="small" style="opacity:.74;">No collections yet — add one in the Collections tab.</div>';
+
+      const tplBox = document.getElementById("bulkSectionTemplateChips");
+      tplBox.innerHTML = sectionTemplatesCache.length
+        ? sectionTemplatesCache.map(t => `
+            <label class="chip-check" title="${escapeAttr("Tab title: " + t.name)}">
+              <input type="checkbox" value="${escapeAttr(t.id)}" />
+              ${t.internal_label ? escapeHtml(t.internal_label) : escapeHtml(t.name)}${t.internal_label ? ` <span style="opacity:.6;">(${escapeHtml(t.name)})</span>` : ""}${t.is_active ? "" : " (inactive)"}
+            </label>
+          `).join("")
+        : '<div class="small" style="opacity:.74;">No section templates yet — add one in the Section Templates tab.</div>';
+    }
+
+    document.getElementById("bulkMoreToggle").addEventListener("click", () => {
+      const panel = document.getElementById("bulkMorePanel");
+      const opening = panel.style.display === "none";
+      if (opening) renderBulkMorePanel();
+      panel.style.display = opening ? "block" : "none";
+    });
+
+    async function applyBulkAction(action, extra, confirmMsg) {
+      const ids = Array.from(selectedIds);
+      if (!ids.length) return;
+      if (confirmMsg && !confirm(confirmMsg.replace("{n}", ids.length))) return;
+      try {
+        const r = await authedFetch(PRODUCTS_FN, { action, ids, ...extra });
+        selectedIds.clear();
+        await loadProductsList();
+        if (r.updated < r.total) alert(`${r.updated} of ${r.total} products updated — the rest failed (see console for details).`);
+      } catch (e) {
+        alert("Bulk update failed: " + e.message);
+      }
+    }
+
+    document.getElementById("bulkApplyFabric").addEventListener("click", () => {
+      const val = document.getElementById("bulkFabricSelect").value;
+      if (!val) return alert("Select a fabric first.");
+      applyBulk({ fabric_id: val });
+    });
+    document.getElementById("bulkApplyWeaveLine").addEventListener("click", () => {
+      const val = document.getElementById("bulkWeaveLineSelect").value;
+      if (!val) return alert("Select a weave line first.");
+      applyBulk({ weave_line_id: val });
+    });
+    document.getElementById("bulkApplyCollections").addEventListener("click", () => {
+      const ids = Array.from(document.querySelectorAll("#bulkCollectionChips input:checked")).map(i => i.value);
+      if (!ids.length) return alert("Check at least one collection.");
+      applyBulkAction("bulk_add_collections", { collection_ids: ids }, `Add {n} selected products to the checked collection(s)?`);
+    });
+    document.getElementById("bulkApplySections").addEventListener("click", () => {
+      const ids = Array.from(document.querySelectorAll("#bulkSectionTemplateChips input:checked")).map(i => i.value);
+      if (!ids.length) return alert("Check at least one section template.");
+      applyBulkAction(
+        "bulk_replace_sections",
+        { template_ids: ids },
+        `This REPLACES the entire "Additional details" section list — including any custom one-off content — on {n} selected products, with just the template(s) you checked. This can't be undone. Continue?`
+      );
     });
 
     // CSV export — client-side, from whatever's currently loaded (all
