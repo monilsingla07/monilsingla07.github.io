@@ -207,7 +207,7 @@
 
       const { data, error } = await supabase
         .from("orders")
-        .select("id,status,total_inr,created_at,order_items(qty)")
+        .select("id,order_number,status,total_inr,created_at,order_items(qty)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1);
@@ -230,7 +230,7 @@
       }
 
       const itemCount = (order.order_items || []).reduce((n, it) => n + Number(it.qty || 0), 0);
-      const shortId = escapeHtml(order.id.slice(0, 8).toUpperCase());
+      const shortId = escapeHtml(order.order_number || order.id.slice(0, 8).toUpperCase());
       const placed = order.created_at
         ? new Date(order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
         : "—";
@@ -281,7 +281,8 @@
         const amtText = (positive ? "+" : "-") + money(Math.abs(Number(l.amount_inr || 0)));
         const amtColor = positive ? "#166534" : "#991b1b";
         const when = l.created_at ? new Date(l.created_at).toLocaleString("en-IN") : "-";
-        const orderBit = l.order_id ? ` • Order ${escapeHtml(String(l.order_id).slice(0, 8))}…` : "";
+        const orderRef = l.orders?.order_number || (l.order_id ? String(l.order_id).slice(0, 8).toUpperCase() : null);
+        const orderBit = orderRef ? ` • Order ${escapeHtml(orderRef)}` : "";
 
         return `
           <div class="acct-card" style="padding:12px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;">
@@ -297,7 +298,7 @@
       (async () => {
         const [{ data: acct, error: acctErr }, { data: ledger, error: ledgerErr }] = await Promise.all([
           supabase.from("wallet_accounts").select("balance_inr").eq("user_id", user.id).maybeSingle(),
-          supabase.from("wallet_ledger").select("id,type,amount_inr,balance_after_inr,order_id,note,created_at")
+          supabase.from("wallet_ledger").select("id,type,amount_inr,balance_after_inr,order_id,note,created_at,orders(order_number)")
             .eq("user_id", user.id).order("created_at", { ascending: false }),
         ]);
 

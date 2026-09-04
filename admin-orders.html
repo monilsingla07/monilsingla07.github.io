@@ -428,7 +428,7 @@
 
       function renderOrder(o) {
         const isOnline      = o.payment_method === "razorpay";
-        const shortId       = (o.id || "").slice(0, 8).toUpperCase();
+        const shortId       = o.order_number || (o.id || "").slice(0, 8).toUpperCase();
         const phone         = o.customer_phone || "";
 
         const needsShipping = o.status === "paid" && !o.shiprocket_awb;

@@ -656,7 +656,7 @@
         })
         .join("");
 
-      const shortId    = escapeHtml(o.id.slice(0, 8).toUpperCase());
+      const shortId    = escapeHtml(o.order_number || o.id.slice(0, 8).toUpperCase());
       const countdownId = `countdown-${o.id}`;
       const cardId      = `order-card-${o.id}`;
 
@@ -884,7 +884,7 @@
       const { data, error } = await supabase
         .from("orders")
         .select(`
-          id, status, payment_method,
+          id, order_number, status, payment_method,
           subtotal_inr, shipping_inr, discount_inr, total_inr,
           razorpay_payment_link_url, shiprocket_awb,
           return_status, return_reason,

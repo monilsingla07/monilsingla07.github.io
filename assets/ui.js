@@ -63,6 +63,14 @@ function iconBag() {
   </svg>`;
 }
 
+function iconCoin() {
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M9.4 15.6c.5.7 1.5 1.1 2.6 1.1 1.7 0 2.9-.8 2.9-2.1 0-1.3-1.3-1.7-2.9-2.1-1.6-.4-2.9-.8-2.9-2.1 0-1.3 1.2-2.1 2.9-2.1 1.1 0 2.1.4 2.6 1.1"/>
+    <path d="M12 6.3v1.1M12 16.6v1.1"/>
+  </svg>`;
+}
+
 function iconClose() {
   return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -133,6 +141,9 @@ export function renderHeader(active = "") {
           </a>
 
           <div class="header-mobile-right">
+            <a id="cashLinkMobile" class="cash-link" href="account.html?view=wallet" aria-label="AhamStree Cash balance" hidden>
+              ${iconCoin()}<span id="cashAmountMobile">₹0</span>
+            </a>
             <a id="accountLinkMobile" class="icon-link" href="login.html" aria-label="Account">
               ${iconUser()}
             </a>
@@ -199,6 +210,9 @@ export function renderHeader(active = "") {
         <div class="utils utils-desktop">
           <a id="adminLink" class="util-link admin-link" href="admin.html" title="Admin dashboard" hidden>Admin</a>
           <a id="searchLink" class="util-link" href="search.html" title="Search">Search</a>
+          <a id="cashLink" class="util-link cash-link" href="account.html?view=wallet" title="AhamStree Cash balance" hidden>
+            ${iconCoin()}<span id="cashAmountDesktop">₹0</span>
+          </a>
           <a id="accountLink" class="util-link" href="login.html" title="Account">Login / Sign up</a>
           <a id="wishlistLink" class="util-link ${active === "wishlist" ? "active" : ""}" href="wishlist.html" title="Wishlist">Wishlist</a>
           <a class="util-link ${active === "cart" ? "active" : ""}" href="cart.html" title="Cart">Cart (${count})</a>
@@ -609,6 +623,103 @@ async function hydrateSiteSettings() {
   }
 }
 
+// ── AhamStree Cash balance (header pill, both mobile + desktop) ──
+// Same short-lived sessionStorage cache pattern as the nav/settings data
+// above — the balance rarely changes mid-session, so this avoids a wallet
+// query on every single-page-app-style page navigation on this classic
+// multi-page site.
+const CASH_CACHE_KEY = "ahamstree_cash_balance_v1";
+const CASH_CACHE_TTL_MS = 2 * 60 * 1000; // 2 min
+const CASH_WALLET_SEEN_KEY = "ahamstree_cash_wallet_seen";
+
+// Landing on the wallet page by any means (the header pill, a bookmark, the
+// back button) counts as "seen" — stops the header pill's pulse from then
+// on, same as clicking the pill itself does (see applyCashBalance below).
+try {
+  if (/\/account\.html$/.test(location.pathname) && new URLSearchParams(location.search).get("view") === "wallet") {
+    localStorage.setItem(CASH_WALLET_SEEN_KEY, "1");
+  }
+} catch (_) {}
+
+function readCashCache(userId) {
+  try {
+    const raw = sessionStorage.getItem(CASH_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || parsed.userId !== userId || (Date.now() - parsed.ts) > CASH_CACHE_TTL_MS) return null;
+    return parsed.balance;
+  } catch (_) {
+    return null;
+  }
+}
+
+function writeCashCache(userId, balance) {
+  try {
+    sessionStorage.setItem(CASH_CACHE_KEY, JSON.stringify({ ts: Date.now(), userId, balance }));
+  } catch (_) {
+    // non-fatal — next pageview just re-queries
+  }
+}
+
+function applyCashBalance(balance) {
+  const amtText = "₹" + Number(balance || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+  const mobileLink  = document.getElementById("cashLinkMobile");
+  const desktopLink = document.getElementById("cashLink");
+  const mobileAmt   = document.getElementById("cashAmountMobile");
+  const desktopAmt  = document.getElementById("cashAmountDesktop");
+  if (mobileAmt)  mobileAmt.textContent = amtText;
+  if (desktopAmt) desktopAmt.textContent = amtText;
+
+  let alreadySeen = false;
+  try { alreadySeen = localStorage.getItem(CASH_WALLET_SEEN_KEY) === "1"; } catch (_) {}
+  const shouldPulse = !alreadySeen && Number(balance || 0) > 0;
+
+  [mobileLink, desktopLink].forEach((el) => {
+    if (!el) return;
+    el.hidden = false;
+    el.classList.toggle("pulse", shouldPulse);
+    if (el.dataset.cashClickBound !== "1") {
+      el.dataset.cashClickBound = "1";
+      el.addEventListener("click", () => {
+        try { localStorage.setItem(CASH_WALLET_SEEN_KEY, "1"); } catch (_) {}
+      });
+    }
+  });
+}
+
+function hideCashLinks() {
+  const mobileLink  = document.getElementById("cashLinkMobile");
+  const desktopLink = document.getElementById("cashLink");
+  if (mobileLink)  mobileLink.hidden = true;
+  if (desktopLink) desktopLink.hidden = true;
+}
+
+async function hydrateCashBalance(userId) {
+  const mobileLink  = document.getElementById("cashLinkMobile");
+  const desktopLink = document.getElementById("cashLink");
+  if (!mobileLink && !desktopLink) return;
+
+  const cached = readCashCache(userId);
+  if (cached !== null) {
+    applyCashBalance(cached);
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("wallet_accounts")
+      .select("balance_inr")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) return; // fail silent — the header pill just stays hidden
+    const balance = data?.balance_inr || 0;
+    writeCashCache(userId, balance);
+    applyCashBalance(balance);
+  } catch (_) {
+    // non-fatal — header pill just stays hidden
+  }
+}
+
 async function showAdminLinkIfAdmin(email) {
   const adminDesktop = document.getElementById("adminLink");
   const adminMobileSection = document.getElementById("adminSectionMobile");
@@ -669,6 +780,10 @@ export async function hydrateHeaderAuth() {
   // Same reasoning as above: pull in anything the visitor wishlisted as a
   // guest, on whichever page/auth event first sees them logged in.
   if (loggedIn) mergeGuestWishlistIntoAccount();
+
+  // AhamStree Cash header pill — only ever shown to logged-in visitors.
+  if (loggedIn) hydrateCashBalance(data.session.user.id);
+  else hideCashLinks();
 
   const aDesktop = document.getElementById("accountLink");
   const aMobile  = document.getElementById("accountLinkMobile");
