@@ -592,7 +592,10 @@ Replace everything from `const phoneInput = document.getElementById("otpPhone");
     const confirmPinInput = document.getElementById("confirmPinInput");
     const finishSetupBtn  = document.getElementById("finishSetupBtn");
 
-    let currentPhone10 = null;
+    // currentPhone10 is already declared above, at the top of renderLogin()
+    // (`let currentPhone10 = null; // set once an OTP has been sent`) —
+    // reuse it, do not re-declare it here (would be a duplicate `let` in
+    // the same scope, a SyntaxError).
     let needsPinSetup = false; // set true whenever OTP step is entered for
                                 // an account that doesn't have has_pin yet,
                                 // or via "Forgot PIN" (which always re-sets it)
