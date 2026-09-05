@@ -8,6 +8,15 @@ export function getCart() {
 
 export function setCart(items) {
   localStorage.setItem(KEY, JSON.stringify(items));
+  // Every cart mutation (addToCart/updateQty/removeFromCart/clearCart) goes
+  // through this one function — dispatching here lets the header badge
+  // (assets/ui.js) refresh live on the same page, instead of staying stuck
+  // at whatever count was baked in when the header first rendered.
+  try {
+    window.dispatchEvent(new CustomEvent("ahamstree:cart-updated"));
+  } catch (_) {
+    // non-fatal — worst case the badge just waits for the next page load
+  }
 }
 
 export function addToCart(product, qty = 1) {

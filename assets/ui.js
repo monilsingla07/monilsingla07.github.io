@@ -151,7 +151,7 @@ export function renderHeader(active = "") {
               ${iconHeart()}
             </a>
             <a class="icon-link" href="cart.html" aria-label="Cart">
-              <span class="icon-badge" aria-label="Cart items">${count}</span>
+              <span class="icon-badge" id="cartBadgeMobile" aria-label="Cart items">${count}</span>
               ${iconBag()}
             </a>
           </div>
@@ -215,7 +215,7 @@ export function renderHeader(active = "") {
           </a>
           <a id="accountLink" class="util-link" href="login.html" title="Account">Login / Sign up</a>
           <a id="wishlistLink" class="util-link ${active === "wishlist" ? "active" : ""}" href="wishlist.html" title="Wishlist">Wishlist</a>
-          <a class="util-link ${active === "cart" ? "active" : ""}" href="cart.html" title="Cart">Cart (${count})</a>
+          <a class="util-link ${active === "cart" ? "active" : ""}" href="cart.html" title="Cart">Cart (<span id="cartCountDesktop">${count}</span>)</a>
         </div>
 
       </div>
@@ -743,9 +743,43 @@ async function showAdminLinkIfAdmin(email) {
   if (adminMobileSection) adminMobileSection.hidden = !isAdmin;
 }
 
+// ── Cart badge (header) ──
+// renderHeader() bakes the count into the HTML string once, at whatever
+// moment the header happens to render — it was never refreshed again after
+// that, so adding/removing/changing quantity on the SAME page (no full
+// reload) left the header's number stale until the visitor next navigated.
+// cart.js's setCart() (the single choke point every cart mutation goes
+// through) dispatches "ahamstree:cart-updated" on every change; this listens
+// for it once and patches both header locations directly, no re-render of
+// the whole header needed. Also re-run from hydrateHeaderAuth() itself so a
+// login/logout event (which re-runs that function) can't leave a stale
+// count behind either, even though auth doesn't touch the cart itself.
+let _cartBadgeListenerSet = false;
+
+function refreshCartBadge() {
+  const count = cartCount();
+  const mobileBadge = document.getElementById("cartBadgeMobile");
+  const desktopCount = document.getElementById("cartCountDesktop");
+  if (mobileBadge) mobileBadge.textContent = count;
+  if (desktopCount) desktopCount.textContent = count;
+}
+
 export async function hydrateHeaderAuth() {
   initMobileMenu();
   initHeaderOffset();
+
+  refreshCartBadge();
+  if (!_cartBadgeListenerSet) {
+    _cartBadgeListenerSet = true;
+    window.addEventListener("ahamstree:cart-updated", refreshCartBadge);
+    // Cross-tab: cart.js writes straight to localStorage, which only ever
+    // fires "storage" in OTHER tabs — so if the cart is changed in tab A,
+    // tab B's header badge needs this to catch up (mirrors the same-purpose
+    // listener cart.html already has for its own item list).
+    window.addEventListener("storage", (e) => {
+      if (e.key === "ahamstree_cart_v1") refreshCartBadge();
+    });
+  }
 
   // Site-wide welcome popup — every page calls hydrateHeaderAuth() already,
   // so this is the one place that mounts it without touching every page.
