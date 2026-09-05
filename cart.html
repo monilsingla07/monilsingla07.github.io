@@ -25,7 +25,16 @@
   <div id="header"></div>
 
   <div class="container">
-    <h2 style="margin-top:0;">Your cart</h2>
+    <div class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="index.html">Home</a> <span class="sep">›</span>
+      <span>Cart</span>
+    </div>
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Your cart</h1>
+        <span class="small page-subtitle">Review your items, then checkout securely via Razorpay.</span>
+      </div>
+    </div>
 
     <!-- Empty cart: was an icon-in-a-gradient-box + 3 small emoji "trust"
          cards wrapped in their own bordered/shadowed boxes — read as
@@ -71,17 +80,17 @@
 
     <div id="list"></div>
 
-    <div id="summary" class="card" style="padding:16px;border-radius:16px;margin-top:14px;display:none;">
-      <div style="display:flex;justify-content:space-between;">
-        <div style="opacity:.8;">Subtotal</div>
-        <div style="font-weight:900;" id="subtotal"></div>
+    <div id="summary" class="card" style="padding:18px;margin-top:16px;max-width:420px;margin-left:auto;display:none;">
+      <div class="order-summary-row" style="font-size:17px;font-weight:800;color:var(--text);">
+        <div>Subtotal</div>
+        <div class="val" id="subtotal" style="font-weight:800;"></div>
       </div>
 
-      <div class="small" style="margin-top:10px;">Shipping + Razorpay payment link comes in checkout.</div>
+      <div class="small" style="margin-top:10px;opacity:.75;">GST, shipping, and any coupon or AhamStree Cash discount are calculated at checkout.</div>
       <div id="stockMsg" class="small" style="margin-top:8px;color:crimson;display:none;"></div>
 
-      <div class="row" style="margin-top:14px;">
-        <a id="checkoutBtn" class="btn" href="checkout.html">Checkout</a>
+      <div class="row" style="margin-top:16px;">
+        <a id="checkoutBtn" class="btn" href="checkout.html" style="flex:1;text-align:center;">Checkout</a>
         <button id="clearBtn" class="btn secondary" type="button">Clear cart</button>
       </div>
     </div>
@@ -176,28 +185,31 @@
         .sort((a,b) => (b.available > 0) - (a.available > 0))
         .slice(0, 4);
 
+      // Same .p-card markup as the homepage/products grid (assets/home.js's
+      // productCard()) — this used to be a one-off .card.product-card with
+      // an inline height:260px image, which is exactly the kind of
+      // inconsistent fixed-size thumbnail the rest of this redesign removes.
       const cards = picks.map(p => {
         const img = safeSrc(p.image_url);
         const title = escapeHtml(p.title);
         const alt = escapeAttr(p.title);
+        const soldOut = p.available <= 0;
 
-        const priceHtml = (() => {
-          if (p.sale != null && p.sale > 0 && p.sale < p.base) {
-            return `<span style="text-decoration:line-through;opacity:.6;margin-right:6px;">${money(p.base)}</span><span>${money(p.sale)}</span>`;
-          }
-          return `${money(p.base)}`;
-        })();
+        const priceHtml = (p.sale != null && p.sale > 0 && p.sale < p.base)
+          ? `<span class="p-card-original">${money(p.base)}</span><span class="p-card-sale-price">${money(p.sale)}</span>`
+          : `<span class="p-card-price">${money(p.base)}</span>`;
 
         return `
-          <div class="card product-card" style="overflow:hidden;">
-            <a class="product-link" href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}" style="text-decoration:none;color:inherit;">
-              ${img ? `<img src="${img}" alt="${alt}" loading="lazy" style="height:260px;">` : `<div style="height:260px;background:#fafafa;"></div>`}
-              <div class="p">
-                <div class="product-title" style="font-weight:900;">${title}</div>
-                <div style="margin-top:6px;opacity:.85;">${priceHtml}</div>
-                <div class="small" style="margin-top:6px;">
-                  ${p.available > 0 ? `${p.available} in stock` : "Sold out"}
-                </div>
+          <div class="p-card">
+            <a class="product-link" href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}">
+              <div class="p-card-img">
+                ${img ? `<img src="${img}" alt="${alt}" loading="lazy" decoding="async">` : `<div class="p-card-img-empty"></div>`}
+                ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : ""}
+              </div>
+              <div class="p-card-body">
+                <div class="p-card-title">${title}</div>
+                <div class="p-card-pricing">${priceHtml}</div>
+                ${(!soldOut && p.available <= 3) ? `<div class="p-card-stock low">Only ${p.available} left</div>` : ""}
               </div>
             </a>
           </div>
@@ -290,27 +302,30 @@
         const productHref = p?.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${safePid}`;
 
         html += `
-          <div class="card" style="padding:12px;border-radius:14px;display:flex;gap:12px;margin-bottom:12px;">
-            <a href="${productHref}" target="_blank" rel="noopener" style="width:72px;height:90px;border-radius:12px;overflow:hidden;background:#fafafa;display:block;flex-shrink:0;">
-              ${safeImg ? `<img src="${safeImg}" alt="${safeAlt}" style="width:100%;height:100%;object-fit:cover;">` : ``}
+          <div class="line-item">
+            <a href="${productHref}" target="_blank" rel="noopener" class="line-item-thumb">
+              ${safeImg ? `<img src="${safeImg}" alt="${safeAlt}">` : ``}
             </a>
-            <div style="flex:1;min-width:0;">
-              <a href="${productHref}" target="_blank" rel="noopener" style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;text-decoration:none;color:inherit;">${safeTitleText}</a>
-              <div style="margin-top:6px;opacity:.85;">
+            <div class="line-item-body">
+              <a href="${productHref}" target="_blank" rel="noopener" class="line-item-title">${safeTitleText}</a>
+              <div class="line-item-price">
                 ${hasSale
-                  ? `<span style="text-decoration:line-through;margin-right:6px;font-size:13px;">${money(basePrice)}</span><span style="color:var(--brand);font-weight:800;">${money(unitPrice)}</span>`
+                  ? `<span class="strike">${money(basePrice)}</span><span class="sale">${money(unitPrice)}</span>`
                   : money(unitPrice)
                 }
               </div>
-              ${soldOut ? `<div class="small" style="margin-top:6px;color:crimson;">Sold out</div>` : ``}
-              ${(!soldOut && max > 0) ? `<div class="small" style="margin-top:6px;opacity:.75;">Available: ${max}</div>` : ``}
-              <div class="row" style="margin-top:10px;">
-                <span class="small">Qty</span>
-                <input class="qty input" data-max="${max}" data-id="${safePid}" style="width:90px;" type="number" min="1" max="${max || 1}" value="${qty}" ${soldOut ? "disabled" : ""}>
-                <button class="remove btn secondary" data-id="${safePid}" type="button">Remove</button>
+              ${soldOut ? `<div class="line-item-stock sold">Sold out</div>` : ``}
+              ${(!soldOut && max > 0 && max <= 5) ? `<div class="line-item-stock">Only ${max} left</div>` : ``}
+              <div class="line-item-footer">
+                <div class="pd-qty-box">
+                  <button type="button" class="pd-qty-btn qty-minus" data-id="${safePid}" ${soldOut ? "disabled" : ""} aria-label="Decrease quantity">−</button>
+                  <input class="pd-qty-input qty" data-max="${max}" data-id="${safePid}" type="text" inputmode="numeric" value="${qty}" ${soldOut ? "disabled" : ""} aria-label="Quantity">
+                  <button type="button" class="pd-qty-btn qty-plus" data-id="${safePid}" ${soldOut ? "disabled" : ""} aria-label="Increase quantity">+</button>
+                </div>
+                <button class="remove btn secondary" data-id="${safePid}" type="button" style="padding:8px 14px;font-size:12.5px;">Remove</button>
+                <div class="line-item-total" style="margin-left:auto;">${money(lineTotal)}</div>
               </div>
             </div>
-            <div style="font-weight:900;flex:0 0 auto;">${money(lineTotal)}</div>
           </div>
         `;
       }
@@ -349,6 +364,27 @@
           if (!Number.isFinite(v) || v < 1) v = 1;
           if (max > 0 && v > max) v = max;
           e.target.value = v;
+
+          updateQty(id, v);
+          await render();
+        });
+      });
+
+      // Stepper +/− buttons (same pill pattern as product.html's Qty control)
+      // sit either side of the same .qty input above — read its current
+      // value, clamp the same way the input's own change handler does, then
+      // re-render exactly as if the input itself had changed.
+      document.querySelectorAll(".qty-minus, .qty-plus").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const id = e.currentTarget.dataset.id;
+          const input = document.querySelector(`.qty[data-id="${CSS.escape(id)}"]`);
+          if (!input) return;
+          const max = Number(input.dataset.max || 99);
+          let v = Number(input.value || 1);
+          if (!Number.isFinite(v)) v = 1;
+          v += e.currentTarget.classList.contains("qty-plus") ? 1 : -1;
+          if (v < 1) v = 1;
+          if (max > 0 && v > max) v = max;
 
           updateQty(id, v);
           await render();

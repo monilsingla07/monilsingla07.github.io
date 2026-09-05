@@ -58,9 +58,12 @@
     <!-- Saved address banner (shown for logged-in users with a saved address) -->
     <div id="savedAddressBanner" style="display:none; margin-bottom:12px; padding:14px 16px; border-radius:16px; border:1.5px solid var(--brand); background:var(--brand-light);">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-        <div>
-          <div style="font-weight:800; font-size:14px;">📍 Use your saved address?</div>
-          <div class="small" style="margin-top:4px; opacity:.8;" id="savedAddressPreview"></div>
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand);flex-shrink:0;margin-top:2px;" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div>
+            <div style="font-weight:800; font-size:14px;">Use your saved address?</div>
+            <div class="small" style="margin-top:4px; opacity:.8;" id="savedAddressPreview"></div>
+          </div>
         </div>
         <div style="display:flex; gap:8px;">
           <button type="button" id="useSavedAddress" class="btn" style="padding:8px 14px; font-size:13px;">Use this address</button>
@@ -80,48 +83,48 @@
         <h3 style="margin:0 0 8px 0;">Shipping details</h3>
         <div class="small" style="opacity:.8; margin-bottom:12px;">Used for delivery updates and invoice.</div>
 
-        <label class="small">Full name</label>
-        <input class="input" name="full_name" required placeholder="e.g., Monil Gupta" autocomplete="name" autocapitalize="words" />
+        <div class="field">
+          <label class="small">Full name</label>
+          <input class="input" name="full_name" required placeholder="e.g., Monil Gupta" autocomplete="name" autocapitalize="words" />
+        </div>
 
-        <div style="height:10px;"></div>
+        <div class="field">
+          <label class="small">Phone</label>
+          <input class="input" type="tel" name="phone" required maxlength="10" placeholder="10-digit mobile" inputmode="numeric" autocomplete="tel" />
+        </div>
 
-        <label class="small">Phone</label>
-        <input class="input" type="tel" name="phone" required maxlength="10" placeholder="10-digit mobile" inputmode="numeric" autocomplete="tel" />
+        <div class="field">
+          <label class="small">Email (optional)</label>
+          <input class="input" type="email" name="email" placeholder="name@email.com" inputmode="email" autocomplete="email" />
+        </div>
 
-        <div style="height:10px;"></div>
+        <div class="field">
+          <label class="small">Address line 1</label>
+          <input class="input" name="address_line1" required placeholder="House / street" autocomplete="shipping address-line1" autocapitalize="words" />
+        </div>
 
-        <label class="small">Email (optional)</label>
-        <input class="input" type="email" name="email" placeholder="name@email.com" inputmode="email" autocomplete="email" />
-
-        <div style="height:10px;"></div>
-
-        <label class="small">Address line 1</label>
-        <input class="input" name="address_line1" required placeholder="House / street" autocomplete="shipping address-line1" autocapitalize="words" />
-
-        <div style="height:10px;"></div>
-
-        <label class="small">Address line 2 (optional)</label>
-        <input class="input" name="address_line2" placeholder="Landmark" autocomplete="shipping address-line2" autocapitalize="words" />
-
-        <div style="height:10px;"></div>
+        <div class="field">
+          <label class="small">Address line 2 (optional)</label>
+          <input class="input" name="address_line2" placeholder="Landmark" autocomplete="shipping address-line2" autocapitalize="words" />
+        </div>
 
         <div class="row city-state-row">
-          <div style="flex:1;">
+          <div class="field" style="flex:1;">
             <label class="small">City</label>
             <input class="input" name="city" required autocomplete="shipping address-level2" autocapitalize="words" />
           </div>
-          <div style="flex:1;">
+          <div class="field" style="flex:1;">
             <label class="small">State</label>
             <input class="input" name="state" required autocomplete="shipping address-level1" autocapitalize="words" />
           </div>
         </div>
 
-        <div style="height:10px;"></div>
+        <div class="field">
+          <label class="small">Pincode</label>
+          <input class="input" name="pincode" required maxlength="6" placeholder="e.g., 560001" inputmode="numeric" autocomplete="shipping postal-code" />
+        </div>
 
-        <label class="small">Pincode</label>
-        <input class="input" name="pincode" required maxlength="6" placeholder="e.g., 560001" inputmode="numeric" autocomplete="shipping postal-code" />
-
-        <div style="height:18px;"></div>
+        <div style="height:20px;"></div>
 
         <!-- Payment method: Razorpay only. COD has been removed. -->
         <div style="margin-bottom:14px;">
@@ -177,9 +180,12 @@
         <!-- AhamStree Cash (signup wallet) — hidden until we know the user has a balance -->
         <div id="walletBox" style="margin-top:10px; display:none;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid var(--brand);border-radius:12px;padding:12px 14px;background:var(--brand-light);">
-            <div style="min-width:0;">
-              <div style="font-weight:800;font-size:14px;">🪙 AhamStree Cash</div>
-              <div class="small" id="walletBalanceText" style="opacity:.8;margin-top:2px;">Loading…</div>
+            <div style="min-width:0;display:flex;align-items:flex-start;gap:10px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand);flex-shrink:0;margin-top:2px;" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.4 15.6c.5.7 1.5 1.1 2.6 1.1 1.7 0 2.9-.8 2.9-2.1 0-1.3-1.3-1.7-2.9-2.1-1.6-.4-2.9-.8-2.9-2.1 0-1.3 1.2-2.1 2.9-2.1 1.1 0 2.1.4 2.6 1.1"/><path d="M12 6.3v1.1M12 16.6v1.1"/></svg>
+              <div style="min-width:0;">
+                <div style="font-weight:800;font-size:14px;">AhamStree Cash</div>
+                <div class="small" id="walletBalanceText" style="opacity:.8;margin-top:2px;">Loading…</div>
+              </div>
             </div>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0;">
               <input type="checkbox" id="walletToggle" />
@@ -189,32 +195,49 @@
           <div id="walletMsg" class="small" style="margin-top:6px; min-height:16px;"></div>
         </div>
 
-        <div style="height:12px;"></div>
-        <div style="border-top:1px solid rgba(255,255,255,.08); padding-top:12px;">
-          <div style="display:flex; justify-content:space-between; gap:10px;">
-            <div class="small">Subtotal</div>
-            <div class="small" id="subtotal">₹0</div>
+        <div style="height:14px;"></div>
+        <div style="border-top:1px solid var(--border-light); padding-top:12px;">
+          <div class="order-summary-row">
+            <div>Subtotal</div>
+            <div class="val" id="subtotal">₹0</div>
           </div>
-          <div id="discountRow" style="display:none; justify-content:space-between; gap:10px; margin-top:6px;">
-            <div class="small" id="discountLabel">Discount</div>
-            <div class="small" id="discount">-₹0</div>
+          <div id="discountRow" class="order-summary-row discount" style="display:none;">
+            <div id="discountLabel">Discount</div>
+            <div class="val" id="discount">-₹0</div>
           </div>
-          <div style="display:flex; justify-content:space-between; gap:10px; margin-top:6px;">
-            <div class="small" id="gstLabel">GST</div>
-            <div class="small" id="gst">₹0</div>
+          <div class="order-summary-row">
+            <div id="gstLabel">GST</div>
+            <div class="val" id="gst">₹0</div>
           </div>
-
-          <div style="display:flex; justify-content:space-between; gap:10px; margin-top:6px;">
-            <div class="small">Shipping</div>
-            <div class="small" id="shipping">₹0</div>
+          <div class="order-summary-row">
+            <div>Shipping</div>
+            <div class="val" id="shipping">₹0</div>
           </div>
-          <div style="display:flex; justify-content:space-between; gap:10px; margin-top:10px; font-weight:900;">
+          <div class="order-summary-row total">
             <div>Total</div>
-            <div id="total">₹0</div>
+            <div class="val" id="total">₹0</div>
           </div>
         </div>
 
-        <div style="height:12px;"></div>
+        <!-- Trust / policy strip — previously the only reassurance on this
+             whole page was one line about Razorpay, with no mention of
+             returns or shipping timelines. SVG icons (not emoji), each
+             linking to the real policy page. -->
+        <div class="trust-strip">
+          <a href="returns.html" target="_blank" rel="noopener" class="trust-strip-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+            <span>Easy 7-day returns</span>
+          </a>
+          <a href="shipping.html" target="_blank" rel="noopener" class="trust-strip-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="7" width="15" height="12" rx="1"/><path d="M16 11h4l3 3.5V19h-7z"/><circle cx="6" cy="19.5" r="1.8"/><circle cx="18.5" cy="19.5" r="1.8"/></svg>
+            <span>Ships across India</span>
+          </a>
+          <div class="trust-strip-item" style="cursor:default;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg>
+            <span>Secure Razorpay payment</span>
+          </div>
+        </div>
+
         <div class="small" style="opacity:.75;">
           If payment fails or is cancelled, you can retry from your cart.
         </div>
@@ -427,12 +450,12 @@
 
         return `
           <div style="display:flex; gap:10px; align-items:center;">
-            <div style="width:54px;height:64px;border-radius:12px;overflow:hidden;background:#fafafa;flex:0 0 auto;">
-              ${safeImg ? `<img src="${safeImg}" alt="${safeAlt}" style="width:100%;height:100%;object-fit:cover;">` : ""}
+            <div class="line-item-thumb sm">
+              ${safeImg ? `<img src="${safeImg}" alt="${safeAlt}">` : ""}
             </div>
             <div style="flex:1; min-width:0;">
-              <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeTitle}</div>
-              <div class="small" style="opacity:.75;">
+              <div class="line-item-title" style="font-size:13.5px;">${safeTitle}</div>
+              <div class="small" style="opacity:.75;margin-top:3px;">
                 ${hasSale
                   ? `<span style="text-decoration:line-through;margin-right:5px;">${money(basePrice)}</span><span style="color:var(--brand);font-weight:700;">${money(unitPrice)}</span>`
                   : money(unitPrice)
@@ -440,7 +463,7 @@
               </div>
               ${stockText ? `<div class="small" style="color:crimson; margin-top:2px;">${stockText}</div>` : ""}
             </div>
-            <div style="font-weight:900; flex:0 0 auto;">${money(lineTotal)}</div>
+            <div class="line-item-total">${money(lineTotal)}</div>
           </div>`;
       }).join("");
 
