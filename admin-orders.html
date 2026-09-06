@@ -97,6 +97,19 @@
         <button id="btnExportCsv" class="btn secondary" style="padding:8px 16px;font-size:13px;">Export CSV</button>
       </div>
 
+      <!-- Bluetooth thermal printer (e.g. SEZNIK DEV, 2"/58mm) — Web Serial
+           over Bluetooth RFCOMM. Chrome/Edge only (desktop or Android);
+           other browsers get an explanatory disabled state instead of a
+           button that would just fail. The printer must already be paired
+           with the OS's own Bluetooth settings — this can only pick from
+           already-paired devices, it can't do the pairing itself. -->
+      <div id="printerBar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;border-radius:12px;background:#f8fafc;border:1px solid var(--border-light,#e5e7eb);">
+        <span id="printerStatusDot" style="width:9px;height:9px;border-radius:999px;background:#cbd5e1;flex-shrink:0;"></span>
+        <span id="printerStatusText" class="small" style="opacity:.8;">Checking Bluetooth printer support…</span>
+        <button id="btnConnectPrinter" class="btn secondary" style="padding:6px 12px;font-size:12px;margin-left:auto;" hidden>Connect printer</button>
+        <button id="btnDisconnectPrinter" class="btn secondary" style="padding:6px 12px;font-size:12px;" hidden>Disconnect</button>
+      </div>
+
       <div id="statusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
       <div id="list" style="display:grid;gap:14px;"></div>
 
@@ -117,6 +130,10 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeHref, safeUrl } from "./assets/safe.js";
+    import {
+      isThermalPrintingSupported, reconnectSavedPrinter, connectPrinter,
+      disconnectPrinter, isPrinterConnected, printOrderReceipt,
+    } from "./assets/thermal-printer.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -473,6 +490,7 @@
                 ${payHref ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${payHref}" target="_blank" rel="noopener noreferrer">View payment link</a>` : ""}
                 ${canRegen ? `<button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="regen" data-id="${escapeAttr(o.id)}">Regenerate link</button>` : ""}
                 <button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="invoice" data-id="${escapeAttr(o.id)}">Generate invoice</button>
+                <button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="print-thermal" data-id="${escapeAttr(o.id)}">🖨️ Print receipt</button>
                 ${isEditable ? `<button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="edit-order" data-id="${escapeAttr(o.id)}">✏️ Edit</button>` : ""}
                 <button class="btn secondary" style="padding:7px 12px;font-size:12px;color:crimson;border-color:crimson;" data-action="delete-order" data-id="${escapeAttr(o.id)}">🗑 Delete</button>
               </div>
@@ -876,7 +894,85 @@
             }
           });
         });
+
+        // Print via Bluetooth thermal printer (2"/58mm, e.g. SEZNIK DEV) —
+        // sends a compact ESC/POS receipt straight to the already-connected
+        // printer. Format is a first pass; see assets/thermal-printer.js.
+        list.querySelectorAll("button[data-action='print-thermal']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            const order = currentOrders.find(o => o.id === id);
+            if (!order) { toast("Could not find this order's data — try refreshing.", "#dc2626"); return; }
+
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Printing…";
+            try {
+              await printOrderReceipt(order);
+              toast("Sent to printer ✅", "#166534");
+            } catch (e) {
+              toast(e.message || "Print failed", "#dc2626");
+            } finally {
+              btn.disabled = false;
+              btn.textContent = oldText;
+            }
+          });
+        });
       }
+
+      // ── Bluetooth thermal printer status bar ──
+      const printerStatusDot  = document.getElementById("printerStatusDot");
+      const printerStatusText = document.getElementById("printerStatusText");
+      const btnConnectPrinter = document.getElementById("btnConnectPrinter");
+      const btnDisconnectPrinter = document.getElementById("btnDisconnectPrinter");
+
+      function refreshPrinterStatusUI() {
+        if (!isThermalPrintingSupported()) {
+          printerStatusDot.style.background = "#cbd5e1";
+          printerStatusText.textContent = "Bluetooth printing needs Chrome or Edge (desktop or Android) — not supported in this browser.";
+          btnConnectPrinter.hidden = true;
+          btnDisconnectPrinter.hidden = true;
+          return;
+        }
+        if (isPrinterConnected()) {
+          printerStatusDot.style.background = "#22c55e";
+          printerStatusText.textContent = "Thermal printer connected.";
+          btnConnectPrinter.hidden = true;
+          btnDisconnectPrinter.hidden = false;
+        } else {
+          printerStatusDot.style.background = "#f59e0b";
+          printerStatusText.textContent = "No thermal printer connected. Pair it in your OS's Bluetooth settings first, then connect here.";
+          btnConnectPrinter.hidden = false;
+          btnDisconnectPrinter.hidden = true;
+        }
+      }
+
+      btnConnectPrinter.addEventListener("click", async () => {
+        btnConnectPrinter.disabled = true;
+        try {
+          await connectPrinter();
+          toast("Printer connected ✅", "#166534");
+        } catch (e) {
+          // A cancelled device picker also lands here (Web Serial rejects
+          // the promise) — not worth an alarming red toast for that.
+          if (!/no port selected/i.test(e.message || "")) {
+            toast(e.message || "Could not connect to printer", "#dc2626");
+          }
+        } finally {
+          btnConnectPrinter.disabled = false;
+          refreshPrinterStatusUI();
+        }
+      });
+
+      btnDisconnectPrinter.addEventListener("click", async () => {
+        await disconnectPrinter();
+        refreshPrinterStatusUI();
+      });
+
+      refreshPrinterStatusUI();
+      // Silent reconnect to a previously-granted port, if any — no picker,
+      // no user gesture needed for this part of the Web Serial API.
+      reconnectSavedPrinter().then((ok) => { if (ok) refreshPrinterStatusUI(); });
 
       // Controls
       document.getElementById("btnLoad").onclick = () => load({ reset: true });
