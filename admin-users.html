@@ -74,6 +74,10 @@
       font-weight:700;opacity:0;transition:all .25s ease;pointer-events:none;z-index:9999;white-space:nowrap;
     }
     #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+
+    .section-lbl { font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.72;margin-bottom:4px; }
+    #custTable th, #custTable td { white-space:nowrap; }
+    #custTable td:nth-child(3) { white-space:normal; }
   </style>
 </head>
 
@@ -93,13 +97,76 @@
       </div>
 
       <div class="tabs">
-        <button class="tab-btn active" data-tab="users">Users</button>
+        <button class="tab-btn active" data-tab="customers">Customers</button>
+        <button class="tab-btn" data-tab="users">Users</button>
         <button class="tab-btn" data-tab="history">All Login Activity</button>
         <button class="tab-btn" data-tab="visits">Pages Visited</button>
       </div>
 
+      <!-- ── Customers tab — every registered account PLUS every walk-in
+           order's customer, merged into one row per person (matched by
+           phone number). This is the broader view "Users" can't give you:
+           a manually-created walk-in order (admin-create-order.html) has no
+           account at all, so it never showed up there. ── -->
+      <div id="tab-customers" class="tab-panel active">
+        <div class="filters-bar">
+          <input id="custSearch" class="input" placeholder="Search name, email, or phone…" style="max-width:280px;" />
+          <select id="custModeFilter" class="input" style="max-width:180px;">
+            <option value="">All modes</option>
+            <option value="registered">Registered only</option>
+            <option value="walkin">Walk-in only</option>
+            <option value="both">Both</option>
+          </select>
+          <button id="btnCustSearch" class="btn secondary" style="padding:8px 16px;font-size:13px;">Search</button>
+          <button id="btnCustRefresh" class="btn secondary" style="padding:8px 16px;font-size:13px;">↻ Refresh</button>
+        </div>
+        <div id="custStatusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
+        <div style="overflow-x:auto;">
+          <table id="custTable" style="width:100%;border-collapse:collapse;font-size:13px;min-width:920px;">
+            <thead>
+              <tr style="text-align:left;border-bottom:2px solid var(--border,#e5e7eb);">
+                <th style="padding:8px 10px;">Name</th>
+                <th style="padding:8px 10px;">Phone</th>
+                <th style="padding:8px 10px;">Email</th>
+                <th style="padding:8px 10px;">Mode</th>
+                <th style="padding:8px 10px;">City / State</th>
+                <th style="padding:8px 10px;text-align:right;">Orders</th>
+                <th style="padding:8px 10px;text-align:right;">Total Spent</th>
+                <th style="padding:8px 10px;">Last Order</th>
+                <th style="padding:8px 10px;">First Seen</th>
+                <th style="padding:8px 10px;text-align:right;">AhamStree Cash</th>
+              </tr>
+            </thead>
+            <tbody id="custTableBody"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <div class="small" id="custPagerInfo"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="custBtnPrev" class="btn secondary" style="padding:8px 14px;font-size:13px;">← Prev</button>
+            <button id="custBtnNext" class="btn secondary" style="padding:8px 14px;font-size:13px;">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Customer Detail — reached only by clicking a name/phone in the
+           Customers tab (no tab-bar button of its own). ── -->
+      <div id="tab-customer-detail" class="tab-panel">
+        <button id="custDetailBack" class="btn secondary" style="padding:6px 12px;font-size:12px;margin-bottom:14px;">← Back to Customers</button>
+        <div id="custDetailHeader" class="card" style="padding:16px;margin-bottom:16px;"></div>
+
+        <div class="section-lbl">Orders</div>
+        <div id="custDetailOrders" style="margin-bottom:20px;"></div>
+
+        <div class="section-lbl">Login history</div>
+        <div id="custDetailLogins" style="margin-bottom:20px;"></div>
+
+        <div class="section-lbl">Pages visited</div>
+        <div id="custDetailVisits"></div>
+      </div>
+
       <!-- ── Users tab ── -->
-      <div id="tab-users" class="tab-panel active">
+      <div id="tab-users" class="tab-panel">
         <div class="filters-bar">
           <input id="userSearch" class="input" placeholder="Search name, email, or phone…" style="max-width:320px;" />
           <button id="btnUserSearch" class="btn secondary" style="padding:8px 16px;font-size:13px;">Search</button>
@@ -210,6 +277,20 @@
         " · " + d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
     }
 
+    function money(n) {
+      return "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+    }
+
+    function modePill(mode) {
+      const map = {
+        registered: { cls: "unknown", label: "Registered" },
+        walkin:     { cls: "phone",   label: "Walk-in" },
+        both:       { cls: "google",  label: "Both" },
+      };
+      const m = map[mode] || { cls: "unknown", label: mode || "Unknown" };
+      return `<span class="pill ${m.cls}">${m.label}</span>`;
+    }
+
     function providerPill(provider) {
       const p = (provider || "unknown").toLowerCase();
       const cls = ["google", "phone", "email"].includes(p) ? p : "unknown";
@@ -236,6 +317,185 @@
       document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === "visits"));
       document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("active", p.id === "tab-visits"));
     }
+
+    // Customer Detail has no tab-bar button of its own (only reachable by
+    // clicking a customer) — so every real tab button is deselected while
+    // it's showing, same as a master → detail drill-down elsewhere would
+    // just replace the tab bar's highlighted state entirely.
+    function switchToCustomerDetailTab() {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("active", p.id === "tab-customer-detail"));
+    }
+
+    // ── Customers (unified: registered + walk-in, merged by phone) ─────────
+    let custPage = 1;
+    const custPerPage = 25;
+    let custSearchTerm = "";
+    let custModeTerm = "";
+    let lastCustomers = [];
+
+    async function loadCustomers() {
+      const statusMsg = document.getElementById("custStatusMsg");
+      const tbody = document.getElementById("custTableBody");
+      statusMsg.textContent = "Loading…";
+
+      const res = await callFn("admin-users", {
+        action: "list_customers", page: custPage, per_page: custPerPage,
+        search: custSearchTerm, mode: custModeTerm,
+      });
+      if (!res.ok) return;
+      const { customers, total } = res.data;
+      lastCustomers = customers;
+
+      if (!customers.length) {
+        tbody.innerHTML = `<tr><td colspan="10" class="small" style="opacity:.76;padding:24px 0;text-align:center;">No customers found.</td></tr>`;
+        statusMsg.textContent = "";
+      } else {
+        tbody.innerHTML = customers.map((c, idx) => {
+          const name = escapeHtml(c.full_name || "(No name saved)");
+          const phone = escapeHtml(c.phone || "—");
+          const cityState = [c.city, c.state].filter(Boolean).map(escapeHtml).join(", ") || "—";
+          return `
+            <tr style="border-bottom:1px solid var(--border-light,#f3f4f6);">
+              <td style="padding:8px 10px;"><a href="#" class="cust-link" data-idx="${idx}" style="font-weight:700;color:inherit;text-decoration:underline;">${name}</a></td>
+              <td style="padding:8px 10px;"><a href="#" class="cust-link" data-idx="${idx}" style="color:inherit;text-decoration:underline;">${phone}</a></td>
+              <td style="padding:8px 10px;">${escapeHtml(c.email || "—")}</td>
+              <td style="padding:8px 10px;">${modePill(c.mode)}</td>
+              <td style="padding:8px 10px;">${cityState}</td>
+              <td style="padding:8px 10px;text-align:right;">${c.order_count}</td>
+              <td style="padding:8px 10px;text-align:right;font-weight:700;">${money(c.total_spent_inr)}</td>
+              <td style="padding:8px 10px;">${c.last_order_at ? fmtDate(c.last_order_at) : "—"}</td>
+              <td style="padding:8px 10px;">${fmtDate(c.created_at)}</td>
+              <td style="padding:8px 10px;text-align:right;">${c.wallet_balance_inr != null ? money(c.wallet_balance_inr) : "—"}</td>
+            </tr>`;
+        }).join("");
+        statusMsg.textContent = "";
+
+        tbody.querySelectorAll("a.cust-link").forEach((a) => {
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            openCustomerDetail(lastCustomers[Number(a.dataset.idx)]);
+          });
+        });
+      }
+
+      const shown = customers.length;
+      const start = (custPage - 1) * custPerPage;
+      document.getElementById("custPagerInfo").textContent =
+        total === 0 ? "" : `Showing ${start + 1}–${start + shown} of ${total}`;
+      document.getElementById("custBtnPrev").disabled = custPage <= 1;
+      document.getElementById("custBtnNext").disabled = start + shown >= total;
+    }
+
+    document.getElementById("btnCustSearch").addEventListener("click", () => {
+      custSearchTerm = document.getElementById("custSearch").value.trim();
+      custPage = 1;
+      loadCustomers();
+    });
+    document.getElementById("custSearch").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("btnCustSearch").click();
+    });
+    document.getElementById("custModeFilter").addEventListener("change", () => {
+      custModeTerm = document.getElementById("custModeFilter").value;
+      custPage = 1;
+      loadCustomers();
+    });
+    document.getElementById("btnCustRefresh").addEventListener("click", () => { custPage = 1; loadCustomers(); });
+    document.getElementById("custBtnPrev").addEventListener("click", () => { if (custPage > 1) { custPage--; loadCustomers(); } });
+    document.getElementById("custBtnNext").addEventListener("click", () => { custPage++; loadCustomers(); });
+
+    // ── Customer Detail ──────────────────────────────────────────────────
+    async function openCustomerDetail(customer) {
+      switchToCustomerDetailTab();
+
+      const header = document.getElementById("custDetailHeader");
+      const ordersEl = document.getElementById("custDetailOrders");
+      const loginsEl = document.getElementById("custDetailLogins");
+      const visitsEl = document.getElementById("custDetailVisits");
+
+      header.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:900;font-size:16px;">${escapeHtml(customer.full_name || "(No name saved)")}</div>
+            <div class="small" style="opacity:.78;margin-top:4px;">${escapeHtml([customer.phone, customer.email].filter(Boolean).join(" · ") || "No contact info")}</div>
+            <div class="small" style="opacity:.78;margin-top:2px;">${escapeHtml([customer.city, customer.state].filter(Boolean).join(", "))}</div>
+          </div>
+          <div style="text-align:right;">
+            ${modePill(customer.mode)}
+            <div class="small" style="margin-top:6px;">First seen: ${fmtDate(customer.created_at)}</div>
+            ${customer.wallet_balance_inr != null ? `<div class="small" style="margin-top:2px;">AhamStree Cash: <strong>${money(customer.wallet_balance_inr)}</strong></div>` : ""}
+          </div>
+        </div>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light,#f3f4f6);">
+          <div class="small">Orders: <strong>${customer.order_count}</strong></div>
+          <div class="small">Total spent: <strong>${money(customer.total_spent_inr)}</strong></div>
+          <div class="small">Last order: <strong>${customer.last_order_at ? fmtDate(customer.last_order_at) : "—"}</strong></div>
+          ${customer.is_registered ? `<div class="small">Logins: <strong>${customer.login_count}</strong></div>` : ""}
+        </div>
+      `;
+
+      ordersEl.innerHTML = `<div class="small" style="opacity:.76;">Loading…</div>`;
+      loginsEl.innerHTML = customer.is_registered ? `<div class="small" style="opacity:.76;">Loading…</div>` : `<div class="small" style="opacity:.6;">No account — walk-in customers have no login history.</div>`;
+      visitsEl.innerHTML = customer.is_registered ? `<div class="small" style="opacity:.76;">Loading…</div>` : `<div class="small" style="opacity:.6;">No account — walk-in customers have no site-visit history.</div>`;
+
+      // Orders — matches by user_id and/or phone, same as list_customers'
+      // own attribution logic, so this always shows exactly the orders that
+      // were counted into this customer's Orders/Total Spent above.
+      const ordersRes = await callFn("admin-users", { action: "customer_orders", user_id: customer.user_id || undefined, phone: customer.phone || undefined });
+      if (ordersRes.ok) {
+        const orders = ordersRes.data.orders || [];
+        ordersEl.innerHTML = orders.length ? orders.map((o) => {
+          const itemsText = (o.order_items || []).map((it) => `${it.qty}× ${escapeHtml(it.title)}`).join(", ");
+          return `
+            <div class="event-row">
+              <div class="event-left">
+                <div><strong>${escapeHtml(o.order_number || o.id.slice(0, 8).toUpperCase())}</strong> — ${escapeHtml(String(o.status).replace(/_/g, " "))}</div>
+                <div class="small" style="opacity:.76;">${itemsText || "—"}</div>
+              </div>
+              <div class="event-right">${money(o.total_inr)}<br>${fmtDate(o.created_at)}</div>
+            </div>`;
+        }).join("") : `<div class="small" style="opacity:.76;padding:12px 0;">No orders found.</div>`;
+      } else {
+        ordersEl.innerHTML = `<div class="small" style="color:crimson;">Could not load orders.</div>`;
+      }
+
+      if (customer.is_registered && customer.user_id) {
+        const loginRes = await callFn("admin-users", { action: "login_history", user_id: customer.user_id, per_page: 20 });
+        if (loginRes.ok) {
+          const events = loginRes.data.events || [];
+          loginsEl.innerHTML = events.length ? events.map((e) => `
+            <div class="event-row">
+              <div class="event-left">
+                <div>${providerPill(e.provider)}</div>
+                <div class="small" style="opacity:.76;">${escapeHtml(e.ip_address || "IP unknown")}${[e.city, e.country].filter(Boolean).length ? " · " + escapeHtml([e.city, e.country].filter(Boolean).join(", ")) : ""}</div>
+              </div>
+              <div class="event-right">${fmtDate(e.created_at)}</div>
+            </div>`).join("") : `<div class="small" style="opacity:.76;padding:12px 0;">No login activity yet.</div>`;
+        } else {
+          loginsEl.innerHTML = `<div class="small" style="color:crimson;">Could not load login history.</div>`;
+        }
+
+        const visitsRes = await callFn("admin-users", { action: "page_visits", user_id: customer.user_id, per_page: 20 });
+        if (visitsRes.ok) {
+          const visits = visitsRes.data.visits || [];
+          visitsEl.innerHTML = visits.length ? visits.map((v) => `
+            <div class="event-row">
+              <div class="event-left">
+                <div><strong>${escapeHtml(v.page_path)}</strong></div>
+                <div class="small" style="opacity:.76;">${[v.city, v.country].filter(Boolean).length ? escapeHtml([v.city, v.country].filter(Boolean).join(", ")) : ""}${v.device_type ? " · " + escapeHtml(v.device_type) : ""}</div>
+              </div>
+              <div class="event-right">${fmtDate(v.created_at)}</div>
+            </div>`).join("") : `<div class="small" style="opacity:.76;padding:12px 0;">No page visits recorded yet.</div>`;
+        } else {
+          visitsEl.innerHTML = `<div class="small" style="color:crimson;">Could not load page visits.</div>`;
+        }
+      }
+    }
+
+    document.getElementById("custDetailBack").addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === "customers"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("active", p.id === "tab-customers"));
+    });
 
     // ── Users list ───────────────────────────────────────────────────────
     let userPage = 1;
@@ -422,6 +682,10 @@
       document.getElementById("historyBtnNext").disabled = start + shown >= total;
     }
 
+    document.querySelector('.tab-btn[data-tab="users"]').addEventListener("click", () => {
+      if (!document.getElementById("userList").innerHTML) loadUsers();
+    });
+
     document.querySelector('.tab-btn[data-tab="history"]').addEventListener("click", () => {
       if (!document.getElementById("historyList").innerHTML) loadHistory();
     });
@@ -500,7 +764,7 @@
 
         loadingState.style.display = "none";
         mainContent.style.display = "block";
-        loadUsers();
+        loadCustomers();
       } catch (e) {
         console.error("Admin page error:", e);
         showAdminError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
