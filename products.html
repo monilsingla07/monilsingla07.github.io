@@ -76,53 +76,142 @@
       padding: 28px 16px 64px;
     }
 
-    /* ── Improved Toolbar ── */
-    .listing-toolbar-v2 {
+    /* ── Category tabs ── driven by the CATEGORIES config in the script
+       below — adding a category there is all a future third category
+       needs to appear here. */
+    .category-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .category-tabs::-webkit-scrollbar { display: none; }
+    .category-tab {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 18px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-light);
+      cursor: pointer;
+      white-space: nowrap;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .category-tab:hover { border-color: var(--brand); color: var(--brand); }
+    .category-tab.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    /* ── Filter pill bar ── replaces the old single "Filter" button; each
+       pill opens its own small panel and applies the moment you pick an
+       option, instead of requiring a separate "Apply" click. */
+    .filter-bar {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 14px 18px;
+      gap: 8px;
+      padding: 10px 12px;
       background: var(--surface);
       border: 1px solid var(--border-light);
       border-radius: var(--radius-md);
       margin-bottom: 24px;
       box-shadow: var(--shadow-xs);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
-    .toolbar-filter-btn {
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-pill-wrap { position: relative; flex: 0 0 auto; }
+    .filter-pill {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 9px 16px;
+      gap: 6px;
+      padding: 8px 14px;
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      border-radius: 999px;
       background: var(--surface);
       font-size: 13px;
       font-weight: 500;
       color: var(--text);
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
       white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
     }
-    .toolbar-filter-btn:hover {
+    .filter-pill:hover { border-color: var(--brand); color: var(--brand); }
+    .filter-pill.is-active {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      background: rgba(184,134,59,0.08);
+      font-weight: 600;
+    }
+    .filter-pill-wrap.open .filter-pill {
       border-color: var(--brand);
       color: var(--brand);
       background: var(--brand-lighter);
     }
-    .toolbar-filter-icon { font-size: 15px; line-height: 1; }
+    .filter-pill-caret { transition: transform 0.2s; flex-shrink: 0; }
+    .filter-pill-wrap.open .filter-pill-caret { transform: rotate(180deg); }
+    .filter-pill-more { color: var(--text-light); }
+
+    .filter-pill-panel {
+      display: none;
+      /* position: fixed (not absolute) — .filter-bar scrolls horizontally
+         (overflow-x: auto), which forces its overflow-y to auto as well per
+         the CSS spec and clips any absolutely-positioned child that pokes
+         out below it. Fixed positioning escapes that clipping; exact
+         top/left are set in JS from the trigger button's own rect when a
+         panel opens. */
+      position: fixed;
+      z-index: 40;
+      min-width: 220px;
+      max-height: 320px;
+      overflow-y: auto;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.12));
+      padding: 10px;
+    }
+    .filter-pill-wrap.open .filter-pill-panel { display: block; }
+    .filter-pill-panel .filter-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 6px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .filter-pill-panel .filter-option:hover { background: var(--bg-warm); }
+    .filter-panel-price { display: flex; flex-direction: column; gap: 10px; min-width: 200px; }
+    .filter-panel-price .price-row { display: flex; gap: 8px; }
+    .filter-panel-price .price-row input { width: 90px; }
+
+    .filter-bar-spacer { flex: 1 1 auto; min-width: 12px; }
     .toolbar-count-v2 {
-      flex: 1;
       font-size: 13px;
       color: var(--text-light);
-      text-align: center;
+      white-space: nowrap;
+      flex: 0 0 auto;
     }
     .toolbar-sort-v2 {
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       background: var(--surface);
-      padding: 9px 12px;
+      padding: 8px 12px;
       font-size: 13px;
       color: var(--text);
-      min-width: 180px;
+      width: auto;
+      max-width: 170px;
+      flex: 0 0 auto;
       cursor: pointer;
     }
 
@@ -130,9 +219,10 @@
        shared assets/styles.css (used on the homepage too) — only this
        page's toolbar layout stays here. */
     @media (max-width: 700px) {
-      .listing-toolbar-v2 { flex-wrap: wrap; }
-      .toolbar-count-v2 { order: 3; flex-basis: 100%; text-align: left; }
-      .toolbar-sort-v2 { min-width: 0; flex: 1; }
+      .filter-bar { flex-wrap: nowrap; }
+      .filter-bar-spacer { display: none; }
+      .toolbar-count-v2 { display: none; }
+      .toolbar-sort-v2 { max-width: 130px; }
     }
   </style>
 </head>
@@ -150,14 +240,76 @@
 
   <div class="listing-body">
 
-    <!-- Improved toolbar -->
-    <div class="listing-toolbar-v2">
-      <button id="openFilters" class="toolbar-filter-btn" type="button">
-        <span class="toolbar-filter-icon" aria-hidden="true">⊞</span>
-        <span>Filter</span>
-      </button>
+    <!-- Category tabs (config-driven — see CATEGORIES in the script below) -->
+    <div id="categoryTabs" class="category-tabs" role="tablist" aria-label="Category"></div>
+
+    <!-- Filter pill bar -->
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-pill-wrap" data-pill="weave" id="weavePillWrap">
+        <button type="button" class="filter-pill" id="weavePillBtn" aria-haspopup="true" aria-expanded="false">
+          <span class="filter-pill-label">Weave</span>
+          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="filter-pill-panel" id="weavePanel" role="menu">Loading…</div>
+      </div>
+
+      <div class="filter-pill-wrap" data-pill="fabric" id="fabricPillWrap">
+        <button type="button" class="filter-pill" id="fabricPillBtn" aria-haspopup="true" aria-expanded="false">
+          <span class="filter-pill-label">Fabric</span>
+          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="filter-pill-panel" id="fabricPanel" role="menu">Loading…</div>
+      </div>
+
+      <div class="filter-pill-wrap" data-pill="collection" id="collectionPillWrap">
+        <button type="button" class="filter-pill" id="collectionPillBtn" aria-haspopup="true" aria-expanded="false">
+          <span class="filter-pill-label">Collection</span>
+          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="filter-pill-panel" id="collectionPanel" role="menu">Loading…</div>
+      </div>
+
+      <div class="filter-pill-wrap hidden" data-pill="colour" id="colourPillWrap">
+        <button type="button" class="filter-pill" id="colourPillBtn" aria-haspopup="true" aria-expanded="false">
+          <span class="filter-pill-label">Colour</span>
+          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="filter-pill-panel" id="colourPanel" role="menu">Loading…</div>
+      </div>
+
+      <div class="filter-pill-wrap hidden" data-pill="occasion" id="occasionPillWrap">
+        <button type="button" class="filter-pill" id="occasionPillBtn" aria-haspopup="true" aria-expanded="false">
+          <span class="filter-pill-label">Occasion</span>
+          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="filter-pill-panel" id="occasionPanel" role="menu">Loading…</div>
+      </div>
+
+      <div class="filter-pill-wrap" data-pill="price">
+        <button type="button" class="filter-pill" id="pricePillBtn" aria-haspopup="true" aria-expanded="false">
+          <span class="filter-pill-label">Price</span>
+          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="filter-pill-panel" id="pricePanel" role="menu">
+          <div class="filter-panel-price">
+            <div class="price-row">
+              <input id="minPrice" class="input" placeholder="Min ₹" inputmode="numeric" />
+              <input id="maxPrice" class="input" placeholder="Max ₹" inputmode="numeric" />
+            </div>
+            <label class="filter-option" style="padding-left:0;">
+              <input type="checkbox" id="inStockOnly" />
+              <span>In Stock Only</span>
+            </label>
+            <button id="applyFilters" class="btn" type="button" style="width:100%;">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="filter-pill filter-pill-more" id="clearAll">Clear all</button>
+
+      <div class="filter-bar-spacer"></div>
       <div id="itemsCount" class="toolbar-count-v2">&nbsp;</div>
-      <select id="sortBy" class="toolbar-sort-v2 input" aria-label="Sort">
+      <select id="sortBy" class="toolbar-sort-v2" aria-label="Sort">
         <option value="newest">Newest first</option>
         <option value="mostLoved">Most loved</option>
         <option value="priceLow">Price: Low to High</option>
@@ -186,61 +338,6 @@
     </div>
     <div id="scrollSentinel" style="height:1px;"></div>
   </div>
-
-  <!-- Filter drawer (unchanged) -->
-  <div id="filterOverlay" class="drawer-overlay" aria-hidden="true"></div>
-
-  <aside id="filterDrawer" class="filter-drawer" aria-hidden="true" aria-label="Filter">
-    <div class="filter-drawer-head">
-      <div class="filter-drawer-title">Filter</div>
-      <button id="closeFilters" class="icon-btn" type="button" aria-label="Close filters">✕</button>
-    </div>
-
-    <div class="filter-drawer-body">
-      <div class="filter-block">
-        <div class="filter-title">Collection</div>
-        <div id="collectionList" class="filter-list small">Loading…</div>
-      </div>
-
-      <div class="filter-block" id="fabricBlock">
-        <div class="filter-title">Fabric</div>
-        <div id="fabricList" class="filter-list small">Loading…</div>
-      </div>
-
-      <div class="filter-block hidden" id="colourBlock">
-        <div class="filter-title">Colour</div>
-        <div id="colourList" class="filter-list small">Loading…</div>
-      </div>
-
-      <div class="filter-block hidden" id="occasionBlock">
-        <div class="filter-title">Occasion</div>
-        <div id="occasionList" class="filter-list small">Loading…</div>
-      </div>
-
-      <div class="filter-block">
-        <div class="filter-title">Price (₹)</div>
-        <div class="price-row">
-          <input id="minPrice" class="input" placeholder="Min" inputmode="numeric" />
-          <input id="maxPrice" class="input" placeholder="Max" inputmode="numeric" />
-        </div>
-        <div class="small" style="margin-top:10px; opacity:.75;">Tip: leave blank to ignore.</div>
-      </div>
-
-      <div class="filter-block">
-        <div class="filter-title">Availability</div>
-        <label class="filter-option">
-          <input type="checkbox" id="inStockOnly" />
-          <span>In Stock Only</span>
-        </label>
-      </div>
-
-      <button id="clearAll" class="btn secondary" style="margin-top:12px;width:100%;">Clear all</button>
-    </div>
-
-    <div class="filter-drawer-foot">
-      <button id="applyFilters" class="btn" style="width:100%;">See items</button>
-    </div>
-  </aside>
 
   <div id="footer"></div>
 
@@ -296,31 +393,87 @@
     return (Date.now() - new Date(createdAt).getTime()) < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
   }
 
-  // Drawer open/close
-  const overlay = document.getElementById("filterOverlay");
-  const drawer = document.getElementById("filterDrawer");
-  const openBtn = document.getElementById("openFilters");
-  const closeBtn = document.getElementById("closeFilters");
+  // Category tabs — add a new entry here and it appears in the nav with
+  // zero other code changes (the products.html filter data underneath is
+  // still scoped by the existing ?type= param and "category" DB column).
+  const CATEGORIES = [
+    { value: "saree", label: "Sarees" },
+    { value: "suit", label: "Suits" },
+  ];
 
-  function openDrawer(){
-    overlay.classList.add("open");
-    drawer.classList.add("open");
-    overlay.setAttribute("aria-hidden", "false");
-    drawer.setAttribute("aria-hidden", "false");
-    document.body.classList.add("no-scroll");
+  function renderCategoryTabs(){
+    const box = document.getElementById("categoryTabs");
+    const activeType = (params.get("type") || "saree").toLowerCase();
+    box.innerHTML = CATEGORIES.map(c => {
+      const p = new URLSearchParams();
+      p.set("type", c.value);
+      return `<a class="category-tab${c.value === activeType ? " active" : ""}" href="products.html?${p.toString()}" data-type="${escapeAttr(c.value)}" role="tab" aria-selected="${c.value === activeType}">${escapeHtml(c.label)}</a>`;
+    }).join("");
   }
-  function closeDrawer(){
-    overlay.classList.remove("open");
-    drawer.classList.remove("open");
-    overlay.setAttribute("aria-hidden", "true");
-    drawer.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("no-scroll");
+  renderCategoryTabs();
+
+  // Filter pill panels — only one open at a time; a click outside, or
+  // Escape, closes whichever is open.
+  const pillWraps = Array.from(document.querySelectorAll(".filter-pill-wrap"));
+  function closeAllPanels(except){
+    pillWraps.forEach(w => {
+      if (w !== except) {
+        w.classList.remove("open");
+        w.querySelector(".filter-pill")?.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+  // Panels are position:fixed (see CSS comment), so their placement has to
+  // be computed from the trigger button's own rect each time one opens —
+  // fixed elements don't participate in normal in-flow "position under the
+  // button" layout the way absolute-positioned ones would.
+  function positionPanel(btn, panel){
+    const rect = btn.getBoundingClientRect();
+    const panelWidth = Math.max(panel.offsetWidth, 220);
+    let left = rect.left;
+    if (left + panelWidth > window.innerWidth - 12) left = Math.max(12, window.innerWidth - 12 - panelWidth);
+    panel.style.top = (rect.bottom + 8) + "px";
+    panel.style.left = left + "px";
   }
 
-  openBtn.addEventListener("click", openDrawer);
-  closeBtn.addEventListener("click", closeDrawer);
-  overlay.addEventListener("click", closeDrawer);
-  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+  pillWraps.forEach(wrap => {
+    const btn = wrap.querySelector(".filter-pill");
+    const panel = wrap.querySelector(".filter-pill-panel");
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const willOpen = !wrap.classList.contains("open");
+      closeAllPanels(willOpen ? wrap : null);
+      if (willOpen) positionPanel(btn, panel);
+      wrap.classList.toggle("open", willOpen);
+      btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+  });
+  document.querySelectorAll(".filter-pill-panel").forEach(p => {
+    p.addEventListener("click", (e) => e.stopPropagation());
+  });
+  document.addEventListener("click", () => closeAllPanels(null));
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllPanels(null); });
+  window.addEventListener("resize", () => closeAllPanels(null));
+  window.addEventListener("scroll", () => closeAllPanels(null), { passive: true });
+
+  document.getElementById("clearAll").addEventListener("click", () => {
+    params.delete("weave"); params.delete("collection"); params.delete("fabric");
+    params.delete("colour"); params.delete("occasion");
+    params.delete("min"); params.delete("max"); params.delete("inStock"); params.delete("sort");
+    history.replaceState({}, "", url.pathname + (params.get("type") ? ("?type=" + params.get("type")) : ""));
+    document.getElementById("minPrice").value = "";
+    document.getElementById("maxPrice").value = "";
+    document.getElementById("inStockOnly").checked = false;
+    document.getElementById("sortBy").value = "newest";
+    updatePricePillLabel();
+    closeAllPanels(null);
+    loadWeaves();
+    loadCollections();
+    loadFabrics();
+    loadColours();
+    loadOccasions();
+    resetAndLoad();
+  });
 
   // FIX: Sarees and Suits used to share one unfiltered list of collections
   // and fabrics — a collection or fabric that only had suits in it still
@@ -330,8 +483,41 @@
   // already filters its product grid by.
   const currentType = (params.get("type") || "saree").toLowerCase();
 
+  // Sets a pill's visible label to "<Default>: <value>" when a filter is
+  // active, and marks it so the active state is visually obvious in the bar
+  // (not just inside the panel once opened).
+  function setPillLabel(pillId, defaultLabel, selectedText){
+    const btn = document.getElementById(pillId);
+    if (!btn) return;
+    const span = btn.querySelector(".filter-pill-label");
+    if (selectedText) {
+      span.textContent = `${defaultLabel}: ${selectedText}`;
+      btn.classList.add("is-active");
+    } else {
+      span.textContent = defaultLabel;
+      btn.classList.remove("is-active");
+    }
+  }
+
+  // Every radio-based panel (Weave/Fabric/Collection/Colour/Occasion) shares
+  // the same behaviour: picking an option applies it immediately and closes
+  // the panel — this is the fix for the "quantity doesn't change until I
+  // click Apply" bug, which was caused by these handlers previously calling
+  // only setParam() and never resetAndLoad().
+  function bindRadioPanel(box, inputName, paramName, wrap, pillBtnId, defaultLabel){
+    Array.from(box.querySelectorAll(`input[name='${inputName}']`)).forEach(r => {
+      r.addEventListener("change", () => {
+        setParam(paramName, r.value);
+        if (pillBtnId) setPillLabel(pillBtnId, defaultLabel, r.value ? r.nextElementSibling?.textContent.trim() : "");
+        wrap?.classList.remove("open");
+        resetAndLoad();
+      });
+    });
+  }
+
   async function loadCollections(){
-    const box = document.getElementById("collectionList");
+    const box = document.getElementById("collectionPanel");
+    const wrap = document.getElementById("collectionPillWrap");
     const selected = params.get("collection") || "";
     const { data, error } = await supabase
       .from("collection_products")
@@ -349,6 +535,8 @@
     const rows = Array.from(seen.values()).sort((a, b) =>
       (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(b.created_at).localeCompare(String(a.created_at))
     );
+    const activeRow = rows.find(c => c.slug === selected);
+    setPillLabel("collectionPillBtn", "Collection", activeRow?.name || "");
 
     box.innerHTML = `
       <label class="filter-option">
@@ -361,13 +549,12 @@
         <span>${escapeHtml(c.name)}</span>
       </label>
     `).join("");
-    Array.from(box.querySelectorAll("input[name='col']")).forEach(r => {
-      r.addEventListener("change", () => { setParam("collection", r.value); });
-    });
+    bindRadioPanel(box, "col", "collection", wrap, "collectionPillBtn", "Collection");
   }
 
   async function loadFabrics(){
-    const box = document.getElementById("fabricList");
+    const box = document.getElementById("fabricPanel");
+    const wrap = document.getElementById("fabricPillWrap");
     const selected = params.get("fabric") || "";
     try{
       const { data, error } = await supabase
@@ -387,8 +574,10 @@
         (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name))
       );
 
-      if (rows.length === 0){ document.getElementById("fabricBlock")?.classList.add("hidden"); return; }
-      document.getElementById("fabricBlock")?.classList.remove("hidden");
+      if (rows.length === 0){ document.getElementById("fabricPillWrap")?.classList.add("hidden"); return; }
+      document.getElementById("fabricPillWrap")?.classList.remove("hidden");
+      const activeRow = rows.find(f => f.slug === selected);
+      setPillLabel("fabricPillBtn", "Fabric", activeRow?.name || "");
       box.innerHTML = `
         <label class="filter-option">
           <input type="radio" name="fab" value="" ${selected === "" ? "checked" : ""} />
@@ -401,10 +590,53 @@
           </label>
         `).join("")}
       `;
-      Array.from(box.querySelectorAll("input[name='fab']")).forEach(r => {
-        r.addEventListener("change", () => setParam("fabric", r.value));
-      });
-    } catch(e){ document.getElementById("fabricBlock")?.classList.add("hidden"); }
+      bindRadioPanel(box, "fab", "fabric", wrap, "fabricPillBtn", "Fabric");
+    } catch(e){ document.getElementById("fabricPillWrap")?.classList.add("hidden"); }
+  }
+
+  // Weave (weave_lines) had no in-page filter control at all before this
+  // redesign — only reachable via a ?weave= link from the homepage's "Shop
+  // by Weave" tiles. Mirrors loadFabrics() exactly.
+  async function loadWeaves(){
+    const box = document.getElementById("weavePanel");
+    const wrap = document.getElementById("weavePillWrap");
+    const selected = params.get("weave") || "";
+    try{
+      const { data, error } = await supabase
+        .from("products")
+        .select("weave_lines!inner(id,name,slug,sort_order,is_active)")
+        .eq("is_active", true)
+        .eq("category", currentType)
+        .eq("weave_lines.is_active", true);
+      if (error) throw error;
+
+      const seen = new Map();
+      for (const row of (data ?? [])) {
+        const w = row.weave_lines;
+        if (w && !seen.has(w.id)) seen.set(w.id, w);
+      }
+      const rows = Array.from(seen.values()).sort((a, b) =>
+        (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name))
+      );
+
+      if (rows.length === 0){ document.getElementById("weavePillWrap")?.classList.add("hidden"); return; }
+      document.getElementById("weavePillWrap")?.classList.remove("hidden");
+      const activeRow = rows.find(w => w.slug === selected);
+      setPillLabel("weavePillBtn", "Weave", activeRow?.name || "");
+      box.innerHTML = `
+        <label class="filter-option">
+          <input type="radio" name="weave" value="" ${selected === "" ? "checked" : ""} />
+          <span>All</span>
+        </label>
+        ${rows.map(w => `
+          <label class="filter-option">
+            <input type="radio" name="weave" value="${escapeAttr(w.slug)}" ${selected === w.slug ? "checked" : ""} />
+            <span>${escapeHtml(w.name)}</span>
+          </label>
+        `).join("")}
+      `;
+      bindRadioPanel(box, "weave", "weave", wrap, "weavePillBtn", "Weave");
+    } catch(e){ document.getElementById("weavePillWrap")?.classList.add("hidden"); }
   }
 
   // Colour and Occasion are free-text fields on the product itself (set in
@@ -414,8 +646,9 @@
   // between for the type being browsed. As more products get tagged with a
   // colour/occasion in admin, these fill in on their own — nothing else to
   // wire up.
-  async function loadTextAttributeFilter(column, paramName, boxId, blockId, inputName){
+  async function loadTextAttributeFilter(column, paramName, boxId, wrapId, inputName, defaultLabel, pillBtnId){
     const box = document.getElementById(boxId);
+    const wrap = document.getElementById(wrapId);
     const selected = params.get(paramName) || "";
     try{
       const { data, error } = await supabase
@@ -430,8 +663,9 @@
         (data ?? []).map(r => String(r[column] || "").trim()).filter(Boolean)
       )).sort((a, b) => a.localeCompare(b));
 
-      if (values.length < 2){ document.getElementById(blockId)?.classList.add("hidden"); return; }
-      document.getElementById(blockId)?.classList.remove("hidden");
+      if (values.length < 2){ wrap?.classList.add("hidden"); return; }
+      wrap?.classList.remove("hidden");
+      setPillLabel(pillBtnId, defaultLabel, values.includes(selected) ? selected : "");
       box.innerHTML = `
         <label class="filter-option">
           <input type="radio" name="${inputName}" value="" ${selected ? "" : "checked"} />
@@ -444,14 +678,12 @@
           </label>
         `).join("")}
       `;
-      Array.from(box.querySelectorAll(`input[name='${inputName}']`)).forEach(r => {
-        r.addEventListener("change", () => setParam(paramName, r.value));
-      });
-    } catch(e){ document.getElementById(blockId)?.classList.add("hidden"); }
+      bindRadioPanel(box, inputName, paramName, wrap, pillBtnId, defaultLabel);
+    } catch(e){ wrap?.classList.add("hidden"); }
   }
 
-  const loadColours   = () => loadTextAttributeFilter("colour", "colour", "colourList", "colourBlock", "colour");
-  const loadOccasions = () => loadTextAttributeFilter("occasion", "occasion", "occasionList", "occasionBlock", "occasion");
+  const loadColours   = () => loadTextAttributeFilter("colour", "colour", "colourPanel", "colourPillWrap", "colour", "Colour", "colourPillBtn");
+  const loadOccasions = () => loadTextAttributeFilter("occasion", "occasion", "occasionPanel", "occasionPillWrap", "occasion", "Occasion", "occasionPillBtn");
 
   const PAGE_SIZE = 24;
   let offset = 0;
@@ -731,14 +963,8 @@
         if (max !== null) countQ = countQ.lte("price_inr", max);
         if (inStockOnly) countQ = countQ.gt("inventory_qty", 0);
         const { count } = await countQ;
-        if (typeof count === "number"){
-          itemsCount.textContent = `${count} item${count !== 1 ? "s" : ""}`;
-          applyFiltersBtn.textContent = count ? `See ${count} items` : "See items";
-        } else {
-          itemsCount.textContent = "";
-          applyFiltersBtn.textContent = "See items";
-        }
-      } catch(e){ itemsCount.textContent = ""; applyFiltersBtn.textContent = "See items"; }
+        itemsCount.textContent = typeof count === "number" ? `${count} item${count !== 1 ? "s" : ""}` : "";
+      } catch(e){ itemsCount.textContent = ""; }
     }
 
     let query = supabase
@@ -831,11 +1057,24 @@
     loadNextPage(true);
   }
 
+  // Reflects the current min/max/inStock params onto the Price pill's
+  // label so its active state is visible without opening the panel.
+  function updatePricePillLabel(){
+    const min = params.get("min") || "";
+    const max = params.get("max") || "";
+    const inStock = params.get("inStock") === "true";
+    const parts = [];
+    if (min || max) parts.push(`₹${min || "0"}–${max || "∞"}`);
+    if (inStock) parts.push("In stock");
+    setPillLabel("pricePillBtn", "Price", parts.join(", "));
+  }
+
   // Init control values from URL
   document.getElementById("minPrice").value = params.get("min") || "";
   document.getElementById("maxPrice").value = params.get("max") || "";
   document.getElementById("sortBy").value = params.get("sort") || "newest";
   document.getElementById("inStockOnly").checked = params.get("inStock") === "true";
+  updatePricePillLabel();
 
   document.getElementById("sortBy").addEventListener("change", (e) => {
     setParam("sort", e.target.value);
@@ -846,26 +1085,12 @@
     setParam("min", document.getElementById("minPrice").value.trim());
     setParam("max", document.getElementById("maxPrice").value.trim());
     setParam("inStock", document.getElementById("inStockOnly").checked ? "true" : "");
+    updatePricePillLabel();
+    closeAllPanels(null);
     resetAndLoad();
-    closeDrawer();
   });
 
-  document.getElementById("clearAll").addEventListener("click", () => {
-    params.delete("collection"); params.delete("fabric"); params.delete("colour"); params.delete("occasion");
-    params.delete("min"); params.delete("max"); params.delete("sort"); params.delete("inStock");
-    history.replaceState({}, "", url.pathname);
-    document.getElementById("minPrice").value = "";
-    document.getElementById("maxPrice").value = "";
-    document.getElementById("sortBy").value = "newest";
-    document.getElementById("inStockOnly").checked = false;
-    loadCollections();
-    loadFabrics();
-    loadColours();
-    loadOccasions();
-    resetAndLoad();
-    closeDrawer();
-  });
-
+  loadWeaves();
   loadCollections();
   loadFabrics();
   loadColours();
