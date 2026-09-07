@@ -93,6 +93,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.ahamstree.com/product.html?slug=red-chanderi-saree</loc>
+    <lastmod>2026-09-06</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-maroon-gold-stripe-pallu</loc>
     <lastmod>2026-09-05</lastmod>
     <priority>0.7</priority>
@@ -153,22 +158,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=red-chanderi-saree</loc>
-    <lastmod>2026-09-03</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/product.html?slug=coffee-brown-saree-with-maroon-gold-border</loc>
-    <lastmod>2026-09-03</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?slug=aqua-saree-with-gold-motifs-contrast-border</loc>
-    <lastmod>2026-09-03</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?slug=beige-saree-with-white-butti-minimal-look</loc>
     <lastmod>2026-09-03</lastmod>
     <priority>0.7</priority>
   </url>
@@ -188,7 +178,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=navy-saree-with-gold-motifs-red-accents</loc>
+    <loc>https://www.ahamstree.com/product.html?slug=maroon-saree-with-wide-gold-brocade-border</loc>
     <lastmod>2026-09-03</lastmod>
     <priority>0.7</priority>
   </url>
@@ -223,7 +213,12 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=copper-orange-saree-with-gold-border</loc>
+    <loc>https://www.ahamstree.com/product.html?slug=classic-chanderi-cotton-silk-saree</loc>
+    <lastmod>2026-09-03</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=navy-saree-with-gold-motifs-red-accents</loc>
     <lastmod>2026-09-03</lastmod>
     <priority>0.7</priority>
   </url>
@@ -233,12 +228,17 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=maroon-saree-with-wide-gold-brocade-border</loc>
+    <loc>https://www.ahamstree.com/product.html?slug=copper-orange-saree-with-gold-border</loc>
     <lastmod>2026-09-03</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=classic-chanderi-cotton-silk-saree</loc>
+    <loc>https://www.ahamstree.com/product.html?slug=aqua-saree-with-gold-motifs-contrast-border</loc>
+    <lastmod>2026-09-03</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=beige-saree-with-white-butti-minimal-look</loc>
     <lastmod>2026-09-03</lastmod>
     <priority>0.7</priority>
   </url>
