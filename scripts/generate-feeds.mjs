@@ -17,12 +17,23 @@ const SUPABASE_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_mS_exnQ_Am8_GWMNgCb63w_PfvFA7Mz";
 const SITE_URL = "https://www.ahamstree.com";
 
-// Google's own product taxonomy — a real, existing category (not invented),
-// the closest fit for handwoven Indian sarees/suits in Google's public list:
+// Google's own product taxonomy — verified directly against Google's
+// official taxonomy-with-ids file (downloaded and grepped, not guessed):
 // https://www.google.com/basepages/producttype/taxonomy-with-ids.en-US.txt
+//
+// The IDs previously here (2271, 212) did NOT match the category paths in
+// their own comments — 2271 is actually "Dresses" and 212 is actually
+// "Shirts & Tops". Every saree/suit in the feed was silently misfiled
+// under the wrong Google category, which is a well-known cause of Shopping
+// item disapprovals and poor ad-match relevance. Confirmed replacements
+// below by grepping the real taxonomy file for "Traditional & Ceremonial
+// Clothing" and "Suits":
 const GOOGLE_PRODUCT_CATEGORY = {
-  saree: "2271", // Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing > Sarees
-  suit: "212",   // Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing
+  saree: "8248", // Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing > Saris & Lehengas
+  // No dedicated node exists for Indian ethnic suit sets (salwar kameez /
+  // kurta sets) — the parent category is the closest correct fit, still a
+  // large improvement over "Shirts & Tops".
+  suit: "5388",  // Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing
 };
 
 async function supaGet(path) {
