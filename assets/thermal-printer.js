@@ -24,6 +24,14 @@
 
 const LINE_WIDTH = 32; // standard for 58mm / 2" thermal printers at default font
 
+// Same GSTIN admin-generate-invoice's PDF falls back to when SELLER_GST
+// isn't set — kept in sync with that so the two invoice formats never show
+// a different GST number.
+const SELLER_GST = "06AYMPG2685D1ZF";
+const SELLER_PHONE = "+91-95822-97550";
+const SELLER_WEBSITE = "www.ahamstree.com";
+const SELLER_SUPPORT_EMAIL = "support@ahamstree.com";
+
 // ── ESC/POS command bytes ──
 const ESC = 0x1b;
 const GS = 0x1d;
@@ -114,6 +122,7 @@ export function buildOrderReceiptCommands(order, sellerName = "AhamStree") {
   line(sellerName);
   push(CMD.DOUBLE_SIZE_OFF);
   line("Eternally Elegant");
+  line(`GSTIN: ${SELLER_GST}`);
   line(rule());
 
   push(CMD.ALIGN_LEFT);
@@ -170,6 +179,10 @@ export function buildOrderReceiptCommands(order, sellerName = "AhamStree") {
   line(rule());
 
   push(CMD.ALIGN_CENTER);
+  line(rule());
+  line(`Ph: ${SELLER_PHONE}`);
+  line(SELLER_WEBSITE);
+  line(SELLER_SUPPORT_EMAIL);
   line("Thank you for shopping!");
   push(CMD.FEED(3));
   push(CMD.CUT);
