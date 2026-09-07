@@ -111,6 +111,42 @@
       color: #fff;
     }
 
+    /* ── Weave pill row ── smaller than the category tabs, sits just above
+       the filter bar. Not a dropdown — every weave with at least one
+       matching product (under whatever else is currently filtered) gets
+       its own directly-clickable pill. */
+    .weave-pill-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .weave-pill-row:empty { display: none; }
+    .weave-pill-row::-webkit-scrollbar { display: none; }
+    .weave-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-light);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .weave-pill:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+    .weave-pill.active {
+      background: var(--accent-gold);
+      border-color: var(--accent-gold);
+      color: #fff;
+      font-weight: 600;
+    }
+
     /* ── Filter pill bar ── replaces the old single "Filter" button; each
        pill opens its own small panel and applies the moment you pick an
        option, instead of requiring a separate "Apply" click. */
@@ -243,16 +279,11 @@
     <!-- Category tabs (config-driven — see CATEGORIES in the script below) -->
     <div id="categoryTabs" class="category-tabs" role="tablist" aria-label="Category"></div>
 
+    <!-- Weave pills (not a dropdown — see renderWeavePills() below) -->
+    <div id="weavePillRow" class="weave-pill-row" role="tablist" aria-label="Weave"></div>
+
     <!-- Filter pill bar -->
     <div class="filter-bar" id="filterBar">
-      <div class="filter-pill-wrap" data-pill="weave" id="weavePillWrap">
-        <button type="button" class="filter-pill" id="weavePillBtn" aria-haspopup="true" aria-expanded="false">
-          <span class="filter-pill-label">Weave</span>
-          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="filter-pill-panel" id="weavePanel" role="menu">Loading…</div>
-      </div>
-
       <div class="filter-pill-wrap" data-pill="fabric" id="fabricPillWrap">
         <button type="button" class="filter-pill" id="fabricPillBtn" aria-haspopup="true" aria-expanded="false">
           <span class="filter-pill-label">Fabric</span>
@@ -467,12 +498,7 @@
     document.getElementById("sortBy").value = "newest";
     updatePricePillLabel();
     closeAllPanels(null);
-    loadWeaves();
-    loadCollections();
-    loadFabrics();
-    loadColours();
-    loadOccasions();
-    resetAndLoad();
+    refreshFiltersAndGrid();
   });
 
   // FIX: Sarees and Suits used to share one unfiltered list of collections
@@ -499,32 +525,74 @@
     }
   }
 
-  // Every radio-based panel (Weave/Fabric/Collection/Colour/Occasion) shares
-  // the same behaviour: picking an option applies it immediately and closes
-  // the panel — this is the fix for the "quantity doesn't change until I
-  // click Apply" bug, which was caused by these handlers previously calling
-  // only setParam() and never resetAndLoad().
+  // Every radio-based panel (Fabric/Collection/Colour/Occasion) shares the
+  // same behaviour: picking an option applies it immediately and closes the
+  // panel — this is the fix for the "quantity doesn't change until I click
+  // Apply" bug, which was caused by these handlers previously calling only
+  // setParam() and never resetAndLoad(). Beyond that immediate grid refresh,
+  // every OTHER filter's option list also has to be recomputed (a picked
+  // Fabric can make some Colour/Occasion/Weave values stop having any
+  // matching products) — that's what refreshFiltersAndGrid() does.
   function bindRadioPanel(box, inputName, paramName, wrap, pillBtnId, defaultLabel){
     Array.from(box.querySelectorAll(`input[name='${inputName}']`)).forEach(r => {
       r.addEventListener("change", () => {
         setParam(paramName, r.value);
         if (pillBtnId) setPillLabel(pillBtnId, defaultLabel, r.value ? r.nextElementSibling?.textContent.trim() : "");
         wrap?.classList.remove("open");
-        resetAndLoad();
+        refreshFiltersAndGrid();
       });
     });
+  }
+
+  // Every facet query below (loadCollections/loadFabrics/renderWeavePills/
+  // loadTextAttributeFilter) needs to only offer options that still have at
+  // least one matching product given every OTHER currently active filter —
+  // otherwise you could pick a Weave and Fabric combination with zero
+  // products and the Colour/Occasion panels would still cheerfully list
+  // colours that don't exist in that combination. `exclude` is the
+  // dimension currently being computed, which never constrains itself (so
+  // its own sibling options stay pickable).
+  function productConstraints(exclude){
+    const c = [];
+    if (exclude !== "collection" && params.get("collection") && cache.productIds) c.push(q => q.in("id", cache.productIds));
+    if (exclude !== "fabric" && params.get("fabric") && cache.fabricId) c.push(q => q.eq("fabric_id", cache.fabricId));
+    if (exclude !== "weave" && params.get("weave") && cache.weaveId) c.push(q => q.eq("weave_line_id", cache.weaveId));
+    if (exclude !== "colour" && params.get("colour")) c.push(q => q.eq("colour", params.get("colour")));
+    if (exclude !== "occasion" && params.get("occasion")) c.push(q => q.eq("occasion", params.get("occasion")));
+    if (exclude !== "price") {
+      const min = numOrNull(params.get("min"));
+      const max = numOrNull(params.get("max"));
+      if (min !== null) c.push(q => q.gte("price_inr", min));
+      if (max !== null) c.push(q => q.lte("price_inr", max));
+    }
+    if (exclude !== "stock" && params.get("inStock") === "true") c.push(q => q.gt("inventory_qty", 0));
+    return c;
+  }
+  function applyConstraints(query, constraints){
+    return constraints.reduce((q, fn) => fn(q), query);
   }
 
   async function loadCollections(){
     const box = document.getElementById("collectionPanel");
     const wrap = document.getElementById("collectionPillWrap");
     const selected = params.get("collection") || "";
-    const { data, error } = await supabase
+    let cq = supabase
       .from("collection_products")
-      .select("collections!inner(id,name,slug,sort_order,created_at,is_active), products!inner(is_active,category)")
+      .select("collections!inner(id,name,slug,sort_order,created_at,is_active), products!inner(is_active,category,fabric_id,weave_line_id,colour,occasion,price_inr,inventory_qty)")
       .eq("collections.is_active", true)
       .eq("products.is_active", true)
       .eq("products.category", currentType);
+    // Collection facet is never self-excluded (there's nothing to exclude —
+    // this query IS the collection dimension), but every other active
+    // filter still narrows which collections can even appear here.
+    if (params.get("fabric") && cache.fabricId) cq = cq.eq("products.fabric_id", cache.fabricId);
+    if (params.get("weave") && cache.weaveId) cq = cq.eq("products.weave_line_id", cache.weaveId);
+    if (params.get("colour")) cq = cq.eq("products.colour", params.get("colour"));
+    if (params.get("occasion")) cq = cq.eq("products.occasion", params.get("occasion"));
+    { const min = numOrNull(params.get("min")); if (min !== null) cq = cq.gte("products.price_inr", min); }
+    { const max = numOrNull(params.get("max")); if (max !== null) cq = cq.lte("products.price_inr", max); }
+    if (params.get("inStock") === "true") cq = cq.gt("products.inventory_qty", 0);
+    const { data, error } = await cq;
     if (error){ box.textContent = "Could not load collections."; return; }
 
     const seen = new Map();
@@ -557,12 +625,14 @@
     const wrap = document.getElementById("fabricPillWrap");
     const selected = params.get("fabric") || "";
     try{
-      const { data, error } = await supabase
+      let q = supabase
         .from("products")
         .select("fabrics!inner(id,name,slug,sort_order,is_active)")
         .eq("is_active", true)
         .eq("category", currentType)
         .eq("fabrics.is_active", true);
+      q = applyConstraints(q, productConstraints("fabric"));
+      const { data, error } = await q;
       if (error) throw error;
 
       const seen = new Map();
@@ -596,47 +666,54 @@
 
   // Weave (weave_lines) had no in-page filter control at all before this
   // redesign — only reachable via a ?weave= link from the homepage's "Shop
-  // by Weave" tiles. Mirrors loadFabrics() exactly.
-  async function loadWeaves(){
-    const box = document.getElementById("weavePanel");
-    const wrap = document.getElementById("weavePillWrap");
+  // by Weave" tiles. Rendered as its own row of directly-clickable pills
+  // (not a dropdown, per request) — a weave with zero matching products
+  // under whatever else is currently filtered simply never gets a pill; a
+  // weave never constrains against itself so its own siblings stay visible.
+  async function renderWeavePills(){
+    const row = document.getElementById("weavePillRow");
     const selected = params.get("weave") || "";
     try{
-      const { data, error } = await supabase
+      let q = supabase
         .from("products")
         .select("weave_lines!inner(id,name,slug,sort_order,is_active)")
         .eq("is_active", true)
         .eq("category", currentType)
         .eq("weave_lines.is_active", true);
+      q = applyConstraints(q, productConstraints("weave"));
+      const { data, error } = await q;
       if (error) throw error;
 
       const seen = new Map();
-      for (const row of (data ?? [])) {
-        const w = row.weave_lines;
+      for (const row2 of (data ?? [])) {
+        const w = row2.weave_lines;
         if (w && !seen.has(w.id)) seen.set(w.id, w);
       }
       const rows = Array.from(seen.values()).sort((a, b) =>
         (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name))
       );
 
-      if (rows.length === 0){ document.getElementById("weavePillWrap")?.classList.add("hidden"); return; }
-      document.getElementById("weavePillWrap")?.classList.remove("hidden");
+      if (rows.length === 0){ row.innerHTML = ""; return; }
+
       const activeRow = rows.find(w => w.slug === selected);
-      setPillLabel("weavePillBtn", "Weave", activeRow?.name || "");
-      box.innerHTML = `
-        <label class="filter-option">
-          <input type="radio" name="weave" value="" ${selected === "" ? "checked" : ""} />
-          <span>All</span>
-        </label>
+      row.innerHTML = `
+        <button type="button" class="weave-pill${selected ? "" : " active"}" data-slug="" role="tab" aria-selected="${selected ? "false" : "true"}">All Weaves</button>
         ${rows.map(w => `
-          <label class="filter-option">
-            <input type="radio" name="weave" value="${escapeAttr(w.slug)}" ${selected === w.slug ? "checked" : ""} />
-            <span>${escapeHtml(w.name)}</span>
-          </label>
+          <button type="button" class="weave-pill${w.slug === selected ? " active" : ""}" data-slug="${escapeAttr(w.slug)}" role="tab" aria-selected="${w.slug === selected ? "true" : "false"}">${escapeHtml(w.name)}</button>
         `).join("")}
       `;
-      bindRadioPanel(box, "weave", "weave", wrap, "weavePillBtn", "Weave");
-    } catch(e){ document.getElementById("weavePillWrap")?.classList.add("hidden"); }
+      // If the previously-selected weave no longer has a matching pill
+      // (e.g. another filter picked afterward eliminated it), fall back to
+      // "All Weaves" instead of quietly filtering by a slug with no UI.
+      if (selected && !activeRow) setParam("weave", "");
+
+      Array.from(row.querySelectorAll(".weave-pill")).forEach(btn => {
+        btn.addEventListener("click", () => {
+          setParam("weave", btn.dataset.slug);
+          refreshFiltersAndGrid();
+        });
+      });
+    } catch(e){ row.innerHTML = ""; }
   }
 
   // Colour and Occasion are free-text fields on the product itself (set in
@@ -651,12 +728,14 @@
     const wrap = document.getElementById(wrapId);
     const selected = params.get(paramName) || "";
     try{
-      const { data, error } = await supabase
+      let q = supabase
         .from("products")
         .select(column)
         .eq("is_active", true)
         .eq("category", currentType)
         .not(column, "is", null);
+      q = applyConstraints(q, productConstraints(paramName));
+      const { data, error } = await q;
       if (error) throw error;
 
       const values = Array.from(new Set(
@@ -738,6 +817,36 @@
       cache.weaveSlug = slug; cache.weaveId = wl.id; cache.weaveName = wl.name;
       return cache;
     } catch(e){ return null; }
+  }
+
+  // Resolves every slug-based filter's id into `cache` up front — the facet
+  // queries below (and productConstraints()) key off cache.fabricId /
+  // cache.weaveId / cache.productIds, not the raw URL slug, so this has to
+  // run before any of them.
+  async function resolveActiveFilters(){
+    await Promise.all([
+      resolveCollection(params.get("collection") || ""),
+      resolveFabric(params.get("fabric") || ""),
+      resolveWeave(params.get("weave") || ""),
+    ]);
+  }
+
+  // The single entry point every filter change goes through: re-resolves
+  // the active slugs, recomputes every OTHER filter's option list against
+  // the new combination (the "keep filters in sync" fix — picking one
+  // filter can make some of another filter's values stop having any
+  // matching products), and reloads the grid. Called instead of touching
+  // resetAndLoad()/individual load*() functions directly.
+  async function refreshFiltersAndGrid(){
+    await resolveActiveFilters();
+    await Promise.all([
+      renderWeavePills(),
+      loadCollections(),
+      loadFabrics(),
+      loadColours(),
+      loadOccasions(),
+    ]);
+    resetAndLoad();
   }
 
   function setPageTitle(){
@@ -1087,15 +1196,10 @@
     setParam("inStock", document.getElementById("inStockOnly").checked ? "true" : "");
     updatePricePillLabel();
     closeAllPanels(null);
-    resetAndLoad();
+    refreshFiltersAndGrid();
   });
 
-  loadWeaves();
-  loadCollections();
-  loadFabrics();
-  loadColours();
-  loadOccasions();
-  resetAndLoad();
+  refreshFiltersAndGrid();
 
   loadMoreBtn.addEventListener("click", () => loadNextPage(false));
 
