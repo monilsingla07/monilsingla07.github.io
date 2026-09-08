@@ -24,7 +24,7 @@
   <div class="container">
     <h2 style="margin-top:0;">Account</h2>
 
-       <div id="app" class="card" style="padding:16px;border-radius:16px;max-width:680px;">
+    <div id="app" class="account-card" style="max-width:420px;">
       <div class="small">Loading account…</div>
     </div>
   </div>
@@ -109,19 +109,17 @@ document.getElementById("footer").innerHTML = renderFooter();
     </svg>`;
 
   app.innerHTML = `
-    <div style="font-weight:900;">Login</div>
+    <h2 class="account-card-title">Login</h2>
     <div class="small" style="margin-top:6px;">
       Continue with Google, or verify with a WhatsApp one-time code.
     </div>
 
     <button id="googleAuthBtn" type="button" class="btn secondary"
-      style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:320px;margin-top:14px;">
+      style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:18px;">
       ${iconGoogle()} Continue with Google
     </button>
 
-    <div style="display:flex;align-items:center;gap:10px;margin:16px 0;max-width:320px;color:#9ca3af;font-size:12px;">
-      <span style="flex:1;height:1px;background:#e5e7eb;"></span>or<span style="flex:1;height:1px;background:#e5e7eb;"></span>
-    </div>
+    <div class="account-card-divider"><span></span>or<span></span></div>
 
     <div id="panel"></div>
 
@@ -564,7 +562,7 @@ function renderLoggedIn(session) {
     || "your account";
 
   app.innerHTML = `
-    <div style="font-weight:900;">My Account</div>
+    <h2 class="account-card-title">My Account</h2>
     <div class="small" style="margin-top:6px;">Signed in as ${escapeHtml(identity)}</div>
 
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
