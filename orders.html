@@ -17,22 +17,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
+    /* Muted, low-saturation status colors instead of stock Tailwind-swatch
+       badges (bright green/blue/purple pills) — each still keeps a
+       distinct hue so statuses stay tellable apart at a glance, just
+       toned to sit inside the site's warm/editorial palette rather than
+       reading like a generic admin dashboard. */
     .status-badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600;
+      letter-spacing: .04em; text-transform: uppercase;
+      border: 1px solid transparent;
     }
-    .status-badge.paid      { background: #dcfce7; color: #166534; }
-    .status-badge.shipped   { background: #dbeafe; color: #1e40af; }
-    .status-badge.delivered { background: #f0fdf4; color: #14532d; border:1px solid #86efac; }
-    .status-badge.pending   { background: #fef9c3; color: #854d0e; }
-    .status-badge.failed    { background: #fee2e2; color: #991b1b; }
-    .status-badge.cancelled { background: #f3f4f6; color: #6b7280; }
+    .status-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+    .status-badge.pending   { background: var(--accent-gold-light); color: var(--accent-gold); border-color: rgba(184,134,59,.3); }
+    .status-badge.paid      { background: var(--indigo-light); color: var(--indigo); border-color: rgba(47,72,88,.22); }
+    .status-badge.shipped   { background: rgba(63,122,138,.1); color: #3f7a8a; border-color: rgba(63,122,138,.28); }
+    .status-badge.delivered { background: rgba(63,107,79,.1); color: #3f6b4f; border-color: rgba(63,107,79,.28); }
+    .status-badge.failed    { background: rgba(161,61,61,.09); color: #a13d3d; border-color: rgba(161,61,61,.26); }
+    .status-badge.cancelled { background: var(--border-light); color: var(--text-light); }
     .payment-pill {
       display: inline-flex; align-items: center; gap: 4px;
-      padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700;
-      background: #f3f4f6; color: #374151;
+      padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600;
+      background: var(--border-light); color: var(--text-light);
     }
-    .payment-pill.online { background: #eff6ff; color: #1d4ed8; }
+    .payment-pill.online { background: var(--indigo-light); color: var(--indigo); }
 
     /* Pulsing border for urgent pending orders */
     @keyframes urgentPulse {
@@ -47,12 +55,12 @@
       max-height: 0;
       transition: max-height 0.38s ease, padding 0.2s ease;
       padding: 0 16px;
-      background: #f8faff;
+      background: var(--bg-warm);
     }
     .tracker-panel.open {
       max-height: 900px;
       padding: 16px;
-      border-top: 1px solid #bfdbfe;
+      border-top: 1px solid var(--border-light);
     }
 
     /* ── Tracking timeline ──────────────────────────────────────────────── */
@@ -66,20 +74,20 @@
     .tl-row:not(:last-child) .tl-line {
       position: absolute;
       left: 13px; top: 28px; bottom: -4px;
-      width: 2px; background: #cbd5e1;
+      width: 2px; background: var(--border);
     }
     .tl-dot {
       width: 26px; height: 26px; border-radius: 50%;
-      background: #e2e8f0; border: 2px solid #cbd5e1;
+      background: var(--border-light); border: 2px solid var(--border);
       flex-shrink: 0; margin-top: 1px;
       display: flex; align-items: center; justify-content: center;
       font-size: 12px;
     }
-    .tl-dot.latest { background: #1e40af; border-color: #1e40af; color: #fff; }
+    .tl-dot.latest { background: var(--brand); border-color: var(--brand); color: #fff; }
     .tl-body { padding-bottom: 18px; }
-    .tl-act  { font-size: 13px; font-weight: 700; line-height: 1.35; color: #1e293b; }
-    .tl-act.dim { color: #64748b; font-weight: 500; }
-    .tl-meta { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .tl-act  { font-size: 13px; font-weight: 700; line-height: 1.35; color: var(--text); }
+    .tl-act.dim { color: var(--text-light); font-weight: 500; }
+    .tl-meta { font-size: 12px; color: var(--text-light); margin-top: 2px; }
 
     /* ── Return modal ───────────────────────────────────────────────────── */
     .modal-overlay {
@@ -89,31 +97,32 @@
     }
     .modal-overlay.open { display: flex; }
     .modal-box {
-      background: #fff; border-radius: 20px;
-      padding: 24px; max-width: 440px; width: 100%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      background: var(--surface); border-radius: var(--radius-md);
+      padding: 26px; max-width: 440px; width: 100%;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-lg);
     }
-    .modal-box h3 { margin: 0 0 10px; font-size: 18px; }
+    .modal-box h3 { margin: 0 0 10px; font-size: 20px; font-family: var(--font-heading); }
 
     /* ── Return reason chips ────────────────────────────────────────────── */
     .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
     .chip {
-      padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700;
-      border: 1.5px solid #e2e8f0; background: #f8fafc; cursor: pointer;
+      padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600;
+      border: 1.5px solid var(--border); background: var(--surface); cursor: pointer;
       transition: all 0.15s;
     }
     .chip:hover, .chip.sel {
-      border-color: var(--brand, #7c3aed);
-      background: var(--brand-light, #f5f3ff);
-      color: var(--brand, #7c3aed);
+      border-color: var(--brand);
+      background: var(--brand-lighter);
+      color: var(--brand);
     }
 
     /* ── Return status badges ───────────────────────────────────────────── */
-    .status-badge.ret-req  { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-    .status-badge.ret-ok   { background: #f0fdf4; color: #14532d; border: 1px solid #86efac; }
-    .status-badge.ret-pick { background: #f0fdf4; color: #14532d; }
-    .status-badge.ret-rej  { background: #fee2e2; color: #991b1b; }
-    .status-badge.ret-refunded { background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+    .status-badge.ret-req  { background: var(--indigo-light); color: var(--indigo); border-color: rgba(47,72,88,.22); }
+    .status-badge.ret-ok   { background: rgba(63,107,79,.1); color: #3f6b4f; border-color: rgba(63,107,79,.28); }
+    .status-badge.ret-pick { background: rgba(63,107,79,.1); color: #3f6b4f; border-color: rgba(63,107,79,.28); }
+    .status-badge.ret-rej  { background: rgba(161,61,61,.09); color: #a13d3d; border-color: rgba(161,61,61,.26); }
+    .status-badge.ret-refunded { background: rgba(122,74,107,.09); color: #7a4a6b; border-color: rgba(122,74,107,.26); }
   </style>
 </head>
 
@@ -170,9 +179,9 @@
           <div id="retPhotoPreviews" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;"></div>
         </div>
 
-        <div style="margin-top:14px; padding:12px; background:#fff7ed; border-radius:12px; border:1px solid #fed7aa;">
-          <div class="small" style="color:#9a3412; font-weight:700; margin-bottom:4px;">⚠️ Please note</div>
-          <div class="small" style="color:#9a3412; line-height:1.5;">
+        <div style="margin-top:14px; padding:14px 16px; background:var(--accent-gold-light); border-left:2px solid var(--accent-gold);">
+          <div class="small" style="color:var(--accent-gold); font-weight:700; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; font-size:11px;">Please note</div>
+          <div class="small" style="color:var(--text); line-height:1.5;">
             Natural variation in colour, weave, or texture is part of handloom fabric and is not a manufacturing defect.
             We're unable to accept returns for sizing, change of mind, or personal preference — only genuine defects.
             A quality check will be done after receipt before any refund or replacement is issued.
@@ -188,9 +197,9 @@
 
       <!-- Success state -->
       <div id="retSuccess" style="display:none; text-align:center; padding:16px 0;">
-        <div style="font-size:42px; margin-bottom:10px;">✅</div>
-        <div style="font-weight:900; font-size:16px; margin-bottom:6px;">Return request submitted!</div>
-        <div class="small" style="color:#64748b; max-width:32ch; margin:0 auto 18px;">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--accent-gold)" stroke-width="1.5" style="margin-bottom:12px;"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.5 2.5L16 9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="font-family:var(--font-heading); font-weight:600; font-size:19px; margin-bottom:6px;">Return request submitted!</div>
+        <div class="small" style="color:var(--text-light); max-width:32ch; margin:0 auto 18px;">
           Our team will review your photos and get back to you within 2–3 business days.
         </div>
         <button class="btn secondary" id="retSuccessClose" type="button">Close</button>
