@@ -51,12 +51,12 @@
       <a class="btn ghost" href="cart.html" style="height:40px;">Edit cart</a>
     </div>
 
-    <div id="authBanner" class="card" style="padding:12px 14px; border-radius:16px; display:none; margin-bottom:12px;">
+    <div id="authBanner" class="card" style="padding:12px 14px; border-radius:0; display:none; margin-bottom:12px;">
       <div class="small" id="authText"></div>
     </div>
 
     <!-- Saved address banner (shown for logged-in users with a saved address) -->
-    <div id="savedAddressBanner" style="display:none; margin-bottom:12px; padding:14px 16px; border-radius:16px; border:1.5px solid var(--brand); background:var(--brand-light);">
+    <div id="savedAddressBanner" style="display:none; margin-bottom:12px; padding:14px 16px; border-radius:0; border:1.5px solid var(--brand); background:var(--brand-light);">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
         <div style="display:flex;align-items:flex-start;gap:10px;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand);flex-shrink:0;margin-top:2px;" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -72,14 +72,14 @@
       </div>
     </div>
 
-    <div id="warn" class="card" style="padding:12px 14px; border-radius:16px; display:none; border:1px solid rgba(220,20,60,.22); margin-bottom:12px;">
+    <div id="warn" class="card" style="padding:12px 14px; border-radius:0; display:none; border:1px solid rgba(220,20,60,.22); margin-bottom:12px;">
       <div class="small" style="color:crimson;" id="warnText"></div>
     </div>
 
     <div class="checkout-grid">
 
       <!-- LEFT: Shipping -->
-      <form id="form" class="card" style="padding:16px; border-radius:16px;">
+      <form id="form" class="card" style="padding:16px; border-radius:0;">
         <h3 style="margin:0 0 8px 0;">Shipping details</h3>
         <div class="small" style="opacity:.8; margin-bottom:12px;">Used for delivery updates and invoice.</div>
 
@@ -129,7 +129,7 @@
         <!-- Payment method: Razorpay only. COD has been removed. -->
         <div style="margin-bottom:14px;">
           <div class="small" style="font-weight:800; margin-bottom:8px;">Payment method</div>
-          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid var(--brand);border-radius:12px;background:var(--brand-light);">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid var(--brand);border-radius:0;background:var(--brand-light);">
             <div style="flex:1;">
               <div style="font-weight:800;font-size:14px;">Pay Online</div>
               <div class="small" style="opacity:.75;margin-top:2px;">Cards, UPI, Net Banking via Razorpay</div>
@@ -149,7 +149,7 @@
       </form>
 
       <!-- RIGHT: Order Summary -->
-      <div class="card" style="padding:16px; border-radius:16px;">
+      <div class="card" style="padding:16px; border-radius:0;">
         <h3 style="margin:0 0 8px 0;">Order summary</h3>
         <div class="small" style="opacity:.8; margin-bottom:12px;">Review your items before payment.</div>
 
@@ -157,13 +157,13 @@
 
         <!-- Coupon -->
         <div id="couponBox" style="margin-top:14px;">
-          <button id="couponToggle" type="button" style="display:flex;align-items:center;gap:8px;background:var(--brand-light);border:1.5px dashed var(--brand);border-radius:12px;padding:10px 14px;width:100%;cursor:pointer;color:var(--brand);font-weight:700;font-size:14px;">
+          <button id="couponToggle" type="button" style="display:flex;align-items:center;gap:8px;background:var(--brand-light);border:1.5px dashed var(--brand);border-radius:0;padding:10px 14px;width:100%;cursor:pointer;color:var(--brand);font-weight:700;font-size:14px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
             <span id="couponToggleLabel">Have a coupon? Tap to apply</span>
           </button>
 
           <!-- Coupon Panel (hidden by default) -->
-          <div id="couponPanel" style="display:none; margin-top:10px; border:1px solid var(--border); border-radius:14px; padding:14px; background:#fff;">
+          <div id="couponPanel" style="display:none; margin-top:10px; border:1px solid var(--border); padding:14px; background:var(--surface);">
             <div style="font-weight:800; font-size:13px; margin-bottom:10px;">Available coupons</div>
 
             <div id="couponOptions" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
@@ -179,7 +179,7 @@
 
         <!-- AhamStree Cash (signup wallet) — hidden until we know the user has a balance -->
         <div id="walletBox" style="margin-top:10px; display:none;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid var(--brand);border-radius:12px;padding:12px 14px;background:var(--brand-light);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid var(--brand);border-radius:0;padding:12px 14px;background:var(--brand-light);">
             <div style="min-width:0;display:flex;align-items:flex-start;gap:10px;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand);flex-shrink:0;margin-top:2px;" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.4 15.6c.5.7 1.5 1.1 2.6 1.1 1.7 0 2.9-.8 2.9-2.1 0-1.3-1.3-1.7-2.9-2.1-1.6-.4-2.9-.8-2.9-2.1 0-1.3 1.2-2.1 2.9-2.1 1.1 0 2.1.4 2.6 1.1"/><path d="M12 6.3v1.1M12 16.6v1.1"/></svg>
               <div style="min-width:0;">
@@ -806,8 +806,8 @@
         couponOptions.innerHTML = coupons.map(c => `
           <button type="button" class="coupon-chip" data-code="${c.code}"
             style="display:flex;align-items:center;justify-content:space-between;gap:10px;
-                   border:1.5px dashed var(--border);border-radius:10px;padding:10px 12px;
-                   background:#fafafa;cursor:pointer;text-align:left;width:100%;
+                   border:1.5px dashed var(--border);padding:10px 12px;
+                   background:var(--bg-warm);cursor:pointer;text-align:left;width:100%;
                    transition:border-color .15s,background .15s;">
             <div>
               <span style="font-weight:800;font-size:13px;color:var(--brand);">${c.code}</span>
@@ -852,9 +852,9 @@
       if (code) {
         localStorage.setItem("ahamstree_coupon", code);
         if (couponToggleLabel) couponToggleLabel.textContent = `Coupon applied: ${code}`;
-        couponToggle.style.background   = "rgba(34,197,94,0.08)";
-        couponToggle.style.borderColor  = "rgba(34,197,94,0.5)";
-        couponToggle.style.color        = "#166534";
+        couponToggle.style.background   = "rgba(63,107,79,0.08)";
+        couponToggle.style.borderColor  = "rgba(63,107,79,0.4)";
+        couponToggle.style.color        = "#3f6b4f";
 
         // AhamStree Cash and a coupon are mutually exclusive — applying a
         // coupon turns off any wallet redemption in progress.
