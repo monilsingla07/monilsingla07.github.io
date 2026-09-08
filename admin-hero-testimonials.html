@@ -18,20 +18,20 @@
 
   <style>
     .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
-    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-card { background: var(--surface); border: 1px solid var(--border-light); padding: 20px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
-    .pm-hint { font-size: 12px; opacity: .74; margin-top: 4px; }
-    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-label { font-size: 12px; color: var(--text-light); display: block; margin-bottom: 4px; }
+    .pm-hint { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--border-light); background: var(--surface); }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
-    .pm-badge { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
-    .pm-badge.active { background: #dcfce7; color: #166534; }
-    .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
-    .pm-thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: #f3f4f6; flex-shrink: 0; }
+    .pm-badge { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge.active { background: rgba(63,107,79,.1); color: #3f6b4f; }
+    .pm-badge.inactive { background: var(--border-light); color: var(--text-light); }
+    .pm-thumb { width: 64px; height: 64px; object-fit: cover; background: var(--bg-warm); flex-shrink: 0; }
     .aht-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-    .aht-tab { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border, #e5e7eb); background: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
-    .aht-tab.active { background: var(--brand, #7c1c1c); border-color: var(--brand, #7c1c1c); color: #fff; }
+    .aht-tab { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-weight: 700; font-size: 13px; cursor: pointer; color: var(--text); }
+    .aht-tab.active { background: var(--brand); border-color: var(--brand); color: #fff; }
     .aht-panel { display: none; }
     .aht-panel.active { display: block; }
     textarea.input { resize: vertical; min-height: 70px; font-family: inherit; }
@@ -43,13 +43,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:900px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Hero &amp; Testimonials</h2>
-          <div class="small" style="opacity:.76; margin-top:4px;">Controls the homepage hero banner carousel and the customer testimonials section. Changes go live immediately — no code changes needed.</div>
+          <div class="small" style="color:var(--text-light); margin-top:4px;">Controls the homepage hero banner carousel and the customer testimonials section. Changes go live immediately — no code changes needed.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
@@ -62,7 +62,7 @@
       <!-- ══════════ HERO SLIDES ══════════ -->
       <div class="aht-panel active" id="panelHero">
         <div class="pm-card">
-          <div style="font-weight:900;" id="heroFormTitle">New slide</div>
+          <div style="font-weight:700;" id="heroFormTitle">New slide</div>
           <input type="hidden" id="h_id" />
 
           <div class="pm-row">
@@ -135,14 +135,14 @@
           </div>
         </div>
 
-        <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:24px 0 10px;">All hero slides</div>
+        <div class="section-title" style="font-size:13px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-light); margin:24px 0 10px;">All hero slides</div>
         <div id="heroList"></div>
       </div>
 
       <!-- ══════════ TESTIMONIALS ══════════ -->
       <div class="aht-panel" id="panelTestimonials">
         <div class="pm-card">
-          <div style="font-weight:900;" id="tFormTitle">New testimonial</div>
+          <div style="font-weight:700;" id="tFormTitle">New testimonial</div>
           <input type="hidden" id="t_id" />
 
           <div class="pm-row">
@@ -189,7 +189,7 @@
           </div>
         </div>
 
-        <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:24px 0 10px;">All testimonials</div>
+        <div class="section-title" style="font-size:13px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-light); margin:24px 0 10px;">All testimonials</div>
         <div id="testiList"></div>
       </div>
 
@@ -214,12 +214,15 @@
     const loadingState = document.getElementById("loadingState");
     const dashboard    = document.getElementById("dashboard");
 
-    function showGateError(emoji, title, message) {
+    const ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    const ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showGateError(icon, title, message) {
       loadingState.style.display = "block";
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
@@ -252,12 +255,12 @@
     function renderImagePreview(boxId, hiddenInputId, fileInputId, url) {
       const box = document.getElementById(boxId);
       if (!url) {
-        box.innerHTML = '<div class="small" style="opacity:.74;">No image yet.</div>';
+        box.innerHTML = '<div class="small" style="color:var(--text-light);">No image yet.</div>';
         return;
       }
       const src = safeSrc(url);
       box.innerHTML =
-        '<img src="' + src + '" alt="" style="max-width:180px; max-height:120px; border-radius:8px; object-fit:cover; display:block;" onerror="this.style.opacity=0.3">' +
+        '<img src="' + src + '" alt="" style="max-width:180px; max-height:120px; object-fit:cover; display:block;" onerror="this.style.opacity=0.3">' +
         '<button type="button" class="btn secondary" data-remove-img style="margin-top:6px; padding:6px 12px; font-size:12px;">Remove image</button>';
       box.querySelector("[data-remove-img]").addEventListener("click", () => {
         document.getElementById(hiddenInputId).value = "";
@@ -342,22 +345,22 @@
     function renderHeroList(slides) {
       const list = document.getElementById("heroList");
       if (!slides.length) {
-        list.innerHTML = '<div class="small" style="opacity:.76;">No hero slides yet — add one above. (With zero active slides, the homepage banner is simply hidden.)</div>';
+        list.innerHTML = '<div class="small" style="color:var(--text-light);">No hero slides yet — add one above. (With zero active slides, the homepage banner is simply hidden.)</div>';
         return;
       }
       list.innerHTML = slides.map(s => `
         <div class="pm-list-item">
           <img class="pm-thumb" src="${safeSrc(s.image_desktop_url || "")}" alt="" onerror="this.style.visibility='hidden'">
           <div style="flex:1; min-width:180px;">
-            <div style="font-weight:800;">${escapeHtml(s.title || "Untitled slide")}
+            <div style="font-weight:700;">${escapeHtml(s.title || "Untitled slide")}
               <span class="pm-badge ${s.is_active ? "active" : "inactive"}" style="margin-left:8px;">${s.is_active ? "Active" : "Inactive"}</span>
             </div>
-            <div class="small" style="opacity:.78; margin-top:4px;">${escapeHtml(s.kicker || "")}</div>
-            <div class="small" style="opacity:.72; margin-top:2px;">Order ${escapeHtml(String(s.sort_order ?? 0))} · Updated ${new Date(s.updated_at).toLocaleString("en-IN")}</div>
+            <div class="small" style="color:var(--text-light); margin-top:4px;">${escapeHtml(s.kicker || "")}</div>
+            <div class="small" style="color:var(--text-light); margin-top:2px;">Order ${escapeHtml(String(s.sort_order ?? 0))} · Updated ${new Date(s.updated_at).toLocaleString("en-IN")}</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(s.id)}">Edit</button>
-            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-delete="${escapeAttr(s.id)}">Delete</button>
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#a13d3d; border-color:rgba(161,61,61,.3);" data-delete="${escapeAttr(s.id)}">Delete</button>
           </div>
         </div>
       `).join("");
@@ -413,7 +416,7 @@
         heroFormStatus.textContent = "Saving…";
         const result = await authedFetch(payload);
         fillHeroForm(result.item);
-        heroFormStatus.textContent = "Saved ✅";
+        heroFormStatus.textContent = "Saved.";
         await loadHeroList();
       } catch (e) {
         heroFormStatus.textContent = "Error: " + e.message;
@@ -459,22 +462,22 @@
     function renderTestiList(items) {
       const list = document.getElementById("testiList");
       if (!items.length) {
-        list.innerHTML = '<div class="small" style="opacity:.76;">No testimonials yet — add one above. (With zero active testimonials, the homepage section is simply hidden.)</div>';
+        list.innerHTML = '<div class="small" style="color:var(--text-light);">No testimonials yet — add one above. (With zero active testimonials, the homepage section is simply hidden.)</div>';
         return;
       }
       list.innerHTML = items.map(t => `
         <div class="pm-list-item">
-          ${t.photo_url ? `<img class="pm-thumb" style="border-radius:50%;" src="${safeSrc(t.photo_url)}" alt="" onerror="this.style.visibility='hidden'">` : `<div class="pm-thumb" style="border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; color:#6b7280;">${escapeHtml((t.customer_name || "?").charAt(0).toUpperCase())}</div>`}
+          ${t.photo_url ? `<img class="pm-thumb" style="border-radius:50%;" src="${safeSrc(t.photo_url)}" alt="" onerror="this.style.visibility='hidden'">` : `<div class="pm-thumb" style="border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--text-light);">${escapeHtml((t.customer_name || "?").charAt(0).toUpperCase())}</div>`}
           <div style="flex:1; min-width:180px;">
-            <div style="font-weight:800;">${escapeHtml(t.customer_name || "")} <span class="small" style="font-weight:400; opacity:.76;">${escapeHtml(t.customer_place || "")}</span>
+            <div style="font-weight:700;">${escapeHtml(t.customer_name || "")} <span class="small" style="font-weight:400; color:var(--text-light);">${escapeHtml(t.customer_place || "")}</span>
               <span class="pm-badge ${t.is_active ? "active" : "inactive"}" style="margin-left:8px;">${t.is_active ? "Active" : "Inactive"}</span>
             </div>
-            <div class="small" style="opacity:.75; margin-top:4px;">"${escapeHtml(t.quote || "")}"</div>
-            <div class="small" style="opacity:.72; margin-top:2px;">${"★".repeat(Math.max(0, Math.min(5, t.stars || 0)))} · Order ${escapeHtml(String(t.sort_order ?? 0))} · Updated ${new Date(t.updated_at).toLocaleString("en-IN")}</div>
+            <div class="small" style="color:var(--text-light); margin-top:4px;">"${escapeHtml(t.quote || "")}"</div>
+            <div class="small" style="color:var(--text-light); margin-top:2px;">${"★".repeat(Math.max(0, Math.min(5, t.stars || 0)))} · Order ${escapeHtml(String(t.sort_order ?? 0))} · Updated ${new Date(t.updated_at).toLocaleString("en-IN")}</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(t.id)}">Edit</button>
-            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-delete="${escapeAttr(t.id)}">Delete</button>
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#a13d3d; border-color:rgba(161,61,61,.3);" data-delete="${escapeAttr(t.id)}">Delete</button>
           </div>
         </div>
       `).join("");
@@ -524,7 +527,7 @@
         tFormStatus.textContent = "Saving…";
         const result = await authedFetch(payload);
         fillTestiForm(result.item);
-        tFormStatus.textContent = "Saved ✅";
+        tFormStatus.textContent = "Saved.";
         await loadTestiList();
       } catch (e) {
         tFormStatus.textContent = "Error: " + e.message;
@@ -536,7 +539,7 @@
     async function initAdmin() {
       try {
         const sessResult = await supabase.auth.getSession();
-        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (sessResult.error) return showGateError(ICON_WARN, "Auth Error", sessResult.error.message);
         if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
 
         const session = sessResult.data.session;
@@ -547,8 +550,8 @@
           .eq("email", session.user.email.toLowerCase())
           .maybeSingle();
 
-        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
-        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+        if (adminResult.error) return showGateError(ICON_WARN, "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError(ICON_LOCK, "Access Denied", "Your account does not have admin access.");
 
         loadingState.style.display = "none";
         dashboard.style.display = "block";
@@ -558,7 +561,7 @@
         await Promise.all([loadHeroList(), loadTestiList()]);
       } catch (e) {
         console.error("Hero & Testimonials admin page error:", e);
-        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+        showGateError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
       }
     }
 
