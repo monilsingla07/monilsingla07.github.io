@@ -21,61 +21,61 @@
     .filters-bar { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center; }
     .filters-bar .input { height:40px;font-size:13px; }
     .pager { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:14px; justify-content:space-between; }
-    .pager .small { opacity:.8; }
+    .pager .small { opacity:1; color:var(--text-light); }
 
-    .tabs { display:flex; gap:6px; border-bottom:1px solid var(--border,#e5e7eb); margin-bottom:18px; }
+    .tabs { display:flex; gap:6px; border-bottom:1px solid var(--border-light); margin-bottom:18px; }
     .tab-btn {
       background:none; border:none; padding:10px 4px; margin-right:14px; font-size:13px; font-weight:700;
-      opacity:.74; cursor:pointer; border-bottom:2px solid transparent;
+      color:var(--text-light); cursor:pointer; border-bottom:2px solid transparent;
     }
-    .tab-btn.active { opacity:1; border-bottom-color: var(--brand,#7c1c1c); color: var(--brand,#7c1c1c); }
+    .tab-btn.active { color: var(--brand); border-bottom-color: var(--brand); }
     .tab-panel { display:none; }
     .tab-panel.active { display:block; }
 
     .user-card {
-      border:1px solid var(--border,#e5e7eb); border-radius:14px; background:#fff;
+      border:1px solid var(--border-light); background:var(--surface);
       padding:14px 16px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;
     }
     .user-card + .user-card { margin-top:10px; }
     .user-main { display:flex; flex-direction:column; gap:3px; }
-    .user-name { font-weight:800; font-size:14.5px; }
-    .user-sub { font-size:12.5px; opacity:.78; }
+    .user-name { font-weight:700; font-size:14.5px; }
+    .user-sub { font-size:12.5px; color:var(--text-light); }
     .user-meta { display:flex; flex-direction:column; align-items:flex-end; gap:4px; text-align:right; }
 
     .pill {
       display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px;
-      font-size:10.5px; font-weight:800; letter-spacing:.02em; gap:4px;
+      font-size:10.5px; font-weight:700; letter-spacing:.02em; gap:4px;
     }
-    .pill.google  { background:#eff6ff; color:#1d4ed8; }
-    .pill.phone   { background:#f0fdf4; color:#166534; }
-    .pill.email   { background:#fef9c3; color:#854d0e; }
-    .pill.unknown { background:#f3f4f6; color:#6b7280; }
-    .pill.never   { background:#fee2e2; color:#991b1b; }
+    .pill.google  { background:var(--indigo-light); color:var(--indigo); }
+    .pill.phone   { background:rgba(63,107,79,.1); color:#3f6b4f; }
+    .pill.email   { background:var(--accent-gold-light); color:var(--accent-gold); }
+    .pill.unknown { background:var(--border-light); color:var(--text-light); }
+    .pill.never   { background:rgba(161,61,61,.09); color:#a13d3d; }
 
     .event-row {
-      border:1px solid var(--border,#e5e7eb); border-radius:12px; background:#fff;
+      border:1px solid var(--border-light); background:var(--surface);
       padding:12px 14px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;
       font-size:13px;
     }
     .event-row + .event-row { margin-top:8px; }
     .event-left { display:flex; flex-direction:column; gap:2px; }
-    .event-right { text-align:right; opacity:.8; font-size:12px; }
+    .event-right { text-align:right; color:var(--text-light); font-size:12px; }
 
     .filter-chip {
       display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px;
-      background: var(--brand-light,#fdf2f2); border:1px solid var(--brand,#7c1c1c); font-size:12.5px; font-weight:700;
+      background: var(--brand-lighter); border:1px solid var(--brand); font-size:12.5px; font-weight:700;
       margin-bottom:14px;
     }
-    .filter-chip button { background:none; border:none; cursor:pointer; font-weight:900; opacity:.76; }
+    .filter-chip button { background:none; border:none; cursor:pointer; font-weight:700; color:var(--text-light); }
 
     #toast {
       position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
-      background:#111;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;
+      background:var(--text);color:#fff;padding:10px 20px;font-size:13px;
       font-weight:700;opacity:0;transition:all .25s ease;pointer-events:none;z-index:9999;white-space:nowrap;
     }
     #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
 
-    .section-lbl { font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.72;margin-bottom:4px; }
+    .section-lbl { font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-light);margin-bottom:4px; }
     #custTable th, #custTable td { white-space:nowrap; }
     #custTable td:nth-child(3) { white-space:normal; }
   </style>
@@ -85,13 +85,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:1000px;">
-    <div id="loadingState" style="text-align:center;padding:48px;opacity:.76;font-size:14px;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">Verifying admin access…</div>
 
     <div id="mainContent" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
         <div>
           <h2 style="margin:0;">Registered Users</h2>
-          <div class="small" style="opacity:.78;margin-top:4px;">Every account that's signed up, and a full login history for each one.</div>
+          <div class="small" style="color:var(--text-light);margin-top:4px;">Every account that's signed up, and a full login history for each one.</div>
         </div>
         <a class="btn secondary" href="admin.html" style="padding:8px 14px;font-size:13px;">← Dashboard</a>
       </div>
@@ -120,7 +120,7 @@
           <button id="btnCustSearch" class="btn secondary" style="padding:8px 16px;font-size:13px;">Search</button>
           <button id="btnCustRefresh" class="btn secondary" style="padding:8px 16px;font-size:13px;">↻ Refresh</button>
         </div>
-        <div id="custStatusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
+        <div id="custStatusMsg" class="small" style="margin-bottom:12px;color:var(--text-light);"></div>
         <div style="overflow-x:auto;">
           <table id="custTable" style="width:100%;border-collapse:collapse;font-size:13px;min-width:920px;">
             <thead>
@@ -173,7 +173,7 @@
           <button id="btnUserRefresh" class="btn secondary" style="padding:8px 16px;font-size:13px;">↻ Refresh</button>
           <button id="btnUserExportCsv" class="btn secondary" style="padding:8px 16px;font-size:13px;">Export CSV</button>
         </div>
-        <div id="userStatusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
+        <div id="userStatusMsg" class="small" style="margin-bottom:12px;color:var(--text-light);"></div>
         <div id="userList" style="display:grid;gap:0;"></div>
         <div class="pager">
           <div class="small" id="userPagerInfo"></div>
@@ -187,7 +187,7 @@
       <!-- ── Login history tab ── -->
       <div id="tab-history" class="tab-panel">
         <div id="historyFilterChip" style="display:none;"></div>
-        <div id="historyStatusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
+        <div id="historyStatusMsg" class="small" style="margin-bottom:12px;color:var(--text-light);"></div>
         <div id="historyList"></div>
         <div class="pager">
           <div class="small" id="historyPagerInfo"></div>
@@ -204,7 +204,7 @@
            person instead of only aggregate charts. ── -->
       <div id="tab-visits" class="tab-panel">
         <div id="visitsFilterChip" style="display:none;"></div>
-        <div id="visitsStatusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
+        <div id="visitsStatusMsg" class="small" style="margin-bottom:12px;color:var(--text-light);"></div>
         <div id="visitsList"></div>
         <div class="pager">
           <div class="small" id="visitsPagerInfo"></div>
@@ -232,19 +232,22 @@
     const loadingState = document.getElementById("loadingState");
     const mainContent  = document.getElementById("mainContent");
 
-    function showAdminError(emoji, title, message) {
+    const ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    const ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showAdminError(icon, title, message) {
       loadingState.style.display = "block";
       mainContent.style.display = "none";
       loadingState.innerHTML =
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
-          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
         '</div>';
     }
 
-    function toast(msg, color = "#111") {
+    function toast(msg, color = "var(--text)") {
       const el = document.getElementById("toast");
       el.textContent = msg;
       el.style.background = color;
@@ -256,7 +259,7 @@
       const { data, error } = await supabase.functions.invoke(name, { body: body || {} });
       if (error) {
         if (error.status === 401) { window.location.href = "login.html"; return { ok: false, handled: true }; }
-        if (error.status === 403) { showAdminError("🔒", "Access Denied", "Your account does not have admin access."); return { ok: false, handled: true }; }
+        if (error.status === 403) { showAdminError(ICON_LOCK, "Access Denied", "Your account does not have admin access."); return { ok: false, handled: true }; }
         let msg = error.message || "Function error";
         try {
           if (error.context && typeof error.context.json === "function") {
@@ -348,7 +351,7 @@
       lastCustomers = customers;
 
       if (!customers.length) {
-        tbody.innerHTML = `<tr><td colspan="10" class="small" style="opacity:.76;padding:24px 0;text-align:center;">No customers found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="small" style="color:var(--text-light);padding:24px 0;text-align:center;">No customers found.</td></tr>`;
         statusMsg.textContent = "";
       } else {
         tbody.innerHTML = customers.map((c, idx) => {
@@ -416,9 +419,9 @@
       header.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
           <div>
-            <div style="font-weight:900;font-size:16px;">${escapeHtml(customer.full_name || "(No name saved)")}</div>
-            <div class="small" style="opacity:.78;margin-top:4px;">${escapeHtml([customer.phone, customer.email].filter(Boolean).join(" · ") || "No contact info")}</div>
-            <div class="small" style="opacity:.78;margin-top:2px;">${escapeHtml([customer.city, customer.state].filter(Boolean).join(", "))}</div>
+            <div style="font-weight:700;font-size:16px;">${escapeHtml(customer.full_name || "(No name saved)")}</div>
+            <div class="small" style="color:var(--text-light);margin-top:4px;">${escapeHtml([customer.phone, customer.email].filter(Boolean).join(" · ") || "No contact info")}</div>
+            <div class="small" style="color:var(--text-light);margin-top:2px;">${escapeHtml([customer.city, customer.state].filter(Boolean).join(", "))}</div>
           </div>
           <div style="text-align:right;">
             ${modePill(customer.mode)}
@@ -434,9 +437,9 @@
         </div>
       `;
 
-      ordersEl.innerHTML = `<div class="small" style="opacity:.76;">Loading…</div>`;
-      loginsEl.innerHTML = customer.is_registered ? `<div class="small" style="opacity:.76;">Loading…</div>` : `<div class="small" style="opacity:.6;">No account — walk-in customers have no login history.</div>`;
-      visitsEl.innerHTML = customer.is_registered ? `<div class="small" style="opacity:.76;">Loading…</div>` : `<div class="small" style="opacity:.6;">No account — walk-in customers have no site-visit history.</div>`;
+      ordersEl.innerHTML = `<div class="small" style="color:var(--text-light);">Loading…</div>`;
+      loginsEl.innerHTML = customer.is_registered ? `<div class="small" style="color:var(--text-light);">Loading…</div>` : `<div class="small" style="opacity:.6;">No account — walk-in customers have no login history.</div>`;
+      visitsEl.innerHTML = customer.is_registered ? `<div class="small" style="color:var(--text-light);">Loading…</div>` : `<div class="small" style="opacity:.6;">No account — walk-in customers have no site-visit history.</div>`;
 
       // Orders — matches by user_id and/or phone, same as list_customers'
       // own attribution logic, so this always shows exactly the orders that
@@ -450,13 +453,13 @@
             <div class="event-row">
               <div class="event-left">
                 <div><strong>${escapeHtml(o.order_number || o.id.slice(0, 8).toUpperCase())}</strong> — ${escapeHtml(String(o.status).replace(/_/g, " "))}</div>
-                <div class="small" style="opacity:.76;">${itemsText || "—"}</div>
+                <div class="small" style="color:var(--text-light);">${itemsText || "—"}</div>
               </div>
               <div class="event-right">${money(o.total_inr)}<br>${fmtDate(o.created_at)}</div>
             </div>`;
-        }).join("") : `<div class="small" style="opacity:.76;padding:12px 0;">No orders found.</div>`;
+        }).join("") : `<div class="small" style="color:var(--text-light);padding:12px 0;">No orders found.</div>`;
       } else {
-        ordersEl.innerHTML = `<div class="small" style="color:crimson;">Could not load orders.</div>`;
+        ordersEl.innerHTML = `<div class="small" style="color:#a13d3d;">Could not load orders.</div>`;
       }
 
       if (customer.is_registered && customer.user_id) {
@@ -467,12 +470,12 @@
             <div class="event-row">
               <div class="event-left">
                 <div>${providerPill(e.provider)}</div>
-                <div class="small" style="opacity:.76;">${escapeHtml(e.ip_address || "IP unknown")}${[e.city, e.country].filter(Boolean).length ? " · " + escapeHtml([e.city, e.country].filter(Boolean).join(", ")) : ""}</div>
+                <div class="small" style="color:var(--text-light);">${escapeHtml(e.ip_address || "IP unknown")}${[e.city, e.country].filter(Boolean).length ? " · " + escapeHtml([e.city, e.country].filter(Boolean).join(", ")) : ""}</div>
               </div>
               <div class="event-right">${fmtDate(e.created_at)}</div>
-            </div>`).join("") : `<div class="small" style="opacity:.76;padding:12px 0;">No login activity yet.</div>`;
+            </div>`).join("") : `<div class="small" style="color:var(--text-light);padding:12px 0;">No login activity yet.</div>`;
         } else {
-          loginsEl.innerHTML = `<div class="small" style="color:crimson;">Could not load login history.</div>`;
+          loginsEl.innerHTML = `<div class="small" style="color:#a13d3d;">Could not load login history.</div>`;
         }
 
         const visitsRes = await callFn("admin-users", { action: "page_visits", user_id: customer.user_id, per_page: 20 });
@@ -482,12 +485,12 @@
             <div class="event-row">
               <div class="event-left">
                 <div><strong>${escapeHtml(v.page_path)}</strong></div>
-                <div class="small" style="opacity:.76;">${[v.city, v.country].filter(Boolean).length ? escapeHtml([v.city, v.country].filter(Boolean).join(", ")) : ""}${v.device_type ? " · " + escapeHtml(v.device_type) : ""}</div>
+                <div class="small" style="color:var(--text-light);">${[v.city, v.country].filter(Boolean).length ? escapeHtml([v.city, v.country].filter(Boolean).join(", ")) : ""}${v.device_type ? " · " + escapeHtml(v.device_type) : ""}</div>
               </div>
               <div class="event-right">${fmtDate(v.created_at)}</div>
-            </div>`).join("") : `<div class="small" style="opacity:.76;padding:12px 0;">No page visits recorded yet.</div>`;
+            </div>`).join("") : `<div class="small" style="color:var(--text-light);padding:12px 0;">No page visits recorded yet.</div>`;
         } else {
-          visitsEl.innerHTML = `<div class="small" style="color:crimson;">Could not load page visits.</div>`;
+          visitsEl.innerHTML = `<div class="small" style="color:#a13d3d;">Could not load page visits.</div>`;
         }
       }
     }
@@ -512,7 +515,7 @@
       const { users, total } = res.data;
 
       if (!users.length) {
-        list.innerHTML = '<div class="small" style="opacity:.76;padding:24px 0;text-align:center;">No users found.</div>';
+        list.innerHTML = '<div class="small" style="color:var(--text-light);padding:24px 0;text-align:center;">No users found.</div>';
         statusMsg.textContent = "";
       } else {
         list.innerHTML = users.map((u) => {
@@ -531,7 +534,7 @@
               <div class="user-meta">
                 ${lastLogin ? providerPill(u.provider) : '<span class="pill never">Never logged in</span>'}
                 <div class="small">${lastLogin ? "Last login: " + lastLogin : ""}</div>
-                <div class="small" style="opacity:.76;">${u.login_count} login${u.login_count === 1 ? "" : "s"} logged</div>
+                <div class="small" style="color:var(--text-light);">${u.login_count} login${u.login_count === 1 ? "" : "s"} logged</div>
                 <div style="display:flex;gap:6px;">
                   <button class="btn secondary" style="padding:5px 10px;font-size:11.5px;margin-top:2px;" data-userid="${u.id}" data-username="${escapeHtml(name)}">View login history →</button>
                   <button class="btn secondary" style="padding:5px 10px;font-size:11.5px;margin-top:2px;" data-visits-userid="${u.id}" data-visits-username="${escapeHtml(name)}">Pages visited →</button>
@@ -657,7 +660,7 @@
       const { events, total } = res.data;
 
       if (!events.length) {
-        list.innerHTML = '<div class="small" style="opacity:.76;padding:24px 0;text-align:center;">No login activity yet.</div>';
+        list.innerHTML = '<div class="small" style="color:var(--text-light);padding:24px 0;text-align:center;">No login activity yet.</div>';
       } else {
         list.innerHTML = events.map((e) => {
           const who = e.full_name || e.email || "Unknown user";
@@ -666,7 +669,7 @@
             <div class="event-row">
               <div class="event-left">
                 <div><strong>${escapeHtml(who)}</strong> ${providerPill(e.provider)}</div>
-                <div class="small" style="opacity:.76;">${escapeHtml(e.ip_address || "IP unknown")}${location ? " · " + escapeHtml(location) : ""}</div>
+                <div class="small" style="color:var(--text-light);">${escapeHtml(e.ip_address || "IP unknown")}${location ? " · " + escapeHtml(location) : ""}</div>
               </div>
               <div class="event-right">${fmtDate(e.created_at)}</div>
             </div>`;
@@ -724,7 +727,7 @@
       const { visits, total } = res.data;
 
       if (!visits.length) {
-        list.innerHTML = '<div class="small" style="opacity:.76;padding:24px 0;text-align:center;">No page visits recorded yet.</div>';
+        list.innerHTML = '<div class="small" style="color:var(--text-light);padding:24px 0;text-align:center;">No page visits recorded yet.</div>';
       } else {
         list.innerHTML = visits.map((v) => {
           const who = v.full_name || v.email || "Unknown user";
@@ -733,7 +736,7 @@
             <div class="event-row">
               <div class="event-left">
                 <div><strong><a href="${safeHref(v.page_path)}" target="_blank" rel="noopener">${escapeHtml(v.page_path)}</a></strong></div>
-                <div class="small" style="opacity:.76;">${escapeHtml(who)}${location ? " · " + escapeHtml(location) : ""}${v.device_type ? " · " + escapeHtml(v.device_type) : ""}</div>
+                <div class="small" style="color:var(--text-light);">${escapeHtml(who)}${location ? " · " + escapeHtml(location) : ""}${v.device_type ? " · " + escapeHtml(v.device_type) : ""}</div>
               </div>
               <div class="event-right">${fmtDate(v.created_at)}</div>
             </div>`;
@@ -759,7 +762,7 @@
     async function initAdmin() {
       try {
         const sessResult = await supabase.auth.getSession();
-        if (sessResult.error) { showAdminError("⚠️", "Auth Error", sessResult.error.message); return; }
+        if (sessResult.error) { showAdminError(ICON_WARN, "Auth Error", sessResult.error.message); return; }
         if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
 
         loadingState.style.display = "none";
@@ -767,7 +770,7 @@
         loadCustomers();
       } catch (e) {
         console.error("Admin page error:", e);
-        showAdminError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+        showAdminError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
       }
     }
 
