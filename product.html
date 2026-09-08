@@ -512,9 +512,9 @@ if (!sessionStorage.getItem(viewKey)) {
 
       const hasSale = !!(sale && sale > 0 && sale < price);
       if (hasSale) {
-        priceEl.innerHTML = `<span class="pd-price-sale">₹${sale}</span> <span class="pd-price-mrp">₹${price}</span>`;
+        priceEl.innerHTML = `<span class="pd-price-sale">₹${sale.toLocaleString("en-IN")}</span> <span class="pd-price-mrp">₹${price.toLocaleString("en-IN")}</span>`;
       } else {
-        priceEl.textContent = `₹${price}`;
+        priceEl.textContent = `₹${price.toLocaleString("en-IN")}`;
       }
       if (hasSale) {
         const pctOff = Math.round((1 - sale / price) * 100);
@@ -923,10 +923,12 @@ if (!sessionStorage.getItem(viewKey)) {
         specsCard.style.display = "none";
       } else {
         specsDiv.innerHTML = `
-          <div class="spec-grid">
+          <div class="pd-spec-list">
             ${allSpecs.map(s => `
-              <div class="spec-k">${escapeHtml(s.label)}</div>
-              <div class="spec-v">${escapeHtml(s.value)}</div>
+              <div class="pd-spec-item">
+                <div class="pd-spec-k">${escapeHtml(s.label)}</div>
+                <div class="pd-spec-v">${escapeHtml(s.value)}</div>
+              </div>
             `).join("")}
           </div>
         `;

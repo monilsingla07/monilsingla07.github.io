@@ -121,25 +121,28 @@ function initHeroCarousel(track, dots, count) {
 
 const stars5 = (n) => "★★★★★".slice(0, Math.max(0, Math.min(5, Number(n || 0))));
 
+// Rendered as an editorial pull-quote (large serif quotation mark, thin
+// gold rule, no card box) rather than a bordered testimonial card — the
+// boxed-card-with-lettered-avatar pattern read as generic template chrome
+// against the rest of the site's editorial, photography-led design.
 function testimonialCardHtml(t) {
   const name = t.customer_name || "";
-  const initial = escapeAttr(name.charAt(0).toUpperCase());
+  const place = t.customer_place || "";
   const avatarHtml = t.photo_url
-    ? `<img src="${safeSrc(t.photo_url)}" alt="${escapeAttr(name)}" loading="lazy"
-         onerror="this.style.display='none';this.parentElement.dataset.initial='${initial}'">`
+    ? `<img class="testimonial-avatar" src="${safeSrc(t.photo_url)}" alt="${escapeAttr(name)}" loading="lazy" onerror="this.remove()">`
     : "";
 
   return `
-    <div class="card t-compact-card">
-      <div class="t-compact-stars">${stars5(t.stars)}</div>
-      <div class="t-compact-quote">"${escapeHtml(t.quote || "")}"</div>
-      <div class="t-compact-foot">
-        <div class="t-compact-avatar"${t.photo_url ? "" : ` data-initial="${initial}"`}>
-          ${avatarHtml}
-        </div>
+    <div class="testimonial-item">
+      <div class="testimonial-mark" aria-hidden="true">&ldquo;</div>
+      <div class="testimonial-stars">${stars5(t.stars)}</div>
+      <p class="testimonial-quote">${escapeHtml(t.quote || "")}</p>
+      <div class="testimonial-rule" aria-hidden="true"></div>
+      <div class="testimonial-foot">
+        ${avatarHtml}
         <div>
-          <div class="t-compact-name">${escapeHtml(name)}</div>
-          <div class="t-compact-place">${escapeHtml(t.customer_place || "")}</div>
+          <div class="testimonial-name">${escapeHtml(name)}</div>
+          ${place ? `<div class="testimonial-place">${escapeHtml(place)}</div>` : ""}
         </div>
       </div>
     </div>
