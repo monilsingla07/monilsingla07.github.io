@@ -128,11 +128,12 @@
     .weave-pill {
       display: inline-flex;
       align-items: center;
-      padding: 5px 13px;
+      height: 34px;
+      padding: 0 14px;
       border: 1px solid var(--border);
       border-radius: 999px;
       background: var(--surface);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 500;
       color: var(--text-light);
       cursor: pointer;
@@ -153,24 +154,24 @@
     .filter-bar {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
+      flex-wrap: wrap;
+      row-gap: 10px;
+      column-gap: 8px;
+      padding: 12px;
       background: var(--surface);
       border: 1px solid var(--border-light);
       border-radius: var(--radius-md);
       margin-bottom: 24px;
       box-shadow: var(--shadow-xs);
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
     }
-    .filter-bar::-webkit-scrollbar { display: none; }
     .filter-pill-wrap { position: relative; flex: 0 0 auto; }
     .filter-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 14px;
+      height: 38px;
+      max-width: 220px;
+      padding: 0 14px;
       border: 1px solid var(--border);
       border-radius: 999px;
       background: var(--surface);
@@ -179,23 +180,56 @@
       color: var(--text);
       cursor: pointer;
       white-space: nowrap;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
     }
     .filter-pill:hover { border-color: var(--brand); color: var(--brand); }
+    .filter-pill-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 160px;
+    }
+    /* One active-state definition, always gold, regardless of whether the
+       panel happens to be open at the same time — previously "selected" and
+       "open" fought over the pill's color (open always won, so a selected
+       pill visually looked unselected the moment you reopened it). */
     .filter-pill.is-active {
       border-color: var(--accent-gold);
       color: var(--accent-gold);
       background: rgba(184,134,59,0.08);
       font-weight: 600;
     }
+    /* "Open" now only ever adds a focus ring; it never overrides a pill's
+       own resting/active color underneath. */
     .filter-pill-wrap.open .filter-pill {
+      box-shadow: 0 0 0 3px var(--brand-lighter);
+    }
+    .filter-pill-wrap.open .filter-pill:not(.is-active) {
       border-color: var(--brand);
       color: var(--brand);
-      background: var(--brand-lighter);
     }
     .filter-pill-caret { transition: transform 0.2s; flex-shrink: 0; }
     .filter-pill-wrap.open .filter-pill-caret { transform: rotate(180deg); }
-    .filter-pill-more { color: var(--text-light); }
+
+    /* "Clear all" is an action, not a filter — deliberately not pill-shaped
+       so it doesn't read as just another chip in the row. */
+    .filter-clear-btn {
+      display: inline-flex;
+      align-items: center;
+      height: 38px;
+      padding: 0 8px;
+      border: none;
+      background: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-light);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      flex: 0 0 auto;
+      transition: color 0.2s;
+    }
+    .filter-clear-btn:hover { color: var(--brand); }
 
     .filter-pill-panel {
       display: none;
@@ -255,7 +289,17 @@
        shared assets/styles.css (used on the homepage too) — only this
        page's toolbar layout stays here. */
     @media (max-width: 700px) {
-      .filter-bar { flex-wrap: nowrap; }
+      /* Below this width, even one row of unique-width pills won't fit
+         without wrapping awkwardly mid-word — fall back to the old
+         horizontal-scroll behavior instead, same as the category-tab and
+         weave-pill rows already do at every width. */
+      .filter-bar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .filter-bar::-webkit-scrollbar { display: none; }
       .filter-bar-spacer { display: none; }
       .toolbar-count-v2 { display: none; }
       .toolbar-sort-v2 { max-width: 130px; }
@@ -336,7 +380,7 @@
         </div>
       </div>
 
-      <button type="button" class="filter-pill filter-pill-more" id="clearAll">Clear all</button>
+      <button type="button" class="filter-clear-btn" id="clearAll">Clear all</button>
 
       <div class="filter-bar-spacer"></div>
       <div id="itemsCount" class="toolbar-count-v2">&nbsp;</div>
