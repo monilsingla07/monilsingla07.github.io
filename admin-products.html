@@ -84,6 +84,27 @@
 
     .cover-preview { width: 140px; height: 187px; object-fit: cover; background: var(--bg-warm); display: block; margin-top: 8px; }
 
+    /* Filters tab — one card per storefront category */
+    .fs-cat { border: 1px solid var(--border-light); background: var(--surface); padding: 18px; margin-bottom: 18px; }
+    .fs-cat + .fs-cat { margin-top: 0; }
+    .fs-head { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; padding-bottom: 14px; border-bottom: 1px solid var(--border-light); }
+    .fs-head .fs-field { display: flex; flex-direction: column; gap: 4px; }
+    .fs-head .fs-field label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); }
+    .fs-head .input { max-width: 190px; }
+    .fs-row { display: grid; grid-template-columns: 44px minmax(0,1fr) 160px 72px; gap: 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border-light); }
+    .fs-row:last-of-type { border-bottom: none; }
+    .fs-row .fs-name { font-weight: 600; font-size: 13px; }
+    .fs-row .fs-coverage { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+    .fs-row .fs-coverage.warn { color: var(--accent-gold); }
+    .fs-row .input { max-width: 100%; }
+    .fs-colhead { display: grid; grid-template-columns: 44px minmax(0,1fr) 160px 72px; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); padding: 14px 0 4px; }
+    @media (max-width: 720px) {
+      .fs-row { grid-template-columns: 44px minmax(0,1fr); row-gap: 8px; }
+      .fs-row .fs-label-cell { grid-column: 2; }
+      .fs-row .fs-order-cell { grid-column: 2; max-width: 90px; }
+      .fs-colhead { display: none; }
+    }
+
     @media (max-width: 640px) {
       .pm-row { grid-template-columns: 1fr; }
       .repeat-row, .repeat-row.sections { grid-template-columns: 1fr; }
@@ -112,6 +133,7 @@
         <button class="tab-btn" data-tab="weaves">Weave Lines</button>
         <button class="tab-btn" data-tab="collections">Collections</button>
         <button class="tab-btn" data-tab="sectionTemplates">Section Templates</button>
+        <button class="tab-btn" data-tab="filters">Filters</button>
       </div>
 
       <!-- ═══════════════════════ PRODUCTS TAB ═══════════════════════ -->
@@ -343,6 +365,9 @@
 
       <!-- ═══════════════════════ SECTION TEMPLATES TAB ═══════════════════════ -->
       <div class="tab-panel" id="panel-sectionTemplates"></div>
+
+      <!-- ═══════════════════════ FILTERS TAB ═══════════════════════ -->
+      <div class="tab-panel" id="panel-filters"></div>
 
     </div>
   </div>
@@ -1345,6 +1370,140 @@
       });
     }
 
+    // ══════════════════════════════════════ FILTERS TAB ══════════════════════════════════════
+    // Controls which filters the storefront's products page offers per
+    // category, what each is called, and their order. Attributes with no
+    // product data yet can be switched on here, but the products page still
+    // hides any filter with fewer than 2 distinct values — that's what the
+    // coverage note under each row is warning about.
+    let filterSettingsCache = { filters: [], categories: [], coverage: {} };
+
+    // Which product field each filter key reads from — shown so it's obvious
+    // where to go and tag products to make a filter usable.
+    const FILTER_SOURCE_HINT = {
+      fabric: "Fabric field on each product",
+      collection: "Collections tab",
+      colour: "Colour field on each product",
+      occasion: "Occasion field on each product",
+      price: "Always available — no tagging needed",
+      print_type: "Print Type field on each product",
+      craft: "Craft field on each product",
+      motif: "Motif field on each product",
+      border_type: "Border Type field on each product",
+      zari: "Zari field on each product",
+    };
+
+    function coverageNote(category, key) {
+      if (key === "price") return { text: FILTER_SOURCE_HINT.price, warn: false };
+      if (key === "collection") return { text: FILTER_SOURCE_HINT.collection, warn: false };
+      const cov = (filterSettingsCache.coverage[category] || {})[key];
+      const distinct = cov ? cov.distinct : 0;
+      const tagged = cov ? cov.tagged : 0;
+      if (distinct >= 2) return { text: `${tagged} product(s) tagged · ${distinct} options`, warn: false };
+      return {
+        text: `Only ${distinct} option${distinct === 1 ? "" : "s"} so far — stays hidden until 2+ products have different values. Set via: ${FILTER_SOURCE_HINT[key] || key}`,
+        warn: true,
+      };
+    }
+
+    function filtersPanelHtml() {
+      const cats = filterSettingsCache.categories;
+      if (!cats.length) return '<div class="small" style="color:var(--text-light);">No categories configured yet.</div>';
+
+      return `
+        <div class="small" style="color:var(--text-light); margin-bottom:16px; max-width:70ch;">
+          Choose which filters appear on the shop page for each category, rename them, and set the order they show in. Changes go live immediately.
+        </div>
+        ${cats.map(cat => {
+          const rows = filterSettingsCache.filters
+            .filter(f => f.category === cat.category)
+            .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+          return `
+            <div class="fs-cat" data-category="${escapeAttr(cat.category)}">
+              <div class="fs-head">
+                <div class="fs-field">
+                  <label>Category name (shown on the tab)</label>
+                  <input class="input fs-cat-label" value="${escapeAttr(cat.label)}" maxlength="40" />
+                </div>
+                <div class="fs-field">
+                  <label>Weave row — "all" pill</label>
+                  <input class="input fs-all-weaves-label" value="${escapeAttr(cat.all_weaves_label || "All Weaves")}" maxlength="40" />
+                </div>
+                <div class="fs-field" style="flex:1; min-width:120px; align-items:flex-end;">
+                  <button class="btn fs-save" type="button" style="padding:9px 18px;">Save ${escapeHtml(cat.label)}</button>
+                </div>
+              </div>
+
+              <div class="fs-colhead">
+                <span>Show</span><span>Filter</span><span>Name on site</span><span>Order</span>
+              </div>
+
+              ${rows.map(f => {
+                const note = coverageNote(cat.category, f.filter_key);
+                return `
+                  <div class="fs-row" data-key="${escapeAttr(f.filter_key)}">
+                    <label class="switch">
+                      <input type="checkbox" class="fs-enabled" ${f.is_enabled ? "checked" : ""} />
+                      <span class="slider"></span>
+                    </label>
+                    <div>
+                      <div class="fs-name">${escapeHtml(f.filter_key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()))}</div>
+                      <div class="fs-coverage ${note.warn ? "warn" : ""}">${escapeHtml(note.text)}</div>
+                    </div>
+                    <div class="fs-label-cell"><input class="input fs-label" value="${escapeAttr(f.label)}" maxlength="40" /></div>
+                    <div class="fs-order-cell"><input class="input fs-order" type="number" value="${Number(f.sort_order ?? 0)}" /></div>
+                  </div>
+                `;
+              }).join("")}
+
+              <div class="fs-status small" style="margin-top:12px; color:var(--text-light);"></div>
+            </div>
+          `;
+        }).join("")}
+      `;
+    }
+
+    function wireFiltersPanel() {
+      document.querySelectorAll(".fs-cat").forEach(card => {
+        card.querySelector(".fs-save").addEventListener("click", async () => {
+          const status = card.querySelector(".fs-status");
+          const category = card.dataset.category;
+          const filters = Array.from(card.querySelectorAll(".fs-row")).map(row => ({
+            filter_key: row.dataset.key,
+            label: row.querySelector(".fs-label").value.trim(),
+            is_enabled: row.querySelector(".fs-enabled").checked,
+            sort_order: Number(row.querySelector(".fs-order").value || 0),
+          }));
+
+          const blank = filters.find(f => !f.label);
+          if (blank) { status.textContent = `"${blank.filter_key}" needs a name.`; return; }
+
+          status.textContent = "Saving…";
+          try {
+            await authedFetch(CATALOG_FN, {
+              action: "save_filter_settings",
+              category,
+              filters,
+              category_label: card.querySelector(".fs-cat-label").value.trim(),
+              all_weaves_label: card.querySelector(".fs-all-weaves-label").value.trim(),
+            });
+            status.textContent = "Saved — live on the shop page now.";
+            await reloadFilterSettings();
+          } catch (e) {
+            status.textContent = "Error: " + e.message;
+          }
+        });
+      });
+    }
+
+    async function reloadFilterSettings() {
+      const r = await authedFetch(CATALOG_FN, { action: "list_filter_settings" });
+      filterSettingsCache = { filters: r.filters || [], categories: r.categories || [], coverage: r.coverage || {} };
+      document.getElementById("panel-filters").innerHTML = filtersPanelHtml();
+      wireFiltersPanel();
+    }
+
     async function loadCatalogAndRefreshCollectionCounts() {
       // Re-pull collections so product_count badges stay accurate after a product's collection membership changes.
       const items = await loadCatalogCache("collection");
@@ -1380,7 +1539,7 @@
         wireTaxonomyPanel("section_template");
         clearTaxonomyForm("fabric"); clearTaxonomyForm("weave_line"); clearTaxonomyForm("collection"); clearTaxonomyForm("section_template");
 
-        await Promise.all([reloadTaxonomy("fabric"), reloadTaxonomy("weave_line"), reloadTaxonomy("collection"), reloadTaxonomy("section_template")]);
+        await Promise.all([reloadTaxonomy("fabric"), reloadTaxonomy("weave_line"), reloadTaxonomy("collection"), reloadTaxonomy("section_template"), reloadFilterSettings()]);
         resetEditorForm();
         await loadProductsList();
       } catch (e) {

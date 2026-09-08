@@ -88,27 +88,30 @@
       scrollbar-width: none;
     }
     .category-tabs::-webkit-scrollbar { display: none; }
+    /* Underlined tabs rather than filled lozenges: the rest of the site was
+       flattened to sharp corners (--radius-* are all 0), so 999px pills here
+       were the last thing still reading as a different, older design. */
     .category-tab {
       display: inline-flex;
       align-items: center;
-      padding: 8px 18px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--surface);
+      padding: 6px 2px;
+      margin-right: 18px;
+      border: none;
+      background: none;
       font-family: var(--font-heading);
-      font-size: 15px;
+      font-size: 20px;
       font-weight: 600;
       color: var(--text-light);
       cursor: pointer;
       white-space: nowrap;
       text-decoration: none;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
     }
-    .category-tab:hover { border-color: var(--brand); color: var(--brand); }
+    .category-tab:hover { color: var(--brand); }
     .category-tab.active {
-      background: var(--brand);
-      border-color: var(--brand);
-      color: #fff;
+      color: var(--text);
+      border-bottom-color: var(--brand);
     }
 
     /* ── Weave pill row ── smaller than the category tabs, sits just above
@@ -131,7 +134,7 @@
       height: 34px;
       padding: 0 14px;
       border: 1px solid var(--border);
-      border-radius: 999px;
+      border-radius: 0;
       background: var(--surface);
       font-size: 13px;
       font-weight: 500;
@@ -164,6 +167,7 @@
       margin-bottom: 24px;
       box-shadow: var(--shadow-xs);
     }
+    .filter-pill-set { display: contents; }
     .filter-pill-wrap { position: relative; flex: 0 0 auto; }
     .filter-pill {
       display: inline-flex;
@@ -173,7 +177,7 @@
       max-width: 220px;
       padding: 0 14px;
       border: 1px solid var(--border);
-      border-radius: 999px;
+      border-radius: 0;
       background: var(--surface);
       font-size: 13px;
       font-weight: 500;
@@ -285,24 +289,137 @@
       cursor: pointer;
     }
 
+    /* ── Mobile filter bar + bottom sheet ──
+       The pill bar used to keep its single row on mobile and scroll
+       sideways with the scrollbar hidden, so "Occasion", "Price", "Clear
+       all" and the whole sort dropdown were cut off the right edge with no
+       hint they were there. Below 700px the bar is replaced by two buttons
+       that open a sheet listing every filter vertically. */
+    .mobile-filter-bar { display: none; }
+    .mfb-btn {
+      flex: 1 1 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .mfb-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mfb-btn svg { flex-shrink: 0; }
+    .mfb-count {
+      flex-shrink: 0;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 1400;
+      opacity: 0;
+      transition: opacity .2s ease;
+    }
+    .sheet-backdrop.open { opacity: 1; }
+    .filter-sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1401;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border-top: 1px solid var(--border-light);
+      box-shadow: 0 -10px 40px rgba(0,0,0,.16);
+      transform: translateY(100%);
+      transition: transform .24s ease;
+    }
+    .filter-sheet.open { transform: translateY(0); }
+    .sheet-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border-light);
+      flex-shrink: 0;
+    }
+    .sheet-title { font-family: var(--font-heading); font-size: 20px; font-weight: 600; }
+    .sheet-close {
+      border: none;
+      background: none;
+      color: var(--text-light);
+      cursor: pointer;
+      padding: 6px;
+      display: inline-flex;
+      min-width: 44px;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+    }
+    .sheet-body { padding: 4px 16px 16px; overflow-y: auto; flex: 1 1 auto; -webkit-overflow-scrolling: touch; }
+    .sheet-group + .sheet-group { border-top: 1px solid var(--border-light); margin-top: 4px; padding-top: 4px; }
+    .sheet-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      padding: 14px 0 6px;
+    }
+    .sheet-body .filter-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 2px;
+      cursor: pointer;
+      font-size: 15px;
+      min-height: 44px;
+      box-sizing: border-box;
+    }
+    .sheet-body .filter-option input { width: 18px; height: 18px; accent-color: var(--brand); flex-shrink: 0; }
+    .sheet-foot {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      border-top: 1px solid var(--border-light);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .sheet-foot .btn { flex: 1 1 0; min-height: 46px; }
+    .sheet-foot .btn.secondary { flex: 0 0 auto; padding-left: 20px; padding-right: 20px; }
+
     /* Product grid, .p-card, and skeleton-loading styles now live in the
        shared assets/styles.css (used on the homepage too) — only this
        page's toolbar layout stays here. */
     @media (max-width: 700px) {
-      /* Below this width, even one row of unique-width pills won't fit
-         without wrapping awkwardly mid-word — fall back to the old
-         horizontal-scroll behavior instead, same as the category-tab and
-         weave-pill rows already do at every width. */
-      .filter-bar {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-      }
-      .filter-bar::-webkit-scrollbar { display: none; }
-      .filter-bar-spacer { display: none; }
-      .toolbar-count-v2 { display: none; }
-      .toolbar-sort-v2 { max-width: 130px; }
+      .filter-bar { display: none; }
+      .mobile-filter-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+      .category-tab { font-size: 18px; margin-right: 14px; }
+    }
+    @media (min-width: 701px) {
+      /* Sheet is mobile-only; never let it appear on desktop even mid-transition. */
+      .filter-sheet, .sheet-backdrop { display: none !important; }
     }
   </style>
 </head>
@@ -326,59 +443,11 @@
     <!-- Weave pills (not a dropdown — see renderWeavePills() below) -->
     <div id="weavePillRow" class="weave-pill-row" role="tablist" aria-label="Weave"></div>
 
-    <!-- Filter pill bar -->
+    <!-- Desktop/tablet: filter pill bar. Pills are built from the admin's
+         filter settings (Admin → Product Catalogue → Filters), so which
+         filters exist, what they're called and their order are all data. -->
     <div class="filter-bar" id="filterBar">
-      <div class="filter-pill-wrap" data-pill="fabric" id="fabricPillWrap">
-        <button type="button" class="filter-pill" id="fabricPillBtn" aria-haspopup="true" aria-expanded="false">
-          <span class="filter-pill-label">Fabric</span>
-          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="filter-pill-panel" id="fabricPanel" role="menu">Loading…</div>
-      </div>
-
-      <div class="filter-pill-wrap" data-pill="collection" id="collectionPillWrap">
-        <button type="button" class="filter-pill" id="collectionPillBtn" aria-haspopup="true" aria-expanded="false">
-          <span class="filter-pill-label">Collection</span>
-          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="filter-pill-panel" id="collectionPanel" role="menu">Loading…</div>
-      </div>
-
-      <div class="filter-pill-wrap hidden" data-pill="colour" id="colourPillWrap">
-        <button type="button" class="filter-pill" id="colourPillBtn" aria-haspopup="true" aria-expanded="false">
-          <span class="filter-pill-label">Colour</span>
-          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="filter-pill-panel" id="colourPanel" role="menu">Loading…</div>
-      </div>
-
-      <div class="filter-pill-wrap hidden" data-pill="occasion" id="occasionPillWrap">
-        <button type="button" class="filter-pill" id="occasionPillBtn" aria-haspopup="true" aria-expanded="false">
-          <span class="filter-pill-label">Occasion</span>
-          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="filter-pill-panel" id="occasionPanel" role="menu">Loading…</div>
-      </div>
-
-      <div class="filter-pill-wrap" data-pill="price">
-        <button type="button" class="filter-pill" id="pricePillBtn" aria-haspopup="true" aria-expanded="false">
-          <span class="filter-pill-label">Price</span>
-          <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="filter-pill-panel" id="pricePanel" role="menu">
-          <div class="filter-panel-price">
-            <div class="price-row">
-              <input id="minPrice" class="input" placeholder="Min ₹" inputmode="numeric" />
-              <input id="maxPrice" class="input" placeholder="Max ₹" inputmode="numeric" />
-            </div>
-            <label class="filter-option" style="padding-left:0;">
-              <input type="checkbox" id="inStockOnly" />
-              <span>In Stock Only</span>
-            </label>
-            <button id="applyFilters" class="btn" type="button" style="width:100%;">Apply</button>
-          </div>
-        </div>
-      </div>
+      <div class="filter-pill-set" id="filterPills"></div>
 
       <button type="button" class="filter-clear-btn" id="clearAll">Clear all</button>
 
@@ -391,6 +460,38 @@
         <option value="priceHigh">Price: High to Low</option>
       </select>
     </div>
+
+    <!-- Mobile: two buttons instead of a pill row that ran off the screen
+         edge. Both open the sheet below. -->
+    <div class="mobile-filter-bar" id="mobileFilterBar">
+      <button type="button" class="mfb-btn" id="mfbFilters" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+        <span>Filters</span>
+        <span class="mfb-count" id="mfbCount" hidden>0</span>
+      </button>
+      <button type="button" class="mfb-btn" id="mfbSort" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/></svg>
+        <span id="mfbSortLabel">Newest first</span>
+      </button>
+    </div>
+
+    <!-- Bottom sheet (mobile) — every filter group stacked vertically so
+         nothing is ever clipped off the right edge. -->
+    <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+    <div class="filter-sheet" id="filterSheet" role="dialog" aria-modal="true" aria-label="Filters" hidden>
+      <div class="sheet-head">
+        <div class="sheet-title" id="sheetTitle">Filters</div>
+        <button type="button" class="sheet-close" id="sheetClose" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="sheet-body" id="sheetBody"></div>
+      <div class="sheet-foot">
+        <button type="button" class="btn secondary" id="sheetClear">Clear all</button>
+        <button type="button" class="btn" id="sheetApply">Show <span id="sheetCount">results</span></button>
+      </div>
+    </div>
+
 
     <div id="status" class="small" style="margin-bottom:12px;"></div>
 
@@ -431,7 +532,6 @@
   const status = document.getElementById("status");
   const grid = document.getElementById("grid");
   const itemsCount = document.getElementById("itemsCount");
-  const applyFiltersBtn = document.getElementById("applyFilters");
   const skeleton = document.getElementById("skeletonState");
 
   const url = new URL(location.href);
@@ -468,30 +568,87 @@
     return (Date.now() - new Date(createdAt).getTime()) < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
   }
 
-  // Category tabs — add a new entry here and it appears in the nav with
-  // zero other code changes (the products.html filter data underneath is
-  // still scoped by the existing ?type= param and "category" DB column).
-  const CATEGORIES = [
-    { value: "saree", label: "Sarees" },
-    { value: "suit", label: "Suits" },
+  // FIX: Sarees and Suits used to share one unfiltered list of collections
+  // and fabrics — a collection or fabric that only had suits in it still
+  // showed up as a filter option while browsing sarees (and just led to
+  // "No products in this collection yet"). Both are now scoped to products
+  // of the type actually being browsed, via the same ?type= this page
+  // already filters its product grid by.
+  const currentType = (params.get("type") || "saree").toLowerCase();
+
+  // ── Filter configuration ──
+  // Which filters this category offers, what they're called, and their
+  // order all come from filter_settings / category_settings, edited in
+  // Admin → Product Catalogue → Filters. The defaults seeded there match
+  // what this page used to hardcode, so an untouched store looks the same.
+  //
+  // Free-text attribute filters read straight off a products column. Any
+  // of them still hides itself when the current result set has fewer than
+  // 2 distinct values — a filter with one option can't filter anything.
+  const TEXT_FILTER_COLUMNS = {
+    colour: "colour",
+    occasion: "occasion",
+    print_type: "print_type",
+    craft: "craft",
+    motif: "motif",
+    border_type: "border_type",
+    zari: "zari",
+  };
+
+  let filterDefs = [];                       // [{filter_key, label, sort_order}] — enabled only
+  let categoryDefs = [];                     // [{category, label, all_weaves_label}]
+  let categoryMeta = { label: "", all_weaves_label: "All Weaves" };
+  const optionsByKey = {};                   // filter_key -> [{value,label}]
+
+  const FALLBACK_FILTERS = [
+    { filter_key: "fabric", label: "Fabric", sort_order: 1 },
+    { filter_key: "collection", label: "Collection", sort_order: 2 },
+    { filter_key: "colour", label: "Colour", sort_order: 3 },
+    { filter_key: "occasion", label: "Occasion", sort_order: 4 },
+    { filter_key: "price", label: "Price", sort_order: 5 },
   ];
+  const FALLBACK_CATEGORIES = [
+    { category: "saree", label: "Sarees", all_weaves_label: "All Weaves" },
+    { category: "suit", label: "Suits", all_weaves_label: "All Weaves" },
+  ];
+
+  async function loadFilterConfig(){
+    try {
+      const [{ data: fRows }, { data: cRows }] = await Promise.all([
+        supabase.from("filter_settings").select("filter_key,label,is_enabled,sort_order").eq("category", currentType),
+        supabase.from("category_settings").select("category,label,all_weaves_label,sort_order,is_enabled").order("sort_order"),
+      ]);
+
+      filterDefs = (fRows || [])
+        .filter(f => f.is_enabled)
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+      if (!filterDefs.length) filterDefs = FALLBACK_FILTERS.slice();
+
+      categoryDefs = (cRows || []).filter(c => c.is_enabled !== false);
+      if (!categoryDefs.length) categoryDefs = FALLBACK_CATEGORIES.slice();
+    } catch (e) {
+      // Never let a config-fetch hiccup leave the shop with no filters at all.
+      filterDefs = FALLBACK_FILTERS.slice();
+      categoryDefs = FALLBACK_CATEGORIES.slice();
+    }
+    categoryMeta = categoryDefs.find(c => c.category === currentType) || { label: currentType, all_weaves_label: "All Weaves" };
+  }
 
   function renderCategoryTabs(){
     const box = document.getElementById("categoryTabs");
-    const activeType = (params.get("type") || "saree").toLowerCase();
-    box.innerHTML = CATEGORIES.map(c => {
+    box.innerHTML = categoryDefs.map(c => {
       const p = new URLSearchParams();
-      p.set("type", c.value);
-      return `<a class="category-tab${c.value === activeType ? " active" : ""}" href="products.html?${p.toString()}" data-type="${escapeAttr(c.value)}" role="tab" aria-selected="${c.value === activeType}">${escapeHtml(c.label)}</a>`;
+      p.set("type", c.category);
+      const active = c.category === currentType;
+      return `<a class="category-tab${active ? " active" : ""}" href="products.html?${p.toString()}" data-type="${escapeAttr(c.category)}" role="tab" aria-selected="${active}">${escapeHtml(c.label)}</a>`;
     }).join("");
   }
-  renderCategoryTabs();
 
-  // Filter pill panels — only one open at a time; a click outside, or
-  // Escape, closes whichever is open.
-  const pillWraps = Array.from(document.querySelectorAll(".filter-pill-wrap"));
+  // ── Desktop pill panels ── only one open at a time; a click outside, or
+  // Escape, closes whichever is open. Pills are rebuilt on every refresh,
+  // so these look up ".filter-pill-wrap" live rather than caching a list.
   function closeAllPanels(except){
-    pillWraps.forEach(w => {
+    document.querySelectorAll(".filter-pill-wrap").forEach(w => {
       if (w !== except) {
         w.classList.remove("open");
         w.querySelector(".filter-pill")?.setAttribute("aria-expanded", "false");
@@ -511,81 +668,35 @@
     panel.style.left = left + "px";
   }
 
-  pillWraps.forEach(wrap => {
-    const btn = wrap.querySelector(".filter-pill");
-    const panel = wrap.querySelector(".filter-pill-panel");
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const willOpen = !wrap.classList.contains("open");
-      closeAllPanels(willOpen ? wrap : null);
-      if (willOpen) positionPanel(btn, panel);
-      wrap.classList.toggle("open", willOpen);
-      btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
-    });
-  });
-  document.querySelectorAll(".filter-pill-panel").forEach(p => {
-    p.addEventListener("click", (e) => e.stopPropagation());
-  });
   document.addEventListener("click", () => closeAllPanels(null));
-  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllPanels(null); });
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeAllPanels(null); closeSheet(); } });
   window.addEventListener("resize", () => closeAllPanels(null));
   window.addEventListener("scroll", () => closeAllPanels(null), { passive: true });
 
-  document.getElementById("clearAll").addEventListener("click", () => {
-    params.delete("weave"); params.delete("collection"); params.delete("fabric");
-    params.delete("colour"); params.delete("occasion");
-    params.delete("min"); params.delete("max"); params.delete("inStock"); params.delete("sort");
+  function clearAllFilters(){
+    ["weave", "collection", "fabric", "min", "max", "inStock", "sort", ...Object.keys(TEXT_FILTER_COLUMNS)]
+      .forEach(k => params.delete(k));
     history.replaceState({}, "", url.pathname + (params.get("type") ? ("?type=" + params.get("type")) : ""));
-    document.getElementById("minPrice").value = "";
-    document.getElementById("maxPrice").value = "";
-    document.getElementById("inStockOnly").checked = false;
     document.getElementById("sortBy").value = "newest";
-    updatePricePillLabel();
     closeAllPanels(null);
     refreshFiltersAndGrid();
-  });
-
-  // FIX: Sarees and Suits used to share one unfiltered list of collections
-  // and fabrics — a collection or fabric that only had suits in it still
-  // showed up as a filter option while browsing sarees (and just led to
-  // "No products in this collection yet"). Both are now scoped to products
-  // of the type actually being browsed, via the same ?type= this page
-  // already filters its product grid by.
-  const currentType = (params.get("type") || "saree").toLowerCase();
-
-  // Sets a pill's visible label to "<Default>: <value>" when a filter is
-  // active, and marks it so the active state is visually obvious in the bar
-  // (not just inside the panel once opened).
-  function setPillLabel(pillId, defaultLabel, selectedText){
-    const btn = document.getElementById(pillId);
-    if (!btn) return;
-    const span = btn.querySelector(".filter-pill-label");
-    if (selectedText) {
-      span.textContent = `${defaultLabel}: ${selectedText}`;
-      btn.classList.add("is-active");
-    } else {
-      span.textContent = defaultLabel;
-      btn.classList.remove("is-active");
-    }
   }
+  document.getElementById("clearAll").addEventListener("click", clearAllFilters);
+  document.getElementById("sheetClear").addEventListener("click", clearAllFilters);
 
-  // Every radio-based panel (Fabric/Collection/Colour/Occasion) shares the
-  // same behaviour: picking an option applies it immediately and closes the
-  // panel — this is the fix for the "quantity doesn't change until I click
-  // Apply" bug, which was caused by these handlers previously calling only
-  // setParam() and never resetAndLoad(). Beyond that immediate grid refresh,
-  // every OTHER filter's option list also has to be recomputed (a picked
-  // Fabric can make some Colour/Occasion/Weave values stop having any
-  // matching products) — that's what refreshFiltersAndGrid() does.
-  function bindRadioPanel(box, inputName, paramName, wrap, pillBtnId, defaultLabel){
-    Array.from(box.querySelectorAll(`input[name='${inputName}']`)).forEach(r => {
-      r.addEventListener("change", () => {
-        setParam(paramName, r.value);
-        if (pillBtnId) setPillLabel(pillBtnId, defaultLabel, r.value ? r.nextElementSibling?.textContent.trim() : "");
-        wrap?.classList.remove("open");
-        refreshFiltersAndGrid();
-      });
-    });
+  // How many filters are currently narrowing the results — drives the count
+  // badge on the mobile "Filters" button.
+  function activeFilterCount(){
+    let n = 0;
+    for (const def of filterDefs) {
+      if (def.filter_key === "price") {
+        if (params.get("min") || params.get("max") || params.get("inStock") === "true") n += 1;
+      } else if (params.get(def.filter_key)) {
+        n += 1;
+      }
+    }
+    if (params.get("weave")) n += 1;
+    return n;
   }
 
   // Every facet query below (loadCollections/loadFabrics/renderWeavePills/
@@ -601,8 +712,9 @@
     if (exclude !== "collection" && params.get("collection") && cache.productIds) c.push(q => q.in("id", cache.productIds));
     if (exclude !== "fabric" && params.get("fabric") && cache.fabricId) c.push(q => q.eq("fabric_id", cache.fabricId));
     if (exclude !== "weave" && params.get("weave") && cache.weaveId) c.push(q => q.eq("weave_line_id", cache.weaveId));
-    if (exclude !== "colour" && params.get("colour")) c.push(q => q.eq("colour", params.get("colour")));
-    if (exclude !== "occasion" && params.get("occasion")) c.push(q => q.eq("occasion", params.get("occasion")));
+    for (const [key, column] of Object.entries(TEXT_FILTER_COLUMNS)) {
+      if (exclude !== key && params.get(key)) c.push(q => q.eq(column, params.get(key)));
+    }
     if (exclude !== "price") {
       const min = numOrNull(params.get("min"));
       const max = numOrNull(params.get("max"));
@@ -616,13 +728,14 @@
     return constraints.reduce((q, fn) => fn(q), query);
   }
 
-  async function loadCollections(){
-    const box = document.getElementById("collectionPanel");
-    const wrap = document.getElementById("collectionPillWrap");
-    const selected = params.get("collection") || "";
+  // Each loader below just computes the option list for one dimension into
+  // optionsByKey — nothing renders here. renderFilterSurfaces() then draws
+  // that same data into both the desktop pill bar and the mobile sheet, so
+  // the two can never drift apart.
+  async function loadCollectionOptions(){
     let cq = supabase
       .from("collection_products")
-      .select("collections!inner(id,name,slug,sort_order,created_at,is_active), products!inner(is_active,category,fabric_id,weave_line_id,colour,occasion,price_inr,inventory_qty)")
+      .select("collections!inner(id,name,slug,sort_order,created_at,is_active), products!inner(is_active,category,fabric_id,weave_line_id,colour,occasion,print_type,craft,motif,border_type,zari,price_inr,inventory_qty)")
       .eq("collections.is_active", true)
       .eq("products.is_active", true)
       .eq("products.category", currentType);
@@ -631,43 +744,28 @@
     // filter still narrows which collections can even appear here.
     if (params.get("fabric") && cache.fabricId) cq = cq.eq("products.fabric_id", cache.fabricId);
     if (params.get("weave") && cache.weaveId) cq = cq.eq("products.weave_line_id", cache.weaveId);
-    if (params.get("colour")) cq = cq.eq("products.colour", params.get("colour"));
-    if (params.get("occasion")) cq = cq.eq("products.occasion", params.get("occasion"));
+    for (const [key, column] of Object.entries(TEXT_FILTER_COLUMNS)) {
+      if (params.get(key)) cq = cq.eq("products." + column, params.get(key));
+    }
     { const min = numOrNull(params.get("min")); if (min !== null) cq = cq.gte("products.price_inr", min); }
     { const max = numOrNull(params.get("max")); if (max !== null) cq = cq.lte("products.price_inr", max); }
     if (params.get("inStock") === "true") cq = cq.gt("products.inventory_qty", 0);
-    const { data, error } = await cq;
-    if (error){ box.textContent = "Could not load collections."; return; }
 
-    const seen = new Map();
-    for (const row of (data ?? [])) {
-      const c = row.collections;
-      if (c && !seen.has(c.id)) seen.set(c.id, c);
-    }
-    const rows = Array.from(seen.values()).sort((a, b) =>
-      (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(b.created_at).localeCompare(String(a.created_at))
-    );
-    const activeRow = rows.find(c => c.slug === selected);
-    setPillLabel("collectionPillBtn", "Collection", activeRow?.name || "");
-
-    box.innerHTML = `
-      <label class="filter-option">
-        <input type="radio" name="col" value="" ${selected ? "" : "checked"} />
-        <span>All</span>
-      </label>
-    ` + rows.map(c => `
-      <label class="filter-option">
-        <input type="radio" name="col" value="${escapeAttr(c.slug)}" ${c.slug === selected ? "checked" : ""} />
-        <span>${escapeHtml(c.name)}</span>
-      </label>
-    `).join("");
-    bindRadioPanel(box, "col", "collection", wrap, "collectionPillBtn", "Collection");
+    try {
+      const { data, error } = await cq;
+      if (error) throw error;
+      const seen = new Map();
+      for (const row of (data ?? [])) {
+        const c = row.collections;
+        if (c && !seen.has(c.id)) seen.set(c.id, c);
+      }
+      optionsByKey.collection = Array.from(seen.values())
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(b.created_at).localeCompare(String(a.created_at)))
+        .map(c => ({ value: c.slug, label: c.name }));
+    } catch(e){ optionsByKey.collection = []; }
   }
 
-  async function loadFabrics(){
-    const box = document.getElementById("fabricPanel");
-    const wrap = document.getElementById("fabricPillWrap");
-    const selected = params.get("fabric") || "";
+  async function loadFabricOptions(){
     try{
       let q = supabase
         .from("products")
@@ -684,28 +782,10 @@
         const f = row.fabrics;
         if (f && !seen.has(f.id)) seen.set(f.id, f);
       }
-      const rows = Array.from(seen.values()).sort((a, b) =>
-        (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name))
-      );
-
-      if (rows.length === 0){ document.getElementById("fabricPillWrap")?.classList.add("hidden"); return; }
-      document.getElementById("fabricPillWrap")?.classList.remove("hidden");
-      const activeRow = rows.find(f => f.slug === selected);
-      setPillLabel("fabricPillBtn", "Fabric", activeRow?.name || "");
-      box.innerHTML = `
-        <label class="filter-option">
-          <input type="radio" name="fab" value="" ${selected === "" ? "checked" : ""} />
-          <span>All</span>
-        </label>
-        ${rows.map(f => `
-          <label class="filter-option">
-            <input type="radio" name="fab" value="${escapeAttr(f.slug)}" ${selected === f.slug ? "checked" : ""} />
-            <span>${escapeHtml(f.name)}</span>
-          </label>
-        `).join("")}
-      `;
-      bindRadioPanel(box, "fab", "fabric", wrap, "fabricPillBtn", "Fabric");
-    } catch(e){ document.getElementById("fabricPillWrap")?.classList.add("hidden"); }
+      optionsByKey.fabric = Array.from(seen.values())
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name)))
+        .map(f => ({ value: f.slug, label: f.name }));
+    } catch(e){ optionsByKey.fabric = []; }
   }
 
   // Weave (weave_lines) had no in-page filter control at all before this
@@ -741,7 +821,7 @@
 
       const activeRow = rows.find(w => w.slug === selected);
       row.innerHTML = `
-        <button type="button" class="weave-pill${selected ? "" : " active"}" data-slug="" role="tab" aria-selected="${selected ? "false" : "true"}">All Weaves</button>
+        <button type="button" class="weave-pill${selected ? "" : " active"}" data-slug="" role="tab" aria-selected="${selected ? "false" : "true"}">${escapeHtml(categoryMeta.all_weaves_label || "All Weaves")}</button>
         ${rows.map(w => `
           <button type="button" class="weave-pill${w.slug === selected ? " active" : ""}" data-slug="${escapeAttr(w.slug)}" role="tab" aria-selected="${w.slug === selected ? "true" : "false"}">${escapeHtml(w.name)}</button>
         `).join("")}
@@ -760,17 +840,14 @@
     } catch(e){ row.innerHTML = ""; }
   }
 
-  // Colour and Occasion are free-text fields on the product itself (set in
-  // admin-products.html) rather than their own lookup tables — most
-  // products don't have them filled in yet, so these filters only ever
-  // show up once there are at least a couple of distinct values to choose
-  // between for the type being browsed. As more products get tagged with a
-  // colour/occasion in admin, these fill in on their own — nothing else to
-  // wire up.
-  async function loadTextAttributeFilter(column, paramName, boxId, wrapId, inputName, defaultLabel, pillBtnId){
-    const box = document.getElementById(boxId);
-    const wrap = document.getElementById(wrapId);
-    const selected = params.get(paramName) || "";
+  // Colour, Occasion, Print Type, Craft, Motif, Border and Zari are all
+  // free-text fields on the product itself (set in admin-products.html)
+  // rather than their own lookup tables. A filter only appears once at
+  // least two products in this category carry different values for it —
+  // one option can't narrow anything. Tag more products in admin and the
+  // filter fills in on its own.
+  async function loadTextAttributeOptions(key){
+    const column = TEXT_FILTER_COLUMNS[key];
     try{
       let q = supabase
         .from("products")
@@ -778,7 +855,7 @@
         .eq("is_active", true)
         .eq("category", currentType)
         .not(column, "is", null);
-      q = applyConstraints(q, productConstraints(paramName));
+      q = applyConstraints(q, productConstraints(key));
       const { data, error } = await q;
       if (error) throw error;
 
@@ -786,27 +863,218 @@
         (data ?? []).map(r => String(r[column] || "").trim()).filter(Boolean)
       )).sort((a, b) => a.localeCompare(b));
 
-      if (values.length < 2){ wrap?.classList.add("hidden"); return; }
-      wrap?.classList.remove("hidden");
-      setPillLabel(pillBtnId, defaultLabel, values.includes(selected) ? selected : "");
-      box.innerHTML = `
-        <label class="filter-option">
-          <input type="radio" name="${inputName}" value="" ${selected ? "" : "checked"} />
-          <span>All</span>
-        </label>
-        ${values.map(v => `
-          <label class="filter-option">
-            <input type="radio" name="${inputName}" value="${escapeAttr(v)}" ${v === selected ? "checked" : ""} />
-            <span>${escapeHtml(v)}</span>
-          </label>
-        `).join("")}
-      `;
-      bindRadioPanel(box, inputName, paramName, wrap, pillBtnId, defaultLabel);
-    } catch(e){ wrap?.classList.add("hidden"); }
+      optionsByKey[key] = values.length < 2 ? [] : values.map(v => ({ value: v, label: v }));
+    } catch(e){ optionsByKey[key] = []; }
   }
 
-  const loadColours   = () => loadTextAttributeFilter("colour", "colour", "colourPanel", "colourPillWrap", "colour", "Colour", "colourPillBtn");
-  const loadOccasions = () => loadTextAttributeFilter("occasion", "occasion", "occasionPanel", "occasionPillWrap", "occasion", "Occasion", "occasionPillBtn");
+  // ── Rendering the two filter surfaces ──
+  function priceSummary(){
+    const min = params.get("min");
+    const max = params.get("max");
+    const stock = params.get("inStock") === "true";
+    const bits = [];
+    if (min && max) bits.push(`₹${min}–₹${max}`);
+    else if (min) bits.push(`Over ₹${min}`);
+    else if (max) bits.push(`Under ₹${max}`);
+    if (stock) bits.push("In stock");
+    return bits.join(" · ");
+  }
+
+  function priceControlsHtml(){
+    return `
+      <div class="filter-panel-price">
+        <div class="price-row">
+          <input class="input f-min-price" placeholder="Min ₹" inputmode="numeric" value="${escapeAttr(params.get("min") || "")}" />
+          <input class="input f-max-price" placeholder="Max ₹" inputmode="numeric" value="${escapeAttr(params.get("max") || "")}" />
+        </div>
+        <label class="filter-option" style="padding-left:0;">
+          <input type="checkbox" class="f-in-stock" ${params.get("inStock") === "true" ? "checked" : ""} />
+          <span>In Stock Only</span>
+        </label>
+        <button class="btn f-apply-price" type="button" style="width:100%;">Apply</button>
+      </div>
+    `;
+  }
+
+  function optionListHtml(key, groupName){
+    const opts = optionsByKey[key] || [];
+    const selected = params.get(key) || "";
+    return `
+      <label class="filter-option">
+        <input type="radio" name="${escapeAttr(groupName)}" value="" ${selected ? "" : "checked"} />
+        <span>All</span>
+      </label>
+      ${opts.map(o => `
+        <label class="filter-option">
+          <input type="radio" name="${escapeAttr(groupName)}" value="${escapeAttr(o.value)}" ${o.value === selected ? "checked" : ""} />
+          <span>${escapeHtml(o.label)}</span>
+        </label>
+      `).join("")}
+    `;
+  }
+
+  // A filter is worth showing only if it can actually narrow things down.
+  function visibleFilterDefs(){
+    return filterDefs.filter(def =>
+      def.filter_key === "price" || (optionsByKey[def.filter_key] || []).length > 0
+    );
+  }
+
+  function selectedLabelFor(key){
+    const selected = params.get(key) || "";
+    if (!selected) return "";
+    const opt = (optionsByKey[key] || []).find(o => o.value === selected);
+    return opt ? opt.label : "";
+  }
+
+  function renderDesktopPills(){
+    const host = document.getElementById("filterPills");
+    host.innerHTML = visibleFilterDefs().map(def => {
+      const key = def.filter_key;
+      const isPrice = key === "price";
+      const selectedText = isPrice ? priceSummary() : selectedLabelFor(key);
+      const labelText = selectedText ? `${def.label}: ${selectedText}` : def.label;
+      return `
+        <div class="filter-pill-wrap" data-pill="${escapeAttr(key)}">
+          <button type="button" class="filter-pill${selectedText ? " is-active" : ""}" aria-haspopup="true" aria-expanded="false">
+            <span class="filter-pill-label">${escapeHtml(labelText)}</span>
+            <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="filter-pill-panel" role="menu">
+            ${isPrice ? priceControlsHtml() : optionListHtml(key, "d_" + key)}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    host.querySelectorAll(".filter-pill-wrap").forEach(wrap => {
+      const btn = wrap.querySelector(".filter-pill");
+      const panel = wrap.querySelector(".filter-pill-panel");
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const willOpen = !wrap.classList.contains("open");
+        closeAllPanels(willOpen ? wrap : null);
+        if (willOpen) positionPanel(btn, panel);
+        wrap.classList.toggle("open", willOpen);
+        btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      });
+      panel.addEventListener("click", (e) => e.stopPropagation());
+    });
+
+    wireOptionInputs(host, "d_", () => closeAllPanels(null));
+    wirePriceControls(host);
+  }
+
+  function renderSheet(){
+    const body = document.getElementById("sheetBody");
+    const sortSel = document.getElementById("sortBy");
+    const currentSort = sortSel.value;
+
+    // Sort lives in the sheet too — on mobile the <select> in the desktop
+    // bar is hidden, and both mobile buttons open this one panel.
+    const sortHtml = `
+      <div class="sheet-group">
+        <div class="sheet-group-title">Sort by</div>
+        ${Array.from(sortSel.options).map(o => `
+          <label class="filter-option">
+            <input type="radio" name="m_sort" value="${escapeAttr(o.value)}" ${o.value === currentSort ? "checked" : ""} />
+            <span>${escapeHtml(o.textContent)}</span>
+          </label>
+        `).join("")}
+      </div>
+    `;
+
+    body.innerHTML = sortHtml + visibleFilterDefs().map(def => {
+      const key = def.filter_key;
+      return `
+        <div class="sheet-group">
+          <div class="sheet-group-title">${escapeHtml(def.label)}</div>
+          ${key === "price" ? priceControlsHtml() : optionListHtml(key, "m_" + key)}
+        </div>
+      `;
+    }).join("");
+
+    body.querySelectorAll('input[name="m_sort"]').forEach(input => {
+      input.addEventListener("change", () => {
+        sortSel.value = input.value;
+        sortSel.dispatchEvent(new Event("change"));
+      });
+    });
+
+    wireOptionInputs(body, "m_", null);
+    wirePriceControls(body);
+  }
+
+  // Picking an option applies it immediately (both surfaces) and recomputes
+  // every OTHER filter's option list — a chosen Fabric can make some Colour
+  // or Weave values stop having any matching products.
+  function wireOptionInputs(root, prefix, afterChange){
+    root.querySelectorAll('input[type="radio"]').forEach(input => {
+      const key = (input.name || "").startsWith(prefix) ? input.name.slice(prefix.length) : null;
+      // "sort" shares the m_ prefix but is not a filter — it has its own
+      // handler that drives the existing <select>.
+      if (!key || key === "sort") return;
+      input.addEventListener("change", () => {
+        setParam(key, input.value);
+        if (afterChange) afterChange();
+        refreshFiltersAndGrid();
+      });
+    });
+  }
+
+  function wirePriceControls(root){
+    const apply = root.querySelector(".f-apply-price");
+    if (!apply) return;
+    apply.addEventListener("click", () => {
+      setParam("min", root.querySelector(".f-min-price")?.value.trim() || "");
+      setParam("max", root.querySelector(".f-max-price")?.value.trim() || "");
+      setParam("inStock", root.querySelector(".f-in-stock")?.checked ? "true" : "");
+      closeAllPanels(null);
+      refreshFiltersAndGrid();
+    });
+  }
+
+  // ── Mobile sheet open/close ──
+  const sheet = document.getElementById("filterSheet");
+  const sheetBackdrop = document.getElementById("sheetBackdrop");
+
+  function openSheet(){
+    renderSheet();
+    sheet.hidden = false;
+    sheetBackdrop.hidden = false;
+    // Force a reflow so the browser registers the offscreen start state and
+    // the slide-up transition actually runs. Deliberately not
+    // requestAnimationFrame: browsers throttle rAF when the page isn't
+    // painting, which would leave the sheet stuck off the bottom of the
+    // screen with no way to close it.
+    void sheet.offsetHeight;
+    sheet.classList.add("open");
+    sheetBackdrop.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeSheet(){
+    sheet.classList.remove("open");
+    sheetBackdrop.classList.remove("open");
+    document.body.style.overflow = "";
+    setTimeout(() => {
+      if (!sheet.classList.contains("open")) { sheet.hidden = true; sheetBackdrop.hidden = true; }
+    }, 240);
+  }
+  document.getElementById("mfbFilters").addEventListener("click", openSheet);
+  document.getElementById("mfbSort").addEventListener("click", openSheet);
+  document.getElementById("sheetClose").addEventListener("click", closeSheet);
+  document.getElementById("sheetApply").addEventListener("click", closeSheet);
+  sheetBackdrop.addEventListener("click", closeSheet);
+
+  function updateMobileBar(){
+    const n = activeFilterCount();
+    const badge = document.getElementById("mfbCount");
+    badge.textContent = String(n);
+    badge.hidden = n === 0;
+    const sortSel = document.getElementById("sortBy");
+    document.getElementById("mfbSortLabel").textContent =
+      sortSel.options[sortSel.selectedIndex]?.textContent || "Newest first";
+  }
 
   const PAGE_SIZE = 24;
   let offset = 0;
@@ -883,13 +1151,30 @@
   // resetAndLoad()/individual load*() functions directly.
   async function refreshFiltersAndGrid(){
     await resolveActiveFilters();
-    await Promise.all([
-      renderWeavePills(),
-      loadCollections(),
-      loadFabrics(),
-      loadColours(),
-      loadOccasions(),
-    ]);
+
+    // Only fetch options for the filters this category actually offers —
+    // a disabled filter costs no query at all.
+    const enabledKeys = new Set(filterDefs.map(d => d.filter_key));
+    const jobs = [renderWeavePills()];
+    if (enabledKeys.has("collection")) jobs.push(loadCollectionOptions()); else optionsByKey.collection = [];
+    if (enabledKeys.has("fabric")) jobs.push(loadFabricOptions()); else optionsByKey.fabric = [];
+    for (const key of Object.keys(TEXT_FILTER_COLUMNS)) {
+      if (enabledKeys.has(key)) jobs.push(loadTextAttributeOptions(key));
+      else optionsByKey[key] = [];
+    }
+    await Promise.all(jobs);
+
+    // A previously-selected value can stop existing once another filter
+    // narrows things — drop it rather than filtering by something with no
+    // control on screen.
+    for (const key of [...Object.keys(TEXT_FILTER_COLUMNS), "fabric", "collection"]) {
+      const selected = params.get(key);
+      if (selected && !(optionsByKey[key] || []).some(o => o.value === selected)) setParam(key, "");
+    }
+
+    renderDesktopPills();
+    if (!sheet.hidden) renderSheet();
+    updateMobileBar();
     resetAndLoad();
   }
 
@@ -1210,40 +1495,24 @@
     loadNextPage(true);
   }
 
-  // Reflects the current min/max/inStock params onto the Price pill's
-  // label so its active state is visible without opening the panel.
-  function updatePricePillLabel(){
-    const min = params.get("min") || "";
-    const max = params.get("max") || "";
-    const inStock = params.get("inStock") === "true";
-    const parts = [];
-    if (min || max) parts.push(`₹${min || "0"}–${max || "∞"}`);
-    if (inStock) parts.push("In stock");
-    setPillLabel("pricePillBtn", "Price", parts.join(", "));
-  }
-
-  // Init control values from URL
-  document.getElementById("minPrice").value = params.get("min") || "";
-  document.getElementById("maxPrice").value = params.get("max") || "";
+  // Init control values from URL. Price fields are rendered per surface
+  // (see priceControlsHtml) and seeded from the params directly, so only
+  // sort needs restoring here.
   document.getElementById("sortBy").value = params.get("sort") || "newest";
-  document.getElementById("inStockOnly").checked = params.get("inStock") === "true";
-  updatePricePillLabel();
 
   document.getElementById("sortBy").addEventListener("change", (e) => {
     setParam("sort", e.target.value);
+    updateMobileBar();
     resetAndLoad();
   });
 
-  applyFiltersBtn.addEventListener("click", () => {
-    setParam("min", document.getElementById("minPrice").value.trim());
-    setParam("max", document.getElementById("maxPrice").value.trim());
-    setParam("inStock", document.getElementById("inStockOnly").checked ? "true" : "");
-    updatePricePillLabel();
-    closeAllPanels(null);
-    refreshFiltersAndGrid();
-  });
-
-  refreshFiltersAndGrid();
+  // Config has to land before anything renders — the tabs, the pills and
+  // the sheet are all built from it.
+  (async () => {
+    await loadFilterConfig();
+    renderCategoryTabs();
+    await refreshFiltersAndGrid();
+  })();
 
   loadMoreBtn.addEventListener("click", () => loadNextPage(false));
 
