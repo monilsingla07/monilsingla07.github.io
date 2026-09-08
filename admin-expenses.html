@@ -1,0 +1,607 @@
+<!doctype html>
+<html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CKQ1EXBHY6');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Expenses &amp; Invoices — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .pm-card { background: var(--surface); border: 1px solid var(--border-light); padding: 20px; }
+    .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+    .pm-row .full { grid-column: 1 / -1; }
+    .pm-label { font-size: 12px; color: var(--text-light); display: block; margin-bottom: 4px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab-btn { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-weight: 700; font-size: 13px; cursor: pointer; color: var(--text); }
+    .tab-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 8px; }
+    .metric-card { background: var(--surface); border: 1px solid var(--border-light); padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+    .metric-card.highlight { background: var(--brand-lighter); border-color: var(--brand); }
+    .metric-card.warn { background: #fbeceb; border-color: #a13d3d; }
+    .metric-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-light); }
+    .metric-value { font-size: 26px; font-weight: 700; line-height: 1.15; font-family: 'Cormorant Garamond', serif; color: var(--text); }
+
+    .cat-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--border-light); background: var(--surface); }
+    .cat-row + .cat-row { margin-top: 8px; }
+
+    .list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 14px; border: 1px solid var(--border-light); background: var(--surface); }
+    .list-item + .list-item { margin-top: 10px; }
+    .list-item .meta { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+    .list-item .amt { font-weight: 700; font-family: 'Cormorant Garamond', serif; font-size: 20px; white-space: nowrap; }
+    .row-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .row-actions button { font-size: 12px; padding: 5px 10px; }
+
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 3px 9px; border: 1px solid var(--border-light); }
+    .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .badge.paid { color: #3f6b4f; border-color: #3f6b4f; }
+    .badge.unpaid { color: #b8863b; border-color: #b8863b; }
+
+    @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:900px;">
+    <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">Expenses &amp; Invoices</h2>
+          <div class="small" style="color:var(--text-light); margin-top:4px;">Internal reconciliation — track expenses, revenue vs. spend, and vendor invoices. Not connected to any external payment or filing system.</div>
+        </div>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="expenses">Expenses</button>
+        <button class="tab-btn" data-tab="invoices">Invoices</button>
+      </div>
+
+      <!-- ── Overview tab ── -->
+      <div id="tab-overview" class="tab-panel active">
+        <div class="pm-card" style="margin-bottom:14px;">
+          <div class="pm-row">
+            <div>
+              <label class="pm-label">From date</label>
+              <input id="ov_from" class="input" type="date" />
+            </div>
+            <div>
+              <label class="pm-label">To date</label>
+              <input id="ov_to" class="input" type="date" />
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:14px;">
+            <button id="btnRunOverview" class="btn" type="button">Run</button>
+            <button id="btnOverviewThisMonth" class="btn secondary" type="button">This month</button>
+          </div>
+        </div>
+
+        <div class="metric-grid" id="overviewMetrics"></div>
+        <div id="overviewByCategory" style="margin-top:16px;"></div>
+        <div id="overviewStatus" class="small" style="color:var(--text-light); margin-top:10px;"></div>
+      </div>
+
+      <!-- ── Expenses tab ── -->
+      <div id="tab-expenses" class="tab-panel">
+        <div class="pm-card" style="margin-bottom:14px;">
+          <div style="font-weight:700; margin-bottom:8px;">Add expense</div>
+          <div class="pm-row">
+            <div>
+              <label class="pm-label">Category</label>
+              <select id="e_category" class="input">
+                <option value="fuel">Fuel</option>
+                <option value="rent">Rent</option>
+                <option value="salary">Salary</option>
+                <option value="packaging">Packaging</option>
+                <option value="utilities">Utilities</option>
+                <option value="misc">Miscellaneous</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="pm-label">Date</label>
+              <input id="e_date" class="input" type="date" />
+            </div>
+
+            <div id="e_fuelFields" class="full" style="display:none;">
+              <div class="pm-row" style="margin-top:0;">
+                <div>
+                  <label class="pm-label">Rate per litre (₹)</label>
+                  <input id="e_fuelRate" class="input" type="number" min="0" step="0.01" placeholder="e.g. 96.50" />
+                </div>
+                <div>
+                  <label class="pm-label">Volume (litres)</label>
+                  <input id="e_fuelVolume" class="input" type="number" min="0" step="0.01" placeholder="e.g. 20" />
+                </div>
+              </div>
+              <div class="small" style="color:var(--text-light); margin-top:6px;">Amount is calculated automatically from rate × volume. If you have the vendor's original paper/thermal receipt for this fill-up, keep it with your physical expense records — this only logs the numbers.</div>
+            </div>
+
+            <div class="full">
+              <label class="pm-label">Amount (₹)<span id="e_amountAutoNote" class="small" style="color:var(--text-light); font-weight:400; text-transform:none; letter-spacing:0;"></span></label>
+              <input id="e_amount" class="input" type="number" min="0" step="1" placeholder="e.g. 1500" style="max-width:220px;" />
+            </div>
+
+            <div class="full">
+              <label class="pm-label">Note (optional)</label>
+              <input id="e_note" class="input" placeholder="e.g. Delivery run to Gurugram warehouse" />
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:14px; align-items:center;">
+            <button id="btnAddExpense" class="btn" type="button">Add expense</button>
+            <div id="expenseFormStatus" class="small"></div>
+          </div>
+        </div>
+
+        <div class="pm-card" style="margin-bottom:14px;">
+          <div class="pm-row" style="margin-top:0;">
+            <div>
+              <label class="pm-label">Filter by category</label>
+              <select id="ef_category" class="input">
+                <option value="">All categories</option>
+                <option value="fuel">Fuel</option>
+                <option value="rent">Rent</option>
+                <option value="salary">Salary</option>
+                <option value="packaging">Packaging</option>
+                <option value="utilities">Utilities</option>
+                <option value="misc">Miscellaneous</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div style="align-self:end;">
+              <button id="btnFilterExpenses" class="btn secondary" type="button">Apply filter</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="expensesList"></div>
+        <div id="expensesStatus" class="small" style="color:var(--text-light); margin-top:10px;"></div>
+      </div>
+
+      <!-- ── Invoices tab ── -->
+      <div id="tab-invoices" class="tab-panel">
+        <div class="pm-card" style="margin-bottom:14px;">
+          <div style="font-weight:700; margin-bottom:8px;">Add invoice</div>
+          <div class="pm-row">
+            <div class="full">
+              <label class="pm-label">Vendor / party name</label>
+              <input id="i_vendor" class="input" placeholder="e.g. Sharma Packaging Supplies" />
+            </div>
+            <div>
+              <label class="pm-label">Invoice / bill number (optional — leave blank to auto-generate an internal reference)</label>
+              <input id="i_number" class="input" placeholder="type the vendor's real number if you have their bill" />
+            </div>
+            <div>
+              <label class="pm-label">Date</label>
+              <input id="i_date" class="input" type="date" />
+            </div>
+            <div>
+              <label class="pm-label">Amount (₹)</label>
+              <input id="i_amount" class="input" type="number" min="0" step="1" placeholder="e.g. 5000" />
+            </div>
+            <div>
+              <label class="pm-label">Status</label>
+              <select id="i_status" class="input">
+                <option value="unpaid">Unpaid</option>
+                <option value="paid">Paid</option>
+              </select>
+            </div>
+            <div class="full">
+              <label class="pm-label">Description (optional)</label>
+              <input id="i_description" class="input" placeholder="e.g. Poly-mailer bags, 2000 units" />
+            </div>
+            <div class="full">
+              <label class="pm-label">Note (optional)</label>
+              <input id="i_note" class="input" placeholder="Internal note" />
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:14px; align-items:center;">
+            <button id="btnAddInvoice" class="btn" type="button">Add invoice</button>
+            <div id="invoiceFormStatus" class="small"></div>
+          </div>
+        </div>
+
+        <div class="pm-card" style="margin-bottom:14px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
+            <div style="flex:1; min-width:200px;">
+              <label class="pm-label">Search vendor or invoice number</label>
+              <input id="if_search" class="input" placeholder="e.g. Sharma or AHS-INV" />
+            </div>
+            <div>
+              <label class="pm-label">Status</label>
+              <select id="if_status" class="input">
+                <option value="">All</option>
+                <option value="unpaid">Unpaid</option>
+                <option value="paid">Paid</option>
+              </select>
+            </div>
+            <button id="btnFilterInvoices" class="btn secondary" type="button">Apply filter</button>
+          </div>
+        </div>
+
+        <div id="invoicesList"></div>
+        <div id="invoicesStatus" class="small" style="color:var(--text-light); margin-top:10px;"></div>
+      </div>
+
+      <div id="statusMsg" class="small" style="margin-top:16px; color:var(--text-light);"></div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { escapeHtml } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-expenses";
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+
+    const ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    const ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showGateError(icon, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    function money(v) {
+      return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+    }
+    function todayStr() {
+      return new Date().toISOString().slice(0, 10);
+    }
+    function monthStartStr() {
+      const d = new Date();
+      return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
+    }
+
+    async function authedFetch(body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    // ── Tabs ──
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+        if (btn.dataset.tab === "expenses" && !expensesLoaded) loadExpenses();
+        if (btn.dataset.tab === "invoices" && !invoicesLoaded) loadInvoices();
+      });
+    });
+
+    // ── Overview ──
+    function metricCard(label, value, cls) {
+      cls = cls || "";
+      return '<div class="metric-card ' + cls + '">' +
+        '<div class="metric-label">' + label + '</div>' +
+        '<div class="metric-value">' + value + '</div>' +
+        '</div>';
+    }
+
+    const CATEGORY_LABEL = { fuel: "Fuel", rent: "Rent", salary: "Salary", packaging: "Packaging", utilities: "Utilities", misc: "Miscellaneous", other: "Other" };
+
+    async function loadOverview() {
+      const statusEl = document.getElementById("overviewStatus");
+      statusEl.textContent = "Loading…";
+      try {
+        const from_date = document.getElementById("ov_from").value || null;
+        const to_date = document.getElementById("ov_to").value || null;
+        const result = await authedFetch({ action: "get_summary", from_date, to_date });
+        const s = result.summary || {};
+        const netCls = Number(s.net_inr || 0) >= 0 ? "highlight" : "warn";
+        document.getElementById("overviewMetrics").innerHTML = [
+          metricCard("Revenue", money(s.revenue_inr), ""),
+          metricCard("Total expenses", money(s.total_expenses_inr), ""),
+          metricCard("Net", money(s.net_inr), netCls),
+        ].join("");
+
+        const byCat = s.by_category || {};
+        const catKeys = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
+        const catBox = document.getElementById("overviewByCategory");
+        if (!catKeys.length) {
+          catBox.innerHTML = '<div class="small" style="color:var(--text-light);">No expenses logged in this range yet.</div>';
+        } else {
+          catBox.innerHTML = '<div style="font-weight:700; font-size:13px; margin-bottom:8px;">By category</div>' +
+            catKeys.map((k) => `
+              <div class="cat-row">
+                <div>${escapeHtml(CATEGORY_LABEL[k] || k)}</div>
+                <div style="font-weight:700;">${money(byCat[k])}</div>
+              </div>
+            `).join("");
+        }
+
+        statusEl.textContent = "Last updated: " + new Date().toLocaleTimeString("en-IN");
+      } catch (e) {
+        statusEl.textContent = "Error: " + e.message;
+      }
+    }
+
+    document.getElementById("btnRunOverview").addEventListener("click", loadOverview);
+    document.getElementById("btnOverviewThisMonth").addEventListener("click", () => {
+      document.getElementById("ov_from").value = monthStartStr();
+      document.getElementById("ov_to").value = todayStr();
+      loadOverview();
+    });
+
+    // ── Expenses ──
+    let expensesLoaded = false;
+
+    document.getElementById("e_category").addEventListener("change", (e) => {
+      const isFuel = e.target.value === "fuel";
+      document.getElementById("e_fuelFields").style.display = isFuel ? "block" : "none";
+      document.getElementById("e_amountAutoNote").textContent = isFuel ? " (auto-filled from rate × volume — you can still edit it)" : "";
+      if (isFuel) recalcFuelAmount();
+    });
+
+    function recalcFuelAmount() {
+      const rate = Number(document.getElementById("e_fuelRate").value) || 0;
+      const vol = Number(document.getElementById("e_fuelVolume").value) || 0;
+      if (rate > 0 && vol > 0) {
+        document.getElementById("e_amount").value = (rate * vol).toFixed(2);
+      }
+    }
+    document.getElementById("e_fuelRate").addEventListener("input", recalcFuelAmount);
+    document.getElementById("e_fuelVolume").addEventListener("input", recalcFuelAmount);
+
+    function expenseMeta(x) {
+      const parts = [x.expense_date];
+      if (x.category === "fuel" && x.fuel_rate_per_litre && x.fuel_volume_litres) {
+        parts.push(Number(x.fuel_volume_litres) + " L @ ₹" + Number(x.fuel_rate_per_litre) + "/L");
+      }
+      if (x.note) parts.push(x.note);
+      return parts.join(" • ");
+    }
+
+    function renderExpenses(items) {
+      const box = document.getElementById("expensesList");
+      if (!items.length) {
+        box.innerHTML = '<div class="small" style="color:var(--text-light); padding:8px 0;">No expenses logged yet.</div>';
+        return;
+      }
+      box.innerHTML = items.map((x) => `
+        <div class="list-item" data-id="${escapeHtml(x.id)}">
+          <div>
+            <div style="font-weight:700;">${escapeHtml(CATEGORY_LABEL[x.category] || x.category)}</div>
+            <div class="meta">${escapeHtml(expenseMeta(x))}</div>
+            <div class="row-actions">
+              <button class="btn secondary btn-delete-expense" type="button">Delete</button>
+            </div>
+          </div>
+          <div class="amt">${money(x.amount_inr)}</div>
+        </div>
+      `).join("");
+
+      box.querySelectorAll(".btn-delete-expense").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const id = e.target.closest(".list-item").dataset.id;
+          if (!confirm("Delete this expense entry?")) return;
+          try {
+            await authedFetch({ action: "delete_expense", id });
+            loadExpenses();
+          } catch (err) {
+            alert("Error: " + err.message);
+          }
+        });
+      });
+    }
+
+    async function loadExpenses() {
+      const statusEl = document.getElementById("expensesStatus");
+      statusEl.textContent = "Loading…";
+      try {
+        const category = document.getElementById("ef_category").value || undefined;
+        const result = await authedFetch({ action: "list_expenses", category, per_page: 100 });
+        expensesLoaded = true;
+        renderExpenses(result.expenses || []);
+        statusEl.textContent = (result.total || 0) + " total";
+      } catch (e) {
+        statusEl.textContent = "Error: " + e.message;
+      }
+    }
+
+    document.getElementById("btnFilterExpenses").addEventListener("click", loadExpenses);
+
+    document.getElementById("btnAddExpense").addEventListener("click", async () => {
+      const statusEl = document.getElementById("expenseFormStatus");
+      const category = document.getElementById("e_category").value;
+      const amount_inr = Number(document.getElementById("e_amount").value);
+      const expense_date = document.getElementById("e_date").value || todayStr();
+      const note = document.getElementById("e_note").value.trim();
+
+      if (!amount_inr || amount_inr <= 0) { statusEl.textContent = "Enter a valid amount."; return; }
+
+      const body = { action: "save_expense", category, amount_inr, expense_date, note };
+      if (category === "fuel") {
+        body.fuel_rate_per_litre = Number(document.getElementById("e_fuelRate").value) || undefined;
+        body.fuel_volume_litres = Number(document.getElementById("e_fuelVolume").value) || undefined;
+      }
+
+      statusEl.textContent = "Saving…";
+      try {
+        await authedFetch(body);
+        statusEl.textContent = "Added.";
+        document.getElementById("e_amount").value = "";
+        document.getElementById("e_note").value = "";
+        document.getElementById("e_fuelRate").value = "";
+        document.getElementById("e_fuelVolume").value = "";
+        loadExpenses();
+      } catch (e) {
+        statusEl.textContent = "Error: " + e.message;
+      }
+    });
+
+    // ── Invoices ──
+    let invoicesLoaded = false;
+
+    function renderInvoices(items) {
+      const box = document.getElementById("invoicesList");
+      if (!items.length) {
+        box.innerHTML = '<div class="small" style="color:var(--text-light); padding:8px 0;">No invoices logged yet.</div>';
+        return;
+      }
+      box.innerHTML = items.map((x) => `
+        <div class="list-item" data-id="${escapeHtml(x.id)}">
+          <div>
+            <div style="font-weight:700;">${escapeHtml(x.vendor_name)} <span class="badge ${x.status}" style="margin-left:6px;">${escapeHtml(x.status)}</span></div>
+            <div class="meta">${escapeHtml(x.invoice_number || "")} • ${escapeHtml(x.invoice_date)}${x.description ? " • " + escapeHtml(x.description) : ""}</div>
+            <div class="row-actions">
+              ${x.status === "unpaid" ? '<button class="btn secondary btn-mark-paid" type="button">Mark paid</button>' : ""}
+              <button class="btn secondary btn-delete-invoice" type="button">Delete</button>
+            </div>
+          </div>
+          <div class="amt">${money(x.amount_inr)}</div>
+        </div>
+      `).join("");
+
+      box.querySelectorAll(".btn-mark-paid").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const item = e.target.closest(".list-item");
+          const id = item.dataset.id;
+          const row = items.find((x) => x.id === id);
+          try {
+            await authedFetch({ action: "save_invoice", id, vendor_name: row.vendor_name, amount_inr: row.amount_inr, invoice_date: row.invoice_date, status: "paid" });
+            loadInvoices();
+          } catch (err) {
+            alert("Error: " + err.message);
+          }
+        });
+      });
+      box.querySelectorAll(".btn-delete-invoice").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const id = e.target.closest(".list-item").dataset.id;
+          if (!confirm("Delete this invoice?")) return;
+          try {
+            await authedFetch({ action: "delete_invoice", id });
+            loadInvoices();
+          } catch (err) {
+            alert("Error: " + err.message);
+          }
+        });
+      });
+    }
+
+    async function loadInvoices() {
+      const statusEl = document.getElementById("invoicesStatus");
+      statusEl.textContent = "Loading…";
+      try {
+        const search = document.getElementById("if_search").value.trim() || undefined;
+        const status = document.getElementById("if_status").value || undefined;
+        const result = await authedFetch({ action: "list_invoices", search, status, per_page: 100 });
+        invoicesLoaded = true;
+        renderInvoices(result.invoices || []);
+        statusEl.textContent = (result.total || 0) + " total";
+      } catch (e) {
+        statusEl.textContent = "Error: " + e.message;
+      }
+    }
+
+    document.getElementById("btnFilterInvoices").addEventListener("click", loadInvoices);
+
+    document.getElementById("btnAddInvoice").addEventListener("click", async () => {
+      const statusEl = document.getElementById("invoiceFormStatus");
+      const vendor_name = document.getElementById("i_vendor").value.trim();
+      const amount_inr = Number(document.getElementById("i_amount").value);
+      const invoice_date = document.getElementById("i_date").value || todayStr();
+      const status = document.getElementById("i_status").value;
+      const invoice_number = document.getElementById("i_number").value.trim();
+      const description = document.getElementById("i_description").value.trim();
+      const note = document.getElementById("i_note").value.trim();
+
+      if (!vendor_name) { statusEl.textContent = "Vendor name is required."; return; }
+      if (!amount_inr || amount_inr <= 0) { statusEl.textContent = "Enter a valid amount."; return; }
+
+      statusEl.textContent = "Saving…";
+      try {
+        await authedFetch({ action: "save_invoice", vendor_name, amount_inr, invoice_date, status, invoice_number, description, note });
+        statusEl.textContent = "Added.";
+        document.getElementById("i_vendor").value = "";
+        document.getElementById("i_number").value = "";
+        document.getElementById("i_amount").value = "";
+        document.getElementById("i_description").value = "";
+        document.getElementById("i_note").value = "";
+        loadInvoices();
+      } catch (e) {
+        statusEl.textContent = "Error: " + e.message;
+      }
+    });
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError(ICON_WARN, "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+        const currentUserEmail = session.user.email.toLowerCase();
+
+        const adminResult = await supabase
+          .from("admin_users")
+          .select("email")
+          .eq("email", currentUserEmail)
+          .maybeSingle();
+
+        if (adminResult.error) return showGateError(ICON_WARN, "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError(ICON_LOCK, "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        document.getElementById("e_date").value = todayStr();
+        document.getElementById("i_date").value = todayStr();
+        document.getElementById("ov_from").value = monthStartStr();
+        document.getElementById("ov_to").value = todayStr();
+
+        await loadOverview();
+      } catch (e) {
+        console.error("Expenses admin page error:", e);
+        showGateError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>
