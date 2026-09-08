@@ -94,3 +94,21 @@
 .account-card-divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--text-light);font-size:12px}
 .account-card-divider span{flex:1;height:1px;background:var(--border-light)}
 @media (max-width:480px){.account-card{padding:22px 18px}}
+
+/* ── Policy pages (shipping/returns/privacy/terms/cookies/help) — the
+   shared #policyContent container (both the static fallback markup and
+   the admin-authored CMS copy served by get-policy-page use the exact
+   same markup) was rendering every paragraph at .small's 12px/75%-opacity
+   sizing meant for captions, not for a full page of reading copy — the
+   "font size seems small" complaint. Scoped, higher-specificity overrides
+   here fix it for content already in the database too, not just new
+   copy, and don't touch .small anywhere it's actually used for a caption. */
+#policyContent{max-width:72ch}
+#policyContent h2{font-size:clamp(28px,4vw,36px);margin:0 0 20px;line-height:1.15}
+#policyContent h3{font-family:var(--font-heading);font-weight:600;font-size:21px;color:var(--text);margin:30px 0 10px}
+#policyContent p{font-size:16px;line-height:1.75;color:var(--text);opacity:1;margin:0 0 16px;max-width:72ch}
+#policyContent p.small,#policyContent .small{font-size:16px;opacity:1;color:var(--text)}
+#policyContent strong{font-weight:700;color:var(--text)}
+#policyContent ul,#policyContent ol{font-size:16px;line-height:1.75;padding-left:22px;margin:0 0 16px;color:var(--text)}
+#policyContent li{margin-bottom:8px}
+@media (max-width:600px){#policyContent p,#policyContent .small,#policyContent ul,#policyContent ol{font-size:15px}}
