@@ -18,34 +18,34 @@
 
   <style>
     .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
-    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-card { background: var(--surface); border: 1px solid var(--border-light); padding: 20px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
-    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; cursor: pointer; transition: border-color .15s, background .15s; }
-    .pm-list-item:hover { border-color: var(--brand, #7c1c1c); background: var(--brand-light, #fdf2f2); }
+    .pm-label { font-size: 12px; color: var(--text-light); display: block; margin-bottom: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--border-light); background: var(--surface); cursor: pointer; transition: border-color .15s, background .15s; }
+    .pm-list-item:hover { border-color: var(--brand); background: var(--brand-lighter); }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .tab-btn { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border, #e5e7eb); background: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
-    .tab-btn.active { background: var(--brand, #7c1c1c); color: #fff; border-color: var(--brand, #7c1c1c); }
+    .tab-btn { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-weight: 700; font-size: 13px; cursor: pointer; color: var(--text); }
+    .tab-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
     .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 8px; }
-    .metric-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
-    .metric-card.highlight { background: var(--brand-light, #fdf2f2); border-color: var(--brand, #7c1c1c); }
-    .metric-label { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .76; }
-    .metric-value { font-size: 24px; font-weight: 900; line-height: 1; font-family: 'Cormorant Garamond', serif; }
+    .metric-card { background: var(--surface); border: 1px solid var(--border-light); padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+    .metric-card.highlight { background: var(--brand-lighter); border-color: var(--brand); }
+    .metric-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-light); }
+    .metric-value { font-size: 26px; font-weight: 700; line-height: 1.15; font-family: 'Cormorant Garamond', serif; color: var(--text); }
 
     .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
     .switch input { opacity: 0; width: 0; height: 0; }
-    .switch .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 999px; transition: .15s; }
+    .switch .slider { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 999px; transition: .15s; }
     .switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .15s; }
-    .switch input:checked + .slider { background: var(--brand, #7c1c1c); }
+    .switch input:checked + .slider { background: var(--brand); }
     .switch input:checked + .slider:before { transform: translateX(20px); }
 
-    .ledger-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid #eee; border-radius: 10px; background: #fff; }
+    .ledger-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--border-light); background: var(--surface); }
     .ledger-row + .ledger-row { margin-top: 8px; }
 
     #customerDetail { display: none; margin-top: 18px; }
@@ -58,13 +58,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:900px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">AhamStree Cash</h2>
-          <div class="small" style="opacity:.76; margin-top:4px;">Manage the signup wallet program — bonus amount, redemption rate, and customer balances.</div>
+          <div class="small" style="color:var(--text-light); margin-top:4px;">Manage the signup wallet program — bonus amount, redemption rate, and customer balances.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
@@ -80,8 +80,8 @@
         <div class="pm-card">
           <div class="toggle-row">
             <div>
-              <div style="font-weight:800;">AhamStree Cash program</div>
-              <div class="small" style="opacity:.76; margin-top:2px;">When off, no new signup bonuses are granted and checkout stops offering redemption. Existing balances are untouched.</div>
+              <div style="font-weight:700;">AhamStree Cash program</div>
+              <div class="small" style="color:var(--text-light); margin-top:2px;">When off, no new signup bonuses are granted and checkout stops offering redemption. Existing balances are untouched.</div>
             </div>
             <label class="switch">
               <input type="checkbox" id="f_enabled" />
@@ -98,7 +98,7 @@
             <div class="full">
               <label class="pm-label">Redemption rate — max % of an order's subtotal payable with AhamStree Cash</label>
               <input id="f_redemption_rate" class="input" type="number" min="0" max="100" step="1" placeholder="10" style="max-width:220px;" />
-              <div class="small" style="opacity:.76; margin-top:4px;">Can't be combined with a coupon on the same order — that's fixed, not configurable here.</div>
+              <div class="small" style="color:var(--text-light); margin-top:4px;">Can't be combined with a coupon on the same order — that's fixed, not configurable here.</div>
             </div>
           </div>
 
@@ -115,7 +115,7 @@
           <button id="btnRefreshOverview" class="btn secondary" style="padding:8px 14px; font-size:13px;">↻ Refresh</button>
         </div>
         <div class="metric-grid" id="overviewMetrics"></div>
-        <div id="overviewStatus" class="small" style="opacity:.72; margin-top:6px;"></div>
+        <div id="overviewStatus" class="small" style="color:var(--text-light); margin-top:6px;"></div>
       </div>
 
       <!-- ── Customers tab ── -->
@@ -134,17 +134,17 @@
         <div id="customerDetail" class="pm-card">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
             <div>
-              <div id="detailName" style="font-weight:900; font-size:16px;"></div>
-              <div id="detailContact" class="small" style="opacity:.76; margin-top:2px;"></div>
+              <div id="detailName" style="font-weight:700; font-size:16px;"></div>
+              <div id="detailContact" class="small" style="color:var(--text-light); margin-top:2px;"></div>
             </div>
             <div style="text-align:right;">
-              <div class="small" style="opacity:.76;">Balance</div>
-              <div id="detailBalance" style="font-weight:900; font-size:22px; font-family:'Cormorant Garamond', serif;"></div>
+              <div class="small" style="color:var(--text-light);">Balance</div>
+              <div id="detailBalance" style="font-weight:700; font-size:22px; font-family:'Cormorant Garamond', serif;"></div>
             </div>
           </div>
 
-          <div style="margin-top:16px; border-top:1px solid #eee; padding-top:14px;">
-            <div style="font-weight:800; font-size:13px; margin-bottom:8px;">Manual adjustment</div>
+          <div style="margin-top:16px; border-top:1px solid var(--border-light); padding-top:14px;">
+            <div style="font-weight:700; font-size:13px; margin-bottom:8px;">Manual adjustment</div>
             <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
               <div>
                 <label class="pm-label">Amount (₹ — negative to debit)</label>
@@ -160,13 +160,13 @@
           </div>
 
           <div style="margin-top:18px;">
-            <div style="font-weight:800; font-size:13px; margin-bottom:8px;">Ledger history</div>
+            <div style="font-weight:700; font-size:13px; margin-bottom:8px;">Ledger history</div>
             <div id="detailLedger"></div>
           </div>
         </div>
       </div>
 
-      <div id="statusMsg" class="small" style="margin-top:16px; opacity:.72;"></div>
+      <div id="statusMsg" class="small" style="margin-top:16px; color:var(--text-light);"></div>
     </div>
   </div>
 
@@ -186,12 +186,15 @@
     const loadingState = document.getElementById("loadingState");
     const dashboard    = document.getElementById("dashboard");
 
-    function showGateError(emoji, title, message) {
+    const ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    const ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showGateError(icon, title, message) {
       loadingState.style.display = "block";
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
@@ -245,7 +248,7 @@
           signup_bonus_inr: Number(document.getElementById("f_signup_bonus").value),
           redemption_rate_percent: Number(document.getElementById("f_redemption_rate").value),
         });
-        statusEl.textContent = "Saved ✅ — live on the site immediately.";
+        statusEl.textContent = "Saved — live on the site immediately.";
       } catch (e) {
         statusEl.textContent = "Error: " + e.message;
       }
@@ -295,16 +298,16 @@
     function renderCustomerResults(customers) {
       const box = document.getElementById("customerResults");
       if (!customers.length) {
-        box.innerHTML = '<div class="small" style="opacity:.76; padding:8px 0;">No matching customers.</div>';
+        box.innerHTML = '<div class="small" style="color:var(--text-light); padding:8px 0;">No matching customers.</div>';
         return;
       }
       box.innerHTML = customers.map((c, i) => `
         <div class="pm-list-item" data-idx="${i}">
           <div>
-            <div style="font-weight:800;">${escapeHtml(customerLabel(c))}</div>
-            <div class="small" style="opacity:.76; margin-top:2px;">${escapeHtml(customerContact(c))}</div>
+            <div style="font-weight:700;">${escapeHtml(customerLabel(c))}</div>
+            <div class="small" style="color:var(--text-light); margin-top:2px;">${escapeHtml(customerContact(c))}</div>
           </div>
-          <div style="font-weight:900;">${money(c.balance_inr)}</div>
+          <div style="font-weight:700;">${money(c.balance_inr)}</div>
         </div>
       `).join("");
 
@@ -315,12 +318,12 @@
 
     document.getElementById("btnSearch").addEventListener("click", async () => {
       const box = document.getElementById("customerResults");
-      box.innerHTML = '<div class="small" style="opacity:.76;">Searching…</div>';
+      box.innerHTML = '<div class="small" style="color:var(--text-light);">Searching…</div>';
       try {
         const result = await authedFetch({ action: "search_customers", query: document.getElementById("f_search").value.trim(), limit: 30 });
         renderCustomerResults(result.customers || []);
       } catch (e) {
-        box.innerHTML = '<div class="small" style="color:#b91c1c;">Error: ' + escapeHtml(e.message) + '</div>';
+        box.innerHTML = '<div class="small" style="color:#a13d3d;">Error: ' + escapeHtml(e.message) + '</div>';
       }
     });
     document.getElementById("f_search").addEventListener("keydown", (e) => {
@@ -330,7 +333,7 @@
     function renderLedger(ledger) {
       const box = document.getElementById("detailLedger");
       if (!ledger.length) {
-        box.innerHTML = '<div class="small" style="opacity:.76;">No activity yet.</div>';
+        box.innerHTML = '<div class="small" style="color:var(--text-light);">No activity yet.</div>';
         return;
       }
       const typeLabel = (t) => ({
@@ -343,15 +346,15 @@
       box.innerHTML = ledger.map((l) => {
         const positive = Number(l.amount_inr || 0) >= 0;
         const amtText = (positive ? "+" : "-") + money(Math.abs(Number(l.amount_inr || 0)));
-        const amtColor = positive ? "#166534" : "#991b1b";
+        const amtColor = positive ? "#3f6b4f" : "#a13d3d";
         const when = l.created_at ? new Date(l.created_at).toLocaleString("en-IN") : "-";
         return `
           <div class="ledger-row">
             <div>
               <div style="font-weight:700; font-size:13px;">${escapeHtml(typeLabel(l.type))}</div>
-              <div class="small" style="opacity:.74; margin-top:2px;">${when}${l.note ? " • " + escapeHtml(l.note) : ""}</div>
+              <div class="small" style="color:var(--text-light); margin-top:2px;">${when}${l.note ? " • " + escapeHtml(l.note) : ""}</div>
             </div>
-            <div style="font-weight:900; color:${amtColor}; white-space:nowrap;">${amtText}</div>
+            <div style="font-weight:700; color:${amtColor}; white-space:nowrap;">${amtText}</div>
           </div>
         `;
       }).join("");
@@ -364,7 +367,7 @@
       document.getElementById("detailName").textContent = customerLabel(c);
       document.getElementById("detailContact").textContent = customerContact(c);
       document.getElementById("detailBalance").textContent = "Loading…";
-      document.getElementById("detailLedger").innerHTML = '<div class="small" style="opacity:.76;">Loading…</div>';
+      document.getElementById("detailLedger").innerHTML = '<div class="small" style="color:var(--text-light);">Loading…</div>';
       document.getElementById("adjustStatus").textContent = "";
       document.getElementById("f_adjust_amount").value = "";
       document.getElementById("f_adjust_note").value = "";
@@ -376,7 +379,7 @@
         renderLedger(result.ledger || []);
       } catch (e) {
         document.getElementById("detailBalance").textContent = "—";
-        document.getElementById("detailLedger").innerHTML = '<div class="small" style="color:#b91c1c;">Error: ' + escapeHtml(e.message) + '</div>';
+        document.getElementById("detailLedger").innerHTML = '<div class="small" style="color:#a13d3d;">Error: ' + escapeHtml(e.message) + '</div>';
       }
     }
 
@@ -391,7 +394,7 @@
       statusEl.textContent = "Applying…";
       try {
         await authedFetch({ action: "adjust_wallet", user_id: currentCustomer.user_id, amount_inr: amount, note });
-        statusEl.textContent = "Applied ✅";
+        statusEl.textContent = "Applied.";
         await openCustomer(currentCustomer);
       } catch (e) {
         statusEl.textContent = "Error: " + e.message;
@@ -401,7 +404,7 @@
     async function initAdmin() {
       try {
         const sessResult = await supabase.auth.getSession();
-        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (sessResult.error) return showGateError(ICON_WARN, "Auth Error", sessResult.error.message);
         if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
 
         const session = sessResult.data.session;
@@ -413,8 +416,8 @@
           .eq("email", currentUserEmail)
           .maybeSingle();
 
-        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
-        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+        if (adminResult.error) return showGateError(ICON_WARN, "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError(ICON_LOCK, "Access Denied", "Your account does not have admin access.");
 
         loadingState.style.display = "none";
         dashboard.style.display = "block";
@@ -422,7 +425,7 @@
         await loadSettings();
       } catch (e) {
         console.error("Wallet admin page error:", e);
-        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+        showGateError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
       }
     }
 
