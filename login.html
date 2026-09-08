@@ -383,7 +383,7 @@ document.getElementById("footer").innerHTML = renderFooter();
         status.textContent = "";
         return;
       }
-      status.textContent = "Logged in ✅ Redirecting…";
+      status.textContent = "Logged in — redirecting…";
       setTimeout(() => { window.location.href = (NEXT_URL || "/account.html"); }, 500);
     });
     pinInput.addEventListener("keydown", (e) => { if (e.key === "Enter") pinSubmitBtn.click(); });
@@ -466,7 +466,7 @@ document.getElementById("footer").innerHTML = renderFooter();
       }
 
       if (!needsPinSetup) {
-        status.textContent = "Logged in ✅ Redirecting…";
+        status.textContent = "Logged in — redirecting…";
         setTimeout(() => { window.location.href = (NEXT_URL || "/account.html"); }, 500);
         return;
       }
@@ -538,7 +538,7 @@ document.getElementById("footer").innerHTML = renderFooter();
       }
 
       suppressAuthRedirect = false;
-      status.textContent = "All set ✅ Redirecting…";
+      status.textContent = "All set — redirecting…";
       setTimeout(() => { window.location.href = (NEXT_URL || "/account.html"); }, 500);
     });
   }

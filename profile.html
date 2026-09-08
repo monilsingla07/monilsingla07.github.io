@@ -282,7 +282,7 @@
         // merging anything. Surface that as a plain-language warning
         // instead of the raw "duplicate key value violates..." error text.
         if (!error) {
-          status.textContent = "Saved ✅";
+          status.textContent = "Saved";
           clearWarn();
         } else if (error.code === "23505" && /profiles_phone_unique_idx/.test(error.message || "")) {
           status.textContent = "";

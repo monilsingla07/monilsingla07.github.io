@@ -851,7 +851,7 @@
       appliedCoupon = code;
       if (code) {
         localStorage.setItem("ahamstree_coupon", code);
-        if (couponToggleLabel) couponToggleLabel.textContent = `Coupon: ${code} ✓`;
+        if (couponToggleLabel) couponToggleLabel.textContent = `Coupon applied: ${code}`;
         couponToggle.style.background   = "rgba(34,197,94,0.08)";
         couponToggle.style.borderColor  = "rgba(34,197,94,0.5)";
         couponToggle.style.color        = "#166534";

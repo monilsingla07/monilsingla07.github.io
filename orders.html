@@ -150,8 +150,8 @@
   <!-- ═══════════════════ Return modal ═══════════════════════════════════ -->
   <div class="modal-overlay" id="returnModal">
     <div class="modal-box">
-      <h3>🔄 Request a Return</h3>
-      <p class="small" style="color:#64748b; margin:0 0 4px;">
+      <h3>Request a Return</h3>
+      <p class="small" style="color:var(--text-light); margin:0 0 4px;">
         We accept returns only in case of a genuine manufacturing defect, reported within <strong>48 hours</strong> of delivery.
       </p>
 
@@ -245,7 +245,7 @@
     }
 
     function paymentPill() {
-      return `<span class="payment-pill online">💳 Online Payment</span>`;
+      return `<span class="payment-pill online">Online Payment</span>`;
     }
 
     function formatDate(iso) {
@@ -274,7 +274,7 @@
         approved  : { label: "↩ Return Approved",  cls: "ret-ok"   },
         picked    : { label: "↩ Item Picked Up",    cls: "ret-pick" },
         rejected  : { label: "↩ Return Rejected",   cls: "ret-rej"  },
-        refunded  : { label: "💰 Refunded",          cls: "ret-refunded" },
+        refunded  : { label: "↩ Refunded",          cls: "ret-refunded" },
       };
       const s = map[rs] || { label: "↩ " + rs, cls: "ret-req" };
       return `<span class="status-badge ${s.cls}">${s.label}</span>`;
@@ -490,10 +490,10 @@
         // Summary row
         html += `<div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:12px;">`;
         if (st.current_status) {
-          html += `<div style="font-weight:900; font-size:14px; color:#1e293b;">📦 ${escapeHtml(st.current_status)}</div>`;
+          html += `<div style="display:flex;align-items:center;gap:7px;font-weight:700; font-size:14px; color:var(--text);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>${escapeHtml(st.current_status)}</div>`;
         }
         if (st.etd) {
-          html += `<div class="small" style="color:#64748b;">Expected: <strong>${escapeHtml(st.etd)}</strong></div>`;
+          html += `<div class="small" style="color:var(--text-light);">Expected: <strong>${escapeHtml(st.etd)}</strong></div>`;
         }
         if (st.courier_name) {
           html += `<div class="small" style="color:#64748b;">via <strong>${escapeHtml(st.courier_name)}</strong></div>`;
@@ -681,7 +681,7 @@
         <div style="padding:14px 16px; background:var(--brand-light); border-top:2px solid var(--brand);">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
             <div>
-              <div style="font-weight:900; font-size:14px; margin-bottom:4px;">⚡ Payment not completed</div>
+              <div style="font-weight:700; font-size:14px; margin-bottom:4px;">Payment not completed</div>
               <div class="small" style="opacity:.8; margin-bottom:8px;">
                 Your items are reserved. Complete payment before the timer runs out.
               </div>
@@ -761,7 +761,7 @@
                      style="padding:8px 14px; font-size:13px;"
                      type="button"
                      onclick="window.__invoice('${o.id}')">
-                     📄 Invoice
+                     <span style="display:inline-flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>Invoice</span>
                    </button>`
                 : ""}
               ${canCancel
@@ -812,9 +812,10 @@
 
           <!-- Shipping info -->
           ${awb
-            ? `<div style="padding:10px 16px; background:#eff6ff; border-top:1px solid #bfdbfe;">
-                 <div class="small" style="color:#1e40af;">
-                   🚚 AWB: <strong>${escapeHtml(awb)}</strong>
+            ? `<div style="padding:10px 16px; background:var(--indigo-light); border-top:1px solid rgba(47,72,88,.22);">
+                 <div class="small" style="color:var(--indigo); display:flex; align-items:center; gap:7px;">
+                   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg>
+                   AWB: <strong>${escapeHtml(awb)}</strong>
                  </div>
                </div>`
             : ""}
