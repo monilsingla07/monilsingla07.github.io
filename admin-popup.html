@@ -18,23 +18,23 @@
 
   <style>
     .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
-    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-card { background: var(--surface); border: 1px solid var(--border-light); padding: 20px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
-    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-label { font-size: 12px; color: var(--text-light); display: block; margin-bottom: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--border-light); background: var(--surface); }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
-    .pm-badge { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
-    .pm-badge.active { background: #dcfce7; color: #166534; }
-    .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
+    .pm-badge { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge.active { background: rgba(63,107,79,.1); color: #3f6b4f; }
+    .pm-badge.inactive { background: var(--border-light); color: var(--text-light); }
     #pmPreviewOverlay { position: fixed; inset: 0; z-index: 9999; background: rgba(20,14,10,.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
-    #pmPreviewCard { position: relative; background: #fff; border-radius: 20px; max-width: 420px; width: 100%; max-height: 88vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); text-align: center; }
+    #pmPreviewCard { position: relative; background: var(--surface); max-width: 420px; width: 100%; max-height: 88vh; overflow-y: auto; box-shadow: var(--shadow-lg); text-align: center; }
     #pmPreviewClose { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 999px; border: none; background: rgba(0,0,0,.55); color: #fff; font-size: 18px; cursor: pointer; }
-    #pmPreviewImg { width: 100%; display: block; border-radius: 20px 20px 0 0; max-height: 46vh; object-fit: cover; }
+    #pmPreviewImg { width: 100%; display: block; max-height: 46vh; object-fit: cover; }
     #pmPreviewBody { padding: 22px 24px 26px; }
     #pmPreviewHeadline { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; margin: 0 0 8px; }
-    #pmPreviewSubtext { font-size: 14px; opacity: .78; margin: 0 0 18px; line-height: 1.5; }
-    #pmPreviewBtn { display: inline-block; background: var(--brand, #7c1c1c); color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 26px; border-radius: 999px; }
+    #pmPreviewSubtext { font-size: 14px; color: var(--text-light); margin: 0 0 18px; line-height: 1.5; }
+    #pmPreviewBtn { display: inline-block; background: var(--brand); color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 26px; border-radius: 999px; }
     @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -43,19 +43,19 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:840px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Popup Manager</h2>
-          <div class="small" style="opacity:.76; margin-top:4px;">Controls the welcome popup shown across the site. Changes go live immediately — no code changes needed.</div>
+          <div class="small" style="color:var(--text-light); margin-top:4px;">Controls the welcome popup shown across the site. Changes go live immediately — no code changes needed.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
 
       <div class="pm-card">
-        <div style="font-weight:900;" id="formTitle">New popup</div>
+        <div style="font-weight:700; font-size:15px;" id="formTitle">New popup</div>
         <input type="hidden" id="f_id" />
 
         <div class="pm-row">
@@ -111,11 +111,11 @@
         </div>
       </div>
 
-      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:24px 0 10px;">All popups</div>
+      <div class="section-title" style="font-size:13px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-light); margin:24px 0 10px;">All popups</div>
       <div id="popupList"></div>
 
-      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:32px 0 10px;">Sign-in popup (logged-out visitors only)</div>
-      <div class="small" style="opacity:.76; margin:-4px 0 12px;">
+      <div class="section-title" style="font-size:13px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-light); margin:32px 0 10px;">Sign-in popup (logged-out visitors only)</div>
+      <div class="small" style="color:var(--text-light); margin:-4px 0 12px;">
         Shown once per "reappear" window to anyone browsing the site without being signed in — has its own built-in WhatsApp OTP + Google sign-in form, not just a link. Independent of the popup above, and only ever shows once per window even if the visitor closes it, refreshes, or ignores it — later refreshes in that same window fall through to the popup above instead.
       </div>
       <div class="pm-card">
@@ -143,7 +143,7 @@
           <div class="full">
             <label class="pm-label">Show again after (hours)</label>
             <input id="sp_reappear_hours" class="input" type="number" min="1" step="1" placeholder="24" />
-            <div class="small" style="opacity:.74; margin-top:4px;">24 = once per day, which is the default. This is how long after being shown it waits before showing again to the same visitor.</div>
+            <div class="small" style="color:var(--text-light); margin-top:4px;">24 = once per day, which is the default. This is how long after being shown it waits before showing again to the same visitor.</div>
           </div>
         </div>
 
@@ -175,12 +175,15 @@
     const formStatus   = document.getElementById("formStatus");
     const formTitle    = document.getElementById("formTitle");
 
-    function showGateError(emoji, title, message) {
+    const ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    const ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showGateError(icon, title, message) {
       loadingState.style.display = "block";
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
@@ -271,21 +274,21 @@
     function renderList(popups) {
       const list = document.getElementById("popupList");
       if (!popups.length) {
-        list.innerHTML = '<div class="small" style="opacity:.76;">No popups yet — create one above.</div>';
+        list.innerHTML = '<div class="small" style="color:var(--text-light);">No popups yet — create one above.</div>';
         return;
       }
       list.innerHTML = popups.map(p => `
         <div class="pm-list-item">
           <div>
-            <div style="font-weight:800;">${escapeHtml(p.title || "Untitled popup")}
+            <div style="font-weight:700;">${escapeHtml(p.title || "Untitled popup")}
               <span class="pm-badge ${p.is_active ? "active" : "inactive"}" style="margin-left:8px;">${p.is_active ? "Active" : "Inactive"}</span>
             </div>
-            <div class="small" style="opacity:.78; margin-top:4px;">${escapeHtml(p.headline || "")}</div>
-            <div class="small" style="opacity:.72; margin-top:2px;">Updated ${new Date(p.updated_at).toLocaleString("en-IN")}</div>
+            <div class="small" style="color:var(--text-light); margin-top:4px;">${escapeHtml(p.headline || "")}</div>
+            <div class="small" style="color:var(--text-light); margin-top:2px;">Updated ${new Date(p.updated_at).toLocaleString("en-IN")}</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(p.id)}">Edit</button>
-            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-delete="${escapeAttr(p.id)}">Delete</button>
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#a13d3d; border-color:rgba(161,61,61,.3);" data-delete="${escapeAttr(p.id)}">Delete</button>
           </div>
         </div>
       `).join("");
@@ -334,7 +337,7 @@
         };
         const result = await authedFetch(payload);
         fillForm(result.popup);
-        formStatus.textContent = "Saved ✅";
+        formStatus.textContent = "Saved.";
         await loadList();
       } catch (e) {
         formStatus.textContent = "Error: " + e.message;
@@ -399,7 +402,7 @@
         };
         const result = await signinAuthedFetch(payload);
         fillSigninForm(result.config);
-        spFormStatus.textContent = "Saved ✅";
+        spFormStatus.textContent = "Saved.";
       } catch (e) {
         spFormStatus.textContent = "Error: " + e.message;
       }
@@ -425,7 +428,7 @@
           <div id="pmPreviewBody">
             ${headline ? `<div id="pmPreviewHeadline">${escapeHtml(headline)}</div>` : ""}
             ${subtext ? `<div id="pmPreviewSubtext">${escapeHtml(subtext)}</div>` : ""}
-            <div class="small" style="opacity:.74; margin-top:10px; border:1px dashed #ddd; border-radius:12px; padding:14px;">
+            <div class="small" style="color:var(--text-light); margin-top:10px; border:1px dashed var(--border); background:var(--bg-warm); padding:14px;">
               [WhatsApp OTP + Google sign-in form appears here on the live site]
             </div>
           </div>
@@ -440,7 +443,7 @@
     async function initAdmin() {
       try {
         const sessResult = await supabase.auth.getSession();
-        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (sessResult.error) return showGateError(ICON_WARN, "Auth Error", sessResult.error.message);
         if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
 
         const session = sessResult.data.session;
@@ -451,8 +454,8 @@
           .eq("email", session.user.email.toLowerCase())
           .maybeSingle();
 
-        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
-        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+        if (adminResult.error) return showGateError(ICON_WARN, "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError(ICON_LOCK, "Access Denied", "Your account does not have admin access.");
 
         loadingState.style.display = "none";
         dashboard.style.display = "block";
@@ -462,7 +465,7 @@
         await loadSigninConfig();
       } catch (e) {
         console.error("Popup admin page error:", e);
-        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+        showGateError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
       }
     }
 
