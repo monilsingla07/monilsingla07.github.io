@@ -30,28 +30,27 @@
 
     /* ── Section cards ── */
     .section-card {
-      background: #fff;
-      border: 1px solid var(--border, #e5e7eb);
-      border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
       overflow: hidden;
       margin-bottom: 16px;
     }
     .section-header {
       padding: 14px 16px;
-      border-bottom: 1px solid var(--border, #e5e7eb);
+      border-bottom: 1px solid var(--border-light);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
     }
-    .section-header h3 { margin: 0; font-size: 15px; font-weight: 800; }
+    .section-header h3 { margin: 0; font-size: 15px; font-weight: 700; }
     .section-body { padding: 16px; }
 
     /* ── Mode toggle (Catalog / Quick Sale) ── */
     .mode-toggle {
       display: flex;
       gap: 6px;
-      background: var(--bg-warm, #f7f3ee);
+      background: var(--bg-warm);
       border-radius: 10px;
       padding: 4px;
     }
@@ -61,15 +60,15 @@
       background: transparent;
       padding: 7px 10px;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 700;
       border-radius: 8px;
       cursor: pointer;
-      color: #6b6b6b;
+      color: var(--text-light);
       transition: all .15s;
     }
     .mode-toggle button.active {
-      background: #fff;
-      color: var(--brand, #7c1c1c);
+      background: var(--surface);
+      color: var(--brand);
       box-shadow: 0 1px 4px rgba(0,0,0,.08);
     }
 
@@ -80,10 +79,9 @@
       position: absolute;
       top: calc(100% + 4px);
       left: 0; right: 0;
-      background: #fff;
-      border: 1px solid var(--border, #e5e7eb);
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-md);
       z-index: 100;
       max-height: 280px;
       overflow-y: auto;
@@ -95,14 +93,14 @@
       gap: 10px;
       padding: 10px 12px;
       cursor: pointer;
-      border-bottom: 1px solid #f3f4f6;
+      border-bottom: 1px solid var(--border-light);
       transition: background .1s;
     }
     .search-result:last-child { border-bottom: none; }
-    .search-result:hover { background: var(--brand-light, #fdf2f2); }
+    .search-result:hover { background: var(--brand-lighter); }
     .search-result-info { flex: 1; min-width: 0; }
     .search-result-title { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .search-result-price { font-size: 12px; opacity: .78; margin-top: 2px; }
+    .search-result-price { font-size: 12px; color: var(--text-light); margin-top: 2px; }
 
     /* ── Cart items ── */
     .cart-item {
@@ -111,7 +109,7 @@
       align-items: center;
       gap: 10px;
       padding: 10px 0;
-      border-bottom: 1px solid #f3f4f6;
+      border-bottom: 1px solid var(--border-light);
     }
     .cart-item:last-child { border-bottom: none; }
     .cart-item-name { font-weight: 700; font-size: 13px; }
@@ -135,7 +133,7 @@
       gap: 8px;
       margin-top: 4px;
     }
-    .price-override-row label { font-size: 12px; opacity: .76; white-space: nowrap; }
+    .price-override-row label { font-size: 12px; color: var(--text-light); white-space: nowrap; }
     .price-override-row input { width: 90px; font-size: 13px; }
 
     /* ── Quick sale rows ── */
@@ -149,17 +147,17 @@
     .quick-row input { font-size: 13px; }
     #addQuickRow {
       background: none;
-      border: 1px dashed var(--border, #d1d5db);
+      border: 1px dashed var(--border);
       border-radius: 10px;
       padding: 8px;
       width: 100%;
       font-size: 12px;
       font-weight: 700;
-      color: var(--brand, #7c1c1c);
+      color: var(--brand);
       cursor: pointer;
       margin-top: 4px;
     }
-    #addQuickRow:hover { background: var(--brand-light, #fdf2f2); }
+    #addQuickRow:hover { background: var(--brand-lighter); }
 
     /* ── Choice cards (Order type / Payment) ── */
     .choice-option {
@@ -167,29 +165,28 @@
       align-items: center;
       gap: 12px;
       padding: 12px 14px;
-      border: 2px solid var(--border, #e5e7eb);
-      border-radius: 12px;
+      border: 2px solid var(--border-light);
       cursor: pointer;
       transition: all .15s;
       margin-bottom: 8px;
     }
     .choice-option:last-child { margin-bottom: 0; }
     .choice-option.selected {
-      border-color: var(--brand, #7c1c1c);
-      background: var(--brand-light, #fdf2f2);
+      border-color: var(--brand);
+      background: var(--brand-lighter);
     }
-    .choice-option input[type="radio"] { accent-color: var(--brand, #7c1c1c); flex-shrink: 0; }
+    .choice-option input[type="radio"] { accent-color: var(--brand); flex-shrink: 0; }
     .choice-option-text { flex: 1; }
-    .choice-option-title { font-weight: 800; font-size: 14px; }
-    .choice-option-sub { font-size: 12px; opacity: .78; margin-top: 2px; }
+    .choice-option-title { font-weight: 700; font-size: 14px; }
+    .choice-option-sub { font-size: 12px; color: var(--text-light); margin-top: 2px; }
 
     /* Sub-selector (Cash/Card/UPI/Other pills) */
-    .subpill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border, #e5e7eb); }
+    .subpill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
     .subpill {
       flex: 1 1 auto;
       text-align: center;
       padding: 8px 10px;
-      border: 1.5px solid var(--border, #e5e7eb);
+      border: 1.5px solid var(--border);
       border-radius: 10px;
       font-size: 12px;
       font-weight: 700;
@@ -198,8 +195,8 @@
       min-width: 70px;
     }
     .subpill.selected {
-      border-color: var(--brand, #7c1c1c);
-      background: var(--brand, #7c1c1c);
+      border-color: var(--brand);
+      background: var(--brand);
       color: #fff;
     }
 
@@ -212,25 +209,24 @@
       margin-bottom: 6px;
     }
     .summary-row.total {
-      font-weight: 900;
+      font-weight: 700;
       font-size: 16px;
       margin-top: 10px;
       padding-top: 10px;
-      border-top: 2px solid var(--border, #e5e7eb);
+      border-top: 2px solid var(--border-light);
     }
 
     /* ── Result panel ── */
     #resultPanel {
       display: none;
       padding: 20px;
-      border-radius: 16px;
-      border: 2px solid #86efac;
-      background: #f0fdf4;
+      border: 2px solid rgba(63,107,79,.3);
+      background: rgba(63,107,79,.07);
       margin-top: 16px;
     }
     #resultPanel.error {
-      border-color: #fca5a5;
-      background: #fef2f2;
+      border-color: rgba(161,61,61,.3);
+      background: rgba(161,61,61,.06);
     }
 
     /* ── Toast ── */
@@ -238,8 +234,8 @@
       position: fixed;
       bottom: 24px; left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: #111; color: #fff;
-      padding: 10px 20px; border-radius: 12px;
+      background: var(--text); color: #fff;
+      padding: 10px 20px;
       font-size: 13px; font-weight: 700;
       opacity: 0; transition: all .25s ease;
       pointer-events: none; z-index: 9999;
@@ -247,8 +243,8 @@
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    .field-label { font-size: 12px; font-weight: 700; opacity: .76; margin-bottom: 4px; display: block; }
-    .empty-cart { text-align: center; padding: 24px; opacity: .72; font-size: 13px; }
+    .field-label { font-size: 12px; font-weight: 700; color: var(--text-light); margin-bottom: 4px; display: block; }
+    .empty-cart { text-align: center; padding: 24px; color: var(--text-light); font-size: 13px; }
   </style>
 </head>
 
@@ -257,14 +253,14 @@
 
   <div class="container" style="max-width: 1040px;">
 
-    <div id="loadingState" style="text-align:center;padding:48px;opacity:.76;font-size:14px;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">Verifying admin access…</div>
 
     <div id="mainContent" style="display:none;">
 
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
         <div>
           <h2 style="margin:0;">Create Order</h2>
-          <div class="small" style="opacity:.78; margin-top:4px;">
+          <div class="small" style="color:var(--text-light); margin-top:4px;">
             Ring up a walk-in sale or place an order for a customer who needs it shipped.
           </div>
         </div>
@@ -279,13 +275,13 @@
           <!-- Products / Quick sale -->
           <div class="section-card">
             <div class="section-header">
-              <h3 id="itemsHeading">🛍 Products</h3>
-              <span class="small" id="cartCount" style="opacity:.76;">0 items</span>
+              <h3 id="itemsHeading">Products</h3>
+              <span class="small" id="cartCount" style="color:var(--text-light);">0 items</span>
             </div>
             <div class="section-body">
               <div class="mode-toggle" style="margin-bottom:14px;">
-                <button type="button" id="modeCatalogBtn" class="active">🛍 From Catalog</button>
-                <button type="button" id="modeQuickBtn">⚡ Quick Sale</button>
+                <button type="button" id="modeCatalogBtn" class="active">From Catalog</button>
+                <button type="button" id="modeQuickBtn">Quick Sale</button>
               </div>
 
               <!-- Catalog mode -->
@@ -295,13 +291,13 @@
                   <input class="input" id="productSearch" placeholder="Type to search…" autocomplete="off" />
                   <div id="searchDropdown"></div>
                 </div>
-                <div id="searchMsg" class="small" style="margin-top:6px; min-height:14px; opacity:.76;"></div>
+                <div id="searchMsg" class="small" style="margin-top:6px; min-height:14px; color:var(--text-light);"></div>
                 <div id="cartItems" style="margin-top:14px;"></div>
               </div>
 
               <!-- Quick sale mode -->
               <div id="quickPanel" style="display:none;">
-                <div class="small" style="opacity:.76; margin-bottom:10px;">
+                <div class="small" style="color:var(--text-light); margin-bottom:10px;">
                   For a custom or one-off item that isn't in your product catalog — e.g. a custom-tailored piece or an alteration charge. Not tracked in inventory.
                 </div>
                 <div id="quickRows"></div>
@@ -313,7 +309,7 @@
           <!-- Customer details -->
           <div class="section-card">
             <div class="section-header">
-              <h3>👤 Customer Details</h3>
+              <h3>Customer Details</h3>
             </div>
             <div class="section-body" style="display:grid; gap:12px;">
               <div>
@@ -334,20 +330,20 @@
           <!-- Order type -->
           <div class="section-card">
             <div class="section-header">
-              <h3>📦 Order Type</h3>
+              <h3>Order Type</h3>
             </div>
             <div class="section-body">
               <label class="choice-option selected" id="typeWalkinLabel">
                 <input type="radio" name="orderType" value="walkin" id="typeWalkin" checked />
                 <div class="choice-option-text">
-                  <div class="choice-option-title">🏪 Walk-in (in-store)</div>
+                  <div class="choice-option-title">Walk-in (in-store)</div>
                   <div class="choice-option-sub">Customer is here now. No address needed — a direct invoice is generated once payment is recorded.</div>
                 </div>
               </label>
               <label class="choice-option" id="typeShippingLabel">
                 <input type="radio" name="orderType" value="shipping" id="typeShipping" />
                 <div class="choice-option-text">
-                  <div class="choice-option-title">📮 Ship to Customer</div>
+                  <div class="choice-option-title">Ship to Customer</div>
                   <div class="choice-option-sub">Collect a delivery address — once paid, you can ship it right from this page.</div>
                 </div>
               </label>
@@ -398,7 +394,7 @@
 
           <div class="section-card">
             <div class="section-header">
-              <h3>💰 Order Summary</h3>
+              <h3>Order Summary</h3>
             </div>
             <div class="section-body">
               <div id="summaryItems" style="margin-bottom:10px; min-height:20px;">
@@ -416,7 +412,7 @@
           <!-- Payment -->
           <div class="section-card">
             <div class="section-header">
-              <h3>💳 Payment</h3>
+              <h3>Payment</h3>
             </div>
             <div class="section-body">
 
@@ -424,9 +420,9 @@
               <div id="paidViaOnly">
                 <div class="small" style="font-weight:700; margin-bottom:8px;">Payment received via</div>
                 <div class="subpill-row" id="paidViaRowWalkin">
-                  <div class="subpill" data-via="cash">💵 Cash</div>
-                  <div class="subpill" data-via="card">💳 Card</div>
-                  <div class="subpill" data-via="upi">📱 UPI</div>
+                  <div class="subpill" data-via="cash">Cash</div>
+                  <div class="subpill" data-via="card">Card</div>
+                  <div class="subpill" data-via="upi">UPI</div>
                   <div class="subpill" data-via="other">Other</div>
                 </div>
               </div>
@@ -439,7 +435,7 @@
                     <div class="choice-option-title">Send Payment Link</div>
                     <div class="choice-option-sub">Generate a Razorpay link to share with the customer.</div>
                   </div>
-                  <span style="font-size:20px;">💳</span>
+                  <span style="color:var(--text-light);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>
                 </label>
                 <label class="choice-option" id="pmPaidLabel">
                   <input type="radio" name="paymentMode" value="paid" id="pmPaid" />
@@ -447,13 +443,13 @@
                     <div class="choice-option-title">Mark as Already Paid</div>
                     <div class="choice-option-sub">Cash/card/UPI already collected — ship this to a different address.</div>
                   </div>
-                  <span style="font-size:20px;">✅</span>
+                  <span style="color:var(--text-light);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg></span>
                 </label>
 
                 <div class="subpill-row" id="paidViaRowShipping" style="display:none;">
-                  <div class="subpill" data-via="cash">💵 Cash</div>
-                  <div class="subpill" data-via="card">💳 Card</div>
-                  <div class="subpill" data-via="upi">📱 UPI</div>
+                  <div class="subpill" data-via="cash">Cash</div>
+                  <div class="subpill" data-via="card">Card</div>
+                  <div class="subpill" data-via="upi">UPI</div>
                   <div class="subpill" data-via="other">Other</div>
                 </div>
               </div>
@@ -490,12 +486,15 @@
     var loadingState = document.getElementById("loadingState");
     var mainContent  = document.getElementById("mainContent");
 
-    function showAdminError(emoji, title, message) {
+    var ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    var ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showAdminError(icon, title, message) {
       loadingState.style.display = "block";
       mainContent.style.display = "none";
       loadingState.innerHTML =
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
-          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
@@ -544,7 +543,7 @@
       modeQuickBtn.classList.toggle("active", mode === "quick");
       catalogPanel.style.display = mode === "catalog" ? "block" : "none";
       quickPanel.style.display   = mode === "quick" ? "block" : "none";
-      itemsHeading.textContent   = mode === "catalog" ? "🛍 Products" : "⚡ Quick Sale Item(s)";
+      itemsHeading.textContent   = mode === "catalog" ? "Products" : "Quick Sale Item(s)";
       renderSummary();
     }
 
@@ -657,8 +656,8 @@
 
     function addToCart(productId, title, unitPrice) {
       const existing = cart.find(c => c.product_id === productId);
-      if (existing) { existing.qty++; toast(`${title} qty increased`, "#166534"); }
-      else { cart.push({ product_id: productId, title, qty: 1, unit_price: unitPrice, price_override: null }); toast(`${title} added`, "#166534"); }
+      if (existing) { existing.qty++; toast(`${title} qty increased`, "#3f6b4f"); }
+      else { cart.push({ product_id: productId, title, qty: 1, unit_price: unitPrice, price_override: null }); toast(`${title} added`, "#3f6b4f"); }
       renderCart();
     }
 
@@ -684,7 +683,7 @@
         <div class="cart-item" data-pid="${escapeAttr(c.product_id)}">
           <div>
             <div class="cart-item-name">${escapeHtml(c.title)}</div>
-            <div class="small" style="opacity:.72;">Unit: ${money(c.price_override ?? c.unit_price)}</div>
+            <div class="small" style="color:var(--text-light);">Unit: ${money(c.price_override ?? c.unit_price)}</div>
           </div>
           <input type="number" class="input qty-input" value="${c.qty}" min="1" max="999"
                  data-pid="${escapeAttr(c.product_id)}" style="width:64px;text-align:center;" />
@@ -697,7 +696,7 @@
             <input type="number" class="input override-input" placeholder="${c.unit_price}"
                    value="${c.price_override ?? ""}" min="0" step="1"
                    data-pid="${escapeAttr(c.product_id)}" style="width:90px;font-size:13px;" />
-            <span class="small" style="opacity:.72;">leave blank for default ${money(c.unit_price)}</span>
+            <span class="small" style="color:var(--text-light);">leave blank for default ${money(c.unit_price)}</span>
           </div>
         </div>
       `).join("");
@@ -886,7 +885,7 @@
 
     submitBtn.addEventListener("click", async () => {
       const validationError = validate();
-      if (validationError) { toast(validationError, "#dc2626"); return; }
+      if (validationError) { toast(validationError, "#a13d3d"); return; }
 
       const submitMsg = document.getElementById("submitMsg");
       const result    = document.getElementById("resultPanel");
@@ -932,16 +931,16 @@
         if (data.payment_mode === "paid") {
           result.className = "";
           resultContent.innerHTML = `
-            <div style="font-weight:900; font-size:16px; color:#166534; margin-bottom:8px;">✅ Sale Completed!</div>
+            <div style="font-weight:900; font-size:16px; color:#3f6b4f; margin-bottom:8px;">Sale Completed!</div>
             <div class="small" style="margin-bottom:12px;">
               <strong>Order #${shortId}</strong> — Total: <strong>${money(data.total_inr)}</strong>
             </div>
             <div id="paidActionsRow" style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn secondary" id="invoiceBtn2" style="padding:8px 14px; font-size:13px;">📄 Generating invoice…</button>
+              <button class="btn secondary" id="invoiceBtn2" style="padding:8px 14px; font-size:13px;">Generating invoice…</button>
               <button class="btn secondary" id="newOrderBtn2" style="padding:8px 14px; font-size:13px;">Create another</button>
             </div>
             ${orderType === "shipping" ? `<div id="shipSlot2" style="margin-top:12px;">
-              <button class="btn" id="shipNowBtn2" style="padding:8px 14px; font-size:13px;">🚀 Ship Now — choose courier</button>
+              <button class="btn" id="shipNowBtn2" style="padding:8px 14px; font-size:13px;">Ship Now — choose courier</button>
             </div>` : ""}`;
           result.style.display = "block";
 
@@ -957,7 +956,7 @@
             });
           }
 
-          toast("Sale recorded ✅", "#166534");
+          toast("Sale recorded.", "#3f6b4f");
 
         } else {
           const link = data.payment_link_url;
@@ -968,7 +967,7 @@
 
           result.className = "";
           resultContent.innerHTML = `
-            <div style="font-weight:900; font-size:16px; color:#166534; margin-bottom:8px;">💳 Payment Link Created!</div>
+            <div style="font-weight:900; font-size:16px; color:#3f6b4f; margin-bottom:8px;">Payment Link Created!</div>
             <div class="small" style="margin-bottom:10px;">
               <strong>Order #${shortId}</strong> — Total: <strong>${money(data.total_inr)}</strong>
             </div>
@@ -976,35 +975,35 @@
               <div class="small" style="font-weight:700; margin-bottom:4px;">Payment Link:</div>
               <a href="${safeHref(link)}" target="_blank" rel="noopener noreferrer" style="color:var(--brand); font-size:13px;">${escapeHtml(link)}</a>
             </div>
-            <div class="small" style="opacity:.78; margin-bottom:10px;">
-              Once the customer pays, this order will show a 🚀 Ship Now button in Admin → Orders.
+            <div class="small" style="color:var(--text-light); margin-bottom:10px;">
+              Once the customer pays, this order will show a Ship Now button in Admin → Orders.
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <a class="btn" href="${safeHref(waLink)}" target="_blank" rel="noopener noreferrer" style="padding:8px 14px; font-size:13px; background:#25d366; border-color:#25d366;">
-                📲 Send via WhatsApp
+                Send via WhatsApp
               </a>
               <button class="btn secondary" id="copyLinkBtn" style="padding:8px 14px; font-size:13px;">Copy link</button>
               <button class="btn secondary" id="newOrderBtn2" style="padding:8px 14px; font-size:13px;">Create another</button>
-              <button class="btn secondary" id="invoiceBtn2" style="padding:8px 14px; font-size:13px;">📄 Generate Invoice</button>
+              <button class="btn secondary" id="invoiceBtn2" style="padding:8px 14px; font-size:13px;">Generate Invoice</button>
             </div>`;
           result.style.display = "block";
 
           document.getElementById("copyLinkBtn")?.addEventListener("click", () => {
-            navigator.clipboard.writeText(link).then(() => toast("Link copied! ✅", "#166534"));
+            navigator.clipboard.writeText(link).then(() => toast("Link copied!", "#3f6b4f"));
           });
           document.getElementById("newOrderBtn2")?.addEventListener("click", resetForm);
           document.getElementById("invoiceBtn2")?.addEventListener("click", function() { generateInvoice(data.order_id, this); });
-          toast("Payment link generated! Share it via WhatsApp ✅", "#166534");
+          toast("Payment link generated! Share it via WhatsApp.", "#3f6b4f");
         }
 
       } catch (e) {
         submitMsg.textContent = "";
         result.className = "error";
         resultContent.innerHTML = `
-          <div style="font-weight:900; color:#991b1b; margin-bottom:6px;">❌ Failed to create order</div>
+          <div style="font-weight:900; color:#a13d3d; margin-bottom:6px;">Failed to create order</div>
           <div class="small" style="color:#7f1d1d;">${escapeHtml(e.message)}</div>`;
         result.style.display = "block";
-        toast("Error: " + e.message, "#dc2626");
+        toast("Error: " + e.message, "#a13d3d");
       } finally {
         submitBtn.disabled = false;
       }
@@ -1012,21 +1011,21 @@
 
     // ── Generate invoice for a just-created order ────────────────────────
     async function generateInvoice(orderId, btn) {
-      if (!orderId) { toast("No order ID — cannot generate invoice", "#dc2626"); return; }
+      if (!orderId) { toast("No order ID — cannot generate invoice", "#a13d3d"); return; }
       btn.disabled = true;
       btn.textContent = "Generating…";
       try {
         const inv = await callFn("admin-generate-invoice", { order_id: orderId });
         const invUrl = inv.invoice_url;
-        if (!invUrl) { toast("Invalid invoice URL", "#dc2626"); btn.textContent = "📄 Generate Invoice"; return; }
+        if (!invUrl) { toast("Invalid invoice URL", "#a13d3d"); btn.textContent = "Generate Invoice"; return; }
         const w = window.open(invUrl, "_blank", "noopener,noreferrer");
         if (w) w.opener = null;
         btn.textContent = "Open Invoice ↗";
         btn.onclick = function() { const w2 = window.open(invUrl, "_blank", "noopener,noreferrer"); if (w2) w2.opener = null; };
-        toast("Invoice ready ✅  — " + (inv.invoice_number || ""), "#166534");
+        toast("Invoice ready — " + (inv.invoice_number || ""), "#3f6b4f");
       } catch (e) {
-        toast("Invoice error: " + e.message, "#dc2626");
-        btn.textContent = "📄 Generate Invoice";
+        toast("Invoice error: " + e.message, "#a13d3d");
+        btn.textContent = "Generate Invoice";
       } finally {
         btn.disabled = false;
       }
@@ -1043,14 +1042,14 @@
         if (!couriers.length) throw new Error("No couriers available for this pincode");
         renderCourierPicker2(slot, orderId, couriers, r?.computed_weight_kg);
       } catch (e) {
-        toast("Error: " + e.message, "#dc2626");
+        toast("Error: " + e.message, "#a13d3d");
         btn.disabled = false;
         btn.textContent = oldText;
       }
     }
 
     function renderShipButton2(slot, orderId) {
-      slot.innerHTML = `<button class="btn" id="shipNowBtn2" style="padding:8px 14px; font-size:13px;">🚀 Ship Now — choose courier</button>`;
+      slot.innerHTML = `<button class="btn" id="shipNowBtn2" style="padding:8px 14px; font-size:13px;">Ship Now — choose courier</button>`;
       const btn = slot.querySelector("#shipNowBtn2");
       btn.addEventListener("click", () => startShipOptions(btn, orderId, slot));
     }
@@ -1061,7 +1060,7 @@
           <input type="radio" name="courier-choice-2" value="${escapeAttr(String(c.courier_id))}" ${i === 0 ? "checked" : ""} style="margin:0;flex-shrink:0;" />
           <span style="flex:1;font-size:13px;">
             <strong>${escapeHtml(c.courier_name || "Courier")}</strong>
-            ${c.is_recommended ? `<span style="margin-left:6px;font-size:12px;font-weight:800;color:#166534;">★ Recommended</span>` : ""}
+            ${c.is_recommended ? `<span style="margin-left:6px;font-size:12px;font-weight:800;color:#3f6b4f;">★ Recommended</span>` : ""}
             <br><span style="color:#64748b;font-size:12px;">₹${Number(c.rate || 0).toFixed(2)}${c.etd_days ? ` • Est. ${escapeHtml(String(c.etd_days))}` : ""}</span>
           </span>
         </label>`).join("");
@@ -1101,10 +1100,10 @@
           const r = await callFn("admin-create-shipment", { order_id: orderId, courier_id: courierId, fallback_courier_ids: fallbackCourierIds });
           if (!r?.ok) throw new Error(r?.error || "Shipping failed");
           const switched = r.courier_switched ? " (auto-switched courier after a failed attempt)" : "";
-          slot.innerHTML = `<div style="font-weight:800;color:#166534;font-size:13px;">✅ Shipped — AWB ${escapeHtml(r.awb || "")}${r.courier ? ` via ${escapeHtml(r.courier)}` : ""}${switched}</div>`;
-          toast(`Shipped! AWB ${r.awb || "pending"} 🚚`, "#166534");
+          slot.innerHTML = `<div style="font-weight:800;color:#3f6b4f;font-size:13px;">Shipped — AWB ${escapeHtml(r.awb || "")}${r.courier ? ` via ${escapeHtml(r.courier)}` : ""}${switched}</div>`;
+          toast(`Shipped! AWB ${r.awb || "pending"}`, "#3f6b4f");
         } catch (e) {
-          toast("Ship error: " + e.message, "#dc2626");
+          toast("Ship error: " + e.message, "#a13d3d");
           confirmBtn.disabled = false;
           cancelBtn.disabled = false;
           confirmBtn.textContent = "Confirm & Ship";
@@ -1147,7 +1146,7 @@
     async function initAdmin() {
       try {
         var sessResult = await supabase.auth.getSession();
-        if (sessResult.error) { showAdminError("⚠️", "Auth Error", sessResult.error.message); return; }
+        if (sessResult.error) { showAdminError(ICON_WARN, "Auth Error", sessResult.error.message); return; }
         if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
         var session = sessResult.data.session;
 
@@ -1157,15 +1156,15 @@
           .eq("email", session.user.email.toLowerCase())
           .maybeSingle();
 
-        if (adminResult.error) { showAdminError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message); return; }
-        if (!adminResult.data) { showAdminError("🔒", "Access Denied", "Your account does not have admin access."); return; }
+        if (adminResult.error) { showAdminError(ICON_WARN, "Access Check Failed", "Could not verify admin status: " + adminResult.error.message); return; }
+        if (!adminResult.data) { showAdminError(ICON_LOCK, "Access Denied", "Your account does not have admin access."); return; }
 
         loadingState.style.display = "none";
         mainContent.style.display  = "block";
         renderCart();
       } catch (e) {
         console.error("Admin page error:", e);
-        showAdminError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+        showAdminError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
       }
     }
 
