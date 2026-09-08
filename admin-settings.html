@@ -18,15 +18,15 @@
 
   <style>
     .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
-    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-card { background: var(--surface); border: 1px solid var(--border-light); padding: 20px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
-    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-label { font-size: 12px; color: var(--text-light); display: block; margin-bottom: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--border-light); background: var(--surface); }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .tab-btn { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border, #e5e7eb); background: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
-    .tab-btn.active { background: var(--brand, #7c1c1c); color: #fff; border-color: var(--brand, #7c1c1c); }
+    .tab-btn { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-weight: 700; font-size: 13px; cursor: pointer; color: var(--text); }
+    .tab-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
     @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
@@ -37,13 +37,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:840px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Site Settings</h2>
-          <div class="small" style="opacity:.76; margin-top:4px;">Store-wide text and business parameters that used to require a code change — plus who can log into this admin area.</div>
+          <div class="small" style="color:var(--text-light); margin-top:4px;">Store-wide text and business parameters that used to require a code change — plus who can log into this admin area.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
@@ -60,7 +60,7 @@
             <div class="full">
               <label class="pm-label">Topbar &amp; homepage announcement text</label>
               <input id="f_topbar" class="input" placeholder="e.g. Complimentary shipping across India" />
-              <div class="small" style="opacity:.76; margin-top:4px;">Shown in the thin bar at the very top of every page, and as the middle line of the homepage trust strip.</div>
+              <div class="small" style="color:var(--text-light); margin-top:4px;">Shown in the thin bar at the very top of every page, and as the middle line of the homepage trust strip.</div>
             </div>
 
             <div class="full">
@@ -81,25 +81,25 @@
             <div class="full">
               <label class="pm-label">Return request window (hours after delivery)</label>
               <input id="f_return_hours" class="input" type="number" min="1" max="720" placeholder="48" style="max-width:160px;" />
-              <div class="small" style="opacity:.76; margin-top:4px;">How long a customer has after delivery to report a manufacturing defect and request a return.</div>
+              <div class="small" style="color:var(--text-light); margin-top:4px;">How long a customer has after delivery to report a manufacturing defect and request a return.</div>
             </div>
 
             <div class="full">
               <label class="pm-label">Low stock threshold</label>
               <input id="f_low_stock_threshold" class="input" type="number" min="0" max="1000" placeholder="3" style="max-width:160px;" />
-              <div class="small" style="opacity:.76; margin-top:4px;">A product shows the "Low stock" badge in the catalogue once its quantity drops to this number or below.</div>
+              <div class="small" style="color:var(--text-light); margin-top:4px;">A product shows the "Low stock" badge in the catalogue once its quantity drops to this number or below.</div>
             </div>
 
             <div class="full">
               <label class="pm-label">Return-to-origin shipping charge (₹)</label>
               <input id="f_return_shipping_charge" class="input" type="number" min="0" max="100000" placeholder="0" style="max-width:160px;" />
-              <div class="small" style="opacity:.76; margin-top:4px;">Deducted from the refund when an order is cancelled after it's already shipped, or when a return is refunded — covers the outbound delivery already paid for plus getting the item back. Leave at 0 to always refund in full.</div>
+              <div class="small" style="color:var(--text-light); margin-top:4px;">Deducted from the refund when an order is cancelled after it's already shipped, or when a return is refunded — covers the outbound delivery already paid for plus getting the item back. Leave at 0 to always refund in full.</div>
             </div>
 
             <div class="full">
               <label class="pm-label">Order notification emails</label>
               <input id="f_notify_admin_emails" class="input" placeholder="you@example.com, partner@example.com" />
-              <div class="small" style="opacity:.76; margin-top:4px;">Comma-separated. Every address here gets an email the moment a new order (online or walk-in) is placed. Previously this could only be changed by editing a setting directly in Supabase — now it's controlled here.</div>
+              <div class="small" style="color:var(--text-light); margin-top:4px;">Comma-separated. Every address here gets an email the moment a new order (online or walk-in) is placed. Previously this could only be changed by editing a setting directly in Supabase — now it's controlled here.</div>
             </div>
           </div>
 
@@ -120,17 +120,17 @@
                 <input id="f_new_admin_email" class="input" placeholder="teammate@example.com" style="flex:1; min-width:220px;" />
                 <button id="btnAddAdmin" class="btn" type="button">Grant admin access</button>
               </div>
-              <div class="small" style="opacity:.76; margin-top:4px;">They must already have a regular AhamStree account (sign up at login.html first) — this just grants that account access to /admin* pages.</div>
+              <div class="small" style="color:var(--text-light); margin-top:4px;">They must already have a regular AhamStree account (sign up at login.html first) — this just grants that account access to /admin* pages.</div>
             </div>
           </div>
           <div id="adminAddStatus" class="small" style="margin-top:8px;"></div>
         </div>
 
-        <div class="small" style="font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:20px 0 10px;">Current admins</div>
+        <div class="small" style="font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-light); margin:20px 0 10px;">Current admins</div>
         <div id="adminList"></div>
       </div>
 
-      <div id="statusMsg" class="small" style="margin-top:16px; opacity:.72;"></div>
+      <div id="statusMsg" class="small" style="margin-top:16px; color:var(--text-light);"></div>
     </div>
   </div>
 
@@ -150,12 +150,15 @@
     const loadingState = document.getElementById("loadingState");
     const dashboard    = document.getElementById("dashboard");
 
-    function showGateError(emoji, title, message) {
+    const ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    const ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showGateError(icon, title, message) {
       loadingState.style.display = "block";
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
@@ -216,7 +219,7 @@
           return_shipping_charge_inr: Number(document.getElementById("f_return_shipping_charge").value),
           notify_admin_emails: document.getElementById("f_notify_admin_emails").value,
         });
-        statusEl.textContent = "Saved ✅ — live on the site immediately.";
+        statusEl.textContent = "Saved — live on the site immediately.";
       } catch (e) {
         statusEl.textContent = "Error: " + e.message;
       }
@@ -226,16 +229,16 @@
     function renderAdminList(admins) {
       const list = document.getElementById("adminList");
       if (!admins.length) {
-        list.innerHTML = '<div class="small" style="opacity:.76;">No admins found.</div>';
+        list.innerHTML = '<div class="small" style="color:var(--text-light);">No admins found.</div>';
         return;
       }
       list.innerHTML = admins.map((a) => `
         <div class="pm-list-item">
           <div>
-            <div style="font-weight:800;">${escapeHtml(a.email)}${a.email === currentUserEmail ? ' <span class="small" style="opacity:.72;">(you)</span>' : ""}</div>
-            <div class="small" style="opacity:.72; margin-top:2px;">Added ${new Date(a.created_at).toLocaleDateString("en-IN")}</div>
+            <div style="font-weight:700;">${escapeHtml(a.email)}${a.email === currentUserEmail ? ' <span class="small" style="color:var(--text-light);">(you)</span>' : ""}</div>
+            <div class="small" style="color:var(--text-light); margin-top:2px;">Added ${new Date(a.created_at).toLocaleDateString("en-IN")}</div>
           </div>
-          <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-remove="${escapeAttr(a.email)}" ${admins.length <= 1 ? "disabled title=\"Can't remove the last remaining admin\"" : ""}>Remove</button>
+          <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#a13d3d; border-color:rgba(161,61,61,.3);" data-remove="${escapeAttr(a.email)}" ${admins.length <= 1 ? "disabled title=\"Can't remove the last remaining admin\"" : ""}>Remove</button>
         </div>
       `).join("");
 
@@ -265,7 +268,7 @@
       try {
         await authedFetch({ action: "add_admin", email });
         document.getElementById("f_new_admin_email").value = "";
-        statusEl.textContent = "Added ✅";
+        statusEl.textContent = "Added.";
         await loadAdmins();
       } catch (e) {
         statusEl.textContent = "Error: " + e.message;
@@ -275,7 +278,7 @@
     async function initAdmin() {
       try {
         const sessResult = await supabase.auth.getSession();
-        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (sessResult.error) return showGateError(ICON_WARN, "Auth Error", sessResult.error.message);
         if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
 
         const session = sessResult.data.session;
@@ -287,8 +290,8 @@
           .eq("email", currentUserEmail)
           .maybeSingle();
 
-        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
-        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+        if (adminResult.error) return showGateError(ICON_WARN, "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError(ICON_LOCK, "Access Denied", "Your account does not have admin access.");
 
         loadingState.style.display = "none";
         dashboard.style.display = "block";
@@ -296,7 +299,7 @@
         await Promise.all([loadSettings(), loadAdmins()]);
       } catch (e) {
         console.error("Settings admin page error:", e);
-        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+        showGateError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
       }
     }
 
