@@ -24,28 +24,31 @@
     .acct-shell { display:grid; grid-template-columns: 260px 1fr; gap: 16px; align-items:start; }
     @media (max-width: 820px) { .acct-shell { grid-template-columns: 1fr; } }
 
-    .acct-nav { padding: 14px; border-radius: 16px; }
-    .acct-nav .nav-title { font-weight: 900; margin-bottom: 8px; }
+    .acct-nav { padding: 18px; border: 1px solid var(--border-light); }
+    .acct-nav .nav-title { font-family: var(--font-heading); font-weight: 600; font-size: 19px; margin-bottom: 10px; }
     .acct-nav .nav-item {
       display:flex; align-items:center; justify-content:space-between;
       width:100%;
       padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid #eee;
-      background: #fff;
+      border: 1px solid transparent;
+      background: none;
       cursor: pointer;
       text-align:left;
-      margin-top: 8px;
+      margin-top: 4px;
       font: inherit;
+      color: var(--text);
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
     }
-    .acct-nav .nav-item.active { background:#fafafa; border-color:#ddd; font-weight:900; }
+    .acct-nav .nav-item:hover { border-color: var(--border-light); }
+    .acct-nav .nav-item.active { background: var(--brand-lighter); border-color: var(--brand); color: var(--brand); font-weight: 700; }
     .acct-nav .nav-muted { opacity: .75; }
 
-    .acct-main { padding: 16px; border-radius: 16px; min-height: 260px; }
+    .acct-main { padding: 22px; border: 1px solid var(--border-light); min-height: 260px; }
+    #panelTitle { font-family: var(--font-heading); font-weight: 600; font-size: 22px; }
     .acct-row { display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px; }
     .acct-kv { display:grid; grid-template-columns: 160px 1fr; gap: 10px; margin-top: 12px; }
     @media (max-width: 520px) { .acct-kv { grid-template-columns: 1fr; } }
-    .acct-card { border: 1px solid #eee; border-radius: 14px; padding: 12px; background: #fff; }
+    .acct-card { border: 1px solid var(--border-light); padding: 14px; background: var(--surface); }
   </style>
 </head>
 
@@ -55,7 +58,7 @@
   <div class="container acct-wrap">
     <h2 style="margin-top:0;">My Account</h2>
     <div id="app">
-      <div class="card" style="padding:16px;border-radius:16px;">
+      <div class="acct-card">
         <div class="small">Loading…</div>
       </div>
     </div>
@@ -117,7 +120,7 @@
           <aside class="card acct-nav">
             <div class="nav-title">Account</div>
             <div class="small nav-muted">Signed in as</div>
-            <div style="margin-top:4px;font-weight:900;word-break:break-word;">${escapeHtml(email)}</div>
+            <div style="margin-top:4px;font-family:var(--font-heading);font-weight:600;word-break:break-word;">${escapeHtml(email)}</div>
 
             <div style="margin-top:12px;">
               ${navButton("profile", "Profile")}
@@ -134,7 +137,7 @@
           </aside>
 
           <main class="card acct-main">
-            <div id="panelTitle" style="font-weight:900;font-size:18px;">Profile</div>
+            <div id="panelTitle">Profile</div>
             <div id="panelBody" style="margin-top:12px;"></div>
           </main>
         </div>
@@ -162,7 +165,7 @@
 
         <div class="acct-kv">
           <div class="small nav-muted">Email</div>
-          <div style="font-weight:900;">${safeText(user.email)}</div>
+          <div style="font-family:var(--font-heading);font-weight:600;">${safeText(user.email)}</div>
 
           <div class="small nav-muted">Name</div>
           <div>${safeText(profile.full_name)}</div>
@@ -219,7 +222,7 @@
       if (!order) {
         slot.innerHTML = `
           <div class="acct-card" style="text-align:center;padding:22px;">
-            <div style="font-weight:900;">No orders yet</div>
+            <div style="font-family:var(--font-heading);font-weight:600;">No orders yet</div>
             <div class="small nav-muted" style="margin-top:6px;">When you place one, it'll show up here.</div>
             <div class="acct-row" style="justify-content:center;margin-top:14px;">
               <a class="btn" href="products.html?type=saree">Browse sarees</a>
@@ -239,7 +242,7 @@
         <div class="small nav-muted" style="margin-bottom:8px;">Most recent order</div>
         <a href="orders.html#order-${escapeHtml(order.id)}" class="acct-card" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;text-decoration:none;color:inherit;">
           <div>
-            <div style="font-weight:900;">Order #${shortId}</div>
+            <div style="font-family:var(--font-heading);font-weight:600;">Order #${shortId}</div>
             <div class="small nav-muted" style="margin-top:4px;">
               ${itemCount} item${itemCount === 1 ? "" : "s"} · ${money(order.total_inr)} · Placed ${placed}
             </div>
@@ -279,7 +282,7 @@
       const renderLedgerRow = (l) => {
         const positive = Number(l.amount_inr || 0) >= 0;
         const amtText = (positive ? "+" : "-") + money(Math.abs(Number(l.amount_inr || 0)));
-        const amtColor = positive ? "#166534" : "#991b1b";
+        const amtColor = positive ? "#3f6b4f" : "#a13d3d";
         const when = l.created_at ? new Date(l.created_at).toLocaleString("en-IN") : "-";
         const orderRef = l.orders?.order_number || (l.order_id ? String(l.order_id).slice(0, 8).toUpperCase() : null);
         const orderBit = orderRef ? ` • Order ${escapeHtml(orderRef)}` : "";
@@ -290,7 +293,7 @@
               <div style="font-weight:800;">${escapeHtml(typeLabel(l.type))}</div>
               <div class="small nav-muted" style="margin-top:2px;">${when}${orderBit}</div>
             </div>
-            <div style="font-weight:900;color:${amtColor};white-space:nowrap;">${amtText}</div>
+            <div style="font-family:var(--font-heading);font-weight:600;color:${amtColor};white-space:nowrap;">${amtText}</div>
           </div>
         `;
       };
@@ -313,7 +316,7 @@
         body.innerHTML = `
           <div class="acct-card" style="padding:16px;text-align:center;">
             <div class="small nav-muted">Available balance</div>
-            <div style="font-size:28px;font-weight:900;margin-top:6px;">${money(balance)}</div>
+            <div style="font-size:28px;font-family:var(--font-heading);font-weight:600;margin-top:6px;">${money(balance)}</div>
             <div class="small nav-muted" style="margin-top:6px;">Redeemable up to 10% of each order's value at checkout. Can't be combined with a coupon on the same order.</div>
           </div>
 
@@ -343,14 +346,14 @@
         <div class="small nav-muted">Shipping / billing address</div>
         <div style="margin-top:10px;" class="acct-card">
           ${hasAny ? `
-            <div style="font-weight:900;">Default address</div>
+            <div style="font-family:var(--font-heading);font-weight:600;">Default address</div>
             <div style="margin-top:8px;">
               <div>${safeText(profile.address_line1)}</div>
               ${line2}
               <div>${safeText(profile.city)}${profile.city ? ", " : ""}${safeText(profile.state)} ${safeText(profile.pincode)}</div>
             </div>
           ` : `
-            <div style="font-weight:900;">No address saved yet</div>
+            <div style="font-family:var(--font-heading);font-weight:600;">No address saved yet</div>
             <div class="small nav-muted" style="margin-top:6px;">Add your address so checkout becomes faster.</div>
           `}
         </div>
@@ -377,10 +380,10 @@
         return `
         <div class="acct-card" style="display:flex;gap:12px;align-items:center;">
           <a href="${href}" style="display:block;flex:0 0 86px;">
-            <img src="${escapeHtml(p.image_url || "")}" alt="${escapeHtml(p.title || "")}" style="width:86px;height:110px;object-fit:cover;border-radius:12px;border:1px solid #eee;background:#fafafa;" />
+            <img src="${escapeHtml(p.image_url || "")}" alt="${escapeHtml(p.title || "")}" style="width:86px;height:110px;object-fit:cover;border:1px solid var(--border-light);background:var(--bg-warm);" />
           </a>
           <div style="flex:1;min-width:180px;">
-            <div style="font-weight:900;">${escapeHtml(p.title || "")}</div>
+            <div style="font-family:var(--font-heading);font-weight:600;">${escapeHtml(p.title || "")}</div>
             <div class="small" style="margin-top:4px;">${money(p)}</div>
             <div class="acct-row" style="margin-top:10px;">
               <a class="btn secondary" href="${href}">View</a>
@@ -434,7 +437,7 @@
         </div>
 
         <div style="margin-top:14px;" class="acct-card">
-          <div style="font-weight:900;">Need help?</div>
+          <div style="font-family:var(--font-heading);font-weight:600;">Need help?</div>
           <div class="small nav-muted" style="margin-top:6px;">Email us at <b>support@ahamstree.com</b></div>
         </div>
       `;

@@ -24,7 +24,7 @@
   <div class="container">
     <h2 style="margin-top:0;">Profile</h2>
 
-    <div id="app" class="card" style="padding:16px;border-radius:16px;max-width:860px;">
+    <div id="app" class="account-card" style="max-width:860px;">
       <div class="small">Loading…</div>
     </div>
   </div>
@@ -112,7 +112,7 @@
       app.innerHTML = `
         <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
           <div>
-            <div style="font-weight:900;">My Details</div>
+            <div style="font-family:var(--font-heading);font-weight:600;font-size:20px;">My Details</div>
             <div class="small" style="margin-top:6px;">Login email: ${escapeHtml(user.email ?? "-")}</div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -123,7 +123,7 @@
 
         <hr/>
 
-        <div id="warn" class="small" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:12px; border:1px solid rgba(220,20,60,.22); color:crimson;"></div>
+        <div id="warn" class="small" style="display:none; margin-bottom:12px; padding:10px 14px; border-left:2px solid #a13d3d; background:rgba(161,61,61,.07); color:#a13d3d;"></div>
 
         <form id="profileForm">
           <div style="display:grid;gap:10px;grid-template-columns: 1fr 1fr;">
