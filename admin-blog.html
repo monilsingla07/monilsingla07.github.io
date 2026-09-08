@@ -18,17 +18,17 @@
 
   <style>
     .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
-    .pm-card { background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 18px; }
+    .pm-card { background: var(--surface); border: 1px solid var(--border-light); padding: 20px; }
     .pm-row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
     .pm-row .full { grid-column: 1 / -1; }
-    .pm-label { font-size: 12px; opacity: .8; display: block; margin-bottom: 4px; }
-    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+    .pm-label { font-size: 12px; color: var(--text-light); display: block; margin-bottom: 4px; }
+    .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--border-light); background: var(--surface); }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
-    .pm-badge { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
-    .pm-badge.active { background: #dcfce7; color: #166534; }
-    .pm-badge.inactive { background: #f3f4f6; color: #6b7280; }
+    .pm-badge { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+    .pm-badge.active { background: rgba(63,107,79,.1); color: #3f6b4f; }
+    .pm-badge.inactive { background: var(--border-light); color: var(--text-light); }
     textarea.input { min-height: 220px; font-family: inherit; resize: vertical; }
-    #coverPreview { max-width: 220px; border-radius: 10px; margin-top: 8px; display: none; }
+    #coverPreview { max-width: 220px; margin-top: 8px; display: none; }
     @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -37,19 +37,19 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:900px;">
-    <div id="loadingState" style="text-align:center; padding:48px; opacity:.76;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Blog Manager</h2>
-          <div class="small" style="opacity:.76; margin-top:4px;">Write, edit, and publish/unpublish blog posts — no more editing rows directly in the database.</div>
+          <div class="small" style="color:var(--text-light); margin-top:4px;">Write, edit, and publish/unpublish blog posts — no more editing rows directly in the database.</div>
         </div>
         <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
 
       <div class="pm-card">
-        <div style="font-weight:900;" id="formTitle">New post</div>
+        <div style="font-weight:700; font-size:15px;" id="formTitle">New post</div>
         <input type="hidden" id="f_id" />
 
         <div class="pm-row">
@@ -73,7 +73,7 @@
             <input id="f_cover_file" type="file" accept="image/jpeg,image/png,image/webp" />
             <input type="hidden" id="f_cover_url" />
             <img id="coverPreview" alt="Cover preview" />
-            <div class="small" style="opacity:.76; margin-top:4px;">JPEG, PNG, or WEBP, up to 5MB.</div>
+            <div class="small" style="color:var(--text-light); margin-top:4px;">JPEG, PNG, or WEBP, up to 5MB.</div>
           </div>
 
           <div class="full">
@@ -94,7 +94,7 @@
         </div>
       </div>
 
-      <div class="section-title" style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; opacity:.72; margin:24px 0 10px;">All posts</div>
+      <div class="section-title" style="font-size:13px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-light); margin:24px 0 10px;">All posts</div>
       <div id="postList"></div>
     </div>
   </div>
@@ -118,12 +118,15 @@
     const formStatus   = document.getElementById("formStatus");
     const formTitle    = document.getElementById("formTitle");
 
-    function showGateError(emoji, title, message) {
+    const ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    const ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showGateError(icon, title, message) {
       loadingState.style.display = "block";
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
@@ -183,21 +186,21 @@
     function renderList(posts) {
       const list = document.getElementById("postList");
       if (!posts.length) {
-        list.innerHTML = '<div class="small" style="opacity:.76;">No posts yet — create one above.</div>';
+        list.innerHTML = '<div class="small" style="color:var(--text-light);">No posts yet — create one above.</div>';
         return;
       }
       list.innerHTML = posts.map(p => `
         <div class="pm-list-item">
           <div>
-            <div style="font-weight:800;">${escapeHtml(p.title || "Untitled post")}
+            <div style="font-weight:700;">${escapeHtml(p.title || "Untitled post")}
               <span class="pm-badge ${p.is_published ? "active" : "inactive"}" style="margin-left:8px;">${p.is_published ? "Published" : "Draft"}</span>
             </div>
-            <div class="small" style="opacity:.78; margin-top:4px;">/${escapeHtml(p.slug || "")}</div>
-            <div class="small" style="opacity:.72; margin-top:2px;">${p.published_at ? new Date(p.published_at).toLocaleDateString("en-IN") : "No date"}</div>
+            <div class="small" style="color:var(--text-light); margin-top:4px;">/${escapeHtml(p.slug || "")}</div>
+            <div class="small" style="color:var(--text-light); margin-top:2px;">${p.published_at ? new Date(p.published_at).toLocaleDateString("en-IN") : "No date"}</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn secondary" style="padding:6px 12px; font-size:12px;" data-edit="${escapeAttr(p.id)}">Edit</button>
-            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#b91c1c;" data-delete="${escapeAttr(p.id)}">Delete</button>
+            <button class="btn secondary" style="padding:6px 12px; font-size:12px; color:#a13d3d; border-color:rgba(161,61,61,.3);" data-delete="${escapeAttr(p.id)}">Delete</button>
           </div>
         </div>
       `).join("");
@@ -282,7 +285,7 @@
         };
         formStatus.textContent = "Saving…";
         const result = await authedFetch(payload);
-        formStatus.textContent = "Saved ✅";
+        formStatus.textContent = "Saved.";
         clearForm();
         await loadList();
       } catch (e) {
@@ -293,7 +296,7 @@
     async function initAdmin() {
       try {
         const sessResult = await supabase.auth.getSession();
-        if (sessResult.error) return showGateError("⚠️", "Auth Error", sessResult.error.message);
+        if (sessResult.error) return showGateError(ICON_WARN, "Auth Error", sessResult.error.message);
         if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
 
         const session = sessResult.data.session;
@@ -304,8 +307,8 @@
           .eq("email", session.user.email.toLowerCase())
           .maybeSingle();
 
-        if (adminResult.error) return showGateError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
-        if (!adminResult.data) return showGateError("🔒", "Access Denied", "Your account does not have admin access.");
+        if (adminResult.error) return showGateError(ICON_WARN, "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError(ICON_LOCK, "Access Denied", "Your account does not have admin access.");
 
         loadingState.style.display = "none";
         dashboard.style.display = "block";
@@ -314,7 +317,7 @@
         await loadList();
       } catch (e) {
         console.error("Blog admin page error:", e);
-        showGateError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+        showGateError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
       }
     }
 
