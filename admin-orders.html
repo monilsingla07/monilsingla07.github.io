@@ -18,44 +18,48 @@
   <link rel="stylesheet" href="assets/styles.css" />
 
   <style>
-    .sbadge { display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;gap:4px; }
-    .sbadge.paid         { background:#dcfce7;color:#166534; }
-    .sbadge.shipped      { background:#dbeafe;color:#1e40af; }
-    .sbadge.delivered    { background:#f0fdf4;color:#14532d;border:1px solid #86efac; }
-    .sbadge.pending      { background:#fef9c3;color:#854d0e; }
-    .sbadge.failed       { background:#fee2e2;color:#991b1b; }
-    .sbadge.cancelled    { background:#f3f4f6;color:#6b7280; }
-    .sbadge.refunded     { background:#f5f3ff;color:#5b21b6; }
+    /* Same muted, brand-token palette used on the customer-facing orders
+       page — was raw Tailwind swatches (bright green/blue/purple/orange)
+       with no relation to the site's own colors. */
+    .sbadge { display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;gap:5px;border:1px solid transparent; }
+    .sbadge::before { content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0; }
+    .sbadge.paid         { background:var(--indigo-light);color:var(--indigo); }
+    .sbadge.shipped      { background:rgba(63,122,138,.1);color:#3f7a8a; }
+    .sbadge.delivered    { background:rgba(63,107,79,.1);color:#3f6b4f;border-color:rgba(63,107,79,.28); }
+    .sbadge.pending      { background:var(--accent-gold-light);color:var(--accent-gold); }
+    .sbadge.failed       { background:rgba(161,61,61,.09);color:#a13d3d; }
+    .sbadge.cancelled    { background:var(--border-light);color:var(--text-light); }
+    .sbadge.refunded     { background:rgba(122,74,107,.09);color:#7a4a6b; }
 
-    .pm-pill { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700; }
-    .pm-pill.instore { background:#fff7ed;color:#9a3412; }
-    .pm-pill.online  { background:#eff6ff;color:#1d4ed8; }
+    .pm-pill { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600; }
+    .pm-pill.instore { background:var(--accent-gold-light);color:var(--accent-gold); }
+    .pm-pill.online  { background:var(--indigo-light);color:var(--indigo); }
 
-    .action-bar { padding:12px 16px;border-top:1px solid var(--border-light,#f3f4f6); }
-    .action-bar.ship-bar    { background:#f0f9ff;border-top-color:#bae6fd; }
+    .action-bar { padding:12px 16px;border-top:1px solid var(--border-light); }
+    .action-bar.ship-bar    { background:var(--indigo-light);border-top-color:rgba(47,72,88,.3); }
 
     .awb-row { display:flex;gap:8px;align-items:center;margin-top:8px; }
     .awb-row input { flex:1;min-width:0; }
 
     #toast {
       position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
-      background:#111;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;
+      background:var(--text);color:#fff;padding:10px 20px;font-size:13px;
       font-weight:700;opacity:0;transition:all .25s ease;pointer-events:none;z-index:9999;
       white-space:nowrap;
     }
     #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
 
     .status-row { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
-    .order-card { border-radius:16px;overflow:hidden;border:1px solid var(--border,#e5e7eb);background:#fff; }
+    .order-card { overflow:hidden;border:1px solid var(--border-light);background:var(--surface); }
     .order-card + .order-card { margin-top:0; }
 
     .filters-bar { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center; }
     .filters-bar .input { height:40px;font-size:13px; }
 
-    .section-lbl { font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.72;margin-bottom:4px; }
+    .section-lbl { font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-light);margin-bottom:4px; }
 
     .pager { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:14px; justify-content:space-between; }
-    .pager .small { opacity:.8; }
+    .pager .small { opacity:1;color:var(--text-light); }
   </style>
 </head>
 
@@ -63,13 +67,13 @@
   <div id="header"></div>
 
   <div class="container" style="max-width:1000px;">
-    <div id="loadingState" style="text-align:center;padding:48px;opacity:.76;font-size:14px;">Verifying admin access…</div>
+    <div id="loadingState" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">Verifying admin access…</div>
 
     <div id="mainContent" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
         <div>
           <h2 style="margin:0;">Admin — Orders</h2>
-          <div class="small" style="opacity:.78;margin-top:4px;">Manage all orders. Status updates are reflected on the customer's orders page immediately.</div>
+          <div class="small" style="color:var(--text-light);margin-top:4px;">Manage all orders. Status updates are reflected on the customer's orders page immediately.</div>
         </div>
         <a class="btn secondary" href="admin.html" style="padding:8px 14px;font-size:13px;">← Dashboard</a>
       </div>
@@ -103,14 +107,14 @@
            button that would just fail. The printer must already be paired
            with the OS's own Bluetooth settings — this can only pick from
            already-paired devices, it can't do the pairing itself. -->
-      <div id="printerBar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;border-radius:12px;background:#f8fafc;border:1px solid var(--border-light,#e5e7eb);">
-        <span id="printerStatusDot" style="width:9px;height:9px;border-radius:999px;background:#cbd5e1;flex-shrink:0;"></span>
-        <span id="printerStatusText" class="small" style="opacity:.8;">Checking Bluetooth printer support…</span>
+      <div id="printerBar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;background:var(--bg-warm);border:1px solid var(--border-light);">
+        <span id="printerStatusDot" style="width:9px;height:9px;border-radius:999px;background:var(--border);flex-shrink:0;"></span>
+        <span id="printerStatusText" class="small" style="color:var(--text-light);">Checking Bluetooth printer support…</span>
         <button id="btnConnectPrinter" class="btn secondary" style="padding:6px 12px;font-size:12px;margin-left:auto;" hidden>Connect printer</button>
         <button id="btnDisconnectPrinter" class="btn secondary" style="padding:6px 12px;font-size:12px;" hidden>Disconnect</button>
       </div>
 
-      <div id="statusMsg" class="small" style="margin-bottom:12px;opacity:.76;"></div>
+      <div id="statusMsg" class="small" style="margin-bottom:12px;color:var(--text-light);"></div>
       <div id="list" style="display:grid;gap:14px;"></div>
 
       <div class="pager">
@@ -154,12 +158,15 @@
     let lastShown = 0;
     let currentOrders = [];
 
-    function showAdminError(emoji, title, message) {
+    var ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    var ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showAdminError(icon, title, message) {
       loadingState.style.display = "block";
       mainContent.style.display = "none";
       loadingState.innerHTML =
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
-          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
@@ -169,7 +176,7 @@
     async function initAdmin() {
       try {
         var sessResult = await supabase.auth.getSession();
-        if (sessResult.error) { showAdminError("⚠️", "Auth Error", sessResult.error.message); return; }
+        if (sessResult.error) { showAdminError(ICON_WARN, "Auth Error", sessResult.error.message); return; }
         if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
 
         loadingState.style.display = "none";
@@ -177,7 +184,7 @@
         setupPage();
       } catch (e) {
         console.error("Admin page error:", e);
-        showAdminError("⚠️", "Something went wrong", e.message || "An unexpected error occurred.");
+        showAdminError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
       }
     }
 
@@ -192,7 +199,7 @@
             return { ok: false, handled: true };
           }
           if (error.status === 403) {
-            showAdminError("🔒", "Access Denied", "Your account does not have admin access.");
+            showAdminError(ICON_LOCK, "Access Denied", "Your account does not have admin access.");
             return { ok: false, handled: true };
           }
           // supabase.functions.invoke() only puts a generic string on
@@ -231,30 +238,30 @@
 
       function statusBadge(st) {
         const map = {
-          paid:                 { label: "✅ Paid",            cls: "paid"        },
-          payment_link_created: { label: "⏳ Payment pending", cls: "pending"     },
-          payment_pending:      { label: "⏳ Payment pending", cls: "pending"     },
-          created:              { label: "⏳ Payment pending", cls: "pending"     },
-          payment_link_failed:  { label: "❌ Link failed",     cls: "failed"      },
-          failed:               { label: "❌ Failed",          cls: "failed"      },
-          expired:              { label: "❌ Expired",         cls: "failed"      },
-          shipped:              { label: "🚚 Shipped",         cls: "shipped"     },
-          delivered:            { label: "📬 Delivered",       cls: "delivered"   },
-          cancelled:            { label: "🚫 Cancelled",       cls: "cancelled"   },
-          refunded:             { label: "↩️ Refunded",        cls: "refunded"    },
+          paid:                 { label: "Paid",            cls: "paid"        },
+          payment_link_created: { label: "Payment pending", cls: "pending"     },
+          payment_pending:      { label: "Payment pending", cls: "pending"     },
+          created:              { label: "Payment pending", cls: "pending"     },
+          payment_link_failed:  { label: "Link failed",     cls: "failed"      },
+          failed:               { label: "Failed",          cls: "failed"      },
+          expired:              { label: "Expired",         cls: "failed"      },
+          shipped:              { label: "Shipped",         cls: "shipped"     },
+          delivered:            { label: "Delivered",       cls: "delivered"   },
+          cancelled:            { label: "Cancelled",       cls: "cancelled"   },
+          refunded:             { label: "Refunded",        cls: "refunded"    },
         };
         const s = map[st] || { label: st || "Unknown", cls: "pending" };
         return `<span class="sbadge ${s.cls}">${s.label}</span>`;
       }
 
-      const MANUAL_VIA_LABEL = { cash: "💵 Cash", card: "💳 Card", upi: "📱 UPI", other: "🏪 In-store" };
+      const MANUAL_VIA_LABEL = { cash: "Cash", card: "Card", upi: "UPI", other: "In-store" };
 
       function paymentPill(method, receivedVia) {
         if (method === "manual") {
-          const label = MANUAL_VIA_LABEL[receivedVia] || "🏪 In-store";
+          const label = MANUAL_VIA_LABEL[receivedVia] || "In-store";
           return `<span class="pm-pill instore">${label}</span>`;
         }
-        return `<span class="pm-pill online">💳 Online</span>`;
+        return `<span class="pm-pill online">Online</span>`;
       }
 
       function waLink(phone, text) {
@@ -422,7 +429,7 @@
               price_inr: Number(row.querySelector(".edit-item-price").value || 0),
             })).filter(it => it.title);
             if (!items.length) {
-              toast("Add at least one item", "#dc2626");
+              toast("Add at least one item", "#a13d3d");
               saveBtn.disabled = false; cancelBtn.disabled = false; saveBtn.textContent = "Save changes";
               return;
             }
@@ -432,10 +439,10 @@
           try {
             const r = await callFn("admin-edit-order", payload);
             if (!r.ok) { if (!r.handled) throw new Error("Save failed"); return; }
-            toast("Order updated ✅", "#166534");
+            toast("Order updated ✅", "#3f6b4f");
             load();
           } catch (e) {
-            toast("Error: " + e.message, "#dc2626");
+            toast("Error: " + e.message, "#a13d3d");
             saveBtn.disabled = false;
             cancelBtn.disabled = false;
             saveBtn.textContent = "Save changes";
@@ -649,7 +656,7 @@
             if (!couriers.length) throw new Error("No couriers available for this pincode");
             renderCourierPicker(slot, id, couriers, r.data?.computed_weight_kg);
           } catch (e) {
-            toast("Error: " + e.message, "#dc2626");
+            toast("Error: " + e.message, "#a13d3d");
             btn.disabled = false;
             btn.textContent = oldText;
           }
@@ -671,7 +678,7 @@
             <input type="radio" name="courier-choice" value="${escapeAttr(String(c.courier_id))}" ${i === 0 ? "checked" : ""} style="margin:0;flex-shrink:0;" />
             <span style="flex:1;font-size:13px;">
               <strong>${escapeHtml(c.courier_name || "Courier")}</strong>
-              ${c.is_recommended ? `<span style="margin-left:6px;font-size:12px;font-weight:800;color:#166534;">★ Recommended</span>` : ""}
+              ${c.is_recommended ? `<span style="margin-left:6px;font-size:12px;font-weight:700;color:#3f6b4f;">★ Recommended</span>` : ""}
               <br><span style="color:#64748b;font-size:12px;">₹${Number(c.rate || 0).toFixed(2)}${c.etd_days ? ` • Est. ${escapeHtml(String(c.etd_days))}` : ""}</span>
             </span>
           </label>`).join("");
@@ -715,10 +722,10 @@
             const awb = r.data?.awb;
             const courier = r.data?.courier ? ` via ${r.data.courier}` : "";
             const switched = r.data?.courier_switched ? " (auto-switched courier after a failed attempt)" : "";
-            toast(`Shipped 🚚 AWB ${awb}${courier}${switched}`, "#166534");
+            toast(`Shipped 🚚 AWB ${awb}${courier}${switched}`, "#3f6b4f");
             load();
           } catch (e) {
-            toast("Ship error: " + e.message, "#dc2626");
+            toast("Ship error: " + e.message, "#a13d3d");
             confirmBtn.disabled = false;
             cancelBtn.disabled = false;
             confirmBtn.textContent = "Confirm & Ship";
@@ -739,17 +746,17 @@
             const awbInput = card?.querySelector(".awb-input");
             const awb      = (awbInput?.value || "").trim();
 
-            if (!awb) { toast("Please enter the AWB number first", "#dc2626"); return; }
+            if (!awb) { toast("Please enter the AWB number first", "#a13d3d"); return; }
 
             btn.disabled = true;
             const oldText = btn.textContent;
             btn.textContent = "Saving…";
             try {
               await updateStatus(id, "shipped", { shiprocket_awb: awb });
-              toast("Order marked as shipped 🚚", "#166534");
+              toast("Order marked as shipped 🚚", "#3f6b4f");
               load();
             } catch (e) {
-              toast("Error: " + e.message, "#dc2626");
+              toast("Error: " + e.message, "#a13d3d");
               btn.disabled = false;
             } finally {
               btn.textContent = oldText;
@@ -778,10 +785,10 @@
                 razorpay === "processed" ? `Order ${newStatus} ✅ — ₹${result.refund.refund_amount_inr} refunded via Razorpay${deductionNote}` :
                 razorpay === "failed"    ? `Order ${newStatus} ✅ — refund FAILED, check Razorpay dashboard` :
                 `Order ${newStatus} ✅`;
-              toast(toastMsg, razorpay === "failed" ? "#dc2626" : "#166534");
+              toast(toastMsg, razorpay === "failed" ? "#a13d3d" : "#3f6b4f");
               load();
             } catch (e) {
-              toast("Error: " + e.message, "#dc2626");
+              toast("Error: " + e.message, "#a13d3d");
               btn.disabled = false;
             } finally {
               btn.textContent = oldText;
@@ -822,10 +829,10 @@
             try {
               const r = await callFn("admin-delete-order", { order_id: id });
               if (!r.ok) { if (!r.handled) throw new Error("Delete failed"); return; }
-              toast("Order deleted 🗑", "#166534");
+              toast("Order deleted 🗑", "#3f6b4f");
               load();
             } catch (e) {
-              toast("Error: " + e.message, "#dc2626");
+              toast("Error: " + e.message, "#a13d3d");
               btn.disabled = false;
               btn.textContent = oldText;
             }
@@ -843,10 +850,10 @@
             try {
               const r = await callFn("admin-regenerate-payment-link", { order_id: id });
               if (!r.ok) return;
-              toast("New payment link created ✅", "#166534");
+              toast("New payment link created ✅", "#3f6b4f");
               load();
             } catch (e) {
-              toast("Error: " + e.message, "#dc2626");
+              toast("Error: " + e.message, "#a13d3d");
             } finally {
               btn.disabled = false;
               btn.textContent = oldText;
@@ -868,7 +875,7 @@
 
               const inv = r.data || {};
               const invUrl = safeUrl(inv.invoice_url, { type: "href" });
-              if (!invUrl) { toast("Invalid invoice URL", "#dc2626"); return; }
+              if (!invUrl) { toast("Invalid invoice URL", "#a13d3d"); return; }
 
               const w = window.open(invUrl, "_blank", "noopener,noreferrer");
               if (w) w.opener = null;
@@ -885,9 +892,9 @@
                 waBtn.style.opacity = "1";
               }
 
-              toast("Invoice generated ✅", "#166534");
+              toast("Invoice generated ✅", "#3f6b4f");
             } catch (e) {
-              toast("Invoice error: " + e.message, "#dc2626");
+              toast("Invoice error: " + e.message, "#a13d3d");
             } finally {
               btn.disabled = false;
               btn.textContent = oldText;
@@ -902,16 +909,16 @@
           btn.addEventListener("click", async () => {
             const id = btn.dataset.id;
             const order = currentOrders.find(o => o.id === id);
-            if (!order) { toast("Could not find this order's data — try refreshing.", "#dc2626"); return; }
+            if (!order) { toast("Could not find this order's data — try refreshing.", "#a13d3d"); return; }
 
             btn.disabled = true;
             const oldText = btn.textContent;
             btn.textContent = "Printing…";
             try {
               await printOrderReceipt(order);
-              toast("Sent to printer ✅", "#166534");
+              toast("Sent to printer ✅", "#3f6b4f");
             } catch (e) {
-              toast(e.message || "Print failed", "#dc2626");
+              toast(e.message || "Print failed", "#a13d3d");
             } finally {
               btn.disabled = false;
               btn.textContent = oldText;
@@ -951,12 +958,12 @@
         btnConnectPrinter.disabled = true;
         try {
           await connectPrinter();
-          toast("Printer connected ✅", "#166534");
+          toast("Printer connected ✅", "#3f6b4f");
         } catch (e) {
           // A cancelled device picker also lands here (Web Serial rejects
           // the promise) — not worth an alarming red toast for that.
           if (!/no port selected/i.test(e.message || "")) {
-            toast(e.message || "Could not connect to printer", "#dc2626");
+            toast(e.message || "Could not connect to printer", "#a13d3d");
           }
         } finally {
           btnConnectPrinter.disabled = false;
@@ -1046,7 +1053,7 @@
           a.remove();
           URL.revokeObjectURL(url);
         } catch (e) {
-          toast("Export failed: " + e.message, "#dc2626");
+          toast("Export failed: " + e.message, "#a13d3d");
         } finally {
           btn.disabled = false;
           btn.textContent = oldText;

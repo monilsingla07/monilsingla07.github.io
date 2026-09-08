@@ -35,52 +35,53 @@
     }
 
     .metric-card {
-      background: #fff;
-      border: 1px solid var(--border, #e5e7eb);
-      border-radius: 16px;
-      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      padding: 18px;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
     .metric-card.highlight {
-      background: var(--brand-light, #fdf2f2);
-      border-color: var(--brand, #7c1c1c);
+      background: var(--brand-lighter);
+      border-color: var(--brand);
     }
 
     .metric-card.warn {
-      background: #fffbeb;
-      border-color: #fde68a;
+      background: var(--accent-gold-light);
+      border-color: var(--accent-gold);
     }
 
     .metric-label {
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: .06em;
       text-transform: uppercase;
-      opacity: .76;
+      color: var(--text-light);
     }
 
     .metric-value {
-      font-size: 28px;
-      font-weight: 900;
-      line-height: 1;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1.15;
       font-family: 'Cormorant Garamond', serif;
+      color: var(--text);
     }
 
     .metric-sub {
-      font-size: 12px;
-      opacity: .76;
+      font-size: 13px;
+      color: var(--text-light);
+      margin-top: 2px;
     }
 
     .section-title {
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: .05em;
       text-transform: uppercase;
-      opacity: .72;
-      margin: 20px 0 10px;
+      color: var(--text-light);
+      margin: 24px 0 10px;
     }
 
     .quick-link {
@@ -88,19 +89,24 @@
       align-items: center;
       gap: 12px;
       padding: 14px 16px;
-      border-radius: 14px;
-      border: 1px solid var(--border, #e5e7eb);
-      background: #fff;
+      border: 1px solid var(--border-light);
+      background: var(--surface);
       text-decoration: none;
-      color: inherit;
+      color: var(--text);
       font-weight: 700;
       font-size: 14px;
       transition: border-color .15s, background .15s;
     }
 
     .quick-link:hover {
-      border-color: var(--brand, #7c1c1c);
-      background: var(--brand-light, #fdf2f2);
+      border-color: var(--brand);
+      background: var(--brand-lighter);
+    }
+
+    .quick-link .small {
+      font-size: 13px;
+      color: var(--text-light);
+      opacity: 1;
     }
 
     .quick-links {
@@ -140,7 +146,7 @@
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
         <div>
           <h2 style="margin:0;">Admin Dashboard</h2>
-          <div class="small" style="opacity:.76; margin-top:4px;">Overview of AhamStree store.</div>
+          <div class="small" style="color:var(--text-light); margin-top:4px;">Overview of AhamStree store.</div>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button id="btnRefresh" class="btn secondary" style="padding:8px 14px; font-size:13px;">↻ Refresh</button>
@@ -150,9 +156,9 @@
       <!-- Previously the dashboard had zero signal that a customer had even
            filed a return — an admin would only find out by manually
            checking the Returns page. -->
-      <div id="returnsNeeded" style="display:none; padding:14px 16px; border-radius:14px; background:#eff6ff; border:1.5px solid #bfdbfe; margin-bottom:20px;">
-        <div style="font-weight:800; font-size:14px; color:#1e40af;">↩️ Returns awaiting review</div>
-        <div class="small" style="color:#1e40af; margin-top:4px;" id="returnsNeededText"></div>
+      <div id="returnsNeeded" style="display:none; padding:14px 16px; background:var(--indigo-light); border:1.5px solid rgba(47,72,88,.3); margin-bottom:20px;">
+        <div style="font-weight:700; font-size:14px; color:var(--indigo);">Returns awaiting review</div>
+        <div class="small" style="color:var(--indigo); opacity:1; margin-top:4px;" id="returnsNeededText"></div>
         <a href="admin-returns.html" class="btn" style="margin-top:10px; padding:8px 14px; font-size:13px; display:inline-block;">Review returns →</a>
       </div>
 
@@ -169,42 +175,42 @@
           <span style="font-size:20px;">📋</span>
           <div>
             <div>All Orders</div>
-            <div class="small" style="font-weight:400; opacity:.76;">View and manage every order</div>
+            <div class="small">View and manage every order</div>
           </div>
         </a>
         <a href="admin-orders.html?status=paid" class="quick-link">
           <span style="font-size:20px;">🚚</span>
           <div>
             <div>Ready to Ship</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Paid orders needing dispatch</div>
+            <div class="small">Paid orders needing dispatch</div>
           </div>
         </a>
         <a href="admin-orders.html?status=shipped" class="quick-link">
           <span style="font-size:20px;">📦</span>
           <div>
             <div>Shipped Orders</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Track in-transit orders</div>
+            <div class="small">Track in-transit orders</div>
           </div>
         </a>
         <a href="admin-returns.html" class="quick-link">
           <span style="font-size:20px;">↩️</span>
           <div>
             <div>Returns</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Review defect photos & approve/reject returns</div>
+            <div class="small">Review defect photos & approve/reject returns</div>
           </div>
         </a>
         <a href="admin-payments.html" class="quick-link">
           <span style="font-size:20px;">💳</span>
           <div>
             <div>Payments & Refunds</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Check every order's real refund status directly against Razorpay</div>
+            <div class="small">Check every order's real refund status directly against Razorpay</div>
           </div>
         </a>
         <a href="admin-create-order.html" class="quick-link">
           <span style="font-size:20px;">✏️</span>
           <div>
             <div>Create Order</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Place an order for an offline customer</div>
+            <div class="small">Place an order for an offline customer</div>
           </div>
         </a>
       </div>
@@ -215,21 +221,21 @@
           <span style="font-size:20px;">🧵</span>
           <div>
             <div>Product Catalogue</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Add, edit, price, stock, fabric, weave, images &amp; collections</div>
+            <div class="small">Add, edit, price, stock, fabric, weave, images &amp; collections</div>
           </div>
         </a>
         <a href="admin-coupons.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">🏷️</span>
           <div>
             <div>Coupon Manager</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Create discount codes, set eligibility rules, control checkout display</div>
+            <div class="small">Create discount codes, set eligibility rules, control checkout display</div>
           </div>
         </a>
         <a href="admin-wallet.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">🪙</span>
           <div>
             <div>AhamStree Cash</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Set the signup bonus &amp; redemption rate, view balances, adjust customer wallets</div>
+            <div class="small">Set the signup bonus &amp; redemption rate, view balances, adjust customer wallets</div>
           </div>
         </a>
       </div>
@@ -240,35 +246,35 @@
           <span style="font-size:20px;">🖼️</span>
           <div>
             <div>Hero &amp; Testimonials</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Edit the homepage banner slides and customer testimonials</div>
+            <div class="small">Edit the homepage banner slides and customer testimonials</div>
           </div>
         </a>
         <a href="admin-popup.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">🔔</span>
           <div>
             <div>Popup Manager</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Edit the site-wide welcome popup</div>
+            <div class="small">Edit the site-wide welcome popup</div>
           </div>
         </a>
         <a href="admin-reels.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">🎬</span>
           <div>
             <div>Reel Manager</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Edit the homepage Instagram reels</div>
+            <div class="small">Edit the homepage Instagram reels</div>
           </div>
         </a>
         <a href="admin-policies.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">📄</span>
           <div>
             <div>Policy Pages</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Edit Terms, Privacy, Cookies, Returns, Shipping &amp; FAQ</div>
+            <div class="small">Edit Terms, Privacy, Cookies, Returns, Shipping &amp; FAQ</div>
           </div>
         </a>
         <a href="admin-blog.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">📝</span>
           <div>
             <div>Blog Manager</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Write, edit, and publish blog posts</div>
+            <div class="small">Write, edit, and publish blog posts</div>
           </div>
         </a>
       </div>
@@ -279,26 +285,26 @@
           <span style="font-size:20px;">⚙️</span>
           <div>
             <div>Site Settings</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Announcement text, support contact info, return window, admin users</div>
+            <div class="small">Announcement text, support contact info, return window, admin users</div>
           </div>
         </a>
         <a href="admin-users.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">👥</span>
           <div>
             <div>Registered Users</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Everyone who's signed up, and a full login history per person</div>
+            <div class="small">Everyone who's signed up, and a full login history per person</div>
           </div>
         </a>
         <a href="admin-visitors.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">📈</span>
           <div>
             <div>Visitor Analytics</div>
-            <div class="small" style="font-weight:400; opacity:.76;">Who's visiting the site — pages, referrers, devices, locations</div>
+            <div class="small">Who's visiting the site — pages, referrers, devices, locations</div>
           </div>
         </a>
       </div>
 
-      <div id="statusMsg" class="small" style="margin-top:16px; opacity:.72;"></div>
+      <div id="statusMsg" class="small" style="margin-top:16px; color:var(--text-light);"></div>
     </div>
   </div>
 
@@ -316,12 +322,15 @@
     var dashboard    = document.getElementById("dashboard");
     var statusMsg    = document.getElementById("statusMsg");
 
-    function showError(emoji, title, message) {
+    var ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    var ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showError(icon, title, message) {
       loadingState.style.display = "block";
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="font-size:48px;">' + emoji + '</div>' +
+          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
@@ -401,7 +410,7 @@
         var sessResult = await supabase.auth.getSession();
 
         if (sessResult.error) {
-          showError("⚠️", "Auth Error", sessResult.error.message);
+          showError(ICON_WARN, "Auth Error", sessResult.error.message);
           return;
         }
 
@@ -420,12 +429,12 @@
           .maybeSingle();
 
         if (adminResult.error) {
-          showError("⚠️", "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+          showError(ICON_WARN, "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
           return;
         }
 
         if (!adminResult.data) {
-          showError("🔒", "Access Denied", "Your account does not have admin access.");
+          showError(ICON_LOCK, "Access Denied", "Your account does not have admin access.");
           return;
         }
 
@@ -439,7 +448,7 @@
 
       } catch (e) {
         console.error("Admin page error:", e);
-        showError("⚠️", "Something went wrong", e.message || "An unexpected error occurred. Check the browser console for details.");
+        showError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred. Check the browser console for details.");
       }
     }
 
