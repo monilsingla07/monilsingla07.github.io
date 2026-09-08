@@ -75,10 +75,13 @@
         ? `<img src="${safeSrc(data.cover_image_url)}" alt="${escapeAttr(data.title)}" style="width:100%;border-radius:16px;max-height:420px;object-fit:cover;">`
         : "";
 
-      // Content can be plain text or HTML
-      // Safe render as text (no HTML execution)
-content.textContent = data.content ?? "";
-content.style.whiteSpace = "pre-wrap";
+      // Content is admin-authored rich HTML (written only via the
+      // admin-manage-blog edge function, which requires admin auth) — same
+      // trust boundary as the policy pages' #policyContent, which likewise
+      // renders CMS content_html directly. Rendering it as textContent
+      // instead of innerHTML was the actual bug here: it showed the raw
+      // <p>/<h3>/<ol> tags as literal text rather than formatting them.
+      content.innerHTML = data.content ?? "";
 
     }
 
