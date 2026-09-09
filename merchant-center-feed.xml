@@ -5,6 +5,45 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>2a22bbd8-a890-4258-8558-3cb06a062cc1</g:id>
+      <title><![CDATA[Red Chanderi Saree]]></title>
+      <description><![CDATA[Handmade luxury Red cotton silk sarees.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=red-chanderi-saree</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_2.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/5cca93be-ba1b-447b-9270-acbd7f59b863.webp</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>4999.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-181]]></g:mpn>
+      <g:color><![CDATA[Red]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>6aec820e-3ba4-4956-aaa3-af68ca1bced7</g:id>
+      <title><![CDATA[Navy Blue Saree with Gold Motif Border]]></title>
+      <description><![CDATA[Classic navy saree with gold zari pallu/border and standout woven motifs — perfect for evening functions.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=navy-blue-saree-with-gold-motif-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-41.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-41_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-41_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>5299.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-41]]></g:mpn>
+      <g:color><![CDATA[Navy Blue]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>d86442cc-160d-42de-8bce-6a52f264c656</g:id>
       <title><![CDATA[Lime-Green Saree with White Motifs]]></title>
       <description><![CDATA[Bright lime-green saree with clean white woven motifs for a fresh, modern-traditional vibe. Great for haldi/puja events and daytime celebrations.]]></description>
@@ -41,25 +80,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-21]]></g:mpn>
       <g:color><![CDATA[Maroon]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>6aec820e-3ba4-4956-aaa3-af68ca1bced7</g:id>
-      <title><![CDATA[Navy Blue Saree with Gold Motif Border]]></title>
-      <description><![CDATA[Classic navy saree with gold zari pallu/border and standout woven motifs — perfect for evening functions.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=navy-blue-saree-with-gold-motif-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-41.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-41_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-41_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>5299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-41]]></g:mpn>
-      <g:color><![CDATA[Navy Blue]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
@@ -428,26 +448,6 @@
       <g:mpn><![CDATA[AH-CH-104]]></g:mpn>
       <g:color><![CDATA[Black]]></g:color>
       <g:material><![CDATA[Cotton]]></g:material>
-    </item>
-    <item>
-      <g:id>2a22bbd8-a890-4258-8558-3cb06a062cc1</g:id>
-      <title><![CDATA[Red Chanderi Saree]]></title>
-      <description><![CDATA[Handmade luxury Red cotton silk sarees.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=red-chanderi-saree</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_2.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/5cca93be-ba1b-447b-9270-acbd7f59b863.webp</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>4999.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-181]]></g:mpn>
-      <g:color><![CDATA[Red]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
       <g:id>a6ae65ce-1039-41e0-a456-96c2baba0dd6</g:id>
