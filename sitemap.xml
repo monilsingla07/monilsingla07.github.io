@@ -73,7 +73,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/products.html?type=saree&amp;weave=chanderi-handloom</loc>
+    <loc>https://www.ahamstree.com/products.html?type=saree&amp;weave=silk-cotton</loc>
     <priority>0.8</priority>
   </url>
   <url>
@@ -97,17 +97,37 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=lime-green-saree-with-white-motifs</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.ahamstree.com/product.html?slug=magenta-saree-with-subtle-woven-texture</loc>
+    <lastmod>2026-09-09</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=dark-saree-with-maroon-gold-brocade-border</loc>
-    <lastmod>2026-09-08</lastmod>
+    <loc>https://www.ahamstree.com/product.html?slug=navy-blue-saree-with-gold-motif-border</loc>
+    <lastmod>2026-09-09</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-maroon-gold-stripe-pallu</loc>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=dark-saree-with-maroon-gold-brocade-border</loc>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=black-red-suit-with-gold-flower-butti</loc>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=pink-saree-with-elephant-motif</loc>
+    <lastmod>2026-09-09</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=lime-green-saree-with-white-motifs</loc>
     <lastmod>2026-09-08</lastmod>
     <priority>0.7</priority>
   </url>
@@ -142,17 +162,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=black-red-suit-with-gold-flower-butti</loc>
-    <lastmod>2026-09-08</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/product.html?slug=sea-green-suit-with-gold-butti</loc>
-    <lastmod>2026-09-08</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?slug=navy-blue-saree-with-gold-motif-border</loc>
     <lastmod>2026-09-08</lastmod>
     <priority>0.7</priority>
   </url>
@@ -207,11 +217,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=magenta-saree-with-subtle-woven-texture</loc>
-    <lastmod>2026-09-07</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/product.html?slug=copper-orange-saree-with-gold-border</loc>
     <lastmod>2026-09-07</lastmod>
     <priority>0.7</priority>
@@ -228,11 +233,6 @@
   </url>
   <url>
     <loc>https://www.ahamstree.com/product.html?slug=steel-blue-saree-with-gold-pallu-motifs</loc>
-    <lastmod>2026-09-03</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?slug=pink-saree-with-elephant-motif</loc>
     <lastmod>2026-09-03</lastmod>
     <priority>0.7</priority>
   </url>
