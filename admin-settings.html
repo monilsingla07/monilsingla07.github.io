@@ -29,6 +29,25 @@
     .tab-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
+    .section-title { font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); margin: 22px 0 10px; }
+
+    /* Navigation editor */
+    .nav-top { border: 1px solid var(--border-light); background: var(--surface); margin-bottom: 14px; }
+    .nav-top-head { display: grid; grid-template-columns: 64px minmax(0,1fr) 130px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 14px; border-bottom: 1px solid var(--border-light); }
+    .nav-kids { padding: 6px 14px 14px 34px; }
+    .nav-kid { display: grid; grid-template-columns: 64px minmax(0,1fr) 130px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border-light); }
+    .nav-kid:last-child { border-bottom: none; }
+    .nav-kids-empty { font-size: 12px; color: var(--text-light); padding: 8px 0; }
+    .nav-colhead { display: grid; grid-template-columns: 64px minmax(0,1fr) 130px minmax(0,1fr) auto; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); padding: 10px 0 2px; }
+    .nav-del { border: none; background: rgba(161,61,61,.1); color: #a13d3d; width: 30px; height: 30px; cursor: pointer; font-weight: 700; flex-shrink: 0; }
+    .nav-row-status { font-size: 12px; color: var(--text-light); padding: 0 14px 12px; }
+    .nav-off { opacity: .55; }
+    @media (max-width: 720px) {
+      .nav-top-head, .nav-kid { grid-template-columns: 64px minmax(0,1fr); row-gap: 8px; }
+      .nav-top-head > *:nth-child(n+3), .nav-kid > *:nth-child(n+3) { grid-column: 2; }
+      .nav-colhead { display: none; }
+      .nav-kids { padding-left: 16px; }
+    }
     @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -50,7 +69,25 @@
 
       <div class="tabs">
         <button class="tab-btn active" data-tab="settings">Site Settings</button>
+        <button class="tab-btn" data-tab="nav">Navigation</button>
         <button class="tab-btn" data-tab="admins">Admin Users</button>
+      </div>
+
+      <!-- ── Navigation tab ── -->
+      <div id="tab-nav" class="tab-panel">
+        <div class="small" style="color:var(--text-light); margin-bottom:16px; max-width:74ch;">
+          The menu across the top of every page. Drag nothing — just set the order number. Each item can point at a category, a weave, a fabric, a collection, another page on the site, or any link you paste in. Items nested under a top-level item become its hover dropdown.
+        </div>
+        <div id="navTree"></div>
+        <div style="margin-top:14px;">
+          <button class="btn" type="button" id="btnAddTop">+ Add top-level item</button>
+        </div>
+
+        <div class="section-title" style="margin-top:32px;">Shop page — per category</div>
+        <div class="small" style="color:var(--text-light); margin-bottom:12px; max-width:74ch;">
+          The heading and subtitle at the top of each category's shop page, and whether the weave row shows underneath the tabs. Filter names and order live in Product Catalogue → Filters.
+        </div>
+        <div id="catPages"></div>
       </div>
 
       <!-- ── Site Settings tab ── -->
@@ -180,6 +217,286 @@
       return json;
     }
 
+    // ══════════════════════════ NAVIGATION ══════════════════════════
+    const NAV_FN = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-navigation";
+
+    async function navFetch(body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(NAV_FN, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    let navState = { items: [], categories: [], targets: { weave: [], fabric: [], collection: [] } };
+
+    const LINK_TYPE_LABELS = {
+      category: "Category page",
+      weave: "Weave",
+      fabric: "Fabric",
+      collection: "Collection",
+      page: "Site page",
+      url: "Custom link",
+      none: "No link (label only)",
+    };
+
+    // Site pages an item can point at without typing a path.
+    const SITE_PAGES = [
+      "new-arrivals.html", "collections.html", "sale.html", "products.html",
+      "blogs.html", "about.html", "contact.html", "help.html", "stores.html", "track.html",
+    ];
+
+    // The target picker changes shape per link type — a slug dropdown for
+    // taxonomy types, a free-text box for custom links, nothing for "none".
+    function targetFieldHtml(item) {
+      const t = item.link_type || "url";
+      const val = item.link_value || "";
+      if (t === "none") return `<span class="small" style="color:var(--text-light);">—</span>`;
+      if (t === "url") {
+        return `<input class="input nav-value" value="${escapeAttr(val)}" placeholder="https://… or /page.html" />`;
+      }
+      let opts = [];
+      if (t === "category") opts = navState.categories.map(c => ({ value: c.category, label: c.label }));
+      else if (t === "page") opts = SITE_PAGES.map(p => ({ value: p, label: p }));
+      else opts = (navState.targets[t] || []).map(o => ({ value: o.slug, label: o.name }));
+
+      // A slug that no longer exists still needs to show, or saving would
+      // silently repoint the item at whatever happens to be first.
+      const known = opts.some(o => o.value === val);
+      if (val && !known) opts = [{ value: val, label: `${val} (missing)` }, ...opts];
+
+      return `
+        <select class="input nav-value">
+          <option value="">— choose —</option>
+          ${opts.map(o => `<option value="${escapeAttr(o.value)}" ${o.value === val ? "selected" : ""}>${escapeHtml(o.label)}</option>`).join("")}
+        </select>`;
+    }
+
+    function linkTypeSelectHtml(item, isChild) {
+      // Only top-level items make sense as a bare label with no link.
+      const types = isChild
+        ? ["weave", "fabric", "collection", "category", "page", "url"]
+        : ["category", "page", "url", "collection", "none"];
+      return `
+        <select class="input nav-type">
+          ${types.map(t => `<option value="${t}" ${item.link_type === t ? "selected" : ""}>${escapeHtml(LINK_TYPE_LABELS[t])}</option>`).join("")}
+        </select>`;
+    }
+
+    function navRowHtml(item, isChild) {
+      return `
+        <div class="${isChild ? "nav-kid" : "nav-top-head"} ${item.is_active === false ? "nav-off" : ""}" data-id="${escapeAttr(item.id)}">
+          <input class="input nav-order" type="number" value="${Number(item.sort_order ?? 0)}" title="Order" />
+          <input class="input nav-label" value="${escapeAttr(item.label)}" placeholder="Menu text" />
+          ${linkTypeSelectHtml(item, isChild)}
+          <div class="nav-target">${targetFieldHtml(item)}</div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <label class="small" style="display:flex; align-items:center; gap:4px; white-space:nowrap;">
+              <input type="checkbox" class="nav-active" ${item.is_active === false ? "" : "checked"} /> On
+            </label>
+            <button class="nav-del" type="button" title="Delete">×</button>
+          </div>
+        </div>`;
+    }
+
+    function renderNavTree() {
+      const host = document.getElementById("navTree");
+      const tops = navState.items.filter(i => !i.parent_id).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+      if (!tops.length) {
+        host.innerHTML = '<div class="small" style="color:var(--text-light);">No menu items yet — add one below.</div>';
+        return;
+      }
+
+      host.innerHTML = `
+        <div class="nav-colhead"><span>Order</span><span>Menu text</span><span>Links to</span><span>Target</span><span></span></div>
+        ${tops.map(top => {
+          const kids = navState.items
+            .filter(i => i.parent_id === top.id)
+            .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+          return `
+            <div class="nav-top" data-top="${escapeAttr(top.id)}">
+              ${navRowHtml(top, false)}
+              <div class="nav-kids">
+                <div class="small" style="color:var(--text-light); font-weight:700; margin-bottom:4px;">Dropdown under "${escapeHtml(top.label)}"</div>
+                ${kids.length ? kids.map(k => navRowHtml(k, true)).join("") : '<div class="nav-kids-empty">No dropdown links — this is a plain menu item.</div>'}
+                <button class="btn secondary nav-add-kid" type="button" style="margin-top:10px; padding:6px 12px; font-size:12px;">+ Add dropdown link</button>
+              </div>
+              <div class="nav-row-status"></div>
+            </div>`;
+        }).join("")}
+      `;
+
+      wireNavTree();
+    }
+
+    function collectRow(rowEl) {
+      const valEl = rowEl.querySelector(".nav-value");
+      return {
+        id: rowEl.dataset.id,
+        label: rowEl.querySelector(".nav-label").value.trim(),
+        link_type: rowEl.querySelector(".nav-type").value,
+        link_value: valEl ? valEl.value.trim() : "",
+        sort_order: Number(rowEl.querySelector(".nav-order").value || 0),
+        is_active: rowEl.querySelector(".nav-active").checked,
+      };
+    }
+
+    function statusElFor(rowEl) {
+      return rowEl.closest(".nav-top")?.querySelector(".nav-row-status");
+    }
+
+    async function saveRow(rowEl, extra) {
+      const status = statusElFor(rowEl);
+      const payload = { action: "save_item", ...collectRow(rowEl), ...(extra || {}) };
+      if (status) status.textContent = "Saving…";
+      try {
+        await navFetch(payload);
+        if (status) status.textContent = "Saved — live on the site now.";
+        await loadNav();
+      } catch (e) {
+        if (status) status.textContent = "Error: " + e.message;
+      }
+    }
+
+    function wireNavTree() {
+      document.querySelectorAll("#navTree [data-id]").forEach(rowEl => {
+        const isChild = rowEl.classList.contains("nav-kid");
+        const parentId = isChild ? rowEl.closest(".nav-top").dataset.top : null;
+
+        // Changing the link type swaps the target control, so re-render just
+        // that cell rather than the whole tree (which would lose focus).
+        rowEl.querySelector(".nav-type").addEventListener("change", (e) => {
+          const stub = { link_type: e.target.value, link_value: "" };
+          rowEl.querySelector(".nav-target").innerHTML = targetFieldHtml(stub);
+        });
+
+        ["change", "blur"].forEach(evt => {
+          rowEl.querySelectorAll(".nav-label, .nav-order, .nav-active").forEach(el => {
+            el.addEventListener(evt, () => saveRow(rowEl, parentId ? { parent_id: parentId } : {}));
+          });
+        });
+        rowEl.querySelector(".nav-target").addEventListener("change", () => {
+          saveRow(rowEl, parentId ? { parent_id: parentId } : {});
+        });
+
+        rowEl.querySelector(".nav-del").addEventListener("click", async () => {
+          const label = rowEl.querySelector(".nav-label").value.trim() || "this item";
+          const warn = isChild
+            ? `Remove "${label}" from the menu?`
+            : `Remove "${label}" and everything in its dropdown from the menu?`;
+          if (!confirm(warn)) return;
+          try {
+            await navFetch({ action: "delete_item", id: rowEl.dataset.id });
+            await loadNav();
+          } catch (e) {
+            const status = statusElFor(rowEl);
+            if (status) status.textContent = "Error: " + e.message;
+          }
+        });
+      });
+
+      document.querySelectorAll(".nav-add-kid").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const topId = btn.closest(".nav-top").dataset.top;
+          const siblings = navState.items.filter(i => i.parent_id === topId);
+          try {
+            await navFetch({
+              action: "save_item",
+              parent_id: topId,
+              label: "New link",
+              link_type: "collection",
+              link_value: "",
+              sort_order: siblings.length + 1,
+              is_active: false,
+            });
+            await loadNav();
+          } catch (e) { alert("Error: " + e.message); }
+        });
+      });
+    }
+
+    document.getElementById("btnAddTop").addEventListener("click", async () => {
+      const tops = navState.items.filter(i => !i.parent_id);
+      try {
+        await navFetch({
+          action: "save_item",
+          label: "New menu item",
+          link_type: "none",
+          link_value: "",
+          sort_order: tops.length + 1,
+          is_active: false,
+        });
+        await loadNav();
+      } catch (e) { alert("Error: " + e.message); }
+    });
+
+    // ── Per-category shop page settings ──
+    function renderCatPages() {
+      const host = document.getElementById("catPages");
+      host.innerHTML = navState.categories.map(c => `
+        <div class="pm-card" style="margin-bottom:12px;" data-cat="${escapeAttr(c.category)}">
+          <div style="font-weight:700; margin-bottom:6px;">${escapeHtml(c.label)}</div>
+          <div class="pm-row">
+            <div class="full">
+              <label class="pm-label">Page heading (the last word is shown in italics, matching the site style)</label>
+              <input class="input cp-heading" value="${escapeAttr(c.heading || "")}" placeholder="e.g. Handloom Sarees" />
+            </div>
+            <div class="full">
+              <label class="pm-label">Subtitle under the heading</label>
+              <input class="input cp-subtitle" value="${escapeAttr(c.subtitle || "")}" placeholder="e.g. Woven with care, made to last a lifetime." />
+            </div>
+            <div class="full">
+              <label class="small" style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" class="cp-weaverow" ${c.show_weave_row === false ? "" : "checked"} />
+                <span>Show the weave row above the filters</span>
+              </label>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; margin-top:14px;">
+            <button class="btn cp-save" type="button">Save</button>
+            <span class="small cp-status" style="color:var(--text-light);"></span>
+          </div>
+        </div>
+      `).join("");
+
+      host.querySelectorAll("[data-cat]").forEach(card => {
+        card.querySelector(".cp-save").addEventListener("click", async () => {
+          const status = card.querySelector(".cp-status");
+          status.textContent = "Saving…";
+          try {
+            await navFetch({
+              action: "save_category_page",
+              category: card.dataset.cat,
+              heading: card.querySelector(".cp-heading").value,
+              subtitle: card.querySelector(".cp-subtitle").value,
+              show_weave_row: card.querySelector(".cp-weaverow").checked,
+            });
+            status.textContent = "Saved.";
+            await loadNav();
+          } catch (e) {
+            status.textContent = "Error: " + e.message;
+          }
+        });
+      });
+    }
+
+    async function loadNav() {
+      const r = await navFetch({ action: "list" });
+      navState = {
+        items: r.items || [],
+        categories: r.categories || [],
+        targets: r.targets || { weave: [], fabric: [], collection: [] },
+      };
+      renderNavTree();
+      renderCatPages();
+    }
+
     // ── Tabs ──
     document.querySelectorAll(".tab-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -296,7 +613,7 @@
         loadingState.style.display = "none";
         dashboard.style.display = "block";
 
-        await Promise.all([loadSettings(), loadAdmins()]);
+        await Promise.all([loadSettings(), loadAdmins(), loadNav()]);
       } catch (e) {
         console.error("Settings admin page error:", e);
         showGateError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");

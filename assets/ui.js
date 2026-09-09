@@ -4,7 +4,7 @@ import { supabase } from "./supabase.js";
 import { mountWelcomePopup } from "./welcome-popup.js";
 import { mountSignInPopup, openSignInModal } from "./signin-popup.js";
 import { openSearchOverlay } from "./search-overlay.js";
-import { escapeHtml } from "./safe.js";
+import { escapeHtml, escapeAttr, safeUrl } from "./safe.js";
 import { grantSignupCashIfEligible } from "./profile-seed.js";
 import { mergeGuestWishlistIntoAccount } from "./wishlist.js";
 import { trackPageview } from "./visit-tracker.js";
@@ -105,6 +105,9 @@ function iconWhatsApp() {
 
 export function renderHeader(active = "") {
   const count = cartCount();
+  // Stashed so hydrateNavDropdowns() can mark the right item as current —
+  // it runs from hydrateHeaderAuth(), which isn't given the page marker.
+  _activeNavMarker = active;
 
   return `
     <div class="site-header-wrap">
@@ -166,17 +169,12 @@ export function renderHeader(active = "") {
                 </button>
               </div>
 
+              <!-- Same fallback rule as the desktop nav above: plain links
+                   until hydrateNavDropdowns() swaps in the admin-managed
+                   tree, so no caret ever opens an empty submenu. -->
               <nav class="mobile-drawer-links">
-                <div class="mobile-drawer-item">
-                  <a href="products.html?type=saree">Sarees</a>
-                  <button class="mobile-drawer-caret" type="button" data-cat="saree" aria-label="Show saree categories" aria-expanded="false" hidden>${iconChevron()}</button>
-                  <div class="mobile-drawer-submenu" data-cat-sub="saree"></div>
-                </div>
-                <div class="mobile-drawer-item">
-                  <a href="products.html?type=suit">Suits</a>
-                  <button class="mobile-drawer-caret" type="button" data-cat="suit" aria-label="Show suit categories" aria-expanded="false" hidden>${iconChevron()}</button>
-                  <div class="mobile-drawer-submenu" data-cat-sub="suit"></div>
-                </div>
+                <a href="products.html?type=saree">Sarees</a>
+                <a href="products.html?type=suit">Suits</a>
                 <a href="new-arrivals.html">New Arrivals</a>
                 <a href="collections.html">Collections</a>
                 <a href="sale.html">Sale</a>
@@ -224,15 +222,13 @@ export function renderHeader(active = "") {
            two-row header instead of everything crammed into one row) -->
       <div class="header-nav-row">
         <div class="container">
+          <!-- Fallback nav, replaced by hydrateNavDropdowns() with the
+               admin-managed nav_items tree. Deliberately plain links with
+               no .has-submenu wrapper: an unhydrated .nav-submenu would
+               open an empty hover box if the fetch is slow or fails. -->
           <nav class="nav nav-desktop">
-            <div class="nav-item has-submenu">
-              <a href="products.html?type=saree" class="${(active === "products" || active === "sarees") ? "active" : ""}">Sarees</a>
-              <div class="nav-submenu" data-cat="saree"></div>
-            </div>
-            <div class="nav-item has-submenu">
-              <a href="products.html?type=suit" class="${active === "suits" ? "active" : ""}">Suits</a>
-              <div class="nav-submenu" data-cat="suit"></div>
-            </div>
+            <a href="products.html?type=saree" class="${(active === "products" || active === "sarees") ? "active" : ""}">Sarees</a>
+            <a href="products.html?type=suit" class="${active === "suits" ? "active" : ""}">Suits</a>
             <a href="new-arrivals.html">New Arrivals</a>
             <a href="collections.html">Collections</a>
             <a href="sale.html">Sale</a>
@@ -423,6 +419,7 @@ function close() {
 // page. Wrapped defensively — if this fails, the plain category links
 // still work exactly as before (no dropdown, no breakage).
 let _navDropdownsHydrated = false;
+let _activeNavMarker = "";
 
 function initNavCarets() {
   document.querySelectorAll(".mobile-drawer-caret").forEach((btn) => {
@@ -441,86 +438,154 @@ function initNavCarets() {
 
 // Site is a classic multi-page app (every navigation is a full reload), so
 // without caching this Supabase query re-runs on EVERY single page view.
-// The category/weave-line list changes rarely (admin action), so it's safe
-// to reuse a recent result from sessionStorage instead of re-querying on
-// every pageview — cuts one network round trip + DB query per navigation.
-// TTL keeps it fresh enough that an admin change shows up within minutes.
-const NAV_CACHE_KEY = "ahamstree_nav_dropdowns_v1";
+// The menu changes rarely (admin action), so it's safe to reuse a recent
+// result from sessionStorage instead of re-querying on every pageview —
+// cuts one network round trip + DB query per navigation. TTL keeps it fresh
+// enough that an admin change shows up within minutes.
+const NAV_CACHE_KEY = "ahamstree_nav_v2";
 const NAV_CACHE_TTL_MS = 10 * 60 * 1000; // 10 min
 
-function applyNavGroups(linksByCat) {
-  for (const cat of ["saree", "suit"]) {
-    const linksHtml = linksByCat[cat];
-    if (!linksHtml) continue;
-    document.querySelectorAll(`.nav-submenu[data-cat="${cat}"]`).forEach(el => { el.innerHTML = linksHtml; });
-    document.querySelectorAll(`.mobile-drawer-submenu[data-cat-sub="${cat}"]`).forEach(el => { el.innerHTML = linksHtml; });
-    document.querySelectorAll(`.mobile-drawer-caret[data-cat="${cat}"]`).forEach(el => { el.hidden = false; });
+// nav_items rows describe WHAT to link to, not the URL itself, so an admin
+// never types a query string by hand and a future link type only needs a
+// case here. Anything unrecognised falls back to "#" rather than emitting a
+// broken or unsafe href.
+function navHref(item) {
+  const val = item.link_value || "";
+  switch (item.link_type) {
+    case "category":
+      return `products.html?type=${encodeURIComponent(val)}`;
+    case "weave":
+      return item.link_category
+        ? `products.html?type=${encodeURIComponent(item.link_category)}&weave=${encodeURIComponent(val)}`
+        : `products.html?weave=${encodeURIComponent(val)}`;
+    case "fabric":
+      return item.link_category
+        ? `products.html?type=${encodeURIComponent(item.link_category)}&fabric=${encodeURIComponent(val)}`
+        : `products.html?fabric=${encodeURIComponent(val)}`;
+    case "collection":
+      return `products.html?collection=${encodeURIComponent(val)}`;
+    case "page":
+      // Site-relative page name only — never an absolute or protocol URL.
+      return /^[a-z0-9._-]+\.html(\?.*)?$/i.test(val) ? val : "#";
+    case "url":
+      // safeUrl, not safeHref — the caller escapes this for the attribute,
+      // and safeHref would escape it a second time, turning "&max=3000"
+      // into "&amp;max=3000" and breaking the query string.
+      return safeUrl(val, { type: "href" });
+    default:
+      return "#";
   }
+}
+
+// Which nav item should read as "current" for a given page marker. Keeps the
+// old behaviour where products/sarees both highlight Sarees.
+function navIsActive(item, active) {
+  if (!active) return false;
+  if (item.link_type === "category") {
+    if (item.link_value === "saree") return active === "products" || active === "sarees";
+    if (item.link_value === "suit") return active === "suits";
+  }
+  if (item.link_type === "page" && item.link_value) {
+    return item.link_value.replace(/\.html.*$/i, "") === active;
+  }
+  return false;
+}
+
+function buildNavHtml(tree, active) {
+  const desktop = tree.map(top => {
+    const href = escapeAttr(navHref(top));
+    const cls = navIsActive(top, active) ? ' class="active"' : "";
+    const label = escapeHtml(top.label);
+    if (!top.children.length) return `<a href="${href}"${cls}>${label}</a>`;
+    const sub = top.children
+      .map(c => `<a href="${escapeAttr(navHref(c))}">${escapeHtml(c.label)}</a>`)
+      .join("");
+    return `
+      <div class="nav-item has-submenu">
+        <a href="${href}"${cls}>${label}</a>
+        <div class="nav-submenu">${sub}</div>
+      </div>`;
+  }).join("");
+
+  const mobile = tree.map(top => {
+    const href = escapeAttr(navHref(top));
+    const label = escapeHtml(top.label);
+    if (!top.children.length) return `<a href="${href}">${label}</a>`;
+    const sub = top.children
+      .map(c => `<a href="${escapeAttr(navHref(c))}">${escapeHtml(c.label)}</a>`)
+      .join("");
+    return `
+      <div class="mobile-drawer-item">
+        <a href="${href}">${label}</a>
+        <button class="mobile-drawer-caret" type="button" aria-label="Show ${escapeAttr(top.label)} links" aria-expanded="false">${iconChevron()}</button>
+        <div class="mobile-drawer-submenu">${sub}</div>
+      </div>`;
+  }).join("");
+
+  return { desktop, mobile };
+}
+
+function applyNavHtml(html) {
+  if (!html || !html.desktop) return;
+  document.querySelectorAll("nav.nav-desktop").forEach(el => { el.innerHTML = html.desktop; });
+  document.querySelectorAll(".mobile-drawer-links").forEach(el => { el.innerHTML = html.mobile; });
   initNavCarets();
 }
 
-function readNavCache() {
+function readNavCache(active) {
   try {
     const raw = sessionStorage.getItem(NAV_CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed || (Date.now() - parsed.ts) > NAV_CACHE_TTL_MS) return null;
-    return parsed.linksByCat || null;
+    // The tree is cached, not the HTML — the "active" highlight differs per
+    // page, so the markup has to be rebuilt even on a cache hit.
+    return parsed.tree ? buildNavHtml(parsed.tree, active) : null;
   } catch (_) {
     return null; // storage unavailable (private mode, etc.) — fall through to network
   }
 }
 
-function writeNavCache(linksByCat) {
+function writeNavCache(tree) {
   try {
-    sessionStorage.setItem(NAV_CACHE_KEY, JSON.stringify({ ts: Date.now(), linksByCat }));
+    sessionStorage.setItem(NAV_CACHE_KEY, JSON.stringify({ ts: Date.now(), tree }));
   } catch (_) {
     // storage full/unavailable — non-fatal, just means next pageview re-fetches
   }
 }
 
-async function hydrateNavDropdowns() {
+async function hydrateNavDropdowns(active) {
   if (_navDropdownsHydrated) return;
   _navDropdownsHydrated = true;
   try {
-    const cached = readNavCache();
+    const cached = readNavCache(active);
     if (cached) {
-      applyNavGroups(cached);
+      applyNavHtml(cached);
       return;
     }
 
     const { data, error } = await supabase
-      .from("products")
-      .select("category, weave_line:weave_lines!inner(id,name,slug,sort_order,is_active)")
-      .eq("is_active", true)
-      .eq("weave_line.is_active", true);
+      .from("nav_items")
+      .select("id,parent_id,label,link_type,link_value,link_category,sort_order")
+      .order("sort_order");
 
+    // No rows (or a failed fetch) leaves the hardcoded fallback markup in
+    // renderHeader() exactly as it is — the header is never left empty.
     if (error || !data || data.length === 0) return;
 
-    const groups = {};
-    for (const row of data) {
-      const cat = row.category || "saree";
-      const wl = row.weave_line;
-      if (!wl) continue;
-      if (!groups[cat]) groups[cat] = new Map();
-      if (!groups[cat].has(wl.slug)) groups[cat].set(wl.slug, wl);
-    }
+    const tops = data.filter(r => !r.parent_id);
+    if (!tops.length) return;
+    const tree = tops.map(t => ({
+      ...t,
+      children: data
+        .filter(c => c.parent_id === t.id)
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)),
+    }));
 
-    const linksByCat = {};
-    for (const cat of ["saree", "suit"]) {
-      if (!groups[cat] || groups[cat].size === 0) continue;
-      const rows = Array.from(groups[cat].values()).sort((a, b) =>
-        (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.name).localeCompare(String(b.name))
-      );
-      linksByCat[cat] = rows.map(w =>
-        `<a href="products.html?type=${encodeURIComponent(cat)}&weave=${encodeURIComponent(w.slug)}">${escapeHtml(w.name)}</a>`
-      ).join("");
-    }
-
-    applyNavGroups(linksByCat);
-    writeNavCache(linksByCat);
+    applyNavHtml(buildNavHtml(tree, active));
+    writeNavCache(tree);
   } catch (_) {
-    // silent — the plain "Handloom Sarees" / "Handloom Suits" links still work
+    // silent — the fallback nav rendered by renderHeader() still works
   }
 }
 
@@ -795,7 +860,7 @@ export async function hydrateHeaderAuth() {
   // for why this lives here instead of on every page individually.
   try { trackPageview(); } catch (_) {}
 
-  hydrateNavDropdowns();
+  hydrateNavDropdowns(_activeNavMarker);
   hydrateSiteSettings();
   initScrollReveal();
 

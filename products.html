@@ -616,7 +616,7 @@
     try {
       const [{ data: fRows }, { data: cRows }] = await Promise.all([
         supabase.from("filter_settings").select("filter_key,label,is_enabled,sort_order").eq("category", currentType),
-        supabase.from("category_settings").select("category,label,all_weaves_label,sort_order,is_enabled").order("sort_order"),
+        supabase.from("category_settings").select("category,label,all_weaves_label,heading,subtitle,show_weave_row,sort_order,is_enabled").order("sort_order"),
       ]);
 
       filterDefs = (fRows || [])
@@ -797,6 +797,8 @@
   async function renderWeavePills(){
     const row = document.getElementById("weavePillRow");
     const selected = params.get("weave") || "";
+    // Admin can switch the whole weave row off for a category.
+    if (categoryMeta.show_weave_row === false){ row.innerHTML = ""; return; }
     try{
       let q = supabase
         .from("products")
@@ -1188,13 +1190,31 @@
     if (collection && cache.collectionName){
       titleEl.innerHTML = escapeHtml(cache.collectionName);
       subEl.textContent = "A handpicked edit from our collection.";
-    } else if (type === "suit") {
-      titleEl.innerHTML = weaveName ? `${escapeHtml(weaveName)} <em>Suits</em>` : `Handloom <em>Suits</em>`;
-      subEl.textContent = "Crafted for everyday grace — from weave to wear.";
-    } else {
-      titleEl.innerHTML = weaveName ? `${escapeHtml(weaveName)} <em>Sarees</em>` : `Handloom <em>Sarees</em>`;
-      subEl.textContent = "Woven with care, made to last a lifetime.";
+      return;
     }
+
+    // Heading and subtitle are admin-editable per category (Admin → Site
+    // Settings → Navigation). The house style italicises the final word, so
+    // a configured heading keeps that treatment automatically rather than
+    // making the admin type markup.
+    const configured = (categoryMeta.heading || "").trim();
+    const fallbackHeading = type === "suit" ? "Handloom Suits" : "Handloom Sarees";
+    const headingText = configured || fallbackHeading;
+
+    if (weaveName) {
+      // Browsing one weave swaps the leading words for the weave's name,
+      // keeping the category word italicised: "Chanderi <em>Sarees</em>".
+      titleEl.innerHTML = `${escapeHtml(weaveName)} <em>${escapeHtml(categoryMeta.label || (type === "suit" ? "Suits" : "Sarees"))}</em>`;
+    } else {
+      const words = headingText.split(/\s+/);
+      const last = words.pop();
+      titleEl.innerHTML = words.length
+        ? `${escapeHtml(words.join(" "))} <em>${escapeHtml(last)}</em>`
+        : `<em>${escapeHtml(last)}</em>`;
+    }
+
+    subEl.textContent = (categoryMeta.subtitle || "").trim() ||
+      (type === "suit" ? "Crafted for everyday grace — from weave to wear." : "Woven with care, made to last a lifetime.");
   }
 
   // Returns the canonical path for the current type/weave/fabric/collection
