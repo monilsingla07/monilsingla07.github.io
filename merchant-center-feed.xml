@@ -5,6 +5,25 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>d4aac9da-1f3e-4860-b42d-212dc8413bd4</g:id>
+      <title><![CDATA[Olive-Green Saree with Wide Gold Pallu]]></title>
+      <description><![CDATA[Olive-green saree with a wide gold pallu/border and a fine maroon accent line. Simple, rich, and easy to style with gold jewellery.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=olive-green-saree-with-wide-gold-pallu</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-31.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-31_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-31_2.jpg</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>5799.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-31]]></g:mpn>
+      <g:color><![CDATA[Olive Green]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>d86442cc-160d-42de-8bce-6a52f264c656</g:id>
       <title><![CDATA[Lime-Green Saree with White Motifs]]></title>
       <description><![CDATA[Bright lime-green saree with clean white woven motifs for a fresh, modern-traditional vibe. Great for haldi/puja events and daytime celebrations.]]></description>
@@ -41,25 +60,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-41]]></g:mpn>
       <g:color><![CDATA[Navy Blue]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>d4aac9da-1f3e-4860-b42d-212dc8413bd4</g:id>
-      <title><![CDATA[Olive-Green Saree with Wide Gold Pallu]]></title>
-      <description><![CDATA[Olive-green saree with a wide gold pallu/border and a fine maroon accent line. Simple, rich, and easy to style with gold jewellery.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=olive-green-saree-with-wide-gold-pallu</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-31.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-31_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-31_2.jpg</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>5799.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-31]]></g:mpn>
-      <g:color><![CDATA[Olive Green]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
