@@ -197,6 +197,7 @@
     import { addToCart, getCart } from "./assets/cart.js";
     import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
 	    import { escapeHtml, escapeAttr, safeSrc, safeUrl } from "./assets/safe.js";
+	    import { hoverImageUrl } from "./assets/media.js";
     import { setPageMeta, injectJsonLd, buildProductSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
     document.getElementById("header").innerHTML = renderHeader("products");
@@ -322,7 +323,7 @@
       function relatedCard(p) {
         const imgs = (p.product_images ?? []).slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
         const imgUrl = imgs[0]?.image_url ?? "";
-        const imgUrlHover = imgs[1]?.image_url ?? "";
+        const imgUrlHover = hoverImageUrl(imgs[1]?.image_url);
         const base = Number(p.price_inr || 0);
         const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
         const hasSale = sale != null && sale > 0 && sale < base;

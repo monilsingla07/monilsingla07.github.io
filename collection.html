@@ -190,6 +190,7 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
+    import { hoverImageUrl } from "./assets/media.js";
     import { setPageMeta, injectJsonLd, buildCollectionSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
@@ -335,7 +336,7 @@
 
       const normalized = products.map(p => {
         const imgs = (p.product_images ?? []).slice().sort((a,b)=> (a.sort_order??0)-(b.sort_order??0));
-        return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: imgs[1]?.image_url ?? "" };
+        return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: hoverImageUrl(imgs[1]?.image_url) };
       });
 
       colCount.textContent = `${normalized.length} item${normalized.length !== 1 ? "s" : ""}`;

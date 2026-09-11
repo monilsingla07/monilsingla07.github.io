@@ -521,6 +521,7 @@
   import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
   import { supabase } from "./assets/supabase.js";
   import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
+  import { hoverImageUrl } from "./assets/media.js";
   import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
   import { setPageMeta, injectJsonLd, buildCollectionSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
@@ -1266,7 +1267,7 @@
       const original_price = Number(p.price_inr || 0);
       const sale_price = (p.sale_price_inr === null || p.sale_price_inr === undefined) ? null : Number(p.sale_price_inr);
       const effective_price = (sale_price && sale_price > 0) ? sale_price : original_price;
-      return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: imgs[1]?.image_url ?? "", available_qty, _original_price_inr: original_price, _effective_price_inr: effective_price };
+      return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: hoverImageUrl(imgs[1]?.image_url), available_qty, _original_price_inr: original_price, _effective_price_inr: effective_price };
     });
   }
 

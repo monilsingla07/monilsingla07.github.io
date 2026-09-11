@@ -1,6 +1,7 @@
 // assets/home.js
 import { supabase } from "./supabase.js";
 import { escapeHtml, escapeAttr, safeSrc, safeCssUrl } from "./safe.js";
+import { hoverImageUrl } from "./media.js";
 import { addToWishlist, removeFromWishlist, isInWishlist } from "./wishlist.js";
 
 /**
@@ -36,7 +37,7 @@ function normalizeProducts(rows = []) {
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
     const inv = Number(p.inventory_qty || 0);
     const res = Number(p.reserved_qty || 0);
-    return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: imgs[1]?.image_url ?? "", available_qty: Math.max(0, inv - res) };
+    return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: hoverImageUrl(imgs[1]?.image_url), available_qty: Math.max(0, inv - res) };
   });
 }
 
