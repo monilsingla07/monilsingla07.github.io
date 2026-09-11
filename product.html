@@ -709,12 +709,31 @@ if (!sessionStorage.getItem(viewKey)) {
       // to whatever was showing before it opened, and reopening it started
       // over at that stale index instead of resuming where they left off.
       function syncGalleryTo(idx) {
+        setMainImage(idx);
+      }
+
+      // Single place that moves the on-page gallery to an image: used by the
+      // thumbnail strip, by swiping the main image, and by lightbox
+      // navigation. `animate` runs the same crossfade the thumbnails have
+      // always used; lightbox syncing skips it so the page behind is simply
+      // already correct when it closes.
+      function setMainImage(idx, { animate = false } = {}) {
         if (!images[idx]) return;
-        mainImg.src = safeUrl(images[idx].image_url, { type: "src" }) || "";
-        mainImg.alt = images[idx].alt_text ?? data.title ?? "Product image";
-        mainImg.dataset.idx = String(idx);
+        currentIndex = idx;
+
         thumbs.querySelectorAll(".pd-thumb.is-active").forEach((el) => el.classList.remove("is-active"));
         thumbs.querySelector(`.pd-thumb[data-idx="${idx}"]`)?.classList.add("is-active");
+
+        const apply = () => {
+          mainImg.src = safeUrl(images[idx].image_url, { type: "src" }) || "";
+          mainImg.alt = images[idx].alt_text ?? data.title ?? "Product image";
+          mainImg.dataset.idx = String(idx);
+          mainImg.classList.remove("is-swapping");
+        };
+
+        if (!animate) return apply();
+        mainImg.classList.add("is-swapping");
+        window.setTimeout(apply, 140);
       }
 
       function showNext() {
@@ -831,10 +850,57 @@ if (!sessionStorage.getItem(viewKey)) {
         lightboxImg.classList.remove("lb-dragging");
       });
 
-      // Clicking main image opens lightbox
-      mainImg.addEventListener("click", () => {
-        const idx = Number(mainImg.dataset.idx || "0");
-        openLightbox(idx);
+      // ── Swipe the main image to browse, without opening the lightbox ──
+      //
+      // Touch-only by nature: these events never fire for a mouse. The
+      // gesture has to coexist with two things — vertical page scrolling,
+      // and the tap that opens the lightbox — so it only claims a gesture
+      // that is clearly horizontal, and swallows the click that the browser
+      // synthesises at the end of it.
+      const SWIPE_MIN_PX = 40;       // shorter than this is a tap, not a swipe
+      const SWIPE_H_RATIO = 1.2;     // must be this much more horizontal than vertical
+
+      let pdStartX = 0, pdStartY = 0, pdSwiped = false, pdTracking = false;
+
+      mainImg.addEventListener("touchstart", (e) => {
+        if (images.length < 2 || e.touches.length !== 1) return;
+        pdTracking = true;
+        pdSwiped = false;
+        pdStartX = e.touches[0].clientX;
+        pdStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      mainImg.addEventListener("touchend", (e) => {
+        if (!pdTracking) return;
+        pdTracking = false;
+
+        const touch = e.changedTouches[0];
+        if (!touch) return;
+        const dx = touch.clientX - pdStartX;
+        const dy = touch.clientY - pdStartY;
+        if (Math.abs(dx) < SWIPE_MIN_PX) return;
+        // A diagonal drag is almost always someone scrolling the page past
+        // the image — leave it alone rather than yanking the gallery sideways.
+        if (Math.abs(dx) < Math.abs(dy) * SWIPE_H_RATIO) return;
+
+        pdSwiped = true;
+        const next = dx < 0
+          ? (currentIndex + 1) % images.length
+          : (currentIndex - 1 + images.length) % images.length;
+        setMainImage(next, { animate: true });
+      }, { passive: true });
+
+      // Tapping the main image opens the lightbox — but the tail of a swipe
+      // also fires a click, which would dump the visitor into the zoom view
+      // every time they browsed. Swallow that one click.
+      mainImg.addEventListener("click", (e) => {
+        if (pdSwiped) {
+          pdSwiped = false;
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        openLightbox(Number(mainImg.dataset.idx || "0"));
       });
 
       // Clicking thumbs switches main image (Nalli-like) — crossfades the
@@ -845,17 +911,7 @@ if (!sessionStorage.getItem(viewKey)) {
         btn.addEventListener("click", () => {
           const idx = Number(btn.getAttribute("data-idx") || "0");
           if (mainImg.dataset.idx === String(idx)) return;
-
-          thumbs.querySelectorAll(".pd-thumb.is-active").forEach((el) => el.classList.remove("is-active"));
-          btn.classList.add("is-active");
-
-          mainImg.classList.add("is-swapping");
-          window.setTimeout(() => {
-            mainImg.src = safeUrl(images[idx].image_url, { type: "src" }) || "";
-            mainImg.alt = images[idx].alt_text ?? data.title ?? "Product image";
-            mainImg.dataset.idx = String(idx);
-            mainImg.classList.remove("is-swapping");
-          }, 140);
+          setMainImage(idx, { animate: true });
         });
 
         // Optional: double-click thumb to open zoom
