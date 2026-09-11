@@ -1,7 +1,7 @@
 // assets/home.js
 import { supabase } from "./supabase.js";
 import { escapeHtml, escapeAttr, safeSrc, safeCssUrl } from "./safe.js";
-import { hoverImageUrl } from "./media.js";
+import { withCardImages, cardImageSrc, cardImageAttrs } from "./media.js";
 import { addToWishlist, removeFromWishlist, isInWishlist } from "./wishlist.js";
 
 /**
@@ -32,12 +32,9 @@ function moneyINR(v) {
 
 function normalizeProducts(rows = []) {
   return (rows ?? []).map(p => {
-    const imgs = (p.product_images ?? [])
-      .slice()
-      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
     const inv = Number(p.inventory_qty || 0);
     const res = Number(p.reserved_qty || 0);
-    return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: hoverImageUrl(imgs[1]?.image_url), available_qty: Math.max(0, inv - res) };
+    return { ...withCardImages(p), available_qty: Math.max(0, inv - res) };
   });
 }
 
@@ -178,7 +175,7 @@ function productCard(p) {
     : `<span class="p-card-price">${moneyINR(base)}</span>`;
 
   const imgHtml = p.image_url
-    ? `<img class="${p.image_url_hover ? "p-card-img-primary" : ""}" src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">${p.image_url_hover ? `<img class="p-card-img-hover" src="${safeSrc(p.image_url_hover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
+    ? `<img class="${p.image_url_hover ? "p-card-img-primary" : ""}" src="${cardImageSrc(p._img)}" ${cardImageAttrs(p._img)} alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">${p.image_url_hover ? `<img class="p-card-img-hover" src="${cardImageSrc(p._imgHover)}" ${cardImageAttrs(p._imgHover)} alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
     : `<div class="p-card-img-empty"></div>`;
 
   return `
@@ -268,7 +265,7 @@ async function fetchMostLoved(limit = 6) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count, product_images(image_url, sort_order)"
+      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count, product_images(image_url, thumb_url, width, height, sort_order)"
     )
     .eq("is_active", true)
     .order("view_count", { ascending: false })
@@ -284,7 +281,7 @@ async function fetchLatestActive(limit = 6) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
+      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, thumb_url, width, height, sort_order)"
     )
     .eq("is_active", true)
     .order("created_at", { ascending: false })

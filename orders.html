@@ -899,7 +899,7 @@
           razorpay_payment_link_url, shiprocket_awb,
           return_status, return_reason,
           created_at,
-          order_items(qty, title, price_inr, product_id, product:products(slug, is_active, product_images(image_url, sort_order)))
+          order_items(qty, title, price_inr, product_id, product:products(slug, is_active, product_images(image_url, thumb_url, width, height, sort_order)))
         `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });

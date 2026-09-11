@@ -521,7 +521,7 @@
   import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
   import { supabase } from "./assets/supabase.js";
   import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
-  import { hoverImageUrl } from "./assets/media.js";
+  import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
   import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
   import { setPageMeta, injectJsonLd, buildCollectionSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
@@ -1267,7 +1267,7 @@
       const original_price = Number(p.price_inr || 0);
       const sale_price = (p.sale_price_inr === null || p.sale_price_inr === undefined) ? null : Number(p.sale_price_inr);
       const effective_price = (sale_price && sale_price > 0) ? sale_price : original_price;
-      return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: hoverImageUrl(imgs[1]?.image_url), available_qty, _original_price_inr: original_price, _effective_price_inr: effective_price };
+      return { ...withCardImages(p), available_qty, _original_price_inr: original_price, _effective_price_inr: effective_price };
     });
   }
 
@@ -1287,7 +1287,7 @@
       : `<span class="p-card-price">${moneyINR(base)}</span>`;
 
     const imgHtml = p.image_url
-      ? `<img class="${p.image_url_hover ? "p-card-img-primary" : ""}" src="${safeSrc(p.image_url)}" alt="${escapeAttr(p.title)}" loading="lazy" decoding="async">${p.image_url_hover ? `<img class="p-card-img-hover" src="${safeSrc(p.image_url_hover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
+      ? `<img class="${p.image_url_hover ? "p-card-img-primary" : ""}" src="${cardImageSrc(p._img)}" ${cardImageAttrs(p._img)} alt="${escapeAttr(p.title)}" loading="lazy" decoding="async">${p.image_url_hover ? `<img class="p-card-img-hover" src="${cardImageSrc(p._imgHover)}" ${cardImageAttrs(p._imgHover)} alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
       : `<div class="p-card-img-empty"></div>`;
 
     return `
@@ -1428,7 +1428,7 @@
 
     let query = supabase
       .from("products")
-      .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,product_images(image_url, sort_order)")
+      .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,product_images(image_url, thumb_url, width, height, sort_order)")
       .eq("is_active", true)
       .eq("category", type);
 

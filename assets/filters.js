@@ -8,7 +8,7 @@ export async function loadFilteredProducts(filters = {}) {
   // NOTE: match the schema used by products.html / product.html
   let query = supabase
     .from('products')
-    .select('id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,product_images(image_url, sort_order)')
+    .select('id,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,product_images(image_url, thumb_url, width, height, sort_order)')
     .eq('is_active', true);
 
   // Price range filter

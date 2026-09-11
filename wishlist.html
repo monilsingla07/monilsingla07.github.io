@@ -30,6 +30,7 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { getWishlist, removeFromWishlist } from "./assets/wishlist.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
+    import { cardImageSrc, cardImageAttrs } from "./assets/media.js";
 
     document.getElementById("header").innerHTML = renderHeader("wishlist");
     hydrateHeaderAuth();
@@ -87,7 +88,7 @@
         const soldOut = available <= 0;
 
         const imgHtml = product.image_url
-          ? `<img class="${product.image_url_hover ? "p-card-img-primary" : ""}" src="${safeSrc(product.image_url)}" alt="${escapeAttr(product.title || 'Product')}" loading="lazy" decoding="async">${product.image_url_hover ? `<img class="p-card-img-hover" src="${safeSrc(product.image_url_hover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
+          ? `<img class="${product.image_url_hover ? "p-card-img-primary" : ""}" src="${cardImageSrc(product._img)}" ${cardImageAttrs(product._img)} alt="${escapeAttr(product.title || 'Product')}" loading="lazy" decoding="async">${product.image_url_hover ? `<img class="p-card-img-hover" src="${cardImageSrc(product._imgHover)}" ${cardImageAttrs(product._imgHover)} alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
           : `<div class="p-card-img-empty"></div>`;
 
         return `

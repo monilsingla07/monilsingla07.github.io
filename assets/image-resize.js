@@ -163,6 +163,67 @@ export async function resizeImageFile(file, options = {}) {
   return new File([blob], newName, { type: outType, lastModified: Date.now() });
 }
 
+// Width of the grid rendition offered to cards via srcset. Chosen to cover
+// every grid context in one file: a 306px desktop card at 2x needs 612px, a
+// 172px mobile card at 3x needs 516px. One candidate at 700px serves all of
+// them, where the full-size file (sized for the zoom view) is 3-5x heavier.
+export const THUMB_WIDTH = 700;
+
+// Below this the full image is already small enough that a second rendition
+// would save little and cost an extra request.
+const THUMB_WORTH_IT_ABOVE = Math.round(THUMB_WIDTH * 1.25);
+
+/**
+ * Build both renditions of an upload from a single decode: the full-size image
+ * (same output resizeImageFile produces) and a grid-sized thumb for srcset.
+ *
+ * @param {File|Blob} file
+ * @param {Object} [options] - same shape as resizeImageFile's options
+ * @returns {Promise<{full: File, thumb: File|null, width: number, height: number}>}
+ *   `width`/`height` describe the FULL rendition. `thumb` is null when the
+ *   full image is already grid-sized, or when encoding it failed — callers
+ *   must treat a missing thumb as "just use the full one".
+ */
+export async function buildImageVariants(file, options = {}) {
+  const full = await resizeImageFile(file, options);
+  const size = await imageDimensions(full);
+
+  let thumb = null;
+  if (size.width > THUMB_WORTH_IT_ABOVE) {
+    try {
+      thumb = await resizeImageFile(full, {
+        ...options,
+        // resizeImageFile caps the LONGEST side, so for a portrait photo the
+        // cap has to be expressed as the height that yields THUMB_WIDTH.
+        maxDimension: size.height >= size.width
+          ? Math.round((size.height / size.width) * THUMB_WIDTH)
+          : THUMB_WIDTH,
+      });
+      // resizeImageFile returns the input untouched when it cannot improve on
+      // it; that would make the "thumb" a second copy of the full file.
+      if (thumb === full || thumb.size >= full.size) thumb = null;
+    } catch (err) {
+      console.warn("[image-resize] thumb generation failed, using full image only:", err);
+      thumb = null;
+    }
+  }
+
+  return { full, thumb, width: size.width, height: size.height };
+}
+
+/** Intrinsic pixel size of an image file, or zeros if it cannot be decoded. */
+export async function imageDimensions(file) {
+  try {
+    const bitmap = await loadBitmap(file);
+    const width = bitmap.width || bitmap.naturalWidth || 0;
+    const height = bitmap.height || bitmap.naturalHeight || 0;
+    if (bitmap.close) bitmap.close();
+    return { width, height };
+  } catch {
+    return { width: 0, height: 0 };
+  }
+}
+
 /**
  * Convenience helper for resizing several files (e.g. a multi-file product
  * gallery input) with the same options. Resizing runs one file at a time so

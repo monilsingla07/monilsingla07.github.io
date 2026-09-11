@@ -197,7 +197,7 @@
     import { addToCart, getCart } from "./assets/cart.js";
     import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
 	    import { escapeHtml, escapeAttr, safeSrc, safeUrl } from "./assets/safe.js";
-	    import { hoverImageUrl } from "./assets/media.js";
+	    import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
     import { setPageMeta, injectJsonLd, buildProductSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
     document.getElementById("header").innerHTML = renderHeader("products");
@@ -320,10 +320,10 @@
         return Number.isFinite(n) ? "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 }) : "";
       }
 
-      function relatedCard(p) {
-        const imgs = (p.product_images ?? []).slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-        const imgUrl = imgs[0]?.image_url ?? "";
-        const imgUrlHover = hoverImageUrl(imgs[1]?.image_url);
+      function relatedCard(rawProduct) {
+        const p = withCardImages(rawProduct);
+        const imgUrl = p.image_url;
+        const imgUrlHover = p.image_url_hover;
         const base = Number(p.price_inr || 0);
         const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
         const hasSale = sale != null && sale > 0 && sale < base;
@@ -336,7 +336,7 @@
           ? `<span class="p-card-original">${moneyINR(base)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
           : `<span class="p-card-price">${moneyINR(base)}</span>`;
         const imgHtml = imgUrl
-          ? `<img class="${imgUrlHover ? "p-card-img-primary" : ""}" src="${safeSrc(imgUrl)}" alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">${imgUrlHover ? `<img class="p-card-img-hover" src="${safeSrc(imgUrlHover)}" alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
+          ? `<img class="${imgUrlHover ? "p-card-img-primary" : ""}" src="${cardImageSrc(p._img)}" ${cardImageAttrs(p._img)} alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">${imgUrlHover ? `<img class="p-card-img-hover" src="${cardImageSrc(p._imgHover)}" ${cardImageAttrs(p._imgHover)} alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
           : `<div class="p-card-img-empty"></div>`;
         const href = p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`;
         return `
@@ -357,7 +357,7 @@
       async function fetchRelated(orderCol) {
         let q = supabase
           .from("products")
-          .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,product_images(image_url,sort_order)")
+          .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,product_images(image_url,thumb_url,width,height,sort_order)")
           .eq("is_active", true);
         q = currentSlug ? q.neq("slug", currentSlug) : q.neq("id", currentId);
         const { data, error } = await q.order(orderCol, { ascending: false }).limit(8);
@@ -436,7 +436,7 @@
           colour,print_type,craft,motif,border_type,zari,occasion,
           fabric:fabrics(name),
           weave_line:weave_lines(name),
-          product_images(image_url, sort_order, alt_text)
+          product_images(image_url, thumb_url, width, height, sort_order, alt_text)
         `);
       productQuery = slugParam ? productQuery.eq("slug", slugParam) : productQuery.eq("id", id);
       const { data, error } = await productQuery.maybeSingle();
@@ -568,7 +568,11 @@ if (!sessionStorage.getItem(viewKey)) {
 
       const thumbs = document.getElementById("thumbs");
       thumbs.innerHTML = images.map((img, idx) => {
-        const thumbSrc = safeSrc(img.image_url);
+        // The strip paints at 62-80px, so it takes the small rendition where
+        // one exists. Pointing these at the full files made every product page
+        // download all five zoom-sized photos before the visitor had looked at
+        // the second one.
+        const thumbSrc = safeSrc(img.thumb_url || img.image_url);
         const thumbAlt = escapeAttr(img.alt_text ?? data.title ?? "");
         const inner = thumbSrc
           ? `<img src="${thumbSrc}" alt="${thumbAlt}" loading="lazy" decoding="async">`
@@ -729,11 +733,26 @@ if (!sessionStorage.getItem(viewKey)) {
           mainImg.alt = images[idx].alt_text ?? data.title ?? "Product image";
           mainImg.dataset.idx = String(idx);
           mainImg.classList.remove("is-swapping");
+          preloadNeighbours(idx);
         };
 
         if (!animate) return apply();
         mainImg.classList.add("is-swapping");
         window.setTimeout(apply, 140);
+      }
+
+      // Warm the images on either side of the current one. The thumbnail strip
+      // used to preload every full-size photo as a side effect of pointing at
+      // them; now that it uses small renditions, swiping would otherwise wait
+      // on a cold fetch. Two neighbours is enough to stay ahead of a swipe
+      // without re-downloading the whole gallery up front.
+      function preloadNeighbours(idx) {
+        if (images.length < 2) return;
+        for (const offset of [1, -1]) {
+          const neighbour = images[(idx + offset + images.length) % images.length];
+          const url = neighbour && safeUrl(neighbour.image_url, { type: "src" });
+          if (url) new Image().src = url;
+        }
       }
 
       function showNext() {
@@ -920,6 +939,13 @@ if (!sessionStorage.getItem(viewKey)) {
           openLightbox(idx);
         });
       });
+
+      // Warm the neighbours of the first image once the page is otherwise
+      // idle, so the first swipe is instant without competing with the main
+      // image for bandwidth on load.
+      const warmFirst = () => preloadNeighbours(Number(mainImg.dataset.idx || "0"));
+      if (typeof requestIdleCallback === "function") requestIdleCallback(warmFirst, { timeout: 2500 });
+      else window.setTimeout(warmFirst, 1200);
 
       // Lightbox controls
       lbClose.addEventListener("click", closeLightbox);

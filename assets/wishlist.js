@@ -1,6 +1,6 @@
 // assets/wishlist.js
 import { supabase } from "./supabase.js";
-import { hoverImageUrl } from "./media.js";
+import { withCardImages } from "./media.js";
 
 /**
  * Wishlist storage
@@ -42,12 +42,7 @@ function setLocalIds(ids) {
 }
 
 function normalizeProducts(rows = []) {
-  return (rows ?? []).map((p) => {
-    const imgs = (p.product_images ?? [])
-      .slice()
-      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-    return { ...p, image_url: imgs[0]?.image_url ?? "", image_url_hover: hoverImageUrl(imgs[1]?.image_url) };
-  });
+  return (rows ?? []).map(withCardImages);
 }
 
 async function getUser() {
@@ -184,7 +179,7 @@ export async function getWishlist() {
     const { data, error } = await supabase
       .from("products")
       .select(
-        "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
+        "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, thumb_url, width, height, sort_order)"
       )
       .in("id", ids)
       .eq("is_active", true);
@@ -206,7 +201,7 @@ export async function getWishlist() {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, sort_order)"
+      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, thumb_url, width, height, sort_order)"
     )
     .in("id", ids)
     .eq("is_active", true);
