@@ -511,25 +511,6 @@
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
-      <g:id>6f40bd1d-e984-4b24-8c17-2c180d521b46</g:id>
-      <title><![CDATA[Beige Saree with White Butti (Minimal Look)]]></title>
-      <description><![CDATA[Soft beige saree with delicate white woven butti motifs — simple, graceful, and easy to style. Ideal for office wear, daytime events, and understated celebrations.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=beige-saree-with-white-butti-minimal-look</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113_2.jpg</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>2999.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-113]]></g:mpn>
-      <g:color><![CDATA[Beige]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
       <g:id>d78494cf-595a-4c51-94d4-5d782b47b26c</g:id>
       <title><![CDATA[Copper-Orange Saree with Gold Border]]></title>
       <description><![CDATA[Copper-orange saree with a clean body and a classic gold border — simple, rich, and easy to accessorize. Great for everyday festive wear and family functions.]]></description>
@@ -549,22 +530,22 @@
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
-      <g:id>0ada92f8-b966-4865-80bb-b5e2270e0477</g:id>
-      <title><![CDATA[Steel Blue Saree with Gold Pallu & Motifs]]></title>
-      <description><![CDATA[Cool steel-blue shade with gold pallu and woven motifs for a refined festive outfit.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=steel-blue-saree-with-gold-pallu-motifs</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>5799.00 INR</g:price>
+      <g:id>6f40bd1d-e984-4b24-8c17-2c180d521b46</g:id>
+      <title><![CDATA[Beige Saree with White Butti (Minimal Look)]]></title>
+      <description><![CDATA[Soft beige saree with delicate white woven butti motifs — simple, graceful, and easy to style. Ideal for office wear, daytime events, and understated celebrations.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=beige-saree-with-white-butti-minimal-look</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113_2.jpg</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>2999.00 INR</g:price>
       <g:brand>AhamStree</g:brand>
       <g:condition>new</g:condition>
       <g:google_product_category>8248</g:google_product_category>
       <g:product_type><![CDATA[Saree]]></g:product_type>
       <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-54]]></g:mpn>
-      <g:color><![CDATA[Steel Blue]]></g:color>
+      <g:mpn><![CDATA[AH-CH-113]]></g:mpn>
+      <g:color><![CDATA[Beige]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
@@ -584,6 +565,25 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-23]]></g:mpn>
       <g:color><![CDATA[Turquoise]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>0ada92f8-b966-4865-80bb-b5e2270e0477</g:id>
+      <title><![CDATA[Steel Blue Saree with Gold Pallu & Motifs]]></title>
+      <description><![CDATA[Cool steel-blue shade with gold pallu and woven motifs for a refined festive outfit.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=steel-blue-saree-with-gold-pallu-motifs</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>5799.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-54]]></g:mpn>
+      <g:color><![CDATA[Steel Blue]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
   </channel>
