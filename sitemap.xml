@@ -97,6 +97,16 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-maroon-gold-stripe-pallu</loc>
+    <lastmod>2026-09-21</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=olive-green-saree-with-wide-gold-pallu</loc>
+    <lastmod>2026-09-21</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.ahamstree.com/product.html?slug=black-printed-saree-with-green-tribal-border-red-florals</loc>
     <lastmod>2026-09-21</lastmod>
     <priority>0.7</priority>
@@ -122,11 +132,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-maroon-gold-stripe-pallu</loc>
-    <lastmod>2026-09-16</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/product.html?slug=dark-saree-with-maroon-gold-brocade-border</loc>
     <lastmod>2026-09-15</lastmod>
     <priority>0.7</priority>
@@ -143,11 +148,6 @@
   </url>
   <url>
     <loc>https://www.ahamstree.com/product.html?slug=lime-green-saree-with-white-motifs</loc>
-    <lastmod>2026-09-14</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?slug=olive-green-saree-with-wide-gold-pallu</loc>
     <lastmod>2026-09-14</lastmod>
     <priority>0.7</priority>
   </url>
@@ -227,22 +227,22 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=beige-saree-with-white-butti-minimal-look</loc>
-    <lastmod>2026-09-07</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/product.html?slug=copper-orange-saree-with-gold-border</loc>
     <lastmod>2026-09-07</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=steel-blue-saree-with-gold-pallu-motifs</loc>
-    <lastmod>2026-09-03</lastmod>
+    <loc>https://www.ahamstree.com/product.html?slug=beige-saree-with-white-butti-minimal-look</loc>
+    <lastmod>2026-09-07</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-gold-butti-maroon-gold-border</loc>
+    <lastmod>2026-09-03</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=steel-blue-saree-with-gold-pallu-motifs</loc>
     <lastmod>2026-09-03</lastmod>
     <priority>0.7</priority>
   </url>
