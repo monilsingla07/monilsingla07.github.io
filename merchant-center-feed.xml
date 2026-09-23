@@ -5,6 +5,45 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>b03bb0a7-4d62-4a05-b730-91087805302c</g:id>
+      <title><![CDATA[Maroon Saree with Wide Gold Brocade Border]]></title>
+      <description><![CDATA[Classic maroon saree with a wide gold brocade-style border for a grand traditional look. Perfect for weddings, ceremonies, and special occasions.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=maroon-saree-with-wide-gold-brocade-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-21.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-21_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-21_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>6299.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-21]]></g:mpn>
+      <g:color><![CDATA[Maroon]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>3a14a968-d986-465a-8048-a173e0340b59</g:id>
+      <title><![CDATA[Turquoise Saree with Maroon & Gold Stripe Pallu]]></title>
+      <description><![CDATA[Fresh turquoise saree accented with a maroon-gold stripe pallu and gold butis — festive yet modern.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-maroon-gold-stripe-pallu</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33_2.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/cc5458a7-ee08-4f2b-8cce-13962af77e2a.webp</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>5799.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-33]]></g:mpn>
+      <g:color><![CDATA[Turquoise]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>6aec820e-3ba4-4956-aaa3-af68ca1bced7</g:id>
       <title><![CDATA[Navy Blue Saree with Gold Motif Border]]></title>
       <description><![CDATA[Classic navy saree with gold zari pallu/border and standout woven motifs — perfect for evening functions.]]></description>
@@ -196,26 +235,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-SU-02]]></g:mpn>
       <g:color><![CDATA[Black-Red]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>3a14a968-d986-465a-8048-a173e0340b59</g:id>
-      <title><![CDATA[Turquoise Saree with Maroon & Gold Stripe Pallu]]></title>
-      <description><![CDATA[Fresh turquoise saree accented with a maroon-gold stripe pallu and gold butis — festive yet modern.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-maroon-gold-stripe-pallu</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33_2.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/cc5458a7-ee08-4f2b-8cce-13962af77e2a.webp</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>5799.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-33]]></g:mpn>
-      <g:color><![CDATA[Turquoise]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
@@ -434,25 +453,6 @@
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
-      <g:id>b03bb0a7-4d62-4a05-b730-91087805302c</g:id>
-      <title><![CDATA[Maroon Saree with Wide Gold Brocade Border]]></title>
-      <description><![CDATA[Classic maroon saree with a wide gold brocade-style border for a grand traditional look. Perfect for weddings, ceremonies, and special occasions.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=maroon-saree-with-wide-gold-brocade-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-21.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-21_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-21_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>6299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-21]]></g:mpn>
-      <g:color><![CDATA[Maroon]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
       <g:id>2dac0fdd-9cc6-4556-9e05-18e626881465</g:id>
       <title><![CDATA[Pink Saree with Elephant Motif]]></title>
       <description><![CDATA[Vibrant pink saree featuring a standout elephant motif and a soft, festive finish. A great pick for celebrations, gifting, and traditional events.]]></description>
@@ -549,25 +549,6 @@
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
-      <g:id>0ada92f8-b966-4865-80bb-b5e2270e0477</g:id>
-      <title><![CDATA[Steel Blue Saree with Gold Pallu & Motifs]]></title>
-      <description><![CDATA[Cool steel-blue shade with gold pallu and woven motifs for a refined festive outfit.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=steel-blue-saree-with-gold-pallu-motifs</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>5799.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-54]]></g:mpn>
-      <g:color><![CDATA[Steel Blue]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
       <g:id>ec998506-1b0b-4af5-a904-218513e8bc2a</g:id>
       <title><![CDATA[Turquoise Saree with Gold Butti & Maroon-Gold Border]]></title>
       <description><![CDATA[Bright turquoise saree with small gold butti motifs and a rich maroon-gold striped border/pallu. A great pick for festive wear, pooja, and family functions.]]></description>
@@ -584,6 +565,25 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-23]]></g:mpn>
       <g:color><![CDATA[Turquoise]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>0ada92f8-b966-4865-80bb-b5e2270e0477</g:id>
+      <title><![CDATA[Steel Blue Saree with Gold Pallu & Motifs]]></title>
+      <description><![CDATA[Cool steel-blue shade with gold pallu and woven motifs for a refined festive outfit.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=steel-blue-saree-with-gold-pallu-motifs</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-54_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>5799.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-54]]></g:mpn>
+      <g:color><![CDATA[Steel Blue]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
   </channel>
