@@ -5,6 +5,25 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>79823aec-e527-4328-b21e-482c9be975e9</g:id>
+      <title><![CDATA[Dark Saree with Maroon-Gold Brocade Border]]></title>
+      <description><![CDATA[Deep dark base with a maroon-gold brocade-style border and traditional motifs — great for weddings and evening wear.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=dark-saree-with-maroon-gold-brocade-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-22.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-22_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-22_2.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/46aa7680-5745-4034-a339-e52edac411ee.webp</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>6599.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-22]]></g:mpn>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>614633fb-5023-4115-85db-9e4473d0b397</g:id>
       <title><![CDATA[Sea-Green suit with Gold Butti]]></title>
       <description><![CDATA[Elegant sea-green suit with subtle gold round butti motifs for a classy, minimal look. Great for festive dinners, poojas, and small functions]]></description>
@@ -180,25 +199,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-82]]></g:mpn>
       <g:color><![CDATA[Deep Teal]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>79823aec-e527-4328-b21e-482c9be975e9</g:id>
-      <title><![CDATA[Dark Saree with Maroon-Gold Brocade Border]]></title>
-      <description><![CDATA[Deep dark base with a maroon-gold brocade-style border and traditional motifs — great for weddings and evening wear.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=dark-saree-with-maroon-gold-brocade-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-22.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-22_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-22_2.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/46aa7680-5745-4034-a339-e52edac411ee.webp</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>6599.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-22]]></g:mpn>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
