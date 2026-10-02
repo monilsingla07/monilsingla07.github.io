@@ -5,6 +5,25 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>98d2386b-1570-484f-b8e4-f83f22b988f4</g:id>
+      <title><![CDATA[Forest-Green Saree with Gold Butti]]></title>
+      <description><![CDATA[Deep forest-green saree with a simple gold butti motif placement. A versatile option for regular festive wear and family occasions.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=forest-green-saree-with-gold-butti</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32_2.jpg</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>5799.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-32]]></g:mpn>
+      <g:color><![CDATA[Forest Green]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>d75405b2-eb60-4769-a5a8-ba0d50b38fa2</g:id>
       <title><![CDATA[Emerald Green Saree with Rich Gold Border]]></title>
       <description><![CDATA[Deep emerald green saree with a classic gold zari pallu/border for a regal look — ideal for weddings and celebrations.]]></description>
@@ -432,25 +451,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-12]]></g:mpn>
       <g:color><![CDATA[Rust Orange]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>98d2386b-1570-484f-b8e4-f83f22b988f4</g:id>
-      <title><![CDATA[Forest-Green Saree with Gold Butti]]></title>
-      <description><![CDATA[Deep forest-green saree with a simple gold butti motif placement. A versatile option for regular festive wear and family occasions.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=forest-green-saree-with-gold-butti</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32_2.jpg</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>5799.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-32]]></g:mpn>
-      <g:color><![CDATA[Forest Green]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
