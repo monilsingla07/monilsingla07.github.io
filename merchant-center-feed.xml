@@ -5,6 +5,26 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>d75405b2-eb60-4769-a5a8-ba0d50b38fa2</g:id>
+      <title><![CDATA[Emerald Green Saree with Rich Gold Border]]></title>
+      <description><![CDATA[Deep emerald green saree with a classic gold zari pallu/border for a regal look — ideal for weddings and celebrations.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=emerald-green-saree-with-rich-gold-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11_2.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/8eb21f95-0833-4a7f-a66a-77adff4d082e.webp</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>4499.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-11]]></g:mpn>
+      <g:color><![CDATA[Emerald Green]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>3a14a968-d986-465a-8048-a173e0340b59</g:id>
       <title><![CDATA[Turquoise Saree with Maroon & Gold Stripe Pallu]]></title>
       <description><![CDATA[Fresh turquoise saree accented with a maroon-gold stripe pallu and gold butis — festive yet modern.]]></description>
@@ -99,26 +119,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-32]]></g:mpn>
       <g:color><![CDATA[Forest Green]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>d75405b2-eb60-4769-a5a8-ba0d50b38fa2</g:id>
-      <title><![CDATA[Emerald Green Saree with Rich Gold Border]]></title>
-      <description><![CDATA[Deep emerald green saree with a classic gold zari pallu/border for a regal look — ideal for weddings and celebrations.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=emerald-green-saree-with-rich-gold-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11_2.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/8eb21f95-0833-4a7f-a66a-77adff4d082e.webp</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>4499.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-11]]></g:mpn>
-      <g:color><![CDATA[Emerald Green]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
