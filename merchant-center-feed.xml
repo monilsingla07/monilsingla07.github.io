@@ -5,6 +5,63 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>bb252e60-08e6-44de-bfed-b5efa6e2d6c8</g:id>
+      <title><![CDATA[Aqua Saree with Gold Motifs & Contrast Border]]></title>
+      <description><![CDATA[Beautiful aqua saree with large gold woven motifs and a contrasting beige-gold border. Perfect when you want something elegant yet eye-catching for functions and parties.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=aqua-saree-with-gold-motifs-contrast-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>5299.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-53]]></g:mpn>
+      <g:color><![CDATA[Aqua]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>6f40bd1d-e984-4b24-8c17-2c180d521b46</g:id>
+      <title><![CDATA[Beige Saree with White Butti (Minimal Look)]]></title>
+      <description><![CDATA[Soft beige saree with delicate white woven butti motifs — simple, graceful, and easy to style. Ideal for office wear, daytime events, and understated celebrations.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=beige-saree-with-white-butti-minimal-look</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113_2.jpg</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>2999.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-113]]></g:mpn>
+      <g:color><![CDATA[Beige]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>43ba8b91-d199-4806-b16e-6cbf98add20a</g:id>
+      <title><![CDATA[Coffee Brown Saree with Maroon & Gold Border]]></title>
+      <description><![CDATA[Rich coffee-brown saree with a contrasting maroon border featuring traditional gold woven detailing. A festive, classic piece for family functions and celebrations.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=coffee-brown-saree-with-maroon-gold-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24_2.jpg</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>6299.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-24]]></g:mpn>
+      <g:color><![CDATA[Coffee Brown]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>d75405b2-eb60-4769-a5a8-ba0d50b38fa2</g:id>
       <title><![CDATA[Emerald Green Saree with Rich Gold Border]]></title>
       <description><![CDATA[Deep emerald green saree with a classic gold zari pallu/border for a regal look — ideal for weddings and celebrations.]]></description>
@@ -138,25 +195,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-31]]></g:mpn>
       <g:color><![CDATA[Olive Green]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>43ba8b91-d199-4806-b16e-6cbf98add20a</g:id>
-      <title><![CDATA[Coffee Brown Saree with Maroon & Gold Border]]></title>
-      <description><![CDATA[Rich coffee-brown saree with a contrasting maroon border featuring traditional gold woven detailing. A festive, classic piece for family functions and celebrations.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=coffee-brown-saree-with-maroon-gold-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-24_2.jpg</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>6299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-24]]></g:mpn>
-      <g:color><![CDATA[Coffee Brown]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
@@ -313,25 +351,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-21]]></g:mpn>
       <g:color><![CDATA[Maroon]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>bb252e60-08e6-44de-bfed-b5efa6e2d6c8</g:id>
-      <title><![CDATA[Aqua Saree with Gold Motifs & Contrast Border]]></title>
-      <description><![CDATA[Beautiful aqua saree with large gold woven motifs and a contrasting beige-gold border. Perfect when you want something elegant yet eye-catching for functions and parties.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=aqua-saree-with-gold-motifs-contrast-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>5299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-53]]></g:mpn>
-      <g:color><![CDATA[Aqua]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
@@ -546,25 +565,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-151]]></g:mpn>
       <g:color><![CDATA[Royal Blue]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>6f40bd1d-e984-4b24-8c17-2c180d521b46</g:id>
-      <title><![CDATA[Beige Saree with White Butti (Minimal Look)]]></title>
-      <description><![CDATA[Soft beige saree with delicate white woven butti motifs — simple, graceful, and easy to style. Ideal for office wear, daytime events, and understated celebrations.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=beige-saree-with-white-butti-minimal-look</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-113_2.jpg</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>2999.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-113]]></g:mpn>
-      <g:color><![CDATA[Beige]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
