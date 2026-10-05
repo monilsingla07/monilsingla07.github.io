@@ -5,6 +5,25 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>266cd868-548f-4dcb-bdcf-861d3754d2a6</g:id>
+      <title><![CDATA[Magenta Saree with Subtle Woven Texture]]></title>
+      <description><![CDATA[Rich magenta tone with delicate woven detailing — pairs beautifully with gold or contrast blouses for celebrations.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=magenta-saree-with-subtle-woven-texture</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-131.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-131_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-131_2.jpg</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>5199.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-131]]></g:mpn>
+      <g:color><![CDATA[Magenta]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>d4aac9da-1f3e-4860-b42d-212dc8413bd4</g:id>
       <title><![CDATA[Olive-Green Saree with Wide Gold Pallu]]></title>
       <description><![CDATA[Olive-green saree with a wide gold pallu/border and a fine maroon accent line. Simple, rich, and easy to style with gold jewellery.]]></description>
@@ -234,25 +253,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-34]]></g:mpn>
       <g:color><![CDATA[Deep Teal]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>266cd868-548f-4dcb-bdcf-861d3754d2a6</g:id>
-      <title><![CDATA[Magenta Saree with Subtle Woven Texture]]></title>
-      <description><![CDATA[Rich magenta tone with delicate woven detailing — pairs beautifully with gold or contrast blouses for celebrations.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=magenta-saree-with-subtle-woven-texture</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-131.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-131_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-131_2.jpg</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>5199.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-131]]></g:mpn>
-      <g:color><![CDATA[Magenta]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
