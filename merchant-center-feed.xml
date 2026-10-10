@@ -5,6 +5,45 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>d78494cf-595a-4c51-94d4-5d782b47b26c</g:id>
+      <title><![CDATA[Copper-Orange Saree with Gold Border]]></title>
+      <description><![CDATA[Copper-orange saree with a clean body and a classic gold border — simple, rich, and easy to accessorize. Great for everyday festive wear and family functions.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=copper-orange-saree-with-gold-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-141.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-141_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-141_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>4099.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-141]]></g:mpn>
+      <g:color><![CDATA[Golden Orange]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>afed1a27-68a7-4606-a460-0eb6463d3019</g:id>
+      <title><![CDATA[Deep Teal Saree with Gold Border]]></title>
+      <description><![CDATA[Deep teal saree with a rich gold border and subtle woven detailing for a premium, elegant feel. Best suited for festive occasions and formal traditional wear.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=deep-teal-saree-with-gold-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-82.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-82_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-82_2.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/e46b0564-92b6-465e-8d43-acbb60e484e0.webp</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>6899.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-82]]></g:mpn>
+      <g:color><![CDATA[Deep Teal]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>417dafef-8432-437e-ad70-fadd6c4b887a</g:id>
       <title><![CDATA[Deep Teal Saree with Gold Pallu & Maroon Accent]]></title>
       <description><![CDATA[Deep teal saree paired with a gold pallu and a maroon highlight near the border. A premium-looking saree for evening events and festive gatherings.]]></description>
@@ -197,25 +236,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-53]]></g:mpn>
       <g:color><![CDATA[Aqua]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>d78494cf-595a-4c51-94d4-5d782b47b26c</g:id>
-      <title><![CDATA[Copper-Orange Saree with Gold Border]]></title>
-      <description><![CDATA[Copper-orange saree with a clean body and a classic gold border — simple, rich, and easy to accessorize. Great for everyday festive wear and family functions.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=copper-orange-saree-with-gold-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-141.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-141_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-141_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>4099.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-141]]></g:mpn>
-      <g:color><![CDATA[Golden Orange]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
@@ -468,26 +488,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-171]]></g:mpn>
       <g:color><![CDATA[Navy Blue]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>afed1a27-68a7-4606-a460-0eb6463d3019</g:id>
-      <title><![CDATA[Deep Teal Saree with Gold Border]]></title>
-      <description><![CDATA[Deep teal saree with a rich gold border and subtle woven detailing for a premium, elegant feel. Best suited for festive occasions and formal traditional wear.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=deep-teal-saree-with-gold-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-82.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-82_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-82_2.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/e46b0564-92b6-465e-8d43-acbb60e484e0.webp</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>6899.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-82]]></g:mpn>
-      <g:color><![CDATA[Deep Teal]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
