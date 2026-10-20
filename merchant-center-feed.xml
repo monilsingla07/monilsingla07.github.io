@@ -5,6 +5,105 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>d75405b2-eb60-4769-a5a8-ba0d50b38fa2</g:id>
+      <title><![CDATA[Emerald Green Saree with Rich Gold Border]]></title>
+      <description><![CDATA[Deep emerald green saree with a classic gold zari pallu/border for a regal look — ideal for weddings and celebrations.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=emerald-green-saree-with-rich-gold-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11_2.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/8eb21f95-0833-4a7f-a66a-77adff4d082e.webp</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>4499.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-11]]></g:mpn>
+      <g:color><![CDATA[Emerald Green]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>18078aa5-1bfd-4a8d-99f3-41aa1749472d</g:id>
+      <title><![CDATA[Black Printed Saree with Green Tribal Border & Red Florals]]></title>
+      <description><![CDATA[Black saree with a bold green tribal-style border and red floral motifs for a statement look. Great for casual festive wear and unique styling.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=black-printed-saree-with-green-tribal-border-red-florals</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104_2.jpg</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>2999.00 INR</g:price>
+      <g:sale_price>2799.00 INR</g:sale_price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-104]]></g:mpn>
+      <g:color><![CDATA[Black]]></g:color>
+      <g:material><![CDATA[Cotton]]></g:material>
+    </item>
+    <item>
+      <g:id>2a22bbd8-a890-4258-8558-3cb06a062cc1</g:id>
+      <title><![CDATA[Red Chanderi Saree]]></title>
+      <description><![CDATA[Handmade luxury Red cotton silk sarees.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=red-chanderi-saree</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_2.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/5cca93be-ba1b-447b-9270-acbd7f59b863.webp</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>4999.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-181]]></g:mpn>
+      <g:color><![CDATA[Red]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>417dafef-8432-437e-ad70-fadd6c4b887a</g:id>
+      <title><![CDATA[Deep Teal Saree with Gold Pallu & Maroon Accent]]></title>
+      <description><![CDATA[Deep teal saree paired with a gold pallu and a maroon highlight near the border. A premium-looking saree for evening events and festive gatherings.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=deep-teal-saree-with-gold-pallu-maroon-accent</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-34.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-34_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-34_2.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/8f7dae2d-dbee-48cd-b401-31cf10e45527.webp</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>5799.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-34]]></g:mpn>
+      <g:color><![CDATA[Deep Teal]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>ec998506-1b0b-4af5-a904-218513e8bc2a</g:id>
+      <title><![CDATA[Turquoise Saree with Gold Butti & Maroon-Gold Border]]></title>
+      <description><![CDATA[Bright turquoise saree with small gold butti motifs and a rich maroon-gold striped border/pallu. A great pick for festive wear, pooja, and family functions.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-gold-butti-maroon-gold-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>6299.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-23]]></g:mpn>
+      <g:color><![CDATA[Turquoise]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>6aec820e-3ba4-4956-aaa3-af68ca1bced7</g:id>
       <title><![CDATA[Navy Blue Saree with Gold Motif Border]]></title>
       <description><![CDATA[Classic navy saree with gold zari pallu/border and standout woven motifs — perfect for evening functions.]]></description>
@@ -100,26 +199,6 @@
       <g:mpn><![CDATA[AH-CH-52]]></g:mpn>
       <g:color><![CDATA[Sage Green]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>18078aa5-1bfd-4a8d-99f3-41aa1749472d</g:id>
-      <title><![CDATA[Black Printed Saree with Green Tribal Border & Red Florals]]></title>
-      <description><![CDATA[Black saree with a bold green tribal-style border and red floral motifs for a statement look. Great for casual festive wear and unique styling.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=black-printed-saree-with-green-tribal-border-red-florals</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104_2.jpg</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>2999.00 INR</g:price>
-      <g:sale_price>2799.00 INR</g:sale_price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-104]]></g:mpn>
-      <g:color><![CDATA[Black]]></g:color>
-      <g:material><![CDATA[Cotton]]></g:material>
     </item>
     <item>
       <g:id>d78494cf-595a-4c51-94d4-5d782b47b26c</g:id>
@@ -238,46 +317,6 @@
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
-      <g:id>417dafef-8432-437e-ad70-fadd6c4b887a</g:id>
-      <title><![CDATA[Deep Teal Saree with Gold Pallu & Maroon Accent]]></title>
-      <description><![CDATA[Deep teal saree paired with a gold pallu and a maroon highlight near the border. A premium-looking saree for evening events and festive gatherings.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=deep-teal-saree-with-gold-pallu-maroon-accent</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-34.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-34_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-34_2.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/8f7dae2d-dbee-48cd-b401-31cf10e45527.webp</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>5799.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-34]]></g:mpn>
-      <g:color><![CDATA[Deep Teal]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>2a22bbd8-a890-4258-8558-3cb06a062cc1</g:id>
-      <title><![CDATA[Red Chanderi Saree]]></title>
-      <description><![CDATA[Handmade luxury Red cotton silk sarees.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=red-chanderi-saree</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-181_2.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/5cca93be-ba1b-447b-9270-acbd7f59b863.webp</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>4999.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-181]]></g:mpn>
-      <g:color><![CDATA[Red]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
       <g:id>0ada92f8-b966-4865-80bb-b5e2270e0477</g:id>
       <title><![CDATA[Steel Blue Saree with Gold Pallu & Motifs]]></title>
       <description><![CDATA[Cool steel-blue shade with gold pallu and woven motifs for a refined festive outfit.]]></description>
@@ -375,25 +414,6 @@
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
-      <g:id>ec998506-1b0b-4af5-a904-218513e8bc2a</g:id>
-      <title><![CDATA[Turquoise Saree with Gold Butti & Maroon-Gold Border]]></title>
-      <description><![CDATA[Bright turquoise saree with small gold butti motifs and a rich maroon-gold striped border/pallu. A great pick for festive wear, pooja, and family functions.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-gold-butti-maroon-gold-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>6299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-23]]></g:mpn>
-      <g:color><![CDATA[Turquoise]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
       <g:id>593d3f21-7aae-4975-95ed-1110676367a7</g:id>
       <title><![CDATA[Off-White Saree with Gold Chevron Border]]></title>
       <description><![CDATA[Elegant off-white saree featuring a gold chevron zari border and small motifs — classic choice for ceremonies.]]></description>
@@ -487,26 +507,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-24]]></g:mpn>
       <g:color><![CDATA[Coffee Brown]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>d75405b2-eb60-4769-a5a8-ba0d50b38fa2</g:id>
-      <title><![CDATA[Emerald Green Saree with Rich Gold Border]]></title>
-      <description><![CDATA[Deep emerald green saree with a classic gold zari pallu/border for a regal look — ideal for weddings and celebrations.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=emerald-green-saree-with-rich-gold-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-11_2.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/8eb21f95-0833-4a7f-a66a-77adff4d082e.webp</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>4499.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-11]]></g:mpn>
-      <g:color><![CDATA[Emerald Green]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
