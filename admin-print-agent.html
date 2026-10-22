@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Print Agent — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="assets/admin-print-agent.css" />
+  <script src="scripts/vendor/qrcode.min.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:980px;">
+    <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
+
+    <div id="agent" style="display:none;">
+      <div class="pa-top">
+        <h2 style="margin:0;">Print agent</h2>
+        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+      </div>
+
+      <div class="pa-card" id="statusCard" data-state="disconnected">
+        <div class="pa-state">Printer: <span id="stateText">Disconnected</span></div>
+        <div class="pa-sub">Agent <span class="mono" id="agentId"></span> · <span id="deviceName">no device</span> · <span id="queueInfo">0 queued</span></div>
+        <div class="pa-actions">
+          <button class="btn" id="btnConnect" type="button">Connect printer (Bluetooth)</button>
+          <button class="btn secondary" id="btnSerial" type="button">Connect via paired serial port</button>
+          <button class="btn secondary" id="btnMock" type="button" hidden>Mock printer (test)</button>
+          <button class="btn secondary" id="btnDisconnect" type="button" hidden>Disconnect</button>
+        </div>
+        <div id="svcPick" class="pa-pick" hidden>
+          <div class="pa-sub">Could not auto-detect a writable characteristic. Pick one:</div>
+          <select id="svcSelect" class="input"></select>
+          <button class="btn" id="svcUse" type="button">Use this</button>
+        </div>
+        <div class="pa-sub" id="supportNote"></div>
+        <div class="pa-opts">
+          <label>Invoice paper
+            <select id="paperWidth" class="input">
+              <option value="384">58 mm roll (384 px)</option>
+              <option value="576">80 mm roll (576 px)</option>
+            </select>
+          </label>
+          <label><input type="checkbox" id="showCanvas" /> Show render canvas (debug)</label>
+          <span class="pa-sub" id="wakeInfo"></span>
+        </div>
+      </div>
+
+      <h3 style="margin:22px 0 8px;">Recent jobs</h3>
+      <div class="pa-table-wrap">
+        <table class="pa-table">
+          <thead><tr><th>Time</th><th>Kind</th><th>Detail</th><th>Outcome</th><th></th></tr></thead>
+          <tbody id="jobsBody"><tr><td colspan="5" class="pa-empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pa-sub" style="margin-top:6px;">Click a failed job to retry it (re-queues a new job). Keep this page open; the screen is kept awake.</div>
+
+      <div id="canvasWrap" class="pa-canvas-wrap" hidden>
+        <canvas id="renderCanvas" width="0" height="0" style="display:none"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <div id="footer"></div>
+  <script type="module" src="scripts/admin-print-agent.js"></script>
+</body>
+</html>

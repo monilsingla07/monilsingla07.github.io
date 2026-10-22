@@ -1,0 +1,29 @@
+.mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+.pa-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.pa-card { border: 2px solid var(--border-light); background: var(--surface); padding: 22px; border-left-width: 8px; }
+.pa-card[data-state="disconnected"] { border-left-color: #a13d3d; }
+.pa-card[data-state="connected"] { border-left-color: #3f6b4f; }
+.pa-card[data-state="printing"] { border-left-color: #b8923a; }
+.pa-state { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 700; line-height: 1.1; }
+.pa-sub { font-size: 12px; color: var(--text-light); margin-top: 6px; }
+.pa-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.pa-pick { margin-top: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pa-opts { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-top: 16px; font-size: 13px; }
+.pa-opts .input { height: 34px; font-size: 13px; margin-left: 6px; }
+.pa-table-wrap { overflow-x: auto; border: 1px solid var(--border-light); background: var(--surface); }
+.pa-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+.pa-table th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); padding: 10px; border-bottom: 1.5px solid var(--border-light); }
+.pa-table td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); }
+.pa-empty { padding: 18px !important; text-align: center; color: var(--text-light); }
+.pa-table tr.failed { cursor: pointer; }
+.pa-table tr.failed:hover { background: var(--bg-warm); }
+.pa-pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.pa-pill.printed { background: rgba(63,107,79,.12); color: #3f6b4f; }
+.pa-pill.failed { background: rgba(161,61,61,.12); color: #a13d3d; }
+.pa-pill.printing { background: rgba(184,146,58,.18); color: #8a6a1d; }
+.pa-pill.queued, .pa-pill.cancelled { background: var(--border-light); color: var(--text-light); }
+.pa-canvas-wrap { margin-top: 18px; overflow: auto; background: #ddd; padding: 10px; }
+.pa-canvas-wrap canvas { background: #fff; image-rendering: pixelated; }
+#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: 10px 20px; font-size: 13px; font-weight: 700; opacity: 0; transition: all .25s ease; pointer-events: none; z-index: 9999; max-width: 92vw; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+@media (max-width: 600px) { .pa-state { font-size: 26px; } }
