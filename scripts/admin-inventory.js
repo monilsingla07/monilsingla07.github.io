@@ -3,6 +3,7 @@ import { supabase, SUPABASE_ANON_KEY } from "../assets/supabase.js";
 import { escapeHtml, escapeAttr } from "../assets/safe.js";
 import { money, day, thumbOf, printUrl } from "./inventory-rows.js";
 import { resizeImageFile, IMAGE_PRESETS } from "../assets/image-resize.js";
+import { enqueueLabels, queuedCount, showPrintChoice } from "../assets/print-queue.js";
 import { listTagOptions, createTagOption, updateTagOption, deleteTagOption, fillSelect } from "./tag-options.js";
 
 document.getElementById("header").innerHTML = renderHeader("admin");
@@ -171,6 +172,22 @@ function openPrint(serials) {
   const url = printUrl(serials);
   const w = window.open(url, "_blank");
   return !!w;
+}
+
+async function printToShop(serials) {
+  try {
+    const r = await enqueueLabels(serials, "50x50");
+    toast("Sent to shop printer (job " + escapeHtml(String(r.job_id).slice(0, 8)) + ").");
+    loadQueueWidget();
+  } catch (e) { toast("Could not queue: " + escapeHtml(e.message)); }
+}
+
+async function loadQueueWidget() {
+  if (!$("pqWidget")) return;
+  try {
+    const n = await queuedCount();
+    $("pqCount").textContent = n + (n === 1 ? " job queued" : " jobs queued");
+  } catch (_) { $("pqCount").textContent = "Print queue"; }
 }
 
 // ───────────────────────────── Products ─────────────────────────────
@@ -373,9 +390,11 @@ async function submitAdd() {
     toast("Added " + serials.length + " piece" + (serials.length === 1 ? "" : "s") + ": " +
       escapeHtml(serials.length > 4 ? serials[0] + " … " + serials[serials.length - 1] : serials.join(", ")) +
       escapeHtml(tagWarn) +
-      (opened ? "" : ' <a id="toastPrint">Open print view</a>'), 10000);
+      (opened ? "" : ' <a id="toastPrint">Open print view</a>') +
+      ' <a id="toastShop">Print to shop printer</a>', 10000);
     const tp = $("toastPrint");
     if (tp) tp.addEventListener("click", () => openPrint(serials));
+    $("toastShop").addEventListener("click", () => printToShop(serials));
     await loadProducts();
     offset = 0;
     await Promise.all([loadLedger(), loadStats()]);
@@ -443,12 +462,17 @@ async function tagsAdd(tr) {
 function openTagsModal() { $("tagsErr").textContent = ""; openModal("tagsModal"); loadTagsTable(); }
 
 // ───────────────────────────── Row actions ─────────────────────────────
-async function rowAction(act, row) {
+async function rowAction(act, row, anchor) {
   if (act === "reprint") {
-    try {
-      const r = await authedFetch(INV_FN, { action: "reprint", ids: [row.id] });
-      if (!openPrint(r.serials || [row.serial])) toast("Popup blocked — allow popups to print.");
-    } catch (e) { toast(escapeHtml(e.message)); }
+    const run = async (shop) => {
+      try {
+        const r = await authedFetch(INV_FN, { action: "reprint", ids: [row.id] });
+        const serials = r.serials || [row.serial];
+        if (shop) await printToShop(serials);
+        else if (!openPrint(serials)) toast("Popup blocked — allow popups to print.");
+      } catch (e) { toast(escapeHtml(e.message)); }
+    };
+    showPrintChoice(anchor, { onShop: () => run(true), onBrowser: () => run(false) });
   } else if (act === "edit") {
     editingId = row.id;
     $("editSerial").textContent = row.serial + " — " + (row.products?.title || "");
@@ -507,7 +531,7 @@ function wire() {
     if (!btn) return;
     const tr = btn.closest("tr[data-id]");
     const row = rows.find((r) => r.id === tr.dataset.id);
-    if (row) rowAction(btn.dataset.act, row);
+    if (row) rowAction(btn.dataset.act, row, btn);
   });
 
   $("btnAdd").addEventListener("click", () => { resetAddModal(); openModal("addModal"); });
@@ -577,7 +601,7 @@ function wire() {
     loadingState.style.display = "none";
     dashboard.style.display = "block";
     wire();
-    await Promise.all([loadProducts(), loadLedger(), loadStats(), loadTagOpts()]);
+    await Promise.all([loadProducts(), loadLedger(), loadStats(), loadTagOpts(), loadQueueWidget()]);
   } catch (e) {
     showGateError("Error", e.message || String(e));
   }

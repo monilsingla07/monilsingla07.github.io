@@ -1,6 +1,7 @@
 import { renderHeader, renderFooter, hydrateHeaderAuth } from "../assets/ui.js";
 import { supabase, SUPABASE_ANON_KEY } from "../assets/supabase.js";
 import { escapeHtml, escapeAttr, safeSrc } from "../assets/safe.js";
+import { enqueueInvoice } from "../assets/print-queue.js";
 
 document.getElementById("header").innerHTML = renderHeader("admin");
 document.getElementById("footer").innerHTML = renderFooter();
@@ -221,6 +222,10 @@ async function charge() {
     const r = await authedFetch(POS_FN, payload);
     done = { order_id: r.order_id, invoice_url: r.invoice_url || null, total: r.total_inr ?? total() };
     toast("Sale complete — order #" + r.order_id, "ok", 7000);
+    // Also send the invoice to the shop printer (browser invoice button stays as a fallback).
+    enqueueInvoice(r.order_id)
+      .then(() => toast("Sale complete — order #" + r.order_id + ". Invoice queued for shop printer.", "ok", 6000))
+      .catch((e) => toast("Sale complete, but could not queue invoice: " + (e.message || e), "err", 7000));
   } catch (e) {
     const details = Array.isArray(e.body?.details) ? e.body.details : [];
     if (e.status === 409 && e.body?.error === "pieces_not_in_stock") {

@@ -29,7 +29,7 @@ export function printUrl(serials) {
 // Compact per-SKU rows: thumb, serial, status, intake, cost, weaver.
 export function renderPieceRows(rows) {
   if (!rows.length) {
-    return '<tr><td colspan="6" style="padding:18px; text-align:center; color:var(--text-light);">No pieces yet.</td></tr>';
+    return '<tr><td colspan="7" style="padding:18px; text-align:center; color:var(--text-light);">No pieces yet.</td></tr>';
   }
   return rows.map((r) =>
     '<tr data-id="' + escapeAttr(r.id) + '">' +
@@ -38,7 +38,8 @@ export function renderPieceRows(rows) {
     "<td>" + statusPill(r) + "</td>" +
     "<td>" + escapeHtml(day(r.intake_date)) + "</td>" +
     "<td>" + money(r.cost_price) + "</td>" +
-    "<td>" + escapeHtml(r.weaver_name || "—") + "</td></tr>"
+    "<td>" + escapeHtml(r.weaver_name || "—") + "</td>" +
+    '<td><button class="btn secondary" type="button" data-reprint="' + escapeAttr(r.serial) + '" style="padding:4px 9px; font-size:12px;">Reprint</button></td></tr>'
   ).join("");
 }
 

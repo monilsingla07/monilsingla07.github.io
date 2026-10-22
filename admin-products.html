@@ -379,7 +379,7 @@
               </div>
               <div style="overflow-x:auto; border:1px solid var(--border-light);">
                 <table class="pieces-table" style="width:100%; border-collapse:collapse; font-size:13px; min-width:560px;">
-                  <thead><tr><th></th><th>Serial</th><th>Status</th><th>Intake</th><th>Cost</th><th>Weaver</th></tr></thead>
+                  <thead><tr><th></th><th>Serial</th><th>Status</th><th>Intake</th><th>Cost</th><th>Weaver</th><th></th></tr></thead>
                   <tbody id="piecesBody"></tbody>
                 </table>
               </div>
@@ -446,6 +446,7 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeHref, safeSrc } from "./assets/safe.js";
+    import { enqueueLabels, showPrintChoice } from "./assets/print-queue.js";
     import { resizeImageFile, buildImageVariants, IMAGE_PRESETS } from "./assets/image-resize.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
@@ -1241,7 +1242,7 @@
       const body = document.getElementById("piecesBody");
       const summary = document.getElementById("piecesSummary");
       if (!id) return;
-      body.innerHTML = '<tr><td colspan="6" style="padding:14px; color:var(--text-light);">Loading…</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" style="padding:14px; color:var(--text-light);">Loading…</td></tr>';
       try {
         const [all, inStock] = await Promise.all([
           authedFetch(INV_FN, { action: "list", product_id: id, limit: 200 }),
@@ -1252,9 +1253,23 @@
         summary.textContent = pieceSummary(inN, total - inN, total) + (total > (all.rows || []).length ? " (showing latest " + all.rows.length + ")" : "");
         body.innerHTML = renderPieceRows(all.rows || []);
       } catch (e) {
-        body.innerHTML = '<tr><td colspan="6" style="padding:14px; color:#a13d3d;">Failed to load pieces: ' + escapeHtml(e.message) + "</td></tr>";
+        body.innerHTML = '<tr><td colspan="7" style="padding:14px; color:#a13d3d;">Failed to load pieces: ' + escapeHtml(e.message) + "</td></tr>";
       }
     }
+
+    document.getElementById("piecesBody").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-reprint]");
+      if (!b) return;
+      const serial = b.dataset.reprint;
+      const status = document.getElementById("editorStatus");
+      showPrintChoice(b, {
+        onShop: async () => {
+          try { const r = await enqueueLabels([serial], "50x50"); status.textContent = "Sent " + serial + " to shop printer (job " + String(r.job_id).slice(0, 8) + ")."; }
+          catch (err) { status.textContent = "Could not queue: " + err.message; }
+        },
+        onBrowser: () => { if (!window.open(printUrl([serial]), "_blank")) status.textContent = "Popup blocked — allow popups to print."; },
+      });
+    });
 
     invToggle.addEventListener("change", async () => {
       const id = document.getElementById("f_id").value;
@@ -1318,7 +1333,18 @@
         closePieceModal();
         const serials = res.serials || [];
         const w = serials.length ? window.open(printUrl(serials), "_blank") : null;
-        document.getElementById("editorStatus").textContent = "Added " + serials.length + " piece" + (serials.length === 1 ? "" : "s") + (w || !serials.length ? "." : " (popup blocked — print from the Inventory page).");
+        const st = document.getElementById("editorStatus");
+        st.textContent = "Added " + serials.length + " piece" + (serials.length === 1 ? "" : "s") + (w || !serials.length ? "." : " (popup blocked — print from the Inventory page).") + " ";
+        if (serials.length) {
+          const a = document.createElement("a");
+          a.href = "#"; a.textContent = "Print to shop printer";
+          a.addEventListener("click", async (ev) => {
+            ev.preventDefault();
+            try { const r = await enqueueLabels(serials, "50x50"); st.textContent = "Sent to shop printer (job " + String(r.job_id).slice(0, 8) + ")."; }
+            catch (e) { st.textContent = "Could not queue: " + e.message; }
+          });
+          st.appendChild(a);
+        }
         await loadPieces();
       } catch (e) {
         err.textContent = e.message || "Failed to add pieces.";

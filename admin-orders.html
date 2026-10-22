@@ -133,6 +133,7 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
+    import { enqueueInvoice } from "./assets/print-queue.js";
     import { escapeHtml, escapeAttr, safeHref, safeUrl } from "./assets/safe.js";
     import {
       isThermalPrintingSupported, reconnectSavedPrinter, connectPrinter,
@@ -512,6 +513,7 @@
                 ${canRegen ? `<button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="regen" data-id="${escapeAttr(o.id)}">Regenerate link</button>` : ""}
                 <button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="invoice" data-id="${escapeAttr(o.id)}">Generate invoice</button>
                 <button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="print-thermal" data-id="${escapeAttr(o.id)}">🖨️ Print receipt</button>
+                <button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="print-shop" data-id="${escapeAttr(o.id)}">Print invoice (shop)</button>
                 ${isEditable ? `<button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="edit-order" data-id="${escapeAttr(o.id)}">✏️ Edit</button>` : ""}
                 <button class="btn secondary" style="padding:7px 12px;font-size:12px;color:crimson;border-color:crimson;" data-action="delete-order" data-id="${escapeAttr(o.id)}">🗑 Delete</button>
               </div>
@@ -940,6 +942,21 @@
             } finally {
               btn.disabled = false;
               btn.textContent = oldText;
+            }
+          });
+        });
+
+        // Queue the invoice for the shop printer agent (admin-print-agent.html).
+        list.querySelectorAll("button[data-action='print-shop']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            btn.disabled = true;
+            try {
+              await enqueueInvoice(btn.dataset.id);
+              toast("Invoice queued for shop printer ✅", "#3f6b4f");
+            } catch (e) {
+              toast("Queue error: " + e.message, "#a13d3d");
+            } finally {
+              btn.disabled = false;
             }
           });
         });

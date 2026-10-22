@@ -80,9 +80,15 @@
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
           <a href="admin-pos.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">POS</a>
+          <a href="admin-print-agent.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">Print queue</a>
           <button class="btn secondary" id="btnTags" type="button" style="padding:8px 14px; font-size:13px;">Manage tag options</button>
           <button class="btn" id="btnAdd" type="button" style="padding:8px 18px;">+ Add inventory</button>
         </div>
+      </div>
+
+      <div id="pqWidget" style="margin:0 0 10px; font-size:13px; padding:8px 12px; border:1px solid var(--border-light); background:var(--surface); display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <span aria-hidden="true">🖨️</span> <strong id="pqCount">Print queue</strong>
+        <a href="admin-print-agent.html" style="margin-left:auto;">Open print agent →</a>
       </div>
 
       <div class="kpi-strip" id="kpiStrip">
