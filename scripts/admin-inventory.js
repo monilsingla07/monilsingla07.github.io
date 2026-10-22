@@ -1,6 +1,7 @@
 import { renderHeader, renderFooter, hydrateHeaderAuth } from "../assets/ui.js";
 import { supabase, SUPABASE_ANON_KEY } from "../assets/supabase.js";
-import { escapeHtml, escapeAttr, safeSrc } from "../assets/safe.js";
+import { escapeHtml, escapeAttr } from "../assets/safe.js";
+import { money, day, thumbOf, printUrl } from "./inventory-rows.js";
 import { resizeImageFile, IMAGE_PRESETS } from "../assets/image-resize.js";
 
 document.getElementById("header").innerHTML = renderHeader("admin");
@@ -43,8 +44,6 @@ async function authedFetch(url, body) {
   return json;
 }
 
-const money = (v) => "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
-const day = (v) => (v ? String(v).slice(0, 10) : "—");
 
 let toastTimer;
 function toast(html, ms = 6000) {
@@ -95,14 +94,6 @@ function filters() {
   if ($("fTo").value) f.date_to = $("fTo").value;
   if ($("fSerial").value.trim()) f.serial_contains = $("fSerial").value.trim();
   return f;
-}
-
-function thumbOf(r) {
-  const url = r.photo_url || r.products?.product_images?.[0]?.image_url || "";
-  const src = safeSrc(url);
-  return src && /^https?:/i.test(src)
-    ? '<img class="thumb" loading="lazy" alt="" src="' + escapeAttr(src) + '">'
-    : '<div class="thumb-empty"></div>';
 }
 
 function renderLedger() {
@@ -173,13 +164,6 @@ function exportCsv() {
 }
 
 // ───────────────────────────── Printing ─────────────────────────────
-function printUrl(serials) {
-  if (serials.length > 20) {
-    sessionStorage.setItem("inventorySerials", JSON.stringify(serials));
-    return "print-labels.html";
-  }
-  return "print-labels.html?serials=" + encodeURIComponent(serials.join(",")).replace(/%2C/g, ",");
-}
 function openPrint(serials) {
   const url = printUrl(serials);
   const w = window.open(url, "_blank");
