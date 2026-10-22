@@ -35,6 +35,16 @@ function money(v) {
   return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 }
 
+function qrDataUrl(serial) {
+  // qrcode-generator: typeNumber=0 (auto), error correction 'M'.
+  // cellSize=6 → ~150-200px PNG, prints crisp at ~24mm on thermal printers.
+  if (typeof window.qrcode !== "function") return null;
+  const qr = window.qrcode(0, "M");
+  qr.addData(serial);
+  qr.make();
+  return qr.createDataURL(6, 0);
+}
+
 export function renderLabels(list, lay) {
   layout = LAYOUTS[lay] ? lay : "50x30";
   serials = list;
@@ -42,11 +52,16 @@ export function renderLabels(list, lay) {
   container.className = "labels layout-" + layout;
   pageStyle.textContent = "@page { size: " + LAYOUTS[layout] + "; margin: 0; }";
   container.textContent = "";
+  const qrMissing = typeof window.qrcode !== "function";
   for (const serial of list) {
     const el = document.createElement("div");
     el.className = "label";
     el.dataset.serial = serial;
-    const canvas = document.createElement("canvas");
+    const img = document.createElement("img");
+    img.className = "qr";
+    img.alt = serial;
+    const url = qrDataUrl(serial);
+    if (url) img.src = url;
     const text = document.createElement("div");
     text.className = "text";
     const s = document.createElement("div");
@@ -63,13 +78,23 @@ export function renderLabels(list, lay) {
       p.textContent = d.price != null ? money(d.price) : "";
     }
     text.append(s, t, p);
-    el.append(canvas, text);
+    el.append(img, text);
     container.appendChild(el);
-    if (window.QRCode) {
-      window.QRCode.toCanvas(canvas, serial, { margin: 0, width: 160, errorCorrectionLevel: "M" }, () => {});
-    }
   }
   countEl.textContent = list.length + (list.length === 1 ? " label" : " labels");
+  const warn = document.getElementById("qrWarn");
+  if (qrMissing) {
+    if (!warn) {
+      const w = document.createElement("div");
+      w.id = "qrWarn";
+      w.className = "no-print";
+      w.style.cssText = "background:#c0392b;color:#fff;padding:10px 16px;font-weight:600;";
+      w.textContent = "QR library failed to load — labels will print without QR codes. Refresh the page.";
+      document.body.prepend(w);
+    }
+  } else if (warn) {
+    warn.remove();
+  }
 }
 
 // Best effort: needs the admin session; any failure leaves serial-only labels.

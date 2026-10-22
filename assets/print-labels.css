@@ -9,7 +9,7 @@ body { margin: 0; font-family: "Outfit", system-ui, sans-serif; color: #1a1a1a; 
 
 .labels { padding: 16px; }
 .label { background: #fff; color: #000; overflow: hidden; display: flex; align-items: center; gap: 1.5mm; padding: 1.5mm; }
-.label canvas { flex: none; image-rendering: pixelated; }
+.label .qr { flex: none; image-rendering: pixelated; display: block; }
 .label .text { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: .6mm; line-height: 1.15; }
 .label .serial { font-weight: 600; font-size: 9pt; letter-spacing: .02em; }
 .label .title { font-size: 7pt; }
@@ -17,20 +17,20 @@ body { margin: 0; font-family: "Outfit", system-ui, sans-serif; color: #1a1a1a; 
 
 /* 50 x 30 : QR beside text, SKU title truncated */
 .layout-50x30 .label { width: 50mm; height: 30mm; margin-bottom: 4mm; box-shadow: 0 0 0 1px #d8cfbd; }
-.layout-50x30 .label canvas { width: 24mm !important; height: 24mm !important; }
+.layout-50x30 .label .qr { width: 24mm !important; height: 24mm !important; }
 .layout-50x30 .label .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .layout-50x30 .label .price { display: none; }
 
 /* 50 x 50 : QR on top, serial + full title + price below */
 .layout-50x50 .label { width: 50mm; height: 50mm; margin-bottom: 4mm; flex-direction: column; justify-content: center; text-align: center; box-shadow: 0 0 0 1px #d8cfbd; }
-.layout-50x50 .label canvas { width: 28mm !important; height: 28mm !important; }
+.layout-50x50 .label .qr { width: 28mm !important; height: 28mm !important; }
 .layout-50x50 .label .text { align-items: center; }
 .layout-50x50 .label .title { white-space: normal; max-height: 8mm; overflow: hidden; }
 
 /* A4 : 4 columns x 8 rows of 50 x 30 labels, each with its own border */
 .layout-a4 { display: grid; grid-template-columns: repeat(4, 50mm); grid-auto-rows: 30mm; gap: 0; justify-content: start; }
 .layout-a4 .label { width: 50mm; height: 30mm; border: .2mm solid #000; }
-.layout-a4 .label canvas { width: 24mm !important; height: 24mm !important; }
+.layout-a4 .label .qr { width: 24mm !important; height: 24mm !important; }
 .layout-a4 .label .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .layout-a4 .label .price { display: none; }
 
