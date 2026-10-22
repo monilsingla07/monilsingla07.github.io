@@ -1,0 +1,46 @@
+/* admin-pos.html — counter billing page (reuses tokens from styles.css) */
+.pos-gate { min-height: 40vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; text-align: center; }
+.pos-strip { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; border: 1px solid var(--border-light); background: var(--surface); padding: 14px 16px; margin: 8px 0 14px; }
+.pos-strip .prompt { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; }
+.pos-strip #scan-input { flex: 1; min-width: 200px; height: 46px; font-size: 18px; font-family: ui-monospace, Menlo, Consolas, monospace; text-transform: uppercase; }
+.last-scan { min-width: 180px; padding: 8px 14px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 14px; border: 1px solid var(--border-light); }
+.last-scan.ok { animation: flash-ok 1.1s ease; }
+.last-scan.err { animation: flash-err 1.1s ease; }
+@keyframes flash-ok { 0%, 40% { background: #3f6b4f; color: #fff; } 100% { background: transparent; } }
+@keyframes flash-err { 0%, 40% { background: #a13d3d; color: #fff; } 100% { background: transparent; } }
+.pos-strip.shake { animation: shake .35s; }
+@keyframes shake { 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+
+.pos-cols { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.pos-panel { border: 1px solid var(--border-light); background: var(--surface); padding: 14px 16px; }
+.pos-panel h3 { margin: 0 0 10px; font-size: 15px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-light); }
+.bill-line { display: grid; grid-template-columns: 44px 1fr auto auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-light); }
+.bill-line.bad { background: rgba(161,61,61,.08); outline: 1px solid #a13d3d; }
+.bill-line .thumb { width: 44px; height: 56px; object-fit: cover; background: var(--bg-warm); display: block; }
+.bill-line .thumb-empty { width: 44px; height: 56px; background: var(--bg-warm); }
+.mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--text-light); }
+.bill-line .line-err { color: #a13d3d; font-size: 12px; font-weight: 700; }
+.bill-line .rm { border: 0; background: none; font-size: 18px; cursor: pointer; color: var(--text-light); padding: 4px 8px; }
+.bill-empty { padding: 28px 0; text-align: center; color: var(--text-light); }
+.totals { margin-top: 12px; display: grid; gap: 8px; font-size: 14px; }
+.totals .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.totals .grand { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 700; border-top: 1.5px solid var(--border-light); padding-top: 8px; }
+.disc-ctl { display: flex; gap: 6px; }
+.disc-ctl .input { height: 36px; width: 90px; }
+.rail-group { display: grid; gap: 8px; margin-bottom: 14px; }
+.rail-group label.opt { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+.rail-group .input { width: 100%; height: 40px; }
+.cust-found { font-size: 13px; background: var(--bg-warm); padding: 8px 10px; }
+.cust-msg { font-size: 12px; color: var(--text-light); min-height: 16px; }
+.pos-bar { position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 12px 0; margin-top: 16px; display: flex; gap: 10px; }
+.pos-bar .btn { flex: 1; font-size: 18px; padding: 16px; }
+.pos-bar .btn[disabled] { opacity: .45; cursor: not-allowed; }
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 2000; display: none; align-items: center; justify-content: center; }
+.modal-bg.open { display: flex; }
+.modal { background: var(--surface); padding: 22px; border: 1px solid var(--border); max-width: 360px; width: 92vw; }
+.m-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+#toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: 10px 20px; font-size: 14px; font-weight: 700; opacity: 0; transition: all .25s ease; pointer-events: none; z-index: 9999; max-width: 92vw; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.err { background: #a13d3d; }
+#toast.ok { background: #3f6b4f; }
+@media (max-width: 800px) { .pos-cols { grid-template-columns: 1fr; } .pos-strip .prompt { font-size: 20px; } }
