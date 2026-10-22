@@ -40,7 +40,7 @@ export function renderLabels(list, lay) {
   serials = list;
   select.value = layout;
   container.className = "labels layout-" + layout;
-  pageStyle.textContent = "@page { size: " + LAYOUTS[layout] + "; margin: " + (layout === "a4" ? "10mm" : "0") + "; }";
+  pageStyle.textContent = "@page { size: " + LAYOUTS[layout] + "; margin: 0; }";
   container.textContent = "";
   for (const serial of list) {
     const el = document.createElement("div");
