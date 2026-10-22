@@ -49,6 +49,15 @@
     .combo-item:hover { background: var(--bg-warm); }
     .combo-item.new { color: var(--brand); font-weight: 700; border-bottom: 1px solid var(--border-light); }
     .subform { border: 1px dashed var(--border); padding: 12px; margin-top: 12px; background: var(--bg-warm); }
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-light); margin-bottom: 12px; }
+    .tab-btn { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-light); }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--brand); }
+    .modal.wide { max-width: 760px; }
+    table.tags { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.tags th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); padding: 6px 6px; border-bottom: 1.5px solid var(--border-light); }
+    table.tags td { padding: 5px 6px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+    table.tags .input { width: 100%; height: 34px; font-size: 13px; }
+    table.tags input.ord { width: 64px; }
     .err { color: #a13d3d; font-size: 12px; margin-top: 8px; min-height: 16px; }
     #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: 10px 20px; font-size: 13px; font-weight: 700; opacity: 0; transition: all .25s ease; pointer-events: none; z-index: 9999; max-width: 92vw; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
@@ -71,6 +80,7 @@
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
           <a href="admin-pos.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">POS</a>
+          <button class="btn secondary" id="btnTags" type="button" style="padding:8px 14px; font-size:13px;">Manage tag options</button>
           <button class="btn" id="btnAdd" type="button" style="padding:8px 18px;">+ Add inventory</button>
         </div>
       </div>
@@ -139,6 +149,34 @@
         <div class="m-row"><label class="fld-label" for="nsThumb">Thumbnail (optional)</label><input id="nsThumb" type="file" accept="image/jpeg,image/png,image/webp" /></div>
       </div>
       <div class="m-grid">
+        <div class="m-row">
+          <label class="fld-label" for="addSareeType">Saree type (optional)</label>
+          <select id="addSareeType" class="input"><option value="">— None —</option></select>
+          <div class="subform" id="addSareeTypeForm" style="display:none;">
+            <label class="fld-label" for="addSareeTypeName">New saree type</label>
+            <input id="addSareeTypeName" class="input" type="text" placeholder="e.g. Chanderi Silk Handblock" />
+            <div class="m-actions" style="margin-top:8px;">
+              <button class="btn secondary" id="addSareeTypeCancel" type="button" style="padding:5px 10px; font-size:12px;">Cancel</button>
+              <button class="btn" id="addSareeTypeSave" type="button" style="padding:5px 10px; font-size:12px;">Save</button>
+            </div>
+          </div>
+        </div>
+        <div class="m-row">
+          <label class="fld-label" for="addCare">Care instruction (optional)</label>
+          <select id="addCare" class="input"><option value="">— None —</option></select>
+          <div class="subform" id="addCareForm" style="display:none;">
+            <label class="fld-label" for="addCareName">New care instruction</label>
+            <input id="addCareName" class="input" type="text" placeholder="Name, e.g. Dry clean only" />
+            <label class="fld-label" for="addCareText" style="margin-top:6px; display:block;">Label text</label>
+            <input id="addCareText" class="input" type="text" placeholder="Printed on the label" />
+            <div class="m-actions" style="margin-top:8px;">
+              <button class="btn secondary" id="addCareCancel" type="button" style="padding:5px 10px; font-size:12px;">Cancel</button>
+              <button class="btn" id="addCareSave" type="button" style="padding:5px 10px; font-size:12px;">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="m-grid">
         <div class="m-row"><label class="fld-label" for="addQty">Quantity</label><input id="addQty" class="input" type="number" min="1" step="1" value="1" /></div>
         <div class="m-row"><label class="fld-label" for="addCost">Cost price (₹, per piece)</label><input id="addCost" class="input" type="number" min="0" step="0.01" /></div>
       </div>
@@ -149,6 +187,20 @@
         <button class="btn secondary" id="addCancel" type="button">Cancel</button>
         <button class="btn" id="addSubmit" type="button">Add 1</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Manage tag options modal -->
+  <div class="modal-bg" id="tagsModal">
+    <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="tagsTitle">
+      <h3 id="tagsTitle">Manage tag options</h3>
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" type="button" role="tab" data-kind="saree_type">Saree types</button>
+        <button class="tab-btn" type="button" role="tab" data-kind="care_instruction">Care instructions</button>
+      </div>
+      <div id="tagsBody"></div>
+      <div class="err" id="tagsErr"></div>
+      <div class="m-actions"><button class="btn secondary" id="tagsClose" type="button">Close</button></div>
     </div>
   </div>
 

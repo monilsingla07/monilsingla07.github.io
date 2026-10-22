@@ -3,6 +3,7 @@ import { supabase, SUPABASE_ANON_KEY } from "../assets/supabase.js";
 import { escapeHtml, escapeAttr } from "../assets/safe.js";
 import { money, day, thumbOf, printUrl } from "./inventory-rows.js";
 import { resizeImageFile, IMAGE_PRESETS } from "../assets/image-resize.js";
+import { listTagOptions, createTagOption, updateTagOption, deleteTagOption, fillSelect } from "./tag-options.js";
 
 document.getElementById("header").innerHTML = renderHeader("admin");
 document.getElementById("footer").innerHTML = renderFooter();
@@ -26,6 +27,8 @@ let total = 0;
 let offset = 0;
 let chosen = null;          // {id,title} | {isNew:true}
 let editingId = null;
+let tagOpts = { saree_type: [], care_instruction: [] };   // active options for the Add modal dropdowns
+let origTags = { saree_type_id: null, care_instruction_id: null }; // stored values on the picked SKU
 
 class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
@@ -220,6 +223,7 @@ function chooseSku(c) {
   chosen = c;
   $("addSkuList").classList.remove("open");
   $("newSkuForm").style.display = c.isNew ? "block" : "none";
+  pickedSkuTags(c);
   if (c.isNew) {
     $("addSkuInput").value = "";
     $("addSkuInput").placeholder = "New SKU";
@@ -229,6 +233,61 @@ function chooseSku(c) {
     $("addSkuInput").value = c.title;
     $("addSkuChosen").textContent = "Selected: " + c.title;
   }
+}
+
+// ───────────────────────────── Tag dropdowns (Add modal) ─────────────────────────────
+const TAG_SEL = {
+  saree_type: { sel: "addSareeType", form: "addSareeTypeForm", addLabel: "+ Add new saree type" },
+  care_instruction: { sel: "addCare", form: "addCareForm", addLabel: "+ Add new care instruction" },
+};
+
+function renderTagSelect(kind, selected) {
+  const c = TAG_SEL[kind];
+  fillSelect($(c.sel), tagOpts[kind], selected, { addNewLabel: c.addLabel });
+  $(c.form).style.display = "none";
+}
+
+async function loadTagOpts() {
+  await Promise.all(Object.keys(TAG_SEL).map(async (kind) => {
+    try { tagOpts[kind] = (await listTagOptions(authedFetch, kind)).filter((r) => r.is_active !== false); }
+    catch (_) { tagOpts[kind] = []; }
+    renderTagSelect(kind, "");
+  }));
+}
+
+function selectedTag(kind) {
+  const v = $(TAG_SEL[kind].sel).value;
+  return v && v !== "__new__" ? v : null;
+}
+
+async function saveInlineTag(kind) {
+  const err = $("addErr");
+  err.textContent = "";
+  const fields = kind === "saree_type"
+    ? { name: $("addSareeTypeName").value.trim() }
+    : { name: $("addCareName").value.trim(), text: $("addCareText").value.trim() };
+  if (!fields.name) { err.textContent = "Enter a name."; return; }
+  if (kind === "care_instruction" && !fields.text) fields.text = fields.name;
+  try {
+    const row = await createTagOption(authedFetch, kind, fields);
+    tagOpts[kind] = tagOpts[kind].concat(row);
+    renderTagSelect(kind, row.id);
+    ["addSareeTypeName", "addCareName", "addCareText"].forEach((id) => { $(id).value = ""; });
+  } catch (e) { err.textContent = e.message || "Failed to save."; }
+}
+
+async function pickedSkuTags(c) {
+  origTags = { saree_type_id: null, care_instruction_id: null };
+  renderTagSelect("saree_type", "");
+  renderTagSelect("care_instruction", "");
+  if (!c || c.isNew || !c.id) return;
+  try {
+    const r = await authedFetch(PRODUCTS_FN, { action: "get", id: c.id });
+    if (!chosen || chosen.id !== c.id) return; // user moved on
+    origTags = { saree_type_id: r.product.saree_type_id || null, care_instruction_id: r.product.care_instruction_id || null };
+    renderTagSelect("saree_type", origTags.saree_type_id || "");
+    renderTagSelect("care_instruction", origTags.care_instruction_id || "");
+  } catch (_) { /* leave blank; submit will treat as unchanged only if still blank */ }
 }
 
 function resetAddModal() {
@@ -241,6 +300,9 @@ function resetAddModal() {
   $("newSkuForm").style.display = "none";
   $("addErr").textContent = "";
   $("addSubmit").disabled = false;
+  origTags = { saree_type_id: null, care_instruction_id: null };
+  ["saree_type", "care_instruction"].forEach((k) => renderTagSelect(k, ""));
+  ["addSareeTypeName", "addCareName", "addCareText"].forEach((id) => { $(id).value = ""; });
   updateSubmitLabel();
 }
 
@@ -274,6 +336,14 @@ async function submitAdd() {
       payload.product_id = chosen.id;
     }
 
+    const tagIds = { saree_type_id: selectedTag("saree_type"), care_instruction_id: selectedTag("care_instruction") };
+    const tagsChanged = tagIds.saree_type_id !== origTags.saree_type_id || tagIds.care_instruction_id !== origTags.care_instruction_id;
+    // Existing SKU: update the FKs BEFORE creating pieces (only if changed).
+    if (!chosen.isNew && tagsChanged) {
+      await authedFetch(PRODUCTS_FN, { action: "save", id: chosen.id, ...tagIds });
+      origTags = { ...tagIds };
+    }
+
     let res;
     try {
       res = await authedFetch(INV_FN, payload);
@@ -290,11 +360,19 @@ async function submitAdd() {
       }
     }
 
+    // New SKU: attach the FKs right after the product exists.
+    let tagWarn = "";
+    if (chosen.isNew && (tagIds.saree_type_id || tagIds.care_instruction_id) && res.product_id) {
+      try { await authedFetch(PRODUCTS_FN, { action: "save", id: res.product_id, ...tagIds }); }
+      catch (e) { tagWarn = " (tags not saved: " + e.message + " — set them in Products)"; }
+    }
+
     closeModal("addModal");
     const serials = res.serials || [];
     const opened = openPrint(serials);
     toast("Added " + serials.length + " piece" + (serials.length === 1 ? "" : "s") + ": " +
       escapeHtml(serials.length > 4 ? serials[0] + " … " + serials[serials.length - 1] : serials.join(", ")) +
+      escapeHtml(tagWarn) +
       (opened ? "" : ' <a id="toastPrint">Open print view</a>'), 10000);
     const tp = $("toastPrint");
     if (tp) tp.addEventListener("click", () => openPrint(serials));
@@ -307,6 +385,62 @@ async function submitAdd() {
     btn.disabled = false;
   }
 }
+
+// ───────────────────────────── Manage tag options modal ─────────────────────────────
+let tagsKind = "saree_type";
+let tagsRows = [];
+
+async function loadTagsTable() {
+  const body = $("tagsBody");
+  $("tagsErr").textContent = "";
+  try {
+    tagsRows = await listTagOptions(authedFetch, tagsKind, true);
+  } catch (e) {
+    body.innerHTML = '<div class="err">Failed to load: ' + escapeHtml(e.message) + "</div>";
+    return;
+  }
+  const care = tagsKind === "care_instruction";
+  const head = "<th>Name</th>" + (care ? "<th>Text</th>" : "") + '<th style="width:80px;">Order</th><th style="width:60px;">Active</th><th style="width:70px;"></th>';
+  const rowsHtml = tagsRows.map((r) =>
+    '<tr data-id="' + escapeAttr(r.id) + '">' +
+    '<td><input class="input" data-f="name" type="text" value="' + escapeAttr(r.name) + '" /></td>' +
+    (care ? '<td><input class="input" data-f="text" type="text" value="' + escapeAttr(r.text || "") + '" /></td>' : "") +
+    '<td><input class="input ord" data-f="display_order" type="number" step="1" value="' + escapeAttr(r.display_order ?? 0) + '" /></td>' +
+    '<td style="text-align:center;"><input data-f="is_active" type="checkbox"' + (r.is_active !== false ? " checked" : "") + " /></td>" +
+    '<td><button class="btn secondary" data-del="1" type="button" style="padding:4px 9px; font-size:12px; color:#a13d3d;">Delete</button></td></tr>'
+  ).join("") || '<tr><td colspan="5" style="padding:14px; color:var(--text-light);">None yet.</td></tr>';
+  const addRow = '<tr data-new="1">' +
+    '<td><input class="input" data-f="name" type="text" placeholder="+ Add new — name" /></td>' +
+    (care ? '<td><input class="input" data-f="text" type="text" placeholder="Label text" /></td>' : "") +
+    '<td colspan="' + (care ? 1 : 1) + '"></td><td></td>' +
+    '<td><button class="btn" data-add="1" type="button" style="padding:4px 9px; font-size:12px;">Save</button></td></tr>';
+  body.innerHTML = '<table class="tags"><thead><tr>' + head + "</tr></thead><tbody>" + rowsHtml + addRow + "</tbody></table>";
+}
+
+async function tagsCommit(tr, input) {
+  const id = tr.dataset.id;
+  const f = input.dataset.f;
+  let v = input.type === "checkbox" ? input.checked : input.value.trim();
+  if (f === "display_order") v = parseInt(v, 10) || 0;
+  if (f === "name" && !v) { $("tagsErr").textContent = "Name cannot be empty."; return loadTagsTable(); }
+  try {
+    await updateTagOption(authedFetch, tagsKind, id, { [f]: v });
+    await loadTagsTable();
+  } catch (e) { $("tagsErr").textContent = e.message || "Update failed."; }
+}
+
+async function tagsAdd(tr) {
+  const fields = {};
+  tr.querySelectorAll("input[data-f]").forEach((i) => { fields[i.dataset.f] = i.value.trim(); });
+  if (!fields.name) { $("tagsErr").textContent = "Enter a name."; return; }
+  if (tagsKind === "care_instruction" && !fields.text) fields.text = fields.name;
+  try {
+    await createTagOption(authedFetch, tagsKind, fields);
+    await loadTagsTable();
+  } catch (e) { $("tagsErr").textContent = e.message || "Create failed."; }
+}
+
+function openTagsModal() { $("tagsErr").textContent = ""; openModal("tagsModal"); loadTagsTable(); }
 
 // ───────────────────────────── Row actions ─────────────────────────────
 async function rowAction(act, row) {
@@ -390,9 +524,44 @@ function wire() {
   });
   document.addEventListener("click", (e) => { if (!e.target.closest(".combo")) $("addSkuList").classList.remove("open"); });
 
+  $("addSareeType").addEventListener("change", () => { $("addSareeTypeForm").style.display = $("addSareeType").value === "__new__" ? "block" : "none"; });
+  $("addCare").addEventListener("change", () => { $("addCareForm").style.display = $("addCare").value === "__new__" ? "block" : "none"; });
+  $("addSareeTypeSave").addEventListener("click", () => saveInlineTag("saree_type"));
+  $("addCareSave").addEventListener("click", () => saveInlineTag("care_instruction"));
+  $("addSareeTypeCancel").addEventListener("click", () => renderTagSelect("saree_type", ""));
+  $("addCareCancel").addEventListener("click", () => renderTagSelect("care_instruction", ""));
+
+  $("btnTags").addEventListener("click", openTagsModal);
+  $("tagsClose").addEventListener("click", () => { closeModal("tagsModal"); loadTagOpts(); });
+  document.querySelectorAll("#tagsModal .tab-btn").forEach((b) => b.addEventListener("click", () => {
+    tagsKind = b.dataset.kind;
+    document.querySelectorAll("#tagsModal .tab-btn").forEach((x) => x.classList.toggle("active", x === b));
+    loadTagsTable();
+  }));
+  $("tagsBody").addEventListener("change", (e) => {
+    const input = e.target.closest("input[data-f]");
+    const tr = e.target.closest("tr[data-id]");
+    if (input && tr) tagsCommit(tr, input);
+  });
+  $("tagsBody").addEventListener("click", async (e) => {
+    const add = e.target.closest("button[data-add]");
+    if (add) return tagsAdd(add.closest("tr"));
+    const del = e.target.closest("button[data-del]");
+    if (del) {
+      const tr = del.closest("tr[data-id]");
+      const row = tagsRows.find((r) => r.id === tr.dataset.id);
+      if (!window.confirm("Delete '" + (row ? row.name : "this option") + "'?")) return;
+      try { await deleteTagOption(authedFetch, tagsKind, tr.dataset.id); await loadTagsTable(); }
+      catch (err) { $("tagsErr").textContent = err.message || "Delete failed."; }
+    }
+  });
+  $("tagsBody").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.closest("tr[data-new]")) tagsAdd(e.target.closest("tr"));
+  });
+
   $("editCancel").addEventListener("click", () => closeModal("editModal"));
   $("editSave").addEventListener("click", saveEdit);
-  ["addModal", "editModal"].forEach((id) => $(id).addEventListener("mousedown", (e) => { if (e.target === $(id)) closeModal(id); }));
+  ["addModal", "editModal", "tagsModal"].forEach((id) => $(id).addEventListener("mousedown", (e) => { if (e.target === $(id)) closeModal(id); }));
 }
 
 // ───────────────────────────── Boot ─────────────────────────────
@@ -408,7 +577,7 @@ function wire() {
     loadingState.style.display = "none";
     dashboard.style.display = "block";
     wire();
-    await Promise.all([loadProducts(), loadLedger(), loadStats()]);
+    await Promise.all([loadProducts(), loadLedger(), loadStats(), loadTagOpts()]);
   } catch (e) {
     showGateError("Error", e.message || String(e));
   }
