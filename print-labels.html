@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap">
   <link rel="stylesheet" href="assets/print-labels.css" />
   <script src="scripts/vendor/qrcode.min.js"></script>
 </head>
@@ -15,15 +16,15 @@
   <div class="topbar no-print">
     <label for="layoutSelect">Layout
       <select id="layoutSelect">
+        <option value="50x50" selected>50 x 50 mm</option>
         <option value="50x30">50 x 30 mm</option>
-        <option value="50x50">50 x 50 mm</option>
         <option value="a4">A4 grid (4 x 8)</option>
       </select>
     </label>
     <span id="count" class="count">0 labels</span>
     <button id="printBtn" type="button" class="print-btn">Print</button>
   </div>
-  <div id="labels" class="labels layout-50x30"></div>
+  <div id="labels" class="labels layout-50x50"></div>
   <script type="module" src="scripts/print-labels.js"></script>
 </body>
 </html>

@@ -15,24 +15,33 @@ body { margin: 0; font-family: "Outfit", system-ui, sans-serif; color: #1a1a1a; 
 .label .title { font-size: 7pt; }
 .label .price { font-size: 8pt; font-weight: 600; }
 
-/* 50 x 30 : QR beside text, SKU title truncated */
+.label .brand-en { font-size: 6pt; color: #666; letter-spacing: .1em; text-transform: uppercase; line-height: 1.1; }
+.label .url { font-size: 6pt; color: #666; font-weight: 600; line-height: 1.1; }
+
+/* 50 x 30 : compact. QR beside serial, English brand, price, URL */
 .layout-50x30 .label { width: 50mm; height: 30mm; margin-bottom: 4mm; box-shadow: 0 0 0 1px #d8cfbd; }
 .layout-50x30 .label .qr { width: 24mm !important; height: 24mm !important; }
-.layout-50x30 .label .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.layout-50x30 .label .price { display: none; }
+.label .text .price { font-size: 11pt; font-weight: 800; }
+.label .text .url { font-size: 5pt; }
+.label .text .brand-en { font-size: 5.5pt; }
 
-/* 50 x 50 : QR on top, serial + full title + price below */
-.layout-50x50 .label { width: 50mm; height: 50mm; margin-bottom: 4mm; flex-direction: column; justify-content: center; text-align: center; box-shadow: 0 0 0 1px #d8cfbd; }
-.layout-50x50 .label .qr { width: 28mm !important; height: 28mm !important; }
-.layout-50x50 .label .text { align-items: center; }
-.layout-50x50 .label .title { white-space: normal; max-height: 8mm; overflow: hidden; }
+/* 50 x 50 : rich label (Hindi brand, QR, serial, saree type, price, care, provenance, URL) */
+.layout-50x50 .label { width: 50mm; height: 50mm; margin-bottom: 4mm; box-shadow: 0 0 0 1px #d8cfbd;
+  flex-direction: column; justify-content: space-between; align-items: center; text-align: center; gap: 0; padding: 1.5mm; }
+.layout-50x50 .label > * { max-width: 100%; }
+.layout-50x50 .brand-hi { font-family: "Noto Sans Devanagari", serif; font-weight: 700; font-size: 10pt; line-height: 1.15; }
+.layout-50x50 .qr { width: 21mm !important; height: 21mm !important; margin: 0 auto; }
+.layout-50x50 .serial { font-weight: 600; font-size: 7.5pt; letter-spacing: .02em; line-height: 1.1; }
+.layout-50x50 .saree-type { font-size: 6.5pt; color: #333; line-height: 1.1; white-space: nowrap; }
+.layout-50x50 .price { font-size: 16pt; font-weight: 800; letter-spacing: -.01em; line-height: 1.05; }
+.layout-50x50 .care { font-size: 6pt; color: #333; line-height: 1.1; white-space: nowrap; }
+.layout-50x50 .provenance { font-size: 5.5pt; color: #555; line-height: 1.1; white-space: nowrap; }
+.layout-50x50 .hr { height: 0; border-top: .15mm solid #000; width: 70%; margin: 0 auto; }
 
-/* A4 : 4 columns x 8 rows of 50 x 30 labels, each with its own border */
+/* A4 : 4 columns x 8 rows of the compact 50 x 30 label, each with its own border */
 .layout-a4 { display: grid; grid-template-columns: repeat(4, 50mm); grid-auto-rows: 30mm; gap: 0; justify-content: start; }
 .layout-a4 .label { width: 50mm; height: 30mm; border: .2mm solid #000; }
 .layout-a4 .label .qr { width: 24mm !important; height: 24mm !important; }
-.layout-a4 .label .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.layout-a4 .label .price { display: none; }
 
 /* print-labels.js injects the @page rule matching the chosen layout (a single
    @page cannot be scoped to a class). This is only the fallback. */

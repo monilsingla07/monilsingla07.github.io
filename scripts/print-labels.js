@@ -1,10 +1,13 @@
 // print-labels.js: renders QR tags (payload = raw serial only, so a USB
 // keyboard-emulation scanner types exactly the serial) for thermal printing.
 const LAYOUTS = {
-  "50x30": "50mm 30mm",
   "50x50": "50mm 50mm",
+  "50x30": "50mm 30mm",
   "a4": "A4",
 };
+const DEFAULT_LAYOUT = "50x50";
+const PROVENANCE = "Handwoven in Chanderi, India";
+const SITE_URL = "www.ahamstree.com";
 const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-inventory";
 
 const container = document.getElementById("labels");
@@ -14,8 +17,8 @@ const pageStyle = document.createElement("style");
 document.head.appendChild(pageStyle);
 
 let serials = [];
-let layout = "50x30";
-const info = new Map(); // serial -> { title, price }
+let layout = DEFAULT_LAYOUT;
+const info = new Map(); // serial -> { title, price, sareeType, care }
 
 function normalize(s) { return String(s || "").trim().toUpperCase(); }
 
@@ -32,7 +35,14 @@ function readSerials() {
 }
 
 function money(v) {
-  return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+  return "₹ " + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+}
+
+function div(cls, text) {
+  const d = document.createElement("div");
+  d.className = cls;
+  if (text !== undefined && text !== null) d.textContent = text;
+  return d;
 }
 
 function qrDataUrl(serial) {
@@ -46,7 +56,7 @@ function qrDataUrl(serial) {
 }
 
 export function renderLabels(list, lay) {
-  layout = LAYOUTS[lay] ? lay : "50x30";
+  layout = LAYOUTS[lay] ? lay : DEFAULT_LAYOUT;
   serials = list;
   select.value = layout;
   container.className = "labels layout-" + layout;
@@ -62,23 +72,22 @@ export function renderLabels(list, lay) {
     img.alt = serial;
     const url = qrDataUrl(serial);
     if (url) img.src = url;
-    const text = document.createElement("div");
-    text.className = "text";
-    const s = document.createElement("div");
-    s.className = "serial";
-    s.textContent = serial;
-    const t = document.createElement("div");
-    t.className = "title";
-    const p = document.createElement("div");
-    p.className = "price";
-    const d = info.get(serial);
-    if (d) {
-      t.textContent = d.title || "";
-      t.title = d.title || "";
-      p.textContent = d.price != null ? money(d.price) : "";
+    const d = info.get(serial) || {};
+    const price = d.price != null ? money(d.price) : "";
+
+    if (layout === "50x50") {
+      // Rich label. Optional lines (saree type, care) are skipped entirely when absent.
+      el.append(div("brand-hi", "अहम् स्त्री"), div("brand-en", "AhamStree"), div("hr"), img, div("serial", serial), div("hr"));
+      if (d.sareeType) el.append(div("saree-type", d.sareeType));
+      el.append(div("price", price));
+      if (d.care) el.append(div("care", "Care: " + d.care));
+      el.append(div("provenance", PROVENANCE), div("url", SITE_URL));
+    } else {
+      // Compact (50x30 / A4): QR + serial + English brand + price + URL.
+      const text = div("text");
+      text.append(div("brand-en", "AhamStree"), div("serial", serial), div("price", price), div("url", SITE_URL));
+      el.append(img, text);
     }
-    text.append(s, t, p);
-    el.append(img, text);
     container.appendChild(el);
   }
   countEl.textContent = list.length + (list.length === 1 ? " label" : " labels");
@@ -115,7 +124,15 @@ async function enrich() {
         if (!res.ok) return;
         const { piece } = await res.json();
         const prod = piece && piece.products;
-        if (prod) info.set(serial, { title: prod.title, price: prod.price_inr });
+        if (prod) {
+          const eff = prod.sale_price_inr ?? prod.price_inr;
+          info.set(serial, {
+            title: prod.title,
+            price: eff,
+            sareeType: prod.saree_types?.name || "",
+            care: prod.care_instructions?.text || "",
+          });
+        }
       } catch (_) { /* cache miss: label shows serial only */ }
     }));
     if (info.size) renderLabels(serials, layout);
