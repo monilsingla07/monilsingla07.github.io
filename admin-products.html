@@ -275,6 +275,7 @@
               <div>
                 <label class="pm-label">Quantity in stock</label>
                 <input id="f_inventory_qty" class="input" type="number" min="0" step="1" />
+                <div class="pm-hint" id="invQtyHint" style="display:none;">Managed by piece inventory</div>
                 <div class="pm-hint" id="reservedHint"></div>
               </div>
               <div>
@@ -1109,7 +1110,7 @@
         const weave_line_id = await resolveOrCreateCatalogId("weave_line", document.getElementById("f_weave_line_id").value, () => weaveLinesCache);
 
         status.textContent = "Saving product…";
-        const saveRes = await authedFetch(PRODUCTS_FN, {
+        const savePayload = {
           action: "save",
           id: document.getElementById("f_id").value || null,
           title,
@@ -1121,7 +1122,6 @@
           price_inr: Number(price_inr),
           sale_price_inr: document.getElementById("f_sale_price_inr").value === "" ? null : Number(document.getElementById("f_sale_price_inr").value),
           sku: document.getElementById("f_sku").value,
-          inventory_qty: Number(document.getElementById("f_inventory_qty").value || 0),
           weight_grams: Number(document.getElementById("f_weight_grams").value || 400),
           colour: document.getElementById("f_colour").value,
           print_type: document.getElementById("f_print_type").value,
@@ -1130,7 +1130,10 @@
           border_type: document.getElementById("f_border_type").value,
           zari: document.getElementById("f_zari").value,
           occasion: document.getElementById("f_occasion").value,
-        });
+        };
+        // Managed SKUs: the piece trigger owns inventory_qty — never send it.
+        if (!invToggle.checked) savePayload.inventory_qty = Number(document.getElementById("f_inventory_qty").value || 0);
+        const saveRes = await authedFetch(PRODUCTS_FN, savePayload);
         const productId = saveRes.product.id;
         document.getElementById("f_id").value = productId;
 
@@ -1197,6 +1200,9 @@
     function setInventoryManagedUi(managed, canToggle) {
       invToggle.checked = !!managed;
       invToggle.disabled = !canToggle;
+      // Trigger-maintained count: read-only when managed (and never sent on save).
+      document.getElementById("f_inventory_qty").readOnly = !!managed;
+      document.getElementById("invQtyHint").style.display = managed ? "" : "none";
       document.getElementById("invManagedHint").style.display = canToggle ? "none" : "";
       document.getElementById("piecesSection").style.display = managed && canToggle ? "block" : "none";
       if (managed && canToggle) loadPieces(); else document.getElementById("piecesBody").innerHTML = "";
