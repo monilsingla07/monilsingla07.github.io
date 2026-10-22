@@ -282,9 +282,8 @@ async function submitAdd() {
       const price = parseInt($("nsPrice").value, 10);
       if (!title) throw new Error("Enter a title for the new SKU.");
       if (!Number.isInteger(price) || price < 0) throw new Error("Enter a selling price for the new SKU.");
-      // admin-manage-inventory reads new_sku.name / selling_price; title / price_inr
-      // are sent too so either naming works. weight_grams is defensive (see plan).
-      payload.new_sku = { name: title, selling_price: price, title, price_inr: price, weight_grams: 400 };
+      // admin-manage-inventory contract: new_sku = { name, selling_price, thumbnail_url? }
+      payload.new_sku = { name: title, selling_price: price };
       const thumb = await uploadPhoto($("nsThumb").files[0]);
       if (thumb) payload.new_sku.thumbnail_url = thumb;
     } else {
