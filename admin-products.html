@@ -256,6 +256,16 @@
                 <input id="f_is_active" type="checkbox" style="width:16px; height:16px;" />
                 <label for="f_is_active" style="font-size:13px; font-weight:700;">Active (visible on the storefront)</label>
               </div>
+              <div>
+                <label class="pm-label" for="f_saree_type_id">Saree type</label>
+                <select id="f_saree_type_id" class="input"><option value="">— None —</option></select>
+                <div class="pm-hint">Optional. Printed on the QR label. Manage options from Inventory.</div>
+              </div>
+              <div>
+                <label class="pm-label" for="f_care_instruction_id">Care instruction</label>
+                <select id="f_care_instruction_id" class="input"><option value="">— None —</option></select>
+                <div class="pm-hint">Optional. Printed on the QR label.</div>
+              </div>
             </div>
 
             <div class="section-title">Pricing &amp; inventory</div>
@@ -432,6 +442,7 @@
 
   <script type="module">
     import { renderPieceRows, pieceSummary, printUrl } from "./scripts/inventory-rows.js";
+    import { listTagOptions, fillSelect } from "./scripts/tag-options.js";
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeHref, safeSrc } from "./assets/safe.js";
@@ -986,8 +997,22 @@
       document.getElementById("f_category_custom").style.display = document.getElementById("f_category").value === "__custom__" ? "block" : "none";
     });
 
+    // Saree type / care instruction dropdowns: refreshed on every panel open.
+    async function loadTagSelects(sareeTypeId, careId) {
+      const pairs = [["saree_type", "f_saree_type_id", sareeTypeId], ["care_instruction", "f_care_instruction_id", careId]];
+      await Promise.all(pairs.map(async ([kind, elId, selected]) => {
+        const sel = document.getElementById(elId);
+        try {
+          // include inactive so a product keeping a since-deactivated option still shows it
+          const rows = (await listTagOptions(authedFetch, kind, true)).filter(r => r.is_active !== false || r.id === selected);
+          fillSelect(sel, rows, selected);
+        } catch (_) { fillSelect(sel, [], ""); }
+      }));
+    }
+
     async function openProductEditor(id) {
       resetEditorForm();
+      loadTagSelects("", "");
       document.getElementById("productListView").style.display = "none";
       document.getElementById("productEditorView").style.display = "block";
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1009,6 +1034,7 @@
           ? (weaveLinesCache.find(w => String(w.id) === String(p.weave_line_id))?.name || "")
           : "";
         document.getElementById("f_is_active").checked = !!p.is_active;
+        loadTagSelects(p.saree_type_id || "", p.care_instruction_id || "");
         setInventoryManagedUi(!!p.inventory_managed, true);
         document.getElementById("f_price_inr").value = p.price_inr ?? "";
         document.getElementById("f_sale_price_inr").value = p.sale_price_inr ?? "";
@@ -1130,6 +1156,8 @@
           border_type: document.getElementById("f_border_type").value,
           zari: document.getElementById("f_zari").value,
           occasion: document.getElementById("f_occasion").value,
+          saree_type_id: document.getElementById("f_saree_type_id").value || null,
+          care_instruction_id: document.getElementById("f_care_instruction_id").value || null,
         };
         // Managed SKUs: the piece trigger owns inventory_qty — never send it.
         if (!invToggle.checked) savePayload.inventory_qty = Number(document.getElementById("f_inventory_qty").value || 0);
