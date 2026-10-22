@@ -439,6 +439,7 @@
           product_images(image_url, thumb_url, width, height, sort_order, alt_text)
         `);
       productQuery = slugParam ? productQuery.eq("slug", slugParam) : productQuery.eq("id", id);
+      productQuery = productQuery.eq("is_active", true); // hidden SKUs: not even for past buyers (RLS lets them read ordered products)
       const { data, error } = await productQuery.maybeSingle();
 
       // A legacy ?id=... link that resolved fine: swap the visible URL to

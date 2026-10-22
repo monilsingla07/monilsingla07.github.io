@@ -278,12 +278,26 @@
         const addrText = addr
           ? [addr.full_name, addr.address_line1, addr.address_line2, addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")
           : "—";
-        const itemsHtml = (o.order_items || []).map(it =>
-          `<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6;">
-             <span class="small">${Number(it.qty)}× ${escapeHtml(it.title)}</span>
-             <span class="small" style="font-weight:700;white-space:nowrap;">${money(it.price_inr)}</span>
-           </div>`
-        ).join("");
+        // Assigned inventory pieces, grouped by product_id (one line per piece).
+        // If an order has several lines for the same product, the serials are
+        // shown once under the first such line.
+        const piecesByProduct = {};
+        (o.inventory_pieces || []).forEach(p => {
+          (piecesByProduct[p.product_id] = piecesByProduct[p.product_id] || []).push(p.serial);
+        });
+        const itemsHtml = (o.order_items || []).map(it => {
+          const serials = it.product_id ? (piecesByProduct[it.product_id] || []) : [];
+          if (it.product_id) delete piecesByProduct[it.product_id];
+          const serialsHtml = serials.map(s =>
+            `<div class="small piece-serial" style="opacity:.8;padding-left:14px;">Piece: ${escapeHtml(s)}</div>`
+          ).join("");
+          return `<div style="padding:5px 0;border-bottom:1px solid #f3f4f6;">
+             <div style="display:flex;justify-content:space-between;gap:8px;">
+               <span class="small">${Number(it.qty)}× ${escapeHtml(it.title)}</span>
+               <span class="small" style="font-weight:700;white-space:nowrap;">${money(it.price_inr)}</span>
+             </div>${serialsHtml}
+           </div>`;
+        }).join("");
 
         return `
           <div class="order-details" data-details="${escapeAttr(o.id)}">
@@ -502,6 +516,12 @@
                 <button class="btn secondary" style="padding:7px 12px;font-size:12px;color:crimson;border-color:crimson;" data-action="delete-order" data-id="${escapeAttr(o.id)}">🗑 Delete</button>
               </div>
             </div>
+
+            ${o.inventory_shortage ? `
+            <div class="inventory-shortage-banner" data-shortage-banner="${escapeAttr(o.id)}" style="margin:0 16px 12px;padding:10px 12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <span class="small" style="color:#92400e;font-weight:700;">⚠ Inventory shortage: not all pieces could be assigned.</span>
+              <button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="reassign-pieces" data-id="${escapeAttr(o.id)}">Reassign pieces</button>
+            </div>` : ""}
 
             ${orderDetailsHtml(o)}
 
@@ -851,6 +871,28 @@
               const r = await callFn("admin-regenerate-payment-link", { order_id: id });
               if (!r.ok) return;
               toast("New payment link created ✅", "#3f6b4f");
+              load();
+            } catch (e) {
+              toast("Error: " + e.message, "#a13d3d");
+            } finally {
+              btn.disabled = false;
+              btn.textContent = oldText;
+            }
+          });
+        });
+
+        // Reassign inventory pieces (shortage retry; assign-pieces-to-order is idempotent)
+        list.querySelectorAll("button[data-action='reassign-pieces']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Working…";
+            try {
+              const r = await callFn("assign-pieces-to-order", { order_id: id });
+              if (!r.ok) return;
+              const short = (r.data?.shortages || []).length;
+              toast(short ? "Some pieces are still short" : "Pieces assigned ✅", short ? "#a13d3d" : "#3f6b4f");
               load();
             } catch (e) {
               toast("Error: " + e.message, "#a13d3d");

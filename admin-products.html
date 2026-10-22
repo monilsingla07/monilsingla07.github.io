@@ -275,6 +275,7 @@
               <div>
                 <label class="pm-label">Quantity in stock</label>
                 <input id="f_inventory_qty" class="input" type="number" min="0" step="1" />
+                <div class="pm-hint" id="invQtyHint" style="display:none;">Managed by piece inventory</div>
                 <div class="pm-hint" id="reservedHint"></div>
               </div>
               <div>
@@ -345,10 +346,33 @@
             </div>
             <div id="newCollectionStatus" class="small" style="margin-top:4px;"></div>
 
+            <div class="section-title">Inventory tracking</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input id="f_inventory_managed" type="checkbox" style="width:16px; height:16px;" disabled />
+              <label for="f_inventory_managed" style="font-size:13px; font-weight:700;">Inventory-managed (track each physical piece with a QR serial)</label>
+            </div>
+            <div class="pm-hint" id="invManagedHint">Save the product first, then turn this on. Changes to this switch apply immediately. Visibility on the storefront is the "Active" checkbox above.</div>
+
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; align-items:center;">
               <button id="btnSaveProduct" class="btn">Save product</button>
               <button id="btnDeleteProduct" class="btn secondary" style="display:none; color:#a13d3d;" type="button">Delete permanently</button>
               <div id="editorStatus" class="small" style="align-self:center;"></div>
+            </div>
+
+            <div id="piecesSection" style="display:none;">
+              <div class="section-title">Pieces</div>
+              <div id="piecesSummary" class="small" style="margin-bottom:8px;"></div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                <button id="btnAddPiece" type="button" class="btn secondary" style="padding:6px 12px; font-size:12px;">Add piece</button>
+                <button id="btnAddPieces" type="button" class="btn secondary" style="padding:6px 12px; font-size:12px;">Add N pieces</button>
+                <a href="admin-inventory.html" class="small" style="align-self:center;">Open full inventory ledger →</a>
+              </div>
+              <div style="overflow-x:auto; border:1px solid var(--border-light);">
+                <table class="pieces-table" style="width:100%; border-collapse:collapse; font-size:13px; min-width:560px;">
+                  <thead><tr><th></th><th>Serial</th><th>Status</th><th>Intake</th><th>Cost</th><th>Weaver</th></tr></thead>
+                  <tbody id="piecesBody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -374,7 +398,40 @@
 
   <div id="footer"></div>
 
+  <style>
+    .pieces-table th { text-align:left; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-light); padding:8px 10px; border-bottom:1.5px solid var(--border-light); }
+    .pieces-table td { padding:6px 10px; border-bottom:1px solid var(--border-light); vertical-align:middle; }
+    .pieces-table .thumb { width:36px; height:46px; object-fit:cover; background:var(--bg-warm); display:block; }
+    .pieces-table .thumb-empty { width:36px; height:46px; background:var(--bg-warm); }
+    .pieces-table .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size:12px; }
+    .pill { font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+    .pill.in_stock { background:rgba(63,107,79,.1); color:#3f6b4f; }
+    .pill.sold { background:var(--border-light); color:var(--text-light); }
+    .pc-modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:2000; display:none; align-items:flex-start; justify-content:center; overflow-y:auto; padding:40px 12px; }
+    .pc-modal-bg.open { display:flex; }
+    .pc-modal { background:var(--surface); width:100%; max-width:480px; padding:22px; border:1px solid var(--border); }
+    .pc-modal .m-row { margin-top:12px; }
+    .pc-modal .m-row .input { width:100%; }
+    .pc-modal .fld-label { font-size:11px; color:var(--text-light); font-weight:600; }
+  </style>
+
+  <div class="pc-modal-bg" id="pcAddModal">
+    <div class="pc-modal" role="dialog" aria-modal="true" aria-labelledby="pcAddTitle">
+      <h3 id="pcAddTitle" style="margin:0 0 6px;">Add pieces</h3>
+      <div class="small" id="pcAddSku" style="color:var(--text-light);"></div>
+      <div class="m-row"><label class="fld-label" for="pcQty">Quantity</label><input id="pcQty" class="input" type="number" min="1" step="1" value="1" /></div>
+      <div class="m-row"><label class="fld-label" for="pcCost">Cost price (₹, per piece)</label><input id="pcCost" class="input" type="number" min="0" step="0.01" /></div>
+      <div class="m-row"><label class="fld-label" for="pcWeaver">Weaver (optional)</label><input id="pcWeaver" class="input" type="text" /></div>
+      <div class="small" id="pcErr" style="color:#a13d3d; margin-top:8px; min-height:16px;"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+        <button class="btn secondary" id="pcCancel" type="button">Cancel</button>
+        <button class="btn" id="pcSubmit" type="button">Add 1</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
+    import { renderPieceRows, pieceSummary, printUrl } from "./scripts/inventory-rows.js";
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeHref, safeSrc } from "./assets/safe.js";
@@ -387,6 +444,7 @@
     const BASE = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/";
     const PRODUCTS_FN = BASE + "admin-manage-products";
     const CATALOG_FN  = BASE + "admin-manage-catalog";
+    const INV_FN      = BASE + "admin-manage-inventory";
     const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
     const MAX_IMAGES = 12;
     const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -419,7 +477,12 @@
         body: JSON.stringify(body),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      if (!res.ok) {
+        const err = new Error(json.error || ("HTTP " + res.status));
+        err.status = res.status;
+        err.body = json;
+        throw err;
+      }
       return json;
     }
 
@@ -887,6 +950,7 @@
       document.getElementById("f_fabric_id").value = "";
       document.getElementById("f_weave_line_id").value = "";
       document.getElementById("f_is_active").checked = true;
+      setInventoryManagedUi(false, false);
       document.getElementById("f_price_inr").value = "";
       document.getElementById("f_sale_price_inr").value = "";
       document.getElementById("f_sku").value = "";
@@ -945,6 +1009,7 @@
           ? (weaveLinesCache.find(w => String(w.id) === String(p.weave_line_id))?.name || "")
           : "";
         document.getElementById("f_is_active").checked = !!p.is_active;
+        setInventoryManagedUi(!!p.inventory_managed, true);
         document.getElementById("f_price_inr").value = p.price_inr ?? "";
         document.getElementById("f_sale_price_inr").value = p.sale_price_inr ?? "";
         document.getElementById("f_sku").value = p.sku || "";
@@ -1045,7 +1110,7 @@
         const weave_line_id = await resolveOrCreateCatalogId("weave_line", document.getElementById("f_weave_line_id").value, () => weaveLinesCache);
 
         status.textContent = "Saving product…";
-        const saveRes = await authedFetch(PRODUCTS_FN, {
+        const savePayload = {
           action: "save",
           id: document.getElementById("f_id").value || null,
           title,
@@ -1057,7 +1122,6 @@
           price_inr: Number(price_inr),
           sale_price_inr: document.getElementById("f_sale_price_inr").value === "" ? null : Number(document.getElementById("f_sale_price_inr").value),
           sku: document.getElementById("f_sku").value,
-          inventory_qty: Number(document.getElementById("f_inventory_qty").value || 0),
           weight_grams: Number(document.getElementById("f_weight_grams").value || 400),
           colour: document.getElementById("f_colour").value,
           print_type: document.getElementById("f_print_type").value,
@@ -1066,7 +1130,10 @@
           border_type: document.getElementById("f_border_type").value,
           zari: document.getElementById("f_zari").value,
           occasion: document.getElementById("f_occasion").value,
-        });
+        };
+        // Managed SKUs: the piece trigger owns inventory_qty — never send it.
+        if (!invToggle.checked) savePayload.inventory_qty = Number(document.getElementById("f_inventory_qty").value || 0);
+        const saveRes = await authedFetch(PRODUCTS_FN, savePayload);
         const productId = saveRes.product.id;
         document.getElementById("f_id").value = productId;
 
@@ -1118,7 +1185,117 @@
         closeProductEditor(true);
       } catch (e) {
         status.textContent = "";
-        alert(e.message);
+        if (e.message === "cannot_delete_sku_with_pieces") {
+          const n = e.body?.piece_count;
+          alert("Cannot delete: this product has " + (n != null ? n + " piece" + (n === 1 ? "" : "s") : "pieces") + " in inventory. Delete or sell pieces first.");
+        } else {
+          alert(e.message);
+        }
+      }
+    });
+
+    // ══════════════════════════════════════ INVENTORY: toggle + Pieces section ══════════════════════════════════════
+    const invToggle = document.getElementById("f_inventory_managed");
+
+    function setInventoryManagedUi(managed, canToggle) {
+      invToggle.checked = !!managed;
+      invToggle.disabled = !canToggle;
+      // Trigger-maintained count: read-only when managed (and never sent on save).
+      document.getElementById("f_inventory_qty").readOnly = !!managed;
+      document.getElementById("invQtyHint").style.display = managed ? "" : "none";
+      document.getElementById("invManagedHint").style.display = canToggle ? "none" : "";
+      document.getElementById("piecesSection").style.display = managed && canToggle ? "block" : "none";
+      if (managed && canToggle) loadPieces(); else document.getElementById("piecesBody").innerHTML = "";
+    }
+
+    async function loadPieces() {
+      const id = document.getElementById("f_id").value;
+      const body = document.getElementById("piecesBody");
+      const summary = document.getElementById("piecesSummary");
+      if (!id) return;
+      body.innerHTML = '<tr><td colspan="6" style="padding:14px; color:var(--text-light);">Loading…</td></tr>';
+      try {
+        const [all, inStock] = await Promise.all([
+          authedFetch(INV_FN, { action: "list", product_id: id, limit: 200 }),
+          authedFetch(INV_FN, { action: "list", product_id: id, status: "in_stock", limit: 1 }),
+        ]);
+        const total = all.total || 0;
+        const inN = inStock.total || 0;
+        summary.textContent = pieceSummary(inN, total - inN, total) + (total > (all.rows || []).length ? " (showing latest " + all.rows.length + ")" : "");
+        body.innerHTML = renderPieceRows(all.rows || []);
+      } catch (e) {
+        body.innerHTML = '<tr><td colspan="6" style="padding:14px; color:#a13d3d;">Failed to load pieces: ' + escapeHtml(e.message) + "</td></tr>";
+      }
+    }
+
+    invToggle.addEventListener("change", async () => {
+      const id = document.getElementById("f_id").value;
+      const status = document.getElementById("editorStatus");
+      if (!id) { invToggle.checked = false; return; }
+      const want = invToggle.checked;
+      invToggle.disabled = true;
+      try {
+        await authedFetch(PRODUCTS_FN, { action: "set_inventory_managed", id, inventory_managed: want });
+        status.textContent = want ? "Inventory tracking turned on." : "Inventory tracking turned off.";
+        setInventoryManagedUi(want, true);
+      } catch (e) {
+        invToggle.checked = !want;
+        if (e.message === "cannot_disable_with_in_stock_pieces") {
+          const n = e.body?.in_stock_count;
+          status.textContent = "Cannot turn off inventory tracking: " + (n != null ? n : "some") + " piece(s) are still in stock. Sell or delete them first.";
+        } else {
+          status.textContent = "Couldn't update inventory tracking: " + e.message;
+        }
+      } finally {
+        invToggle.disabled = false;
+      }
+    });
+
+    function openPieceModal(focusQty) {
+      const id = document.getElementById("f_id").value;
+      if (!id) return;
+      document.getElementById("pcAddSku").textContent = "SKU: " + document.getElementById("f_title").value;
+      document.getElementById("pcQty").value = "1";
+      document.getElementById("pcCost").value = "";
+      document.getElementById("pcWeaver").value = "";
+      document.getElementById("pcErr").textContent = "";
+      document.getElementById("pcSubmit").textContent = "Add 1";
+      document.getElementById("pcAddModal").classList.add("open");
+      (focusQty ? document.getElementById("pcQty") : document.getElementById("pcCost")).focus();
+      if (focusQty) document.getElementById("pcQty").select();
+    }
+    function closePieceModal() { document.getElementById("pcAddModal").classList.remove("open"); }
+    document.getElementById("btnAddPiece").addEventListener("click", () => openPieceModal(false));
+    document.getElementById("btnAddPieces").addEventListener("click", () => openPieceModal(true));
+    document.getElementById("pcCancel").addEventListener("click", closePieceModal);
+    document.getElementById("pcAddModal").addEventListener("mousedown", (e) => { if (e.target.id === "pcAddModal") closePieceModal(); });
+    document.getElementById("pcQty").addEventListener("input", () => {
+      const n = parseInt(document.getElementById("pcQty").value, 10);
+      document.getElementById("pcSubmit").textContent = "Add " + (Number.isInteger(n) && n >= 1 ? n : 1);
+    });
+    document.getElementById("pcSubmit").addEventListener("click", async () => {
+      const err = document.getElementById("pcErr");
+      err.textContent = "";
+      const qty = parseInt(document.getElementById("pcQty").value, 10);
+      const cost = parseFloat(document.getElementById("pcCost").value);
+      if (!Number.isInteger(qty) || qty < 1) { err.textContent = "Quantity must be 1 or more."; return; }
+      if (!Number.isFinite(cost) || cost < 0) { err.textContent = "Enter the cost price."; return; }
+      const payload = { action: "create", product_id: document.getElementById("f_id").value, qty, cost_price: cost };
+      const weaver = document.getElementById("pcWeaver").value.trim();
+      if (weaver) payload.weaver_name = weaver;
+      const btn = document.getElementById("pcSubmit");
+      btn.disabled = true;
+      try {
+        const res = await authedFetch(INV_FN, payload);
+        closePieceModal();
+        const serials = res.serials || [];
+        const w = serials.length ? window.open(printUrl(serials), "_blank") : null;
+        document.getElementById("editorStatus").textContent = "Added " + serials.length + " piece" + (serials.length === 1 ? "" : "s") + (w || !serials.length ? "." : " (popup blocked — print from the Inventory page).");
+        await loadPieces();
+      } catch (e) {
+        err.textContent = e.message || "Failed to add pieces.";
+      } finally {
+        btn.disabled = false;
       }
     });
 

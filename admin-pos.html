@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>POS — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="assets/admin-pos.css" />
+</head>
+<body>
+  <div id="header"></div>
+  <div class="container" style="max-width:1240px;">
+    <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
+    <div id="pos" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+        <h2 style="margin:0;">Point of Sale</h2>
+        <div style="display:flex; gap:8px;">
+          <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+          <a href="admin-inventory.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">Inventory</a>
+        </div>
+      </div>
+
+      <div class="pos-strip" id="scanStrip">
+        <div class="prompt">Scan a QR</div>
+        <input id="scan-input" class="input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="AHM-00001" aria-label="Scan a QR or type a serial" autofocus />
+        <div class="last-scan" id="lastSerial" aria-live="polite">—</div>
+      </div>
+
+      <div class="pos-cols">
+        <div class="pos-panel">
+          <h3>Current bill</h3>
+          <div id="billBody"></div>
+          <div class="totals">
+            <div class="row"><span>Subtotal</span><span id="subtotalAmt">₹0</span></div>
+            <div class="row"><span>Discount</span>
+              <span class="disc-ctl">
+                <select id="discType" class="input" aria-label="Discount type"><option value="flat">₹ flat</option><option value="percent">% off</option></select>
+                <input id="discValue" class="input" type="number" min="0" step="1" value="" placeholder="0" aria-label="Discount value" />
+              </span>
+            </div>
+            <div class="row" style="color:var(--text-light);"><span>You save</span><span id="discAmt">₹0</span></div>
+            <div class="row grand"><span>Total</span><span id="totalAmt">₹0</span></div>
+          </div>
+        </div>
+
+        <div class="pos-panel">
+          <h3>Customer</h3>
+          <div class="rail-group">
+            <label class="opt"><input type="radio" name="custMode" value="anon" checked /> Anonymous</label>
+            <label class="opt"><input type="radio" name="custMode" value="lookup" /> Find by phone</label>
+            <label class="opt"><input type="radio" name="custMode" value="walkin" /> Walk-in (enter details)</label>
+            <div id="custFields" class="rail-group" style="display:none;">
+              <input id="custPhone" class="input" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit phone (F2)" aria-label="Customer phone" />
+              <button class="btn secondary" id="btnLookup" type="button" style="padding:8px;">Find customer</button>
+              <input id="custName" class="input" type="text" placeholder="Name" aria-label="Customer name" />
+              <div class="cust-found" id="custFound" style="display:none;"></div>
+              <div class="cust-msg" id="custMsg"></div>
+            </div>
+          </div>
+          <h3>Payment</h3>
+          <div class="rail-group">
+            <label class="opt"><input type="radio" name="payMethod" value="cash" checked /> Cash</label>
+            <label class="opt"><input type="radio" name="payMethod" value="upi" /> UPI</label>
+            <label class="opt"><input type="radio" name="payMethod" value="card" /> Card</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="pos-bar" id="posBar">
+        <button class="btn" id="btnCharge" type="button" disabled>Charge (F9)</button>
+        <button class="btn" id="btnPrint" type="button" style="display:none;">Print receipt</button>
+        <button class="btn secondary" id="btnNew" type="button" style="display:none;">New sale</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="confirmModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <h3 id="confirmTitle" style="margin:0 0 6px;">Clear the bill?</h3>
+      <div class="small" style="color:var(--text-light);">All scanned items and customer details will be removed.</div>
+      <div class="m-actions">
+        <button class="btn secondary" id="confirmNo" type="button">Cancel</button>
+        <button class="btn" id="confirmYes" type="button">Yes, clear</button>
+      </div>
+    </div>
+  </div>
+  <div id="toast" role="status"></div>
+  <div id="footer"></div>
+  <script type="module" src="scripts/admin-pos.js"></script>
+</body>
+</html>
