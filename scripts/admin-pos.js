@@ -136,20 +136,9 @@ async function handleScan(raw) {
       return;
     }
     const prod = piece.products || {};
-    let price = prod.sale_price_inr ?? prod.price_inr ?? 0;
-    let thumb = piece.photo_url || prod.product_images?.[0]?.image_url || "";
-    if (prod.sale_price_inr === undefined || !thumb) {
-      // Best-effort supplement (sale price + SKU image); may be RLS-hidden for inactive SKUs.
-      const ex = await supabase.from("products")
-        .select("price_inr, sale_price_inr, product_images(image_url, sort_order)").eq("id", prod.id).maybeSingle();
-      if (ex.data) {
-        if (prod.sale_price_inr === undefined) price = ex.data.sale_price_inr ?? ex.data.price_inr ?? price;
-        if (!thumb) {
-          const imgs = (ex.data.product_images || []).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-          thumb = imgs[0]?.image_url || "";
-        }
-      }
-    }
+    const price = prod.sale_price_inr ?? prod.price_inr ?? 0;
+    const imgs = (prod.product_images || []).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    const thumb = piece.photo_url || imgs[0]?.image_url || "";
     bill.push({ id: piece.id, serial: real, title: prod.title || "Item", price: Number(price) || 0, thumb, bad: "" });
     flashLast(real, true);
     render();
