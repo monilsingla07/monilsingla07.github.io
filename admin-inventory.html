@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Inventory — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 8px 0 6px; }
+    .kpi-tile { border: 1px solid var(--border-light); background: var(--surface); padding: 14px 16px; }
+    .kpi-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-light); }
+    .kpi-value { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 700; margin-top: 4px; }
+    .kpi-note { font-size: 11px; color: var(--text-light); min-height: 16px; margin-bottom: 14px; }
+    .filters-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin: 14px 0; }
+    .filters-bar .f { display: flex; flex-direction: column; gap: 3px; }
+    .filters-bar label, .fld-label { font-size: 11px; color: var(--text-light); font-weight: 600; }
+    .filters-bar .input { height: 40px; font-size: 13px; }
+    .ledger-wrap { overflow-x: auto; border: 1px solid var(--border-light); background: var(--surface); }
+    table.ledger { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 980px; }
+    table.ledger th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); padding: 10px 10px; border-bottom: 1.5px solid var(--border-light); white-space: nowrap; }
+    table.ledger td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+    .thumb { width: 40px; height: 52px; object-fit: cover; background: var(--bg-warm); display: block; }
+    .thumb-empty { width: 40px; height: 52px; background: var(--bg-warm); }
+    .pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+    .pill.in_stock { background: rgba(63,107,79,.1); color: #3f6b4f; }
+    .pill.sold { background: var(--border-light); color: var(--text-light); }
+    .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .row-actions .btn { padding: 5px 9px; font-size: 12px; }
+    .pager { display: flex; align-items: center; gap: 10px; justify-content: flex-end; margin: 12px 0; font-size: 13px; }
+    .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 2000; display: none; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 12px; }
+    .modal-bg.open { display: flex; }
+    .modal { background: var(--surface); width: 100%; max-width: 560px; padding: 22px; border: 1px solid var(--border); }
+    .modal h3 { margin: 0 0 14px; }
+    .m-row { margin-top: 12px; }
+    .m-row .input { width: 100%; }
+    .m-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .m-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .combo { position: relative; }
+    .combo-list { position: absolute; left: 0; right: 0; top: 100%; z-index: 5; max-height: 240px; overflow-y: auto; background: var(--surface); border: 1px solid var(--border); display: none; }
+    .combo-list.open { display: block; }
+    .combo-item { padding: 8px 10px; cursor: pointer; font-size: 13px; display: flex; justify-content: space-between; gap: 10px; }
+    .combo-item:hover { background: var(--bg-warm); }
+    .combo-item.new { color: var(--brand); font-weight: 700; border-bottom: 1px solid var(--border-light); }
+    .subform { border: 1px dashed var(--border); padding: 12px; margin-top: 12px; background: var(--bg-warm); }
+    .err { color: #a13d3d; font-size: 12px; margin-top: 8px; min-height: 16px; }
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: 10px 20px; font-size: 13px; font-weight: 700; opacity: 0; transition: all .25s ease; pointer-events: none; z-index: 9999; max-width: 92vw; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    #toast a { color: #fff; text-decoration: underline; cursor: pointer; margin-left: 8px; }
+    @media (max-width: 720px) { .kpi-strip { grid-template-columns: 1fr 1fr; } .m-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:1240px;">
+    <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+        <div>
+          <h2 style="margin:0;">Inventory</h2>
+          <div class="small" style="color:var(--text-light); margin-top:4px;">One row per physical piece. Add stock, print QR labels, and track what sold.</div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
+          <a href="admin-pos.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">POS</a>
+          <button class="btn" id="btnAdd" type="button" style="padding:8px 18px;">+ Add inventory</button>
+        </div>
+      </div>
+
+      <div class="kpi-strip" id="kpiStrip">
+        <div class="kpi-tile"><div class="kpi-label">In stock</div><div class="kpi-value" id="kpiInStock">—</div></div>
+        <div class="kpi-tile"><div class="kpi-label">Inventory value (at cost)</div><div class="kpi-value" id="kpiValue">—</div></div>
+        <div class="kpi-tile"><div class="kpi-label">Added this month</div><div class="kpi-value" id="kpiAdded">—</div></div>
+        <div class="kpi-tile"><div class="kpi-label">Sold this month</div><div class="kpi-value" id="kpiSold">—</div></div>
+      </div>
+      <div class="kpi-note" id="kpiNote"></div>
+
+      <div class="filters-bar">
+        <div class="f"><label for="fStatus">Status</label>
+          <select id="fStatus" class="input"><option value="">All</option><option value="in_stock">In stock</option><option value="sold">Sold</option></select></div>
+        <div class="f"><label for="fSku">SKU</label>
+          <select id="fSku" class="input" style="max-width:220px;"><option value="">All SKUs</option></select></div>
+        <div class="f"><label for="fWeaver">Weaver</label>
+          <input id="fWeaver" class="input" type="text" placeholder="Weaver name" style="max-width:150px;" /></div>
+        <div class="f"><label for="fFrom">Intake from</label><input id="fFrom" class="input" type="date" /></div>
+        <div class="f"><label for="fTo">Intake to</label><input id="fTo" class="input" type="date" /></div>
+        <div class="f"><label for="fSerial">Serial</label>
+          <input id="fSerial" class="input" type="text" placeholder="AHM-00001" style="max-width:150px;" /></div>
+        <button class="btn secondary" id="btnApply" type="button" style="padding:9px 14px; font-size:13px;">Apply</button>
+        <button class="btn secondary" id="btnReset" type="button" style="padding:9px 14px; font-size:13px;">Reset</button>
+        <div style="flex:1"></div>
+        <button class="btn secondary" id="btnExport" type="button" style="padding:9px 14px; font-size:13px;">Export CSV</button>
+      </div>
+
+      <div class="ledger-wrap">
+        <table class="ledger" id="ledgerTable">
+          <thead><tr>
+            <th></th><th>Serial</th><th>Product</th><th>Status</th><th>Cost</th><th>Weaver</th>
+            <th>Intake</th><th>Sold</th><th>Sold via</th><th>Order</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="ledgerBody"><tr><td colspan="11" style="padding:24px; text-align:center; color:var(--text-light);">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <span id="pagerInfo"></span>
+        <button class="btn secondary" id="btnPrev" type="button" style="padding:6px 12px; font-size:12px;">‹ Prev</button>
+        <button class="btn secondary" id="btnNext" type="button" style="padding:6px 12px; font-size:12px;">Next ›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add inventory modal -->
+  <div class="modal-bg" id="addModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+      <h3 id="addTitle">Add inventory</h3>
+      <div class="m-row">
+        <label class="fld-label" for="addSkuInput">SKU</label>
+        <div class="combo">
+          <input id="addSkuInput" class="input" type="text" autocomplete="off" placeholder="Search products or create a new SKU…" />
+          <div class="combo-list" id="addSkuList"></div>
+        </div>
+        <div class="small" id="addSkuChosen" style="margin-top:4px; color:var(--text-light);"></div>
+      </div>
+      <div class="subform" id="newSkuForm" style="display:none;">
+        <div class="fld-label" style="margin-bottom:6px;">New SKU (hidden from the storefront until you finish the listing)</div>
+        <div class="m-grid">
+          <div><label class="fld-label" for="nsTitle">Title</label><input id="nsTitle" class="input" type="text" /></div>
+          <div><label class="fld-label" for="nsPrice">Selling price (₹)</label><input id="nsPrice" class="input" type="number" min="0" step="1" /></div>
+        </div>
+        <div class="small" style="color:var(--text-light); margin-top:6px;">Category defaults to Saree; the slug is generated from the title. Finish the listing in Products.</div>
+        <div class="m-row"><label class="fld-label" for="nsThumb">Thumbnail (optional)</label><input id="nsThumb" type="file" accept="image/jpeg,image/png,image/webp" /></div>
+      </div>
+      <div class="m-grid">
+        <div class="m-row"><label class="fld-label" for="addQty">Quantity</label><input id="addQty" class="input" type="number" min="1" step="1" value="1" /></div>
+        <div class="m-row"><label class="fld-label" for="addCost">Cost price (₹, per piece)</label><input id="addCost" class="input" type="number" min="0" step="0.01" /></div>
+      </div>
+      <div class="m-row"><label class="fld-label" for="addWeaver">Weaver (optional)</label><input id="addWeaver" class="input" type="text" /></div>
+      <div class="m-row"><label class="fld-label" for="addPhoto">Piece photo (optional, shared by all pieces)</label><input id="addPhoto" type="file" accept="image/jpeg,image/png,image/webp" /></div>
+      <div class="err" id="addErr"></div>
+      <div class="m-actions">
+        <button class="btn secondary" id="addCancel" type="button">Cancel</button>
+        <button class="btn" id="addSubmit" type="button">Add 1</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit piece modal -->
+  <div class="modal-bg" id="editModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+      <h3 id="editTitle">Edit piece</h3>
+      <div class="small mono" id="editSerial"></div>
+      <div class="m-row"><label class="fld-label" for="editCost">Cost price (₹)</label><input id="editCost" class="input" type="number" min="0" step="0.01" /></div>
+      <div class="m-row"><label class="fld-label" for="editWeaver">Weaver</label><input id="editWeaver" class="input" type="text" /></div>
+      <div class="m-row"><label class="fld-label" for="editPhoto">Replace photo (optional)</label><input id="editPhoto" type="file" accept="image/jpeg,image/png,image/webp" /></div>
+      <div class="err" id="editErr"></div>
+      <div class="m-actions">
+        <button class="btn secondary" id="editCancel" type="button">Cancel</button>
+        <button class="btn" id="editSave" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" role="status"></div>
+  <div id="footer"></div>
+
+  <script type="module" src="scripts/admin-inventory.js"></script>
+</body>
+</html>
