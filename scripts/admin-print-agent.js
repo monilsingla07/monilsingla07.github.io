@@ -27,9 +27,12 @@ function readNumSetting(key, def, min, max) {
   } catch (_) {}
   return def;
 }
-const getTopOffsetMm = () => readNumSetting("labelOffset", 0, 0, 25);
+const getTopOffsetMm = () => readNumSetting("labelOffset", 0, -25, 25);
 const getTrailingFeedMm = () => readNumSetting("trailingFeed", 15, 0, 50);
-const LABEL_H = { "50x50": 384, "50x30": 240 };
+// 50x50mm labels: thermal printer firmware leaves ~4mm unprintable at top AND bottom
+// of each physical label, so the usable area is ~42mm. Rendering at 336 dots (42mm @ 203 dpi)
+// instead of 400 means content fits without content being clipped off the bottom.
+const LABEL_H = { "50x50": 336, "50x30": 240 };
 const BLE_CHUNK = 150;                     // under typical 180-byte BLE payloads
 const BAND_ROWS = 65535;                   // one GS v 0 command per raster (multiple bands made the printer insert line spacing between them)
 const PROVENANCE = "Handwoven in Chanderi, India";
@@ -90,8 +93,12 @@ function setState() {
   pill.textContent = pst === "connected" ? "Connected" : pst === "reconnecting" ? "Reconnecting…" : "Disconnected";
   $("changePrinter").hidden = !dp;
   $("btnDisconnect").hidden = !transport;
-  $("btnConnect").hidden = !!transport;
-  $("btnSerial").hidden = !!transport || !("serial" in navigator);
+  // Hide the generic Connect buttons when a default exists; the big Reconnect button takes over.
+  $("btnConnect").hidden = !!transport || !!dp;
+  $("btnSerial").hidden = !!transport || !!dp || !("serial" in navigator);
+  const canReconnect = !transport && !!dp;
+  $("btnReconnect").hidden = !canReconnect;
+  if (dp) $("btnReconnectName").textContent = dp.deviceName || "printer";
   $("queueInfo").textContent = pending.length + " queued";
 }
 
@@ -347,6 +354,9 @@ async function printCanvas(canvas) {
 
 // Crop the top topPx rows off the canvas ("shift content up").
 function cropTop(canvas, topPx) {
+  // Positive topPx: crop N pixels off the top (content shifts UP on paper).
+  // Negative topPx: ADD |N| blank pixels at the top (content shifts DOWN on paper).
+  if (topPx === 0) return canvas;
   const h = Math.max(1, canvas.height - topPx);
   const out = document.createElement("canvas");
   out.width = canvas.width; out.height = h;
@@ -702,6 +712,20 @@ function wire() {
   $("btnConnect").addEventListener("click", async () => {
     try { await connectBle(); await afterConnect(); }
     catch (e) { if (e.name !== "NotFoundError") toast(e.message || String(e), 7000); }
+  });
+  // One-click reconnect uses the stored default printer's transport kind directly.
+  $("btnReconnect").addEventListener("click", async () => {
+    const dp = loadDefault();
+    if (!dp) return;
+    manualDisconnect = false; stopReconnect();
+    try {
+      if (dp.transportKind === "serial") await connectSerial();
+      else if (dp.transportKind === "mock") { mockTransport(); }
+      else await connectBle();
+      await afterConnect();
+    } catch (e) {
+      if (e.name !== "NotFoundError") toast(e.message || String(e), 7000);
+    }
   });
   $("btnSerial").addEventListener("click", async () => {
     try { await connectSerial(); await afterConnect(); }

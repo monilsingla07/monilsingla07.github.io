@@ -30,6 +30,7 @@
         <div class="pa-sub" id="agentLog"></div>
         <div class="pa-sub">Agent <span class="mono" id="agentId"></span> · <span id="deviceName">no device</span> · <span id="queueInfo">0 queued</span></div>
         <div class="pa-actions">
+          <button class="btn" id="btnReconnect" type="button" hidden style="background:#b8923a;color:#fff;font-weight:700">↻ Reconnect to <span id="btnReconnectName">printer</span></button>
           <button class="btn" id="btnConnect" type="button">Connect printer (Bluetooth)</button>
           <button class="btn secondary" id="btnSerial" type="button">Connect via paired serial port</button>
           <button class="btn secondary" id="btnMock" type="button" hidden>Mock printer (test)</button>
@@ -50,12 +51,12 @@
             </select>
           </label>
           <label>Top offset (mm)
-            <input type="number" id="labelOffset" class="input" min="0" max="25" step="0.5" value="0" style="width:80px" />
+            <input type="number" id="labelOffset" class="input" min="-25" max="25" step="0.5" value="0" style="width:80px" />
           </label>
           <label>Trailing feed (mm)
             <input type="number" id="trailingFeed" class="input" min="0" max="50" step="0.5" value="15" style="width:80px" />
           </label>
-          <span class="pa-sub">Top offset: shift raster up by this many mm. If the first few mm of each label print blank, increase this to match. Trailing feed: extra paper advance after each label so you can tear at the gap.</span>
+          <span class="pa-sub">Top offset: shift content on the label. Positive = up (crop top), negative = down (pad top). Range −25 to +25 mm. Trailing feed: extra paper advance after each label so you can tear at the gap.</span>
           <label><input type="checkbox" id="showCanvas" /> Show render canvas (debug)</label>
           <span class="pa-sub" id="wakeInfo"></span>
         </div>
