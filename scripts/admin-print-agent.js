@@ -210,7 +210,8 @@ export function canvasToRaster(canvas) {
 }
 
 const INIT = new Uint8Array([0x1b, 0x40]);
-const feed = (n) => new Uint8Array([0x1b, 0x64, n]);          // ESC d n
+const feed = (n) => new Uint8Array([0x1b, 0x64, n]);          // ESC d n (print and feed n lines)
+const FORM_FEED = new Uint8Array([0x0c]);                     // Advance to top of next label (needs label-mode calibration)
 const CUT = new Uint8Array([0x1d, 0x56, 0x01]);               // GS V 1 (no-op if unsupported)
 
 function concat(parts) {
@@ -323,9 +324,15 @@ async function runLabelJob(job) {
   for (const serial of serials) {
     const canvas = renderLabelCanvas(serial, layout, await labelInfo(serial));
     await printCanvas(canvas);
-    await sendBytes(feed(layout === "50x30" ? 1 : 2));
+    // After each label, advance to the TOP of the next label. On label-mode
+    // printers with the gap sensor calibrated, 0x0C advances to the next
+    // gap. If the printer isn't calibrated, this is a no-op and labels
+    // will drift — user must run the printer's label-learn procedure once.
+    await sendBytes(FORM_FEED);
   }
-  await sendBytes(concat([feed(2), CUT]));
+  // No trailing dot feed — form feed already parked us at the next label top.
+  // Keep CUT in case the unit has an auto-cutter.
+  await sendBytes(CUT);
 }
 
 async function runInvoiceJob(job) {
