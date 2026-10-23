@@ -17,8 +17,18 @@ const PDFJS_VER = "3.11.174";
 const PDFJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VER + "/pdf.min.js";
 const PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VER + "/pdf.worker.min.js";
 
-const LABEL_W = 400;                       // ~50mm @ 203dpi
-// 50x50 is rendered 384px (~48mm): leaves ~2mm slack so a misaligned feed offset does not spill onto the next label.
+const LABEL_W = 384;                       // print head is 384 dots wide (~48mm @ 203dpi)
+const DPI = 203;
+const mmToDots = (mm) => Math.round(mm * DPI / 25.4);
+function readNumSetting(key, def, min, max) {
+  try {
+    const v = parseFloat(localStorage.getItem(key));
+    if (Number.isFinite(v)) return Math.min(max, Math.max(min, v));
+  } catch (_) {}
+  return def;
+}
+const getTopOffsetMm = () => readNumSetting("labelOffset", 10, 0, 25);
+const getTrailingFeedMm = () => readNumSetting("trailingFeed", 15, 0, 50);
 const LABEL_H = { "50x50": 384, "50x30": 240 };
 const BLE_CHUNK = 150;                     // under typical 180-byte BLE payloads
 const BAND_ROWS = 128;                     // rows per GS v 0 command
@@ -148,12 +158,16 @@ function fitText(ctx, text, x, y, maxW, px, weight = "", family = "Outfit, DM Sa
   ctx.fillText(text, x, y);
 }
 
-export function renderLabelCanvas(serial, layout, d = {}) {
+export function renderLabelCanvas(serial, layout, d = {}, topPx = mmToDots(getTopOffsetMm())) {
   const H = LABEL_H[layout] || LABEL_H["50x50"];
-  const { c, ctx } = getCanvas(LABEL_W, H);
+  // Content is laid out below a blank band of topPx rows; runLabelJob crops that band off
+  // (the printer firmware adds its own ~10mm top offset). 50x50 canvas stays 384 tall.
+  const CH = layout === "50x30" ? H + topPx : H;
+  const { c, ctx } = getCanvas(LABEL_W, CH);
   const cx = LABEL_W / 2;
   const price = d.price != null ? money(d.price) : "";
   ctx.textAlign = "center";
+  ctx.translate(0, topPx);
   if (layout === "50x30") {
     // QR left, text right.
     drawQr(ctx, serial, 8, 8, H - 16);
@@ -166,34 +180,34 @@ export function renderLabelCanvas(serial, layout, d = {}) {
     ctx.fillStyle = "#000";
     return c;
   }
-  // 50x50 rich layout (mirrors print-labels.js)
-  // Top margin ~2.5mm (20px), compact vertical rhythm so everything ends before 384px.
-  let y = 20;
+  // 50x50 dense layout (mirrors print-labels.css). Usable area: 384 x 304 (~48 x 38mm).
+  const AVAIL = 304, W = LABEL_W - 16;
+  let y = 0;
+  ctx.fillStyle = "#000";
   if (hindiOk) {
-    ctx.fillStyle = "#000";
-    fitText(ctx, "अहम् स्त्री", cx, y + 36, LABEL_W - 20, 38, "bold", '"Noto Sans Devanagari", serif');
-    ctx.fillStyle = "#555"; ctx.font = "18px Outfit, sans-serif";
-    ctx.fillText("AHAMSTREE", cx, y + 56);
-    y += 62;
+    fitText(ctx, "अहम् स्त्री", cx, y + 34, W, 42, "bold", '"Noto Sans Devanagari", serif');
+    ctx.fillStyle = "#555"; ctx.font = "15px Outfit, sans-serif";
+    ctx.fillText("AHAMSTREE", cx, y + 50);
+    y += 54;
   } else {
-    // Hindi font unavailable: plain-text brand only (avoid blank/tofu Hindi).
-    ctx.fillStyle = "#000";
-    fitText(ctx, "AhamStree", cx, y + 34, LABEL_W - 20, 38, "bold");
-    y += 46;
+    fitText(ctx, "AhamStree", cx, y + 34, W, 40, "bold");
+    y += 44;
   }
   ctx.fillStyle = "#000";
-  ctx.fillRect(cx - 140, y, 280, 2); y += 6;
-  const qs = 136;
-  drawQr(ctx, serial, cx - qs / 2, y, qs); y += qs + 18;
-  fitText(ctx, serial, cx, y, LABEL_W - 20, 24, "600"); y += 6;
-  ctx.fillRect(cx - 140, y, 280, 2); y += 4;
-  if (d.sareeType) { fitText(ctx, d.sareeType, cx, y + 16, LABEL_W - 20, 20); y += 22; }
-  fitText(ctx, price, cx, y + 30, LABEL_W - 20, 42, "800"); y += 38;
-  if (d.care) { fitText(ctx, "Care: " + d.care, cx, y + 14, LABEL_W - 16, 18); y += 20; }
-  ctx.fillStyle = "#444";
-  fitText(ctx, PROVENANCE, cx, y + 14, LABEL_W - 16, 17); y += 20;
-  fitText(ctx, SITE_URL, cx, y + 14, LABEL_W - 16, 17, "600");
+  ctx.fillRect(cx - 150, y, 300, 2); y += 4;
+  const care = [d.care ? "Care: " + d.care : "", PROVENANCE].filter(Boolean).join(" | ");
+  // Fixed rows below the QR: serial, rule, saree type, price, care/provenance, url.
+  const below = 26 + 4 + (d.sareeType ? 20 : 0) + 46 + 16 + 16;
+  const qs = Math.max(112, Math.min(190, AVAIL - y - below));
+  drawQr(ctx, serial, cx - qs / 2, y, qs); y += qs;
+  fitText(ctx, serial, cx, y + 20, W, 24, "700"); y += 26;
+  ctx.fillRect(cx - 150, y, 300, 2); y += 2;
+  if (d.sareeType) { fitText(ctx, d.sareeType, cx, y + 16, W, 18); y += 20; }
+  fitText(ctx, price, cx, y + 38, W, 50, "900"); y += 46;
+  ctx.fillStyle = "#333";
+  fitText(ctx, care, cx, y + 12, W, 15); y += 16;
   ctx.fillStyle = "#000";
+  fitText(ctx, SITE_URL, cx, y + 12, W, 15, "700");
   return c;
 }
 
@@ -330,13 +344,35 @@ async function printCanvas(canvas) {
   await sendBytes(concat([INIT, ...bands]));
 }
 
+// Crop the top topPx rows off the canvas ("shift content up").
+function cropTop(canvas, topPx) {
+  const h = Math.max(1, canvas.height - topPx);
+  const out = document.createElement("canvas");
+  out.width = canvas.width; out.height = h;
+  const o = out.getContext("2d");
+  o.fillStyle = "#fff"; o.fillRect(0, 0, out.width, h);
+  o.drawImage(canvas, 0, -topPx);
+  return out;
+}
+
+// ESC J n (print and feed n dots), repeated for n > 255.
+function trailingFeedBytes(mm) {
+  let dots = mmToDots(mm);
+  const parts = [];
+  while (dots > 0) { const n = Math.min(255, dots); parts.push(new Uint8Array([0x1b, 0x4a, n])); dots -= n; }
+  return parts;
+}
+
 async function runLabelJob(job) {
   const { serials = [], layout = "50x50" } = job.payload || {};
   if (!serials.length) throw new Error("empty_serials");
   await loadHindiFont();
   for (const serial of serials) {
-    const canvas = renderLabelCanvas(serial, layout, await labelInfo(serial));
-    await printCanvas(canvas);
+    const topPx = mmToDots(getTopOffsetMm());
+    const full = renderLabelCanvas(serial, layout, await labelInfo(serial), topPx);
+    await printCanvas(cropTop(full, topPx));
+    const tf = trailingFeedBytes(getTrailingFeedMm());
+    if (tf.length) await sendBytes(concat(tf));
     // After each label, advance to the TOP of the next label. On label-mode
     // printers with the gap sensor calibrated, 0x0C advances to the next
     // gap. If the printer isn't calibrated, this is a no-op and labels
@@ -651,6 +687,15 @@ function wire() {
   $("supportNote").textContent = supported ? "" : "Web Bluetooth is not available here (iOS/Safari/Firefox are unsupported). Use Chrome or Edge on Android or desktop.";
   try { const w = localStorage.getItem("ahamstreePaperWidth"); if (w) $("paperWidth").value = w; } catch (_) {}
   $("paperWidth").addEventListener("change", () => { try { localStorage.setItem("ahamstreePaperWidth", $("paperWidth").value); } catch (_) {} });
+  for (const [id, def, min, max] of [["labelOffset", 10, 0, 25], ["trailingFeed", 15, 0, 50]]) {
+    const el = $(id);
+    el.value = readNumSetting(id, def, min, max);
+    el.addEventListener("change", () => {
+      const v = Math.min(max, Math.max(min, parseFloat(el.value) || 0));
+      el.value = v;
+      try { localStorage.setItem(id, String(v)); } catch (_) {}
+    });
+  }
   if (params.get("mock") === "1") $("btnMock").hidden = false;
 
   $("btnConnect").addEventListener("click", async () => {
