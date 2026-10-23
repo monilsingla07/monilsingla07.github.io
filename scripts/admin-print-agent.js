@@ -167,14 +167,19 @@ function fitText(ctx, text, x, y, maxW, px, weight = "", family = "Outfit, DM Sa
 
 export function renderLabelCanvas(serial, layout, d = {}, topPx = mmToDots(getTopOffsetMm())) {
   const H = LABEL_H[layout] || LABEL_H["50x50"];
-  // Content is laid out below a blank band of topPx rows; runLabelJob crops that band off
-  // (the printer firmware adds its own ~10mm top offset). 50x50 canvas stays 384 tall.
-  const CH = layout === "50x30" ? H + topPx : H;
+  // Allocate enough canvas vertical space to hold the ~H px of content PLUS the top-offset
+  // adjustment in either direction. Positive topPx shifts content up (runLabelJob then crops
+  // topPx off the top). Negative topPx shifts content down (translate adds |topPx| blank at
+  // top; cropTop with a negative value is a no-op pass-through once we send this canvas).
+  const extra = Math.abs(topPx);
+  const CH = layout === "50x30" ? H + topPx : H + extra;
   const { c, ctx } = getCanvas(LABEL_W, CH);
   const cx = LABEL_W / 2;
   const price = d.price != null ? money(d.price) : "";
   ctx.textAlign = "center";
-  ctx.translate(0, topPx);
+  // For positive topPx: content starts at y=topPx and is cropped later.
+  // For negative topPx: content starts at y=|topPx| (giving top padding); no crop later.
+  ctx.translate(0, topPx >= 0 ? topPx : extra);
   if (layout === "50x30") {
     // QR left, text right.
     drawQr(ctx, serial, 8, 8, H - 16);
@@ -380,7 +385,9 @@ async function runLabelJob(job) {
   for (const serial of serials) {
     const topPx = mmToDots(getTopOffsetMm());
     const full = renderLabelCanvas(serial, layout, await labelInfo(serial), topPx);
-    await printCanvas(cropTop(full, topPx));
+    // Only crop for positive topPx (shift up). Negative topPx is already represented
+    // by the extra top padding baked into the canvas by renderLabelCanvas.
+    await printCanvas(topPx > 0 ? cropTop(full, topPx) : full);
     const tf = trailingFeedBytes(getTrailingFeedMm());
     if (tf.length) await sendBytes(concat(tf));
     // After each label, advance to the TOP of the next label. On label-mode
