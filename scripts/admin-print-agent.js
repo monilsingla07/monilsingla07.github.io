@@ -192,32 +192,50 @@ export function renderLabelCanvas(serial, layout, d = {}, topPx = mmToDots(getTo
     ctx.fillStyle = "#000";
     return c;
   }
-  // 50x50 dense layout (mirrors print-labels.css). Usable area: 384 x 336 (~48 x 42mm), 4px side margins.
-  // Every row is a fixed-height slot (y += rowHeight) so lines can never overlap.
-  const AVAIL = Math.max(304, H - topPx), W = LABEL_W - 8, RW = Math.round(LABEL_W * 0.9);
+  // 50x50 dense layout. The RIGHT 30px (~3.7mm) is reserved for a vertical URL strip,
+  // so the main content area is LABEL_W - 30 wide. A thin vertical rule separates them.
+  const URL_STRIP = 30;
+  const MAIN_W = LABEL_W - URL_STRIP;
+  const mcx = MAIN_W / 2;                              // center x for main content
+  const AVAIL = Math.max(304, H - topPx);
+  const W = MAIN_W - 8;
+  const RW = Math.round(MAIN_W * 0.9);
   let y = 0;
-  const rule = () => { ctx.fillStyle = "#000"; ctx.fillRect(cx - RW / 2, y, RW, 2); };
+  const rule = () => { ctx.fillStyle = "#000"; ctx.fillRect(mcx - RW / 2, y, RW, 2); };
+  ctx.textAlign = "center";
   ctx.fillStyle = "#000";
   if (hindiOk) {
-    fitText(ctx, "अहम् स्त्री", cx, y + 27, W, 32, "bold", '"Noto Sans Devanagari", serif'); y += 32;
-    fitText(ctx, "AhamStree", cx, y + 15, W, 19, "600"); y += 20;
+    fitText(ctx, "अहम् स्त्री", mcx, y + 27, W, 32, "bold", '"Noto Sans Devanagari", serif'); y += 32;
+    fitText(ctx, "AhamStree", mcx, y + 15, W, 19, "600"); y += 20;
   } else {
-    fitText(ctx, "AhamStree", cx, y + 30, W, 40, "bold"); y += 36;
+    fitText(ctx, "AhamStree", mcx, y + 30, W, 40, "bold"); y += 36;
   }
   y += 2; rule(); y += 2 + 3;
   const hasType = !!d.sareeType;
-  // Fixed rows below the QR: gap, serial, gap+rule+gap, [type], price, care, provenance, url.
-  const below = 3 + 22 + 7 + (hasType ? 20 : 0) + 44 + 18 + 18 + 18;
+  // Fixed rows below the QR: gap, serial, gap+rule+gap, [type], price, care, provenance.
+  // (URL no longer takes a row — it lives in the right strip.)
+  const below = 3 + 22 + 7 + (hasType ? 20 : 0) + 44 + 18 + 18;
   const qs = Math.max(112, Math.min(230, AVAIL - y - below));
-  drawQr(ctx, serial, cx - qs / 2, y, qs); y += qs + 3;
-  fitText(ctx, serial, cx, y + 17, W, 20, "700"); y += 22;
+  drawQr(ctx, serial, mcx - qs / 2, y, qs); y += qs + 3;
+  fitText(ctx, serial, mcx, y + 17, W, 20, "700"); y += 22;
   y += 2; rule(); y += 2 + 3;
-  if (hasType) { fitText(ctx, d.sareeType, cx, y + 14, W, 17, "700"); y += 20; }
-  fitText(ctx, price, cx, y + 34, W, 40, "900"); y += 44;
+  if (hasType) { fitText(ctx, d.sareeType, mcx, y + 14, W, 17, "700"); y += 20; }
+  fitText(ctx, price, mcx, y + 34, W, 40, "900"); y += 44;
   ctx.fillStyle = "#000";
-  if (d.care) { fitText(ctx, "Care: " + d.care, cx, y + 14, W, 16, "700"); y += 18; }
-  fitText(ctx, PROVENANCE, cx, y + 14, W, 16, "700"); y += 18;
-  fitText(ctx, SITE_URL, cx, y + 14, W, 16, "800"); y += 18;
+  if (d.care) { fitText(ctx, "Care: " + d.care, mcx, y + 14, W, 16, "700"); y += 18; }
+  fitText(ctx, PROVENANCE, mcx, y + 14, W, 16, "700"); y += 18;
+
+  // Vertical URL strip on the right edge: thin separator line + rotated text.
+  ctx.fillStyle = "#000";
+  ctx.fillRect(MAIN_W, 0, 2, H);                       // vertical divider
+  ctx.save();
+  // Rotate -90° so the URL reads bottom-to-top (natural when label is right-side up).
+  ctx.translate(MAIN_W + URL_STRIP / 2, H / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = "center";
+  ctx.font = `800 20px Outfit, DM Sans, sans-serif`;
+  ctx.fillText(SITE_URL, 0, 7);                        // small y nudge to vertically center
+  ctx.restore();
   return c;
 }
 
