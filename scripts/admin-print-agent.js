@@ -33,7 +33,7 @@ const getTrailingFeedMm = () => readNumSetting("trailingFeed", 15, 0, 50);
 // render the full 400 dots (50mm @ 203 dpi). ESC/POS was limited to ~336 (42mm) because it
 // had no label-awareness and we had to leave physical top/bottom margins empty.
 const LABEL_H = { "50x50": 400, "50x30": 240 };
-const BLE_CHUNK = 150;                     // under typical 180-byte BLE payloads
+const BLE_CHUNK = 200;                     // most modern BLE stacks negotiate >=200-byte MTU
 const BAND_ROWS = 65535;                   // one GS v 0 command per raster (multiple bands made the printer insert line spacing between them)
 const PROVENANCE = "Handwoven in Chanderi, India";
 const SITE_URL = "www.ahamstree.com";
@@ -628,13 +628,15 @@ function bleTransport(device, initialCh) {
     const match = cands.find((c) => c.ch.uuid === ch.uuid) || cands[0];
     ch = match.ch;
     withResp = ch.properties.write || !ch.properties.writeWithoutResponse;
+    // Give the BLE link ~1s to settle after a reconnect before firing a huge raster.
+    await new Promise((r) => setTimeout(r, 1000));
     agentLog("Reconnected to " + (device.name || "printer") + " mid-print.");
   }
 
   async function rawWrite(part) {
     // Each chunk has a 4s cap so a stuck BLE write can't hang a job indefinitely.
-    if (withResp) await withTimeout(ch.writeValueWithResponse(part), 4000, "write");
-    else await withTimeout(ch.writeValueWithoutResponse(part), 4000, "write");
+    if (withResp) await withTimeout(ch.writeValueWithResponse(part), 10000, "write");
+    else await withTimeout(ch.writeValueWithoutResponse(part), 10000, "write");
   }
 
   async function writeOne(part) {
