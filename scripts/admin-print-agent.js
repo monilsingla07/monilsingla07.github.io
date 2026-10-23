@@ -492,7 +492,7 @@ async function loadJobs() {
     "<td>" + escapeHtml(fmtTime(j.created_at)) + "</td><td>" + escapeHtml(j.kind) + "</td><td class=\"mono\">" + escapeHtml(detailOf(j)) + "</td>" +
     '<td><span class="pa-pill ' + escapeHtml(j.status) + '">' + escapeHtml(j.status) + "</span>" +
     (j.failure_reason ? ' <span class="pa-sub">' + escapeHtml(j.failure_reason) + "</span>" : "") + "</td>" +
-    "<td>" + (j.status === "failed" ? "Retry" : j.status === "queued" ? '<a href="#" data-cancel="1">Cancel</a>' : "") + "</td></tr>"
+    "<td>" + (j.status === "failed" ? "Retry" : (j.status === "queued" || j.status === "printing") ? '<a href="#" data-cancel="1">Cancel</a>' : "") + "</td></tr>"
   ).join("");
 }
 
@@ -568,18 +568,26 @@ async function tryAutoConnect() {
   return true;
 }
 
+// Promise.race wrapper: aborts a hanging BLE op after `ms` with a tagged error.
+function withTimeout(p, ms, label) {
+  return Promise.race([
+    p,
+    new Promise((_, rej) => setTimeout(() => rej(new Error("timeout:" + label)), ms)),
+  ]);
+}
+
 function bleTransport(device, initialCh) {
   let ch = initialCh;
   let withResp = ch.properties.write || !ch.properties.writeWithoutResponse;
   device.addEventListener("gattserverdisconnected", onTransportLost);
 
   // If GATT silently dropped between writes (common on Zjiang/Xprinter when idle),
-  // transparently reconnect and re-pick the writable characteristic. One retry per chunk.
+  // transparently reconnect and re-pick the writable characteristic.
   async function ensureConnected() {
     if (device.gatt.connected) return;
     agentLog("GATT dropped — reconnecting in place…");
-    await device.gatt.connect();
-    const cands = await findWritable(device.gatt);
+    await withTimeout(device.gatt.connect(), 8000, "gatt_connect");
+    const cands = await withTimeout(findWritable(device.gatt), 8000, "find_writable");
     if (!cands.length) throw new Error("No writable characteristic after reconnect");
     const match = cands.find((c) => c.ch.uuid === ch.uuid) || cands[0];
     ch = match.ch;
@@ -587,16 +595,20 @@ function bleTransport(device, initialCh) {
     agentLog("Reconnected to " + (device.name || "printer") + " mid-print.");
   }
 
+  async function rawWrite(part) {
+    // Each chunk has a 4s cap so a stuck BLE write can't hang a job indefinitely.
+    if (withResp) await withTimeout(ch.writeValueWithResponse(part), 4000, "write");
+    else await withTimeout(ch.writeValueWithoutResponse(part), 4000, "write");
+  }
+
   async function writeOne(part) {
     try {
-      if (withResp) await ch.writeValueWithResponse(part);
-      else await ch.writeValueWithoutResponse(part);
+      await rawWrite(part);
     } catch (e) {
       // One shot at mid-write recovery: reconnect + retry this chunk once.
-      if (device.gatt.connected) throw e;
+      if (device.gatt.connected && !/^timeout:/.test(String(e.message || ""))) throw e;
       await ensureConnected();
-      if (withResp) await ch.writeValueWithResponse(part);
-      else await ch.writeValueWithoutResponse(part);
+      await rawWrite(part);
     }
   }
 
