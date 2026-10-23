@@ -243,7 +243,10 @@ async function charge() {
     } else if (e.status === 400) {
       toast("Invalid sale: " + (e.body?.error || "check the bill, discount and payment"), "err", 7000);
     } else {
-      toast("Charge failed: " + (e.message || e), "err", 7000);
+      // Surface the server's error details so a 500 doesn't just read as "Failed to complete sale".
+      const detail = e.body?.details ? " — " + (typeof e.body.details === "string" ? e.body.details : JSON.stringify(e.body.details)) : "";
+      toast("Charge failed: " + (e.message || e) + detail, "err", 10000);
+      console.error("pos-checkout failure", e.status, e.body);
     }
   } finally {
     charging = false; render();

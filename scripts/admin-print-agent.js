@@ -698,7 +698,7 @@ function wire() {
   $("supportNote").textContent = supported ? "" : "Web Bluetooth is not available here (iOS/Safari/Firefox are unsupported). Use Chrome or Edge on Android or desktop.";
   try { const w = localStorage.getItem("ahamstreePaperWidth"); if (w) $("paperWidth").value = w; } catch (_) {}
   $("paperWidth").addEventListener("change", () => { try { localStorage.setItem("ahamstreePaperWidth", $("paperWidth").value); } catch (_) {} });
-  for (const [id, def, min, max] of [["labelOffset", 0, 0, 25], ["trailingFeed", 15, 0, 50]]) {
+  for (const [id, def, min, max] of [["labelOffset", 0, -25, 25], ["trailingFeed", 15, 0, 50]]) {
     const el = $(id);
     el.value = readNumSetting(id, def, min, max);
     el.addEventListener("change", () => {
