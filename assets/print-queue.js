@@ -34,7 +34,7 @@ export async function queuedCount() {
   return r.total || 0;
 }
 
-// Mini popover next to `anchor` with two choices. Calls onShop() / onBrowser().
+// Mini popover next to `anchor`: primary "Print now", small "Preview labels" link. Calls onShop() / onBrowser().
 export function showPrintChoice(anchor, { onShop, onBrowser }) {
   document.querySelectorAll(".pq-pop").forEach((p) => p.remove());
   const pop = document.createElement("div");
@@ -50,8 +50,13 @@ export function showPrintChoice(anchor, { onShop, onBrowser }) {
     b.addEventListener("click", () => { pop.remove(); fn(); });
     pop.appendChild(b);
   };
-  mk("Print on shop printer", onShop);
-  mk("Open print view in browser", onBrowser);
+  mk("Print now", onShop);
+  const pv = document.createElement("a");
+  pv.href = "#";
+  pv.textContent = "Preview labels";
+  pv.style.cssText = "font-size:11px;color:#777;padding:2px 10px 6px;text-decoration:underline;cursor:pointer;";
+  pv.addEventListener("click", (e) => { e.preventDefault(); pop.remove(); onBrowser(); });
+  pop.appendChild(pv);
   const r = anchor.getBoundingClientRect();
   pop.style.top = window.scrollY + r.bottom + 4 + "px";
   pop.style.left = Math.max(8, Math.min(window.scrollX + r.left, window.scrollX + document.documentElement.clientWidth - 220)) + "px";

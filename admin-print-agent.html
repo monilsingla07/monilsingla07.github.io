@@ -26,6 +26,8 @@
 
       <div class="pa-card" id="statusCard" data-state="disconnected">
         <div class="pa-state">Printer: <span id="stateText">Disconnected</span></div>
+        <div class="pa-default">Default printer: <strong id="defaultName">none</strong> <span class="pa-conn" id="defaultPill" data-state="disconnected">Disconnected</span> <a href="#" id="changePrinter" hidden>Change printer</a></div>
+        <div class="pa-sub" id="agentLog"></div>
         <div class="pa-sub">Agent <span class="mono" id="agentId"></span> · <span id="deviceName">no device</span> · <span id="queueInfo">0 queued</span></div>
         <div class="pa-actions">
           <button class="btn" id="btnConnect" type="button">Connect printer (Bluetooth)</button>
@@ -39,6 +41,7 @@
           <button class="btn" id="svcUse" type="button">Use this</button>
         </div>
         <div class="pa-sub" id="supportNote"></div>
+        <div class="pa-hint" id="labelHint">If labels print with a large top gap or spill onto the next label, run the printer's label-learn procedure: power off, hold feed button, power on, wait for 2–3 labels to feed, release feed.</div>
         <div class="pa-opts">
           <label>Invoice paper
             <select id="paperWidth" class="input">

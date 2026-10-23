@@ -18,7 +18,8 @@ const PDFJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VER +
 const PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VER + "/pdf.worker.min.js";
 
 const LABEL_W = 400;                       // ~50mm @ 203dpi
-const LABEL_H = { "50x50": 400, "50x30": 240 };
+// 50x50 is rendered 384px (~48mm): leaves ~2mm slack so a misaligned feed offset does not spill onto the next label.
+const LABEL_H = { "50x50": 384, "50x30": 240 };
 const BLE_CHUNK = 150;                     // under typical 180-byte BLE payloads
 const BAND_ROWS = 128;                     // rows per GS v 0 command
 const PROVENANCE = "Handwoven in Chanderi, India";
@@ -45,6 +46,10 @@ const agentId = (() => {
   } catch (_) { return crypto.randomUUID(); }
 })();
 let transport = null;        // { name, write(Uint8Array), close() }
+let reconnecting = false;    // auto-reconnect loop active
+let reconnectTimer = null;
+let reconnectBusy = false;
+let manualDisconnect = false;
 let printing = false;
 let processing = false;
 let wakeLock = null;
@@ -63,10 +68,17 @@ function toast(msg, ms = 4500) {
 }
 
 function setState() {
-  const st = printing ? "printing" : transport ? "connected" : "disconnected";
+  const st = printing ? "printing" : transport ? "connected" : reconnecting ? "reconnecting" : "disconnected";
   $("statusCard").dataset.state = st;
   $("stateText").textContent = st[0].toUpperCase() + st.slice(1);
   $("deviceName").textContent = transport ? transport.name : "no device";
+  const dp = loadDefault();
+  $("defaultName").textContent = dp ? dp.deviceName : "none";
+  const pill = $("defaultPill");
+  const pst = transport ? "connected" : reconnecting ? "reconnecting" : "disconnected";
+  pill.dataset.state = pst;
+  pill.textContent = pst === "connected" ? "Connected" : pst === "reconnecting" ? "Reconnecting…" : "Disconnected";
+  $("changePrinter").hidden = !dp;
   $("btnDisconnect").hidden = !transport;
   $("btnConnect").hidden = !!transport;
   $("btnSerial").hidden = !!transport || !("serial" in navigator);
@@ -155,31 +167,32 @@ export function renderLabelCanvas(serial, layout, d = {}) {
     return c;
   }
   // 50x50 rich layout (mirrors print-labels.js)
-  let y = 6;
+  // Top margin ~2.5mm (20px), compact vertical rhythm so everything ends before 384px.
+  let y = 20;
   if (hindiOk) {
     ctx.fillStyle = "#000";
-    fitText(ctx, "अहम् स्त्री", cx, y + 40, LABEL_W - 20, 42, "bold", '"Noto Sans Devanagari", serif');
-    ctx.fillStyle = "#555"; ctx.font = "20px Outfit, sans-serif";
-    ctx.fillText("AHAMSTREE", cx, y + 62);
-    y += 68;
+    fitText(ctx, "अहम् स्त्री", cx, y + 36, LABEL_W - 20, 38, "bold", '"Noto Sans Devanagari", serif');
+    ctx.fillStyle = "#555"; ctx.font = "18px Outfit, sans-serif";
+    ctx.fillText("AHAMSTREE", cx, y + 56);
+    y += 62;
   } else {
     // Hindi font unavailable: plain-text brand only (avoid blank/tofu Hindi).
     ctx.fillStyle = "#000";
-    fitText(ctx, "AhamStree", cx, y + 38, LABEL_W - 20, 42, "bold");
-    y += 52;
+    fitText(ctx, "AhamStree", cx, y + 34, LABEL_W - 20, 38, "bold");
+    y += 46;
   }
   ctx.fillStyle = "#000";
   ctx.fillRect(cx - 140, y, 280, 2); y += 6;
-  const qs = 160;
-  drawQr(ctx, serial, cx - qs / 2, y, qs); y += qs + 20;
-  fitText(ctx, serial, cx, y, LABEL_W - 20, 26, "600"); y += 6;
-  ctx.fillRect(cx - 140, y, 280, 2); y += 6;
-  if (d.sareeType) { fitText(ctx, d.sareeType, cx, y + 18, LABEL_W - 20, 22); y += 24; }
-  fitText(ctx, price, cx, y + 34, LABEL_W - 20, 46, "800"); y += 42;
-  if (d.care) { fitText(ctx, "Care: " + d.care, cx, y + 16, LABEL_W - 16, 20); y += 22; }
+  const qs = 136;
+  drawQr(ctx, serial, cx - qs / 2, y, qs); y += qs + 18;
+  fitText(ctx, serial, cx, y, LABEL_W - 20, 24, "600"); y += 6;
+  ctx.fillRect(cx - 140, y, 280, 2); y += 4;
+  if (d.sareeType) { fitText(ctx, d.sareeType, cx, y + 16, LABEL_W - 20, 20); y += 22; }
+  fitText(ctx, price, cx, y + 30, LABEL_W - 20, 42, "800"); y += 38;
+  if (d.care) { fitText(ctx, "Care: " + d.care, cx, y + 14, LABEL_W - 16, 18); y += 20; }
   ctx.fillStyle = "#444";
-  fitText(ctx, PROVENANCE, cx, y + 16, LABEL_W - 16, 19); y += 22;
-  fitText(ctx, SITE_URL, cx, y + 16, LABEL_W - 16, 19, "600");
+  fitText(ctx, PROVENANCE, cx, y + 14, LABEL_W - 16, 17); y += 20;
+  fitText(ctx, SITE_URL, cx, y + 14, LABEL_W - 16, 17, "600");
   ctx.fillStyle = "#000";
   return c;
 }
@@ -438,11 +451,66 @@ async function loadJobs() {
 }
 
 // ───────────── transports ─────────────
+// ───────────── default printer + auto-reconnect ─────────────
+function loadDefault() {
+  try { const v = JSON.parse(localStorage.getItem("defaultPrinter") || "null"); return v && v.deviceId ? v : null; } catch (_) { return null; }
+}
+function saveDefault(deviceId, deviceName, transportKind) {
+  try { localStorage.setItem("defaultPrinter", JSON.stringify({ deviceId, deviceName, transportKind })); } catch (_) {}
+}
+function clearDefault() { try { localStorage.removeItem("defaultPrinter"); } catch (_) {} }
+function agentLog(msg) { console.info("[print-agent] " + msg); const l = $("agentLog"); if (l) l.textContent = new Date().toLocaleTimeString() + " " + msg; }
+
 function onTransportLost() {
   if (!transport) return;
   try { transport.close(); } catch (_) {}
-  transport = null; setState();
-  toast("Printer disconnected. Reconnect to resume the queue.", 7000);
+  transport = null;
+  if (loadDefault() && !manualDisconnect) { startReconnect(); toast("Printer disconnected. Reconnecting…", 5000); }
+  else toast("Printer disconnected. Reconnect to resume the queue.", 7000);
+  setState();
+}
+
+function startReconnect() {
+  if (reconnecting || !loadDefault()) return;
+  reconnecting = true; setState();
+  agentLog("Auto-reconnect started");
+  const tick = async () => {
+    if (!reconnecting) return;
+    if (document.visibilityState === "visible" && !reconnectBusy) {
+      reconnectBusy = true;
+      try { if (await tryAutoConnect()) return; } catch (e) { agentLog("Reconnect failed: " + (e.message || e)); }
+      finally { reconnectBusy = false; }
+    }
+    if (reconnecting) reconnectTimer = setTimeout(tick, 5000);
+  };
+  reconnectTimer = setTimeout(tick, 5000);
+}
+function stopReconnect() { reconnecting = false; clearTimeout(reconnectTimer); reconnectTimer = null; }
+
+// Silent connect to the stored default printer (no user prompt). Returns true on success.
+async function tryAutoConnect() {
+  const dp = loadDefault();
+  if (!dp) return false;
+  if (dp.transportKind === "mock") {
+    if (params.get("mock") !== "1") return false;
+    mockTransport(); agentLog("Auto-reconnected to " + dp.deviceName); await afterConnect(); return true;
+  }
+  if (dp.transportKind === "bluetooth") {
+    if (!navigator.bluetooth || !navigator.bluetooth.getDevices) return false;
+    const devs = await navigator.bluetooth.getDevices();
+    const device = devs.find((d) => d.id === dp.deviceId);
+    if (!device) return false;
+    await connectBleDevice(device, true);
+  } else if (dp.transportKind === "serial") {
+    if (!navigator.serial) return false;
+    const ports = await navigator.serial.getPorts();
+    const port = ports[parseInt(String(dp.deviceId).split(":")[1], 10)];
+    if (!port) return false;
+    await openSerialPort(port);
+  } else return false;
+  agentLog("Auto-reconnected to " + dp.deviceName);
+  await afterConnect();
+  return true;
 }
 
 function bleTransport(device, ch) {
@@ -479,12 +547,18 @@ async function findWritable(server) {
 async function connectBle() {
   if (!navigator.bluetooth) throw new Error("Web Bluetooth is not available in this browser (use Chrome/Edge on Android or desktop).");
   const device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: BLE_SERVICES });
+  await connectBleDevice(device, false);
+}
+
+async function connectBleDevice(device, silent) {
   const server = await device.gatt.connect();
   const cands = await findWritable(server);
   if (!cands.length) { try { device.gatt.disconnect(); } catch (_) {} throw new Error("No writable BLE characteristic found. This printer may be classic Bluetooth; use \"Connect via paired serial port\"."); }
   // Auto-pick the best-ranked candidate; offer a manual choice if several exist.
-  if (cands.length > 1) offerPicker(device, cands);
+  if (cands.length > 1 && !silent) offerPicker(device, cands);
   transport = bleTransport(device, cands[0].ch);
+  manualDisconnect = false; stopReconnect();
+  saveDefault(device.id, device.name || "Bluetooth printer", "bluetooth");
   setState();
 }
 
@@ -503,6 +577,14 @@ function offerPicker(device, cands) {
 
 async function connectSerial() {
   const port = await navigator.serial.requestPort();
+  await openSerialPort(port);
+  // Serial ports have no stable id: store the index among permitted ports.
+  const idx = (await navigator.serial.getPorts()).indexOf(port);
+  saveDefault("serial:" + Math.max(0, idx), "Serial / paired Bluetooth", "serial");
+  setState();
+}
+
+async function openSerialPort(port) {
   await port.open({ baudRate: 9600 });
   const writer = port.writable.getWriter();
   transport = {
@@ -511,6 +593,7 @@ async function connectSerial() {
     close() { try { writer.releaseLock(); } catch (_) {} try { port.close(); } catch (_) {} },
   };
   port.addEventListener?.("disconnect", onTransportLost);
+  manualDisconnect = false; stopReconnect();
   setState();
 }
 
@@ -524,6 +607,8 @@ function mockTransport() {
     },
     close() {},
   };
+  manualDisconnect = false; stopReconnect();
+  saveDefault("mock", "MOCK (logs chunks)", "mock");
   setState();
 }
 
@@ -577,7 +662,13 @@ function wire() {
     catch (e) { if (e.name !== "NotFoundError") toast(e.message || String(e), 7000); }
   });
   $("btnMock").addEventListener("click", async () => { mockTransport(); await afterConnect(); });
-  $("btnDisconnect").addEventListener("click", () => { onTransportLost(); });
+  $("btnDisconnect").addEventListener("click", () => { manualDisconnect = true; stopReconnect(); onTransportLost(); });
+  $("changePrinter").addEventListener("click", (e) => {
+    e.preventDefault();
+    clearDefault(); manualDisconnect = true; stopReconnect();
+    if (transport) onTransportLost(); else setState();
+    toast("Default printer cleared. Pick a new printer with Connect.", 6000);
+  });
   $("showCanvas").addEventListener("change", (e) => {
     $("canvasWrap").hidden = !e.target.checked;
     $("renderCanvas").style.display = e.target.checked ? "block" : "none";
@@ -619,6 +710,7 @@ function wire() {
     $("agent").style.display = "block";
     wire();
     setState();
+    tryAutoConnect().then((ok) => { if (!ok && loadDefault()) startReconnect(); }).catch((e) => { agentLog("Auto-connect failed: " + (e.message || e)); if (loadDefault()) startReconnect(); });
     loadHindiFont();
     loadJobs();
     subscribe();

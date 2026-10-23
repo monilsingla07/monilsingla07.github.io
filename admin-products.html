@@ -1264,7 +1264,7 @@
       const status = document.getElementById("editorStatus");
       showPrintChoice(b, {
         onShop: async () => {
-          try { const r = await enqueueLabels([serial], "50x50"); status.textContent = "Sent " + serial + " to shop printer (job " + String(r.job_id).slice(0, 8) + ")."; }
+          try { const r = await enqueueLabels([serial], "50x50"); status.textContent = "Printing " + serial + " now (job " + String(r.job_id).slice(0, 8) + ")."; }
           catch (err) { status.textContent = "Could not queue: " + err.message; }
         },
         onBrowser: () => { if (!window.open(printUrl([serial]), "_blank")) status.textContent = "Popup blocked — allow popups to print."; },
@@ -1337,10 +1337,10 @@
         st.textContent = "Added " + serials.length + " piece" + (serials.length === 1 ? "" : "s") + (w || !serials.length ? "." : " (popup blocked — print from the Inventory page).") + " ";
         if (serials.length) {
           const a = document.createElement("a");
-          a.href = "#"; a.textContent = "Print to shop printer";
+          a.href = "#"; a.textContent = "Print now";
           a.addEventListener("click", async (ev) => {
             ev.preventDefault();
-            try { const r = await enqueueLabels(serials, "50x50"); st.textContent = "Sent to shop printer (job " + String(r.job_id).slice(0, 8) + ")."; }
+            try { const r = await enqueueLabels(serials, "50x50"); st.textContent = "Printing now (job " + String(r.job_id).slice(0, 8) + ")."; }
             catch (e) { st.textContent = "Could not queue: " + e.message; }
           });
           st.appendChild(a);

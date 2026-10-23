@@ -177,7 +177,7 @@ function openPrint(serials) {
 async function printToShop(serials) {
   try {
     const r = await enqueueLabels(serials, "50x50");
-    toast("Sent to shop printer (job " + escapeHtml(String(r.job_id).slice(0, 8)) + ").");
+    toast("Printing now (job " + escapeHtml(String(r.job_id).slice(0, 8)) + ").");
     loadQueueWidget();
   } catch (e) { toast("Could not queue: " + escapeHtml(e.message)); }
 }
@@ -222,8 +222,9 @@ function openModal(id) { $(id).classList.add("open"); }
 function closeModal(id) { $(id).classList.remove("open"); }
 
 function updateSubmitLabel() {
-  const n = parseInt($("addQty").value, 10);
-  $("addSubmit").textContent = "Add " + (Number.isInteger(n) && n >= 1 ? n : 1);
+  // Two fixed-label submit buttons ("Save & print now" / "Save (print later)").
+  $("addSubmit").textContent = "Save & print now";
+  $("addSaveLater").textContent = "Save (print later)";
 }
 
 function renderSkuList() {
@@ -317,13 +318,14 @@ function resetAddModal() {
   $("newSkuForm").style.display = "none";
   $("addErr").textContent = "";
   $("addSubmit").disabled = false;
+  $("addSaveLater").disabled = false;
   origTags = { saree_type_id: null, care_instruction_id: null };
   ["saree_type", "care_instruction"].forEach((k) => renderTagSelect(k, ""));
   ["addSareeTypeName", "addCareName", "addCareText"].forEach((id) => { $(id).value = ""; });
   updateSubmitLabel();
 }
 
-async function submitAdd() {
+async function submitAdd(printNow) {
   const err = $("addErr");
   err.textContent = "";
   const qty = parseInt($("addQty").value, 10);
@@ -331,8 +333,8 @@ async function submitAdd() {
   if (!chosen) { err.textContent = "Pick a SKU or create a new one."; return; }
   if (!Number.isInteger(qty) || qty < 1) { err.textContent = "Quantity must be 1 or more."; return; }
   if (!Number.isFinite(cost) || cost < 0) { err.textContent = "Enter the cost price."; return; }
-  const btn = $("addSubmit");
-  btn.disabled = true;
+  const btn = $("addSubmit"), btn2 = $("addSaveLater");
+  btn.disabled = true; btn2.disabled = true;
   try {
     const payload = { action: "create", qty, cost_price: cost };
     const weaver = $("addWeaver").value.trim();
@@ -386,22 +388,28 @@ async function submitAdd() {
 
     closeModal("addModal");
     const serials = res.serials || [];
-    const opened = openPrint(serials);
-    toast("Added " + serials.length + " piece" + (serials.length === 1 ? "" : "s") + ": " +
-      escapeHtml(serials.length > 4 ? serials[0] + " … " + serials[serials.length - 1] : serials.join(", ")) +
-      escapeHtml(tagWarn) +
-      (opened ? "" : ' <a id="toastPrint">Open print view</a>') +
-      ' <a id="toastShop">Print to shop printer</a>', 10000);
-    const tp = $("toastPrint");
-    if (tp) tp.addEventListener("click", () => openPrint(serials));
-    $("toastShop").addEventListener("click", () => printToShop(serials));
+    const n = serials.length, pieces = "Added " + n + " piece" + (n === 1 ? "" : "s");
+    const prev = ' <a id="toastPrint" style="font-size:11px;opacity:.8;cursor:pointer;">Preview labels</a>';
+    if (printNow && n) {
+      try {
+        await enqueueLabels(serials, "50x50");
+        toast(pieces + ". Printing now." + escapeHtml(tagWarn) + prev, 10000);
+        loadQueueWidget();
+      } catch (e) {
+        toast(pieces + ", but could not queue printing: " + escapeHtml(e.message) + ". Reprint from the ledger." + escapeHtml(tagWarn) + prev, 12000);
+      }
+      const tp = $("toastPrint");
+      if (tp) tp.addEventListener("click", () => openPrint(serials));
+    } else {
+      toast(pieces + ". Reprint from the ledger when you're ready." + escapeHtml(tagWarn), 10000);
+    }
     await loadProducts();
     offset = 0;
     await Promise.all([loadLedger(), loadStats()]);
   } catch (e) {
     err.textContent = e.message || "Failed to add inventory.";
   } finally {
-    btn.disabled = false;
+    btn.disabled = false; btn2.disabled = false;
   }
 }
 
@@ -536,7 +544,8 @@ function wire() {
 
   $("btnAdd").addEventListener("click", () => { resetAddModal(); openModal("addModal"); });
   $("addCancel").addEventListener("click", () => closeModal("addModal"));
-  $("addSubmit").addEventListener("click", submitAdd);
+  $("addSubmit").addEventListener("click", () => submitAdd(true));
+  $("addSaveLater").addEventListener("click", () => submitAdd(false));
   $("addQty").addEventListener("input", updateSubmitLabel);
   $("addSkuInput").addEventListener("focus", renderSkuList);
   $("addSkuInput").addEventListener("input", () => { chosen = null; $("addSkuChosen").textContent = ""; $("newSkuForm").style.display = "none"; renderSkuList(); });

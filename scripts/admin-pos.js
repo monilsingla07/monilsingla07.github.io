@@ -224,7 +224,7 @@ async function charge() {
     toast("Sale complete — order #" + r.order_id, "ok", 7000);
     // Also send the invoice to the shop printer (browser invoice button stays as a fallback).
     enqueueInvoice(r.order_id)
-      .then(() => toast("Sale complete — order #" + r.order_id + ". Invoice queued for shop printer.", "ok", 6000))
+      .then(() => toast("Sale complete — order #" + r.order_id + ". Invoice queued. Printing now.", "ok", 6000))
       .catch((e) => toast("Sale complete, but could not queue invoice: " + (e.message || e), "err", 7000));
   } catch (e) {
     const details = Array.isArray(e.body?.details) ? e.body.details : [];
