@@ -29,10 +29,10 @@ function readNumSetting(key, def, min, max) {
 }
 const getTopOffsetMm = () => readNumSetting("labelOffset", 0, -25, 25);
 const getTrailingFeedMm = () => readNumSetting("trailingFeed", 15, 0, 50);
-// 50x50mm labels: thermal printer firmware leaves ~4mm unprintable at top AND bottom
-// of each physical label, so the usable area is ~42mm. Rendering at 336 dots (42mm @ 203 dpi)
-// instead of 400 means content fits without content being clipped off the bottom.
-const LABEL_H = { "50x50": 336, "50x30": 240 };
+// 50x50mm labels: TSPL frames the label at the firmware level (SIZE command), so we can
+// render the full 400 dots (50mm @ 203 dpi). ESC/POS was limited to ~336 (42mm) because it
+// had no label-awareness and we had to leave physical top/bottom margins empty.
+const LABEL_H = { "50x50": 400, "50x30": 240 };
 const BLE_CHUNK = 150;                     // under typical 180-byte BLE payloads
 const BAND_ROWS = 65535;                   // one GS v 0 command per raster (multiple bands made the printer insert line spacing between them)
 const PROVENANCE = "Handwoven in Chanderi, India";
