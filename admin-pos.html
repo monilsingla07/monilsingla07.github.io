@@ -25,10 +25,12 @@
       </div>
 
       <div class="pos-strip" id="scanStrip">
-        <div class="prompt">Scan a QR</div>
-        <input id="scan-input" class="input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="AHM-00001" aria-label="Scan a QR or type a serial" autofocus />
+        <div class="prompt">Scan a QR or search</div>
+        <input id="scan-input" class="input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="AHM-00001 or type part of a serial / product name" aria-label="Scan a QR or type a serial" autofocus />
+        <button id="browseBtn" type="button" class="btn secondary" style="padding:8px 14px; font-size:13px;">Browse</button>
         <div class="last-scan" id="lastSerial" aria-live="polite">—</div>
       </div>
+      <div id="searchResults" class="search-results" hidden></div>
 
       <div class="pos-cols">
         <div class="pos-panel">

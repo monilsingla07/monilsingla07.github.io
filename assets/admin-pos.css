@@ -44,3 +44,15 @@
 #toast.err { background: #a13d3d; }
 #toast.ok { background: #3f6b4f; }
 @media (max-width: 800px) { .pos-cols { grid-template-columns: 1fr; } .pos-strip .prompt { font-size: 20px; } }
+
+/* Search dropdown for POS */
+.search-results { background: var(--surface); border: 1px solid var(--border); margin: 0 0 16px 0; max-height: 320px; overflow-y: auto; }
+.search-results[hidden] { display: none; }
+.search-row { display: grid; grid-template-columns: 110px 1fr auto; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border-light); font-size: 14px; color: var(--text); text-decoration: none; }
+.search-row:hover { background: var(--bg-warm); }
+.search-row:last-child { border-bottom: 0; }
+.search-row .s-ser { font-weight: 700; font-family: ui-monospace, monospace; font-size: 13px; }
+.search-row .s-title { color: var(--text); }
+.search-row .s-price { font-weight: 700; }
+.search-row.search-note { grid-template-columns: 1fr; color: var(--text-light); font-style: italic; }
+.search-row.search-note.err { color: #a13d3d; }

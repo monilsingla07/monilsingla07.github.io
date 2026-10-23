@@ -269,6 +269,60 @@ const modalOpen = () => $("confirmModal").classList.contains("open");
 function openConfirm() { $("confirmModal").classList.add("open"); $("confirmYes").focus(); }
 function closeConfirm() { $("confirmModal").classList.remove("open"); focusScan(); }
 
+// ───────────── search / browse in-stock pieces ─────────────
+let searchTimer = null;
+let searchSeq = 0;
+
+function closeSearch() { $("searchResults").hidden = true; $("searchResults").innerHTML = ""; }
+
+async function runSearch(query) {
+  const seq = ++searchSeq;
+  const resEl = $("searchResults");
+  resEl.hidden = false;
+  resEl.innerHTML = '<div class="search-row search-note">Searching…</div>';
+  try {
+    // Pull in-stock pieces matching the query (serial OR title via two parallel calls).
+    const q = String(query || "").trim();
+    const body = { action: "list", status: "in_stock", limit: 20 };
+    if (q) body.serial_contains = q;
+    const r = await authedFetch(INV_FN, body);
+    if (seq !== searchSeq) return;
+    let rows = r.rows || [];
+    // If the user typed non-serial-looking text (letters only), also search by product title
+    if (q && /^[A-Za-z\s]+$/.test(q) && rows.length < 20) {
+      try {
+        const byTitle = await authedFetch(INV_FN, { action: "list", status: "in_stock", limit: 20 });
+        if (seq !== searchSeq) return;
+        const titleMatch = (byTitle.rows || []).filter((p) =>
+          (p.products?.title || "").toLowerCase().includes(q.toLowerCase()) &&
+          !rows.some((r2) => r2.id === p.id)
+        );
+        rows = rows.concat(titleMatch).slice(0, 20);
+      } catch (_) { /* ignore secondary search failure */ }
+    }
+    renderSearchResults(rows);
+  } catch (e) {
+    if (seq !== searchSeq) return;
+    resEl.innerHTML = '<div class="search-row search-note err">Search failed: ' + (e.message || e) + '</div>';
+  }
+}
+
+function renderSearchResults(rows) {
+  const resEl = $("searchResults");
+  if (!rows.length) { resEl.innerHTML = '<div class="search-row search-note">No in-stock pieces match.</div>'; return; }
+  resEl.innerHTML = rows.map((p) => {
+    const prod = p.products || {};
+    const price = prod.sale_price_inr ?? prod.price_inr ?? 0;
+    const title = prod.title || "Item";
+    const sareeType = prod.saree_types?.name || "";
+    return '<a href="#" class="search-row" data-serial="' + p.serial + '">' +
+      '<span class="s-ser">' + p.serial + '</span>' +
+      '<span class="s-title">' + title + (sareeType ? ' — ' + sareeType : '') + '</span>' +
+      '<span class="s-price">₹ ' + Number(price).toLocaleString("en-IN") + '</span>' +
+    '</a>';
+  }).join("");
+}
+
 // ───────────── wiring ─────────────
 function wire() {
   const scanEl = $("scan-input");
@@ -277,7 +331,29 @@ function wire() {
     e.preventDefault();
     const v = scanEl.value;
     scanEl.value = "";
+    closeSearch();
     handleScan(v);
+  });
+  // Live search as you type (debounced). 2+ chars = search; empty = close.
+  scanEl.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    const v = scanEl.value.trim();
+    if (!v) { closeSearch(); return; }
+    if (v.length < 2) return;
+    searchTimer = setTimeout(() => runSearch(v), 220);
+  });
+  $("browseBtn").addEventListener("click", () => { runSearch(""); scanEl.focus(); });
+  $("searchResults").addEventListener("click", (e) => {
+    e.preventDefault();
+    const row = e.target.closest("[data-serial]");
+    if (!row) return;
+    const serial = row.getAttribute("data-serial");
+    scanEl.value = "";
+    closeSearch();
+    handleScan(serial);
+  });
+  document.addEventListener("click", (e) => {
+    if (!$("searchResults").hidden && !e.target.closest("#searchResults, #scan-input, #browseBtn")) closeSearch();
   });
 
   $("billBody").addEventListener("click", (e) => {
