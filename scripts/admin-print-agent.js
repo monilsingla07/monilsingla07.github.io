@@ -505,7 +505,16 @@ function saveDefault(deviceId, deviceName, transportKind) {
   try { localStorage.setItem("defaultPrinter", JSON.stringify({ deviceId, deviceName, transportKind })); } catch (_) {}
 }
 function clearDefault() { try { localStorage.removeItem("defaultPrinter"); } catch (_) {} }
-function agentLog(msg) { console.info("[print-agent] " + msg); const l = $("agentLog"); if (l) l.textContent = new Date().toLocaleTimeString() + " " + msg; }
+const AGENT_LOG_MAX = 6;
+const agentLogLines = [];
+function agentLog(msg) {
+  const line = new Date().toLocaleTimeString() + " " + msg;
+  console.info("[print-agent] " + msg);
+  agentLogLines.unshift(line);
+  if (agentLogLines.length > AGENT_LOG_MAX) agentLogLines.length = AGENT_LOG_MAX;
+  const l = $("agentLog");
+  if (l) { l.textContent = agentLogLines.join("\n"); l.style.whiteSpace = "pre-line"; }
+}
 
 function onTransportLost() {
   if (!transport) return;
@@ -559,21 +568,53 @@ async function tryAutoConnect() {
   return true;
 }
 
-function bleTransport(device, ch) {
-  const withResp = ch.properties.write || !ch.properties.writeWithoutResponse;
+function bleTransport(device, initialCh) {
+  let ch = initialCh;
+  let withResp = ch.properties.write || !ch.properties.writeWithoutResponse;
   device.addEventListener("gattserverdisconnected", onTransportLost);
+
+  // If GATT silently dropped between writes (common on Zjiang/Xprinter when idle),
+  // transparently reconnect and re-pick the writable characteristic. One retry per chunk.
+  async function ensureConnected() {
+    if (device.gatt.connected) return;
+    agentLog("GATT dropped — reconnecting in place…");
+    await device.gatt.connect();
+    const cands = await findWritable(device.gatt);
+    if (!cands.length) throw new Error("No writable characteristic after reconnect");
+    const match = cands.find((c) => c.ch.uuid === ch.uuid) || cands[0];
+    ch = match.ch;
+    withResp = ch.properties.write || !ch.properties.writeWithoutResponse;
+    agentLog("Reconnected to " + (device.name || "printer") + " mid-print.");
+  }
+
+  async function writeOne(part) {
+    try {
+      if (withResp) await ch.writeValueWithResponse(part);
+      else await ch.writeValueWithoutResponse(part);
+    } catch (e) {
+      // One shot at mid-write recovery: reconnect + retry this chunk once.
+      if (device.gatt.connected) throw e;
+      await ensureConnected();
+      if (withResp) await ch.writeValueWithResponse(part);
+      else await ch.writeValueWithoutResponse(part);
+    }
+  }
+
   return {
     name: device.name || "Bluetooth printer",
     async write(bytes) {
+      // Proactive check: if GATT is dead going into this write, reconnect first.
+      if (!device.gatt.connected) await ensureConnected();
       for (let i = 0; i < bytes.length; i += BLE_CHUNK) {
         const part = bytes.subarray(i, i + BLE_CHUNK);
-        if (withResp) await ch.writeValueWithResponse(part);
-        else { await ch.writeValueWithoutResponse(part); if ((i / BLE_CHUNK) % 4 === 3) await new Promise((r) => setTimeout(r, 15)); }
+        await writeOne(part);
+        if (!withResp && (i / BLE_CHUNK) % 4 === 3) await new Promise((r) => setTimeout(r, 15));
       }
     },
     close() { try { device.removeEventListener("gattserverdisconnected", onTransportLost); device.gatt.disconnect(); } catch (_) {} },
   };
 }
+
 
 async function findWritable(server) {
   const services = await server.getPrimaryServices();
@@ -754,8 +795,14 @@ function wire() {
         pending.splice(0, pending.length, ...pending.filter((p) => p.id !== job.id));
         toast("Cancelled");
       } else if (job.status === "failed") {
+        // If the printer looks offline, give the auto-reconnect a nudge BEFORE re-queueing,
+        // so the retry doesn't fail with the same bluetooth_disconnected reason.
+        if (!transport && loadDefault()) {
+          agentLog("Retry clicked — nudging reconnect");
+          try { await tryAutoConnect(); } catch (e) { agentLog("Nudge reconnect failed: " + (e.message || e)); }
+        }
         await queueCall({ action: "enqueue", kind: job.kind, payload: job.payload });
-        toast("Re-queued");
+        toast(transport ? "Re-queued — printing now" : "Re-queued — will print when printer reconnects");
       } else return;
       loadJobs();
     } catch (err) { toast(err.message); }
