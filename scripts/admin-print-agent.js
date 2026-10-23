@@ -27,11 +27,11 @@ function readNumSetting(key, def, min, max) {
   } catch (_) {}
   return def;
 }
-const getTopOffsetMm = () => readNumSetting("labelOffset", 10, 0, 25);
+const getTopOffsetMm = () => readNumSetting("labelOffset", 0, 0, 25);
 const getTrailingFeedMm = () => readNumSetting("trailingFeed", 15, 0, 50);
 const LABEL_H = { "50x50": 384, "50x30": 240 };
 const BLE_CHUNK = 150;                     // under typical 180-byte BLE payloads
-const BAND_ROWS = 128;                     // rows per GS v 0 command
+const BAND_ROWS = 65535;                   // one GS v 0 command per raster (multiple bands made the printer insert line spacing between them)
 const PROVENANCE = "Handwoven in Chanderi, India";
 const SITE_URL = "www.ahamstree.com";
 
@@ -181,7 +181,7 @@ export function renderLabelCanvas(serial, layout, d = {}, topPx = mmToDots(getTo
     return c;
   }
   // 50x50 dense layout (mirrors print-labels.css). Usable area: 384 x 304 (~48 x 38mm).
-  const AVAIL = 304, W = LABEL_W - 16;
+  const AVAIL = Math.max(304, H - topPx), W = LABEL_W - 16;
   let y = 0;
   ctx.fillStyle = "#000";
   if (hindiOk) {
@@ -198,7 +198,7 @@ export function renderLabelCanvas(serial, layout, d = {}, topPx = mmToDots(getTo
   const care = [d.care ? "Care: " + d.care : "", PROVENANCE].filter(Boolean).join(" | ");
   // Fixed rows below the QR: serial, rule, saree type, price, care/provenance, url.
   const below = 26 + 4 + (d.sareeType ? 20 : 0) + 46 + 16 + 16;
-  const qs = Math.max(112, Math.min(190, AVAIL - y - below));
+  const qs = Math.max(112, Math.min(230, AVAIL - y - below));
   drawQr(ctx, serial, cx - qs / 2, y, qs); y += qs;
   fitText(ctx, serial, cx, y + 20, W, 24, "700"); y += 26;
   ctx.fillRect(cx - 150, y, 300, 2); y += 2;
@@ -238,6 +238,7 @@ export function canvasToRaster(canvas) {
 
 const INIT = new Uint8Array([0x1b, 0x40]);
 const feed = (n) => new Uint8Array([0x1b, 0x64, n]);          // ESC d n (print and feed n lines)
+const LINE_SPACING_RESET = new Uint8Array([0x1b, 0x32]);      // ESC 2: default line spacing
 const FORM_FEED = new Uint8Array([0x0c]);                     // Advance to top of next label (needs label-mode calibration)
 const CUT = new Uint8Array([0x1d, 0x56, 0x01]);               // GS V 1 (no-op if unsupported)
 
@@ -341,7 +342,7 @@ async function sendBytes(bytes) {
 
 async function printCanvas(canvas) {
   const bands = canvasToRaster(canvas);
-  await sendBytes(concat([INIT, ...bands]));
+  await sendBytes(concat([INIT, LINE_SPACING_RESET, ...bands]));
 }
 
 // Crop the top topPx rows off the canvas ("shift content up").
@@ -687,7 +688,7 @@ function wire() {
   $("supportNote").textContent = supported ? "" : "Web Bluetooth is not available here (iOS/Safari/Firefox are unsupported). Use Chrome or Edge on Android or desktop.";
   try { const w = localStorage.getItem("ahamstreePaperWidth"); if (w) $("paperWidth").value = w; } catch (_) {}
   $("paperWidth").addEventListener("change", () => { try { localStorage.setItem("ahamstreePaperWidth", $("paperWidth").value); } catch (_) {} });
-  for (const [id, def, min, max] of [["labelOffset", 10, 0, 25], ["trailingFeed", 15, 0, 50]]) {
+  for (const [id, def, min, max] of [["labelOffset", 0, 0, 25], ["trailingFeed", 15, 0, 50]]) {
     const el = $(id);
     el.value = readNumSetting(id, def, min, max);
     el.addEventListener("change", () => {
