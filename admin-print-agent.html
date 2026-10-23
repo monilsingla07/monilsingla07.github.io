@@ -56,7 +56,8 @@
           <label>Trailing feed (mm)
             <input type="number" id="trailingFeed" class="input" min="0" max="50" step="0.5" value="15" style="width:80px" />
           </label>
-          <span class="pa-sub">Top offset: shift content on the label. Positive = up (crop top), negative = down (pad top). Range −25 to +25 mm. Trailing feed: extra paper advance after each label so you can tear at the gap.</span>
+          <span class="pa-sub">Top offset: shift content on the label. Positive = up (crop top), negative = down (pad top). Range −25 to +25 mm. Trailing feed: extra paper advance after each label so you can tear at the gap (ESC/POS invoices only). In TSPL label mode the printer aligns labels itself, so Top offset normally stays 0.</span>
+          <span class="pa-sub">Labels are sent as TSPL (label-aware, same protocol Open Label uses). Invoices use ESC/POS continuous-roll mode.</span>
           <label><input type="checkbox" id="showCanvas" /> Show render canvas (debug)</label>
           <span class="pa-sub" id="wakeInfo"></span>
         </div>

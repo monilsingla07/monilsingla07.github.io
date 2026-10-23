@@ -247,6 +247,30 @@ export function canvasToRaster(canvas) {
   return out;
 }
 
+// ───────────── canvas -> TSPL bitmap (labels) ─────────────
+// TSPL BITMAP data: packed MSB-first, 0 = BLACK, 1 = WHITE (inverse of ESC/POS GS v 0).
+export function canvasToTsplBitmap(canvas) {
+  const w = canvas.width, h = canvas.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const px = ctx.getImageData(0, 0, w, h).data;
+  const widthBytes = Math.ceil(w / 8);
+  const data = new Uint8Array(widthBytes * h);
+  data.fill(0xFF);
+  for (let y = 0; y < h; y++) {
+    const rowOff = y * widthBytes;
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const a = px[i + 3] / 255;
+      const lum = (0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) * a + 255 * (1 - a);
+      if (lum < 140) data[rowOff + (x >> 3)] &= ~(0x80 >> (x & 7));
+    }
+  }
+  return { widthBytes, height: h, data };
+}
+
+const CRLF = new TextEncoder().encode("\r\n");
+function tsplCmd(str) { return new TextEncoder().encode(str + "\r\n"); }
+
 const INIT = new Uint8Array([0x1b, 0x40]);
 const feed = (n) => new Uint8Array([0x1b, 0x64, n]);          // ESC d n (print and feed n lines)
 const LINE_SPACING_RESET = new Uint8Array([0x1b, 0x32]);      // ESC 2: default line spacing
@@ -351,6 +375,7 @@ async function sendBytes(bytes) {
   await transport.write(bytes);
 }
 
+// ESC/POS raster print. INVOICE-ONLY now: labels go through sendTsplLabel (TSPL).
 async function printCanvas(canvas) {
   const bands = canvasToRaster(canvas);
   await sendBytes(concat([INIT, LINE_SPACING_RESET, ...bands]));
@@ -382,23 +407,28 @@ async function runLabelJob(job) {
   const { serials = [], layout = "50x50" } = job.payload || {};
   if (!serials.length) throw new Error("empty_serials");
   await loadHindiFont();
+  const sizeMm = layout === "50x30" ? "50 mm, 30 mm" : "50 mm, 50 mm";
   for (const serial of serials) {
     const topPx = mmToDots(getTopOffsetMm());
     const full = renderLabelCanvas(serial, layout, await labelInfo(serial), topPx);
     // Only crop for positive topPx (shift up). Negative topPx is already represented
     // by the extra top padding baked into the canvas by renderLabelCanvas.
-    await printCanvas(topPx > 0 ? cropTop(full, topPx) : full);
-    const tf = trailingFeedBytes(getTrailingFeedMm());
-    if (tf.length) await sendBytes(concat(tf));
-    // After each label, advance to the TOP of the next label. On label-mode
-    // printers with the gap sensor calibrated, 0x0C advances to the next
-    // gap. If the printer isn't calibrated, this is a no-op and labels
-    // will drift — user must run the printer's label-learn procedure once.
-    await sendBytes(FORM_FEED);
+    await sendTsplLabel(sizeMm, topPx > 0 ? cropTop(full, topPx) : full, 0, 0);
   }
-  // No trailing dot feed — form feed already parked us at the next label top.
-  // Keep CUT in case the unit has an auto-cutter.
-  await sendBytes(CUT);
+  // PRINT advances to the next label automatically; no trailing feed/cut needed.
+}
+
+async function sendTsplLabel(sizeMm, canvas, xOffsetDots = 0, yOffsetDots = 0) {
+  const bmp = canvasToTsplBitmap(canvas);
+  const bmpHdr = new TextEncoder().encode(`BITMAP ${xOffsetDots},${yOffsetDots},${bmp.widthBytes},${bmp.height},0,`);
+  await sendBytes(concat([
+    tsplCmd(`SIZE ${sizeMm}`),
+    tsplCmd(`GAP 2 mm, 0 mm`),
+    tsplCmd(`DIRECTION 1`),
+    tsplCmd(`CLS`),
+    bmpHdr, bmp.data, CRLF,
+    tsplCmd(`PRINT 1, 1`),
+  ]));
 }
 
 async function runInvoiceJob(job) {
@@ -828,7 +858,7 @@ function wire() {
   });
 
   // Debug hooks for local verification.
-  window.__printAgent = { renderLabelCanvas, canvasToRaster, loadHindiFont, schedule, get hindiOk() { return hindiOk; } };
+  window.__printAgent = { renderLabelCanvas, canvasToRaster, canvasToTsplBitmap, sendTsplLabel, loadHindiFont, schedule, get hindiOk() { return hindiOk; } };
 }
 
 // ───────────── boot ─────────────
