@@ -80,7 +80,8 @@ export function renderLabels(list, lay) {
       el.append(div("brand-hi", "अहम् स्त्री"), div("brand-en", "AhamStree"), div("hr"), img, div("serial", serial), div("hr"));
       if (d.sareeType) el.append(div("saree-type", d.sareeType));
       el.append(div("price", price));
-      el.append(div("care", [d.care ? "Care: " + d.care : "", PROVENANCE].filter(Boolean).join(" | ")), div("url", SITE_URL));
+      if (d.care) el.append(div("care", "Care: " + d.care));
+      el.append(div("care", PROVENANCE), div("url", SITE_URL));
     } else {
       // Compact (50x30 / A4): QR + serial + English brand + price + URL.
       const text = div("text");

@@ -187,34 +187,33 @@ export function renderLabelCanvas(serial, layout, d = {}, topPx = mmToDots(getTo
     ctx.fillStyle = "#000";
     return c;
   }
-  // 50x50 dense layout (mirrors print-labels.css). Usable area: 384 x 304 (~48 x 38mm).
-  const AVAIL = Math.max(304, H - topPx), W = LABEL_W - 16;
+  // 50x50 dense layout (mirrors print-labels.css). Usable area: 384 x 336 (~48 x 42mm), 4px side margins.
+  // Every row is a fixed-height slot (y += rowHeight) so lines can never overlap.
+  const AVAIL = Math.max(304, H - topPx), W = LABEL_W - 8, RW = Math.round(LABEL_W * 0.9);
   let y = 0;
+  const rule = () => { ctx.fillStyle = "#000"; ctx.fillRect(cx - RW / 2, y, RW, 2); };
   ctx.fillStyle = "#000";
   if (hindiOk) {
-    fitText(ctx, "अहम् स्त्री", cx, y + 34, W, 42, "bold", '"Noto Sans Devanagari", serif');
-    ctx.fillStyle = "#555"; ctx.font = "15px Outfit, sans-serif";
-    ctx.fillText("AHAMSTREE", cx, y + 50);
-    y += 54;
+    fitText(ctx, "अहम् स्त्री", cx, y + 27, W, 32, "bold", '"Noto Sans Devanagari", serif'); y += 32;
+    fitText(ctx, "AhamStree", cx, y + 15, W, 19, "600"); y += 20;
   } else {
-    fitText(ctx, "AhamStree", cx, y + 34, W, 40, "bold");
-    y += 44;
+    fitText(ctx, "AhamStree", cx, y + 30, W, 40, "bold"); y += 36;
   }
-  ctx.fillStyle = "#000";
-  ctx.fillRect(cx - 150, y, 300, 2); y += 4;
-  const care = [d.care ? "Care: " + d.care : "", PROVENANCE].filter(Boolean).join(" | ");
-  // Fixed rows below the QR: serial, rule, saree type, price, care/provenance, url.
-  const below = 26 + 4 + (d.sareeType ? 20 : 0) + 46 + 16 + 16;
+  y += 2; rule(); y += 2 + 3;
+  const hasType = !!d.sareeType;
+  // Fixed rows below the QR: gap, serial, gap+rule+gap, [type], price, care, provenance, url.
+  const below = 3 + 22 + 7 + (hasType ? 18 : 0) + 42 + 15 + 15 + 15;
   const qs = Math.max(112, Math.min(230, AVAIL - y - below));
-  drawQr(ctx, serial, cx - qs / 2, y, qs); y += qs;
-  fitText(ctx, serial, cx, y + 20, W, 24, "700"); y += 26;
-  ctx.fillRect(cx - 150, y, 300, 2); y += 2;
-  if (d.sareeType) { fitText(ctx, d.sareeType, cx, y + 16, W, 18); y += 20; }
-  fitText(ctx, price, cx, y + 38, W, 50, "900"); y += 46;
-  ctx.fillStyle = "#333";
-  fitText(ctx, care, cx, y + 12, W, 15); y += 16;
+  drawQr(ctx, serial, cx - qs / 2, y, qs); y += qs + 3;
+  fitText(ctx, serial, cx, y + 17, W, 20, "700"); y += 22;
+  y += 2; rule(); y += 2 + 3;
+  if (hasType) { fitText(ctx, d.sareeType, cx, y + 13, W, 16); y += 18; }
+  fitText(ctx, price, cx, y + 34, W, 40, "900"); y += 42;
+  ctx.fillStyle = "#222";
+  if (d.care) { fitText(ctx, "Care: " + d.care, cx, y + 11, W, 13); y += 15; }
+  fitText(ctx, PROVENANCE, cx, y + 11, W, 13); y += 15;
   ctx.fillStyle = "#000";
-  fitText(ctx, SITE_URL, cx, y + 12, W, 15, "700");
+  fitText(ctx, SITE_URL, cx, y + 11, W, 13, "700"); y += 15;
   return c;
 }
 
