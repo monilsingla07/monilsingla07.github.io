@@ -207,18 +207,17 @@ export function renderLabelCanvas(serial, layout, d = {}, topPx = mmToDots(getTo
   y += 2; rule(); y += 2 + 3;
   const hasType = !!d.sareeType;
   // Fixed rows below the QR: gap, serial, gap+rule+gap, [type], price, care, provenance, url.
-  const below = 3 + 22 + 7 + (hasType ? 18 : 0) + 42 + 15 + 15 + 15;
+  const below = 3 + 22 + 7 + (hasType ? 20 : 0) + 44 + 18 + 18 + 18;
   const qs = Math.max(112, Math.min(230, AVAIL - y - below));
   drawQr(ctx, serial, cx - qs / 2, y, qs); y += qs + 3;
   fitText(ctx, serial, cx, y + 17, W, 20, "700"); y += 22;
   y += 2; rule(); y += 2 + 3;
-  if (hasType) { fitText(ctx, d.sareeType, cx, y + 13, W, 16); y += 18; }
-  fitText(ctx, price, cx, y + 34, W, 40, "900"); y += 42;
-  ctx.fillStyle = "#222";
-  if (d.care) { fitText(ctx, "Care: " + d.care, cx, y + 11, W, 13); y += 15; }
-  fitText(ctx, PROVENANCE, cx, y + 11, W, 13); y += 15;
+  if (hasType) { fitText(ctx, d.sareeType, cx, y + 14, W, 17, "700"); y += 20; }
+  fitText(ctx, price, cx, y + 34, W, 40, "900"); y += 44;
   ctx.fillStyle = "#000";
-  fitText(ctx, SITE_URL, cx, y + 11, W, 13, "700"); y += 15;
+  if (d.care) { fitText(ctx, "Care: " + d.care, cx, y + 14, W, 16, "700"); y += 18; }
+  fitText(ctx, PROVENANCE, cx, y + 14, W, 16, "700"); y += 18;
+  fitText(ctx, SITE_URL, cx, y + 14, W, 16, "800"); y += 18;
   return c;
 }
 
@@ -424,7 +423,7 @@ async function sendTsplLabel(sizeMm, canvas, xOffsetDots = 0, yOffsetDots = 0) {
   await sendBytes(concat([
     tsplCmd(`SIZE ${sizeMm}`),
     tsplCmd(`GAP 2 mm, 0 mm`),
-    tsplCmd(`DIRECTION 1`),
+    tsplCmd(`DIRECTION 0`),
     tsplCmd(`CLS`),
     bmpHdr, bmp.data, CRLF,
     tsplCmd(`PRINT 1, 1`),
