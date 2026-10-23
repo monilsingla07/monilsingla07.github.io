@@ -5,6 +5,64 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
+      <g:id>18589e9e-284d-4afa-b031-017905703af4</g:id>
+      <title><![CDATA[Sage-Green Saree with Gold Motifs & Striped Pallu]]></title>
+      <description><![CDATA[Soft sage-green saree featuring gold woven motifs and a neat gold striped pallu section. Looks classy and minimal — ideal for day functions and celebrations.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=sage-green-saree-with-gold-motifs-striped-pallu</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-52.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-52_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-52_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>5299.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-52]]></g:mpn>
+      <g:color><![CDATA[Sage Green]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>ec998506-1b0b-4af5-a904-218513e8bc2a</g:id>
+      <title><![CDATA[Turquoise Saree with Gold Butti & Maroon-Gold Border]]></title>
+      <description><![CDATA[Bright turquoise saree with small gold butti motifs and a rich maroon-gold striped border/pallu. A great pick for festive wear, pooja, and family functions.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-gold-butti-maroon-gold-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23_2.jpg</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>6299.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-23]]></g:mpn>
+      <g:color><![CDATA[Turquoise]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>593d3f21-7aae-4975-95ed-1110676367a7</g:id>
+      <title><![CDATA[Off-White Saree with Gold Chevron Border]]></title>
+      <description><![CDATA[Elegant off-white saree featuring a gold chevron zari border and small motifs — classic choice for ceremonies.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=off-white-saree-with-gold-chevron-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-73.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-73_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-73_2.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/325ded81-7d6c-4132-b7f9-8cc38f4eb003.webp</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>4099.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-73]]></g:mpn>
+      <g:color><![CDATA[Off-White]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
       <g:id>2a22bbd8-a890-4258-8558-3cb06a062cc1</g:id>
       <title><![CDATA[Red Chanderi Saree]]></title>
       <description><![CDATA[Handmade luxury Red cotton silk sarees.]]></description>
@@ -79,25 +137,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-12]]></g:mpn>
       <g:color><![CDATA[Rust Orange]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>ec998506-1b0b-4af5-a904-218513e8bc2a</g:id>
-      <title><![CDATA[Turquoise Saree with Gold Butti & Maroon-Gold Border]]></title>
-      <description><![CDATA[Bright turquoise saree with small gold butti motifs and a rich maroon-gold striped border/pallu. A great pick for festive wear, pooja, and family functions.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-gold-butti-maroon-gold-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-23_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>6299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-23]]></g:mpn>
-      <g:color><![CDATA[Turquoise]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
@@ -353,26 +392,6 @@
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
-      <g:id>593d3f21-7aae-4975-95ed-1110676367a7</g:id>
-      <title><![CDATA[Off-White Saree with Gold Chevron Border]]></title>
-      <description><![CDATA[Elegant off-white saree featuring a gold chevron zari border and small motifs — classic choice for ceremonies.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=off-white-saree-with-gold-chevron-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-73.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-73_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-73_2.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/325ded81-7d6c-4132-b7f9-8cc38f4eb003.webp</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>4099.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-73]]></g:mpn>
-      <g:color><![CDATA[Off-White]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
       <g:id>e48e71e2-3248-4456-82d1-d9eae4c6521c</g:id>
       <title><![CDATA[Black Saree with Gold Chevron Border]]></title>
       <description><![CDATA[Solid black saree finished with a statement gold chevron zari border and sleek side stripes — perfect for evening parties and festive wear.]]></description>
@@ -448,25 +467,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-24]]></g:mpn>
       <g:color><![CDATA[Coffee Brown]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>18589e9e-284d-4afa-b031-017905703af4</g:id>
-      <title><![CDATA[Sage-Green Saree with Gold Motifs & Striped Pallu]]></title>
-      <description><![CDATA[Soft sage-green saree featuring gold woven motifs and a neat gold striped pallu section. Looks classy and minimal — ideal for day functions and celebrations.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=sage-green-saree-with-gold-motifs-striped-pallu</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-52.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-52_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-52_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>5299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-52]]></g:mpn>
-      <g:color><![CDATA[Sage Green]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
