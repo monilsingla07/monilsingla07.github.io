@@ -250,22 +250,6 @@ h1.pd-title{margin:0}
 }
 .ig-avatar{object-fit:contain;padding:5px;background:#fff}
 
-/* UX-016 drawer: secondary account section, 44px rows, 44px carets */
-.mobile-drawer-links a,.mobile-drawer-section a{min-height:44px}
-.mobile-drawer-submenu a{min-height:44px}
-.mobile-drawer-caret{width:44px;height:44px}
-
-/* UX-055 tablet submenu toggles: only 821-1100px; wider screens keep hover */
-.nav-sub-toggle{display:none;align-items:center;justify-content:center;width:44px;height:44px;margin-left:-6px;padding:0;background:none;border:0;color:var(--text);cursor:pointer;opacity:.7}
-.nav-sub-toggle svg{transition:transform .18s ease}
-.nav-item.open .nav-sub-toggle svg{transform:rotate(180deg)}
-@media (min-width:821px) and (max-width:1100px){
-  .nav-sub-toggle{display:inline-flex}
-  .nav-item:hover .nav-submenu,.nav-item:focus-within .nav-submenu{opacity:0;visibility:hidden;transform:translateY(4px)}
-  .nav-item.open .nav-submenu{opacity:1;visibility:visible;transform:translateY(0)}
-  .nav-submenu a{min-height:44px;display:flex;align-items:center}
-}
-
 /* UX-033 icon buttons / links: 44px */
 .icon-btn,.icon-link{width:44px;height:44px;min-width:44px;min-height:44px}
 @media (max-width:480px){
@@ -273,6 +257,11 @@ h1.pd-title{margin:0}
   .header-mobile{gap:6px}
   .header-mobile-left,.header-mobile-right{gap:0}
 }
+
+/* UX-016 drawer: secondary account section, 44px rows, 44px carets */
+.mobile-drawer-links a,.mobile-drawer-section a{min-height:44px}
+.mobile-drawer-submenu a{min-height:44px}
+.mobile-drawer-caret{width:44px;height:44px}
 
 /* UX-031 card wishlist heart: 30px visual circle inside a 44px hit box */
 .p-card-wish{box-sizing:border-box;top:3px;right:3px;width:44px;height:44px;padding:7px;background-clip:content-box;-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -289,6 +278,28 @@ h1.pd-title{margin:0}
 .footer a{margin:0;padding:11px 0;min-height:44px;display:flex;align-items:center;line-height:22px}
 .footer a:hover{padding-left:4px}
 .footer .social-links a{width:44px;height:44px;min-height:44px;padding:0;justify-content:center}
+
+/* UX-055 tablet submenu toggles: only 821-1100px; wider screens keep hover */
+.nav-sub-toggle{display:none;align-items:center;justify-content:center;width:44px;height:44px;margin-left:-6px;padding:0;background:none;border:0;color:var(--text);cursor:pointer;opacity:.7}
+.nav-sub-toggle svg{transition:transform .18s ease}
+.nav-item.open .nav-sub-toggle svg{transform:rotate(180deg)}
+@media (min-width:821px) and (max-width:1100px){
+  .nav-sub-toggle{display:inline-flex}
+  .nav-item:hover .nav-submenu,.nav-item:focus-within .nav-submenu{opacity:0;visibility:hidden;transform:translateY(4px)}
+  .nav-item.open .nav-submenu{opacity:1;visibility:visible;transform:translateY(0)}
+  .nav-submenu a{min-height:44px;display:flex;align-items:center}
+}
+
+/* UX-049 help CTA: icon bubble on phones, label from 600px; lifted above sticky bars */
+.floating-cta{min-height:44px;min-width:44px}
+.floating-cta-icon{display:inline-flex;color:#128c4a;flex-shrink:0}
+.floating-cta-icon svg{width:22px;height:22px;display:block}
+@media (min-width:600px){
+  .floating-cta{width:auto;height:auto;padding:11px 16px;gap:10px}
+  .floating-cta-label{display:inline}
+}
+@media (max-width:980px){body:has(.pay-bar) .floating-cta{bottom:calc(88px + env(safe-area-inset-bottom))}}
+@media (max-width:768px){body:has(.pd-mobile-bar.visible) .floating-cta{bottom:calc(84px + env(safe-area-inset-bottom))}}
 
 /* Batch 3 extras: remaining sub-44px controls found while measuring at 390px */
 .mobile-logo,.site-logo-center{min-height:44px}

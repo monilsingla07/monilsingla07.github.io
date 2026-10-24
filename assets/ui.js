@@ -1014,6 +1014,55 @@ function refreshCartBadge() {
   if (desktopCount) desktopCount.textContent = count;
 }
 
+// ── Floating WhatsApp help CTA (UX-049) ──
+// The homepage hard-codes its own copy; this adds the same control to the
+// PDP, cart, checkout and payment-result pages. Same number as the footer and
+// success-page links. Plain wa.me link with a per-page pre-filled message.
+const HELP_WA_NUMBER = "919582297550";
+const HELP_PAGES = new Set(["product", "cart", "checkout", "success"]);
+
+function helpMessage(page) {
+  const here = location.origin + location.pathname + location.search;
+  if (page === "product") return "Hi AhamStree team, I have a question about this saree: " + here;
+  if (page === "cart") return "Hi AhamStree team, I need help with my cart.";
+  if (page === "checkout") return "Hi AhamStree team, I need help with checkout.";
+  // success.html: the visible panel decides the wording.
+  const shown = (id) => { const el = document.getElementById(id); return !!el && el.style.display !== "none"; };
+  const params = new URLSearchParams(location.search);
+  const ref = String(params.get("order_id") || "").slice(0, 40);
+  const refTxt = ref ? " (order " + ref + ")" : "";
+  if (shown("failedState")) return "Hi AhamStree team, my payment did not go through" + refTxt + ". I need help with my order.";
+  if (shown("pendingState")) return "Hi AhamStree team, my payment is still processing" + refTxt + ". I need help with my order.";
+  if (shown("cancelledState")) return "Hi AhamStree team, I cancelled the payment" + refTxt + " and need help with my order.";
+  if (shown("paidState")) return "Hi AhamStree team, I have a question about my order" + refTxt + ".";
+  return "Hi AhamStree team, I need help with my order" + refTxt + ".";
+}
+
+function mountHelpCta() {
+  if (document.querySelector(".floating-cta")) return;
+  const page = (location.pathname.split("/").pop() || "").replace(/.html$/i, "");
+  if (!HELP_PAGES.has(page)) return;
+  const a = document.createElement("a");
+  a.className = "floating-cta";
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.setAttribute("aria-label", "Need help? Chat on WhatsApp");
+  a.innerHTML = '<span class="floating-cta-icon" aria-hidden="true">' + iconWhatsApp() + '</span><span class="floating-cta-label">Need help?</span>';
+  const setHref = () => { a.href = "https://wa.me/" + HELP_WA_NUMBER + "?text=" + encodeURIComponent(helpMessage(page)); };
+  setHref();
+  // Re-read at activation time: success.html swaps panels after verification.
+  ["pointerdown", "focus", "click"].forEach((ev) => a.addEventListener(ev, setHref));
+  document.body.appendChild(a);
+}
+
+// checkout.html is header-less and only imports this module for announce(),
+// so mount on DOM-ready here instead of from hydrateHeaderAuth().
+if (typeof document !== "undefined") {
+  const mountSafe = () => { try { mountHelpCta(); } catch (_) {} };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountSafe, { once: true });
+  else mountSafe();
+}
+
 export async function hydrateHeaderAuth() {
   initMobileMenu();
   initHeaderOffset();
