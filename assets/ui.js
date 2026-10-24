@@ -9,6 +9,40 @@ import { grantSignupCashIfEligible } from "./profile-seed.js";
 import { mergeGuestWishlistIntoAccount } from "./wishlist.js";
 import { trackPageview } from "./visit-tracker.js";
 
+// ── Polite live region (UX-037) ──
+// One shared role=status node for screen-reader announcements; existing
+// visual toasts are untouched. window.announce(msg) writes into it and
+// clears it after 3s so the same message can be announced again later.
+let _announceTimer = null;
+function ensureLiveRegion(){
+  let el = document.getElementById("aria-live");
+  if (!el && document.body) {
+    el = document.createElement("div");
+    el.id = "aria-live";
+    el.className = "vh";
+    el.setAttribute("role", "status");
+    el.setAttribute("aria-live", "polite");
+    el.setAttribute("aria-atomic", "true");
+    document.body.appendChild(el);
+  }
+  return el;
+}
+window.announce = function announce(msg){
+  const el = ensureLiveRegion();
+  if (!el) return;
+  clearTimeout(_announceTimer);
+  el.textContent = "";
+  // Re-set on the next tick so repeated identical messages are re-read.
+  setTimeout(() => { el.textContent = String(msg ?? ""); }, 30);
+  _announceTimer = setTimeout(() => { el.textContent = ""; }, 3000);
+};
+
+// Admin pages share renderHeader() but have no <main id="main"> landmark;
+// drop the skip link there rather than leave it pointing nowhere.
+document.addEventListener("DOMContentLoaded", () => {
+  if (!document.getElementById("main")) document.querySelector(".skip-link")?.remove();
+});
+
 // ── Header offset (keeps content below fixed header) ──
 let _headerOffsetInitDone = false;
 function updateHeaderOffset(){
@@ -110,6 +144,8 @@ export function renderHeader(active = "") {
   _activeNavMarker = active;
 
   return `
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <div id="aria-live" role="status" aria-live="polite" aria-atomic="true" class="vh"></div>
     <div class="site-header-wrap">
 
     <!-- Top bar -->

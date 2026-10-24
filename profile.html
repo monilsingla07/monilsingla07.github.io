@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en-IN">
 <head>
   <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
@@ -20,15 +20,17 @@
 </head>
 <body>
   <div id="header"></div>
+  <main id="main" tabindex="-1">
 
   <div class="container">
-    <h2 style="margin-top:0;">Profile</h2>
+    <h1 style="margin-top:0;font-size:1.5em;">Profile</h1>
 
     <div id="app" class="account-card" style="max-width:860px;">
       <div class="small">Loading…</div>
     </div>
   </div>
 
+  </main>
   <div id="footer"></div>
 
   <script type="module">
@@ -128,42 +130,42 @@
         <form id="profileForm">
           <div style="display:grid;gap:10px;grid-template-columns: 1fr 1fr;">
             <div style="grid-column: 1 / -1;">
-              <label class="small">Full name</label>
+              <label class="small" for="full_name">Full name</label>
               <input id="full_name" name="full_name" class="input" value="${escapeAttr(p.full_name ?? "")}" placeholder="e.g., Monil Gupta" autocomplete="name" autocapitalize="words" />
             </div>
 
             <div>
-              <label class="small">Phone</label>
+              <label class="small" for="phone">Phone</label>
               <input id="phone" name="phone" class="input" type="tel" value="${escapeAttr(p.phone ?? "")}" maxlength="10" placeholder="10-digit mobile" inputmode="numeric" autocomplete="tel" />
             </div>
 
             <div>
-              <label class="small">Email (optional)</label>
+              <label class="small" for="email">Email (optional)</label>
               <input id="email" name="email" class="input" type="email" value="${escapeAttr(p.email ?? user.email ?? "")}" placeholder="name@email.com" inputmode="email" autocomplete="email" />
             </div>
 
             <div style="grid-column: 1 / -1;">
-              <label class="small">Address line 1</label>
+              <label class="small" for="address_line1">Address line 1</label>
               <input id="address_line1" name="address_line1" class="input" value="${escapeAttr(p.address_line1 ?? "")}" placeholder="House / street" autocomplete="address-line1" autocapitalize="words" />
             </div>
 
             <div style="grid-column: 1 / -1;">
-              <label class="small">Address line 2 (optional)</label>
+              <label class="small" for="address_line2">Address line 2 (optional)</label>
               <input id="address_line2" name="address_line2" class="input" value="${escapeAttr(p.address_line2 ?? "")}" placeholder="Landmark" autocomplete="address-line2" autocapitalize="words" />
             </div>
 
             <div>
-              <label class="small">City</label>
+              <label class="small" for="city">City</label>
               <input id="city" name="city" class="input" value="${escapeAttr(p.city ?? "")}" autocomplete="address-level2" autocapitalize="words" />
             </div>
 
             <div>
-              <label class="small">State</label>
+              <label class="small" for="state">State</label>
               <input id="state" name="state" class="input" value="${escapeAttr(p.state ?? "")}" autocomplete="address-level1" autocapitalize="words" />
             </div>
 
             <div style="grid-column: 1 / -1;">
-              <label class="small">Pincode</label>
+              <label class="small" for="pincode">Pincode</label>
               <input id="pincode" name="pincode" class="input" value="${escapeAttr(p.pincode ?? "")}" maxlength="6" placeholder="e.g., 560001" inputmode="numeric" autocomplete="postal-code" />
             </div>
           </div>

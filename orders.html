@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en-IN">
 <head>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
   <script>
@@ -111,11 +111,14 @@
       border: 1.5px solid var(--border); background: var(--surface); cursor: pointer;
       transition: all 0.15s;
     }
-    .chip:hover, .chip.sel {
+    .chip:hover, .chip.sel, .chip:has(input:checked) {
       border-color: var(--brand);
       background: var(--brand-lighter);
       color: var(--brand);
     }
+    .chip:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+    fieldset.ret-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+    .ret-fieldset > legend { padding: 0; }
 
     /* ── Return status badges ───────────────────────────────────────────── */
     .status-badge.ret-req  { background: var(--indigo-light); color: var(--indigo); border-color: rgba(47,72,88,.22); }
@@ -128,11 +131,12 @@
 
 <body>
   <div id="header"></div>
+  <main id="main" tabindex="-1">
 
   <div class="container" style="max-width:860px;">
     <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;">
       <div>
-        <h2 style="margin:0;">My Orders</h2>
+        <h1 style="margin:0;font-size:1.5em;">My Orders</h1>
         <div class="small" style="margin-top:6px; opacity:.75;">Your orders, delivery status &amp; returns.</div>
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -149,33 +153,34 @@
 
   <!-- ═══════════════════ Return modal ═══════════════════════════════════ -->
   <div class="modal-overlay" id="returnModal">
-    <div class="modal-box">
-      <h3>Request a Return</h3>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="returnModalTitle">
+      <h3 id="returnModalTitle">Request a Return</h3>
       <p class="small" style="color:var(--text-light); margin:0 0 4px;">
         We accept returns only in case of a genuine manufacturing defect, reported within <strong>48 hours</strong> of delivery.
       </p>
 
       <!-- Form body -->
       <div id="retFormBody">
-        <div style="margin-top:14px;">
-          <div class="small" style="font-weight:700; margin-bottom:8px;">What's the manufacturing defect?</div>
+        <fieldset class="ret-fieldset" style="margin-top:14px;">
+          <legend class="small" style="font-weight:700; margin-bottom:8px;">What's the manufacturing defect?</legend>
           <div class="chips" id="reasonChips">
-            <div class="chip" data-r="Manufacturing defect: weave/stitching fault">Weave / stitching fault</div>
-            <div class="chip" data-r="Manufacturing defect: fabric damage">Fabric damage</div>
-            <div class="chip" data-r="Other manufacturing defect">Other defect</div>
+            <label class="chip"><input type="radio" name="returnReason" class="vh" value="Manufacturing defect: weave/stitching fault" /> Weave / stitching fault</label>
+            <label class="chip"><input type="radio" name="returnReason" class="vh" value="Manufacturing defect: fabric damage" /> Fabric damage</label>
+            <label class="chip"><input type="radio" name="returnReason" class="vh" value="Other manufacturing defect" /> Other defect</label>
           </div>
-        </div>
+        </fieldset>
 
         <div id="otherWrap" style="display:none; margin-top:4px;">
-          <textarea id="otherTxt" class="input" rows="2"
+          <textarea id="otherTxt" class="input" rows="2" aria-label="Describe the defect"
             placeholder="Please describe the defect…"
             style="width:100%; font-size:13px; resize:vertical;"></textarea>
         </div>
 
         <div style="margin-top:14px;">
-          <div class="small" style="font-weight:700; margin-bottom:8px;">Photos of the defect (required, up to 3)</div>
+          <label for="retPhotos" class="small" style="display:block; font-weight:700; margin-bottom:8px;">Photos of the defect (required, up to 3)</label>
           <input type="file" id="retPhotos" accept="image/jpeg,image/png,image/webp" multiple
-            style="font-size:12.5px; max-width:100%;" />
+            aria-describedby="retPhotosHelp" style="font-size:12.5px; max-width:100%;" />
+          <div id="retPhotosHelp" class="small" style="color:var(--text-light); margin-top:6px;">JPG, PNG or WebP images, up to 3 photos.</div>
           <div id="retPhotoPreviews" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;"></div>
         </div>
 
@@ -192,7 +197,7 @@
           <button class="btn" id="retSubmit" type="button">Submit Return Request</button>
           <button class="btn secondary" id="retCancel" type="button">Cancel</button>
         </div>
-        <div id="retStatus" class="small" style="margin-top:10px;"></div>
+        <div id="retStatus" class="small" style="margin-top:10px;" role="status"></div>
       </div>
 
       <!-- Success state -->
@@ -207,10 +212,12 @@
     </div>
   </div>
 
+  </main>
   <div id="footer"></div>
 
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { openTrap } from "./assets/a11y.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, safeHref, safeSrc } from "./assets/safe.js";
 
@@ -291,7 +298,7 @@
     const retSuccess   = document.getElementById("retSuccess");
     const retStatus    = document.getElementById("retStatus");
     const retSubmitBtn = document.getElementById("retSubmit");
-    const reasonChips  = document.querySelectorAll(".chip[data-r]");
+    const reasonChips  = document.querySelectorAll('input[name="returnReason"]');
     const otherWrap    = document.getElementById("otherWrap");
     const otherTxt     = document.getElementById("otherTxt");
     const retPhotos    = document.getElementById("retPhotos");
@@ -305,7 +312,7 @@
         <div style="position:relative; width:64px; height:64px; border-radius:10px; overflow:hidden; border:1.5px solid var(--border-light);">
           <img src="${URL.createObjectURL(f)}" style="width:100%; height:100%; object-fit:cover; display:block;" />
           <button type="button" data-i="${i}" class="ret-photo-remove"
-            style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; border:none; background:rgba(0,0,0,0.65); color:#fff; font-size:12px; line-height:1; cursor:pointer;">✕</button>
+            aria-label="Remove photo ${i + 1}" style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; border:none; background:rgba(0,0,0,0.65); color:#fff; font-size:12px; line-height:1; cursor:pointer;">✕</button>
         </div>
       `).join("");
       retPhotoPreviews.querySelectorAll(".ret-photo-remove").forEach(btn => {
@@ -329,10 +336,8 @@
     });
 
     reasonChips.forEach(chip => {
-      chip.addEventListener("click", () => {
-        reasonChips.forEach(c => c.classList.remove("sel"));
-        chip.classList.add("sel");
-        retReason = chip.dataset.r;
+      chip.addEventListener("change", () => {
+        retReason = chip.value;
         otherWrap.style.display = retReason === "Other manufacturing defect" ? "block" : "none";
       });
     });
@@ -340,7 +345,7 @@
     function openReturnModal(orderId) {
       retOrderId = orderId;
       retReason  = "";
-      reasonChips.forEach(c => c.classList.remove("sel"));
+      reasonChips.forEach(c => { c.checked = false; });
       otherWrap.style.display   = "none";
       otherTxt.value            = "";
       selectedPhotoFiles        = [];
@@ -350,11 +355,14 @@
       retFormBody.style.display = "";
       retSuccess.style.display  = "none";
       modal.classList.add("open");
+      releaseRetTrap = openTrap(modal.querySelector(".modal-box"), { onEscape: closeReturnModal });
     }
 
+    let releaseRetTrap = null;
     function closeReturnModal() {
       modal.classList.remove("open");
       retOrderId = null;
+      if (releaseRetTrap) { releaseRetTrap(); releaseRetTrap = null; }
     }
 
     document.getElementById("retCancel").addEventListener("click", closeReturnModal);

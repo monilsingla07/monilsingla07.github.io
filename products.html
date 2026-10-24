@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en-IN">
 <head>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
@@ -143,13 +143,16 @@
       white-space: nowrap;
       transition: border-color 0.2s, color 0.2s, background 0.2s;
     }
-    .weave-pill:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+    .weave-pill:hover { border-color: var(--brand); color: var(--brand); }
     .weave-pill.active {
-      background: var(--accent-gold);
-      border-color: var(--accent-gold);
+      background: var(--brand);
+      border-color: var(--brand);
       color: #fff;
       font-weight: 600;
     }
+
+    .filter-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+    .filter-fieldset > legend { display: block; width: 100%; padding-left: 0; padding-right: 0; }
 
     /* ── Filter pill bar ── replaces the old single "Filter" button; each
        pill opens its own small panel and applies the moment you pick an
@@ -425,6 +428,7 @@
 </head>
 <body>
   <div id="header"></div>
+  <main id="main" tabindex="-1">
 
   <!-- Dynamic hero -->
   <section class="products-hero">
@@ -438,10 +442,10 @@
   <div class="listing-body">
 
     <!-- Category tabs (config-driven — see CATEGORIES in the script below) -->
-    <div id="categoryTabs" class="category-tabs" role="tablist" aria-label="Category"></div>
+    <nav id="categoryTabs" class="category-tabs" aria-label="Categories"></nav>
 
     <!-- Weave pills (not a dropdown — see renderWeavePills() below) -->
-    <div id="weavePillRow" class="weave-pill-row" role="tablist" aria-label="Weave"></div>
+    <div id="weavePillRow" class="weave-pill-row" role="group" aria-label="Filter by weave"></div>
 
     <!-- Desktop/tablet: filter pill bar. Pills are built from the admin's
          filter settings (Admin → Product Catalogue → Filters), so which
@@ -515,6 +519,7 @@
     <div id="scrollSentinel" style="height:1px;"></div>
   </div>
 
+  </main>
   <div id="footer"></div>
 
 <script type="module">
@@ -641,7 +646,7 @@
       const p = new URLSearchParams();
       p.set("type", c.category);
       const active = c.category === currentType;
-      return `<a class="category-tab${active ? " active" : ""}" href="products.html?${p.toString()}" data-type="${escapeAttr(c.category)}" role="tab" aria-selected="${active}">${escapeHtml(c.label)}</a>`;
+      return `<a class="category-tab${active ? " active" : ""}" href="products.html?${p.toString()}" data-type="${escapeAttr(c.category)}"${active ? ' aria-current="page"' : ""}>${escapeHtml(c.label)}</a>`;
     }).join("");
   }
 
@@ -824,9 +829,9 @@
 
       const activeRow = rows.find(w => w.slug === selected);
       row.innerHTML = `
-        <button type="button" class="weave-pill${selected ? "" : " active"}" data-slug="" role="tab" aria-selected="${selected ? "false" : "true"}">${escapeHtml(categoryMeta.all_weaves_label || "All Weaves")}</button>
+        <button type="button" class="weave-pill${selected ? "" : " active"}" data-slug="" aria-pressed="${selected ? "false" : "true"}">${escapeHtml(categoryMeta.all_weaves_label || "All Weaves")}</button>
         ${rows.map(w => `
-          <button type="button" class="weave-pill${w.slug === selected ? " active" : ""}" data-slug="${escapeAttr(w.slug)}" role="tab" aria-selected="${w.slug === selected ? "true" : "false"}">${escapeHtml(w.name)}</button>
+          <button type="button" class="weave-pill${w.slug === selected ? " active" : ""}" data-slug="${escapeAttr(w.slug)}" aria-pressed="${w.slug === selected ? "true" : "false"}">${escapeHtml(w.name)}</button>
         `).join("")}
       `;
       // If the previously-selected weave no longer has a matching pill
@@ -939,12 +944,14 @@
       const labelText = selectedText ? `${def.label}: ${selectedText}` : def.label;
       return `
         <div class="filter-pill-wrap" data-pill="${escapeAttr(key)}">
-          <button type="button" class="filter-pill${selectedText ? " is-active" : ""}" aria-haspopup="true" aria-expanded="false">
+          <button type="button" class="filter-pill${selectedText ? " is-active" : ""}" aria-expanded="false">
             <span class="filter-pill-label">${escapeHtml(labelText)}</span>
             <svg class="filter-pill-caret" viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <div class="filter-pill-panel" role="menu">
+          <div class="filter-pill-panel">
+            <fieldset class="filter-fieldset"><legend class="vh">${escapeHtml(def.label)}</legend>
             ${isPrice ? priceControlsHtml() : optionListHtml(key, "d_" + key)}
+            </fieldset>
           </div>
         </div>
       `;
@@ -977,13 +984,14 @@
     // bar is hidden, and both mobile buttons open this one panel.
     const sortHtml = `
       <div class="sheet-group">
-        <div class="sheet-group-title">Sort by</div>
+        <fieldset class="filter-fieldset"><legend class="sheet-group-title">Sort by</legend>
         ${Array.from(sortSel.options).map(o => `
           <label class="filter-option">
             <input type="radio" name="m_sort" value="${escapeAttr(o.value)}" ${o.value === currentSort ? "checked" : ""} />
             <span>${escapeHtml(o.textContent)}</span>
           </label>
         `).join("")}
+        </fieldset>
       </div>
     `;
 
@@ -991,8 +999,9 @@
       const key = def.filter_key;
       return `
         <div class="sheet-group">
-          <div class="sheet-group-title">${escapeHtml(def.label)}</div>
+          <fieldset class="filter-fieldset"><legend class="sheet-group-title">${escapeHtml(def.label)}</legend>
           ${key === "price" ? priceControlsHtml() : optionListHtml(key, "m_" + key)}
+          </fieldset>
         </div>
       `;
     }).join("");

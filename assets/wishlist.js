@@ -65,6 +65,7 @@ export async function addToWishlist(productId) {
     if (ids.includes(pid)) return { success: false, message: "Already in wishlist" };
     ids.push(pid);
     setLocalIds(ids);
+    window.announce?.("Added to wishlist");
     return { success: true, message: "Added to wishlist" };
   }
 
@@ -80,6 +81,7 @@ export async function addToWishlist(productId) {
     return { success: false, message: error.message || "Error adding to wishlist" };
   }
 
+  window.announce?.("Added to wishlist");
   return { success: true, message: "Added to wishlist" };
 }
 
@@ -128,6 +130,7 @@ export async function removeFromWishlist(productId) {
   if (!user) {
     const ids = getLocalIds().filter((x) => x !== pid);
     setLocalIds(ids);
+    window.announce?.("Removed from wishlist");
     return { success: true };
   }
 
@@ -137,6 +140,7 @@ export async function removeFromWishlist(productId) {
     .eq("user_id", user.id)
     .eq("product_id", pid);
 
+  if (!error) window.announce?.("Removed from wishlist");
   return { success: !error };
 }
 

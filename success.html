@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en-IN">
 <head>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
   <script>
@@ -26,6 +26,7 @@
 
 <body>
   <div id="header"></div>
+  <main id="main" tabindex="-1">
 
   <div class="container" style="max-width:560px; padding-top:40px; padding-bottom:60px;">
     <div class="card" style="padding:32px 24px; border-radius:20px; text-align:center;" id="mainCard">
@@ -33,14 +34,14 @@
       <!-- Loading state while we determine outcome -->
       <div id="loadingState">
         <div style="font-size:36px; margin-bottom:16px;">⏳</div>
-        <h2 style="margin:0 0 10px;">Verifying your payment…</h2>
+        <h1 style="margin:0 0 10px;font-size:1.5em;">Verifying your payment…</h1>
         <p style="opacity:.8; line-height:1.6; margin:0 0 24px;">Please wait a moment.</p>
       </div>
 
       <!-- Success state -->
       <div id="successState" style="display:none;">
         <div id="successIcon" style="font-size:52px; line-height:1; margin-bottom:16px;">✅</div>
-        <h2 id="successTitle" style="margin:0 0 10px;">Payment successful!</h2>
+        <h1 id="successTitle" style="margin:0 0 10px;font-size:1.5em;">Payment successful!</h1>
         <p id="successBody" style="opacity:.8; line-height:1.6; margin:0 0 24px;"></p>
         <div id="orderIdBox" style="display:none; margin-bottom:20px; padding:10px 14px; border-radius:12px; background:#f5f3f0; font-size:13px;">
           Order ID: <strong id="orderIdText"></strong>
@@ -55,7 +56,7 @@
       <!-- Cancelled / failed state -->
       <div id="cancelledState" style="display:none;">
         <div style="font-size:52px; line-height:1; margin-bottom:16px;">❌</div>
-        <h2 style="margin:0 0 10px;">Payment not completed</h2>
+        <h1 style="margin:0 0 10px;font-size:1.5em;">Payment not completed</h1>
         <p id="cancelledBody" style="opacity:.8; line-height:1.6; margin:0 0 24px;">
           Your payment was not completed. Don't worry — your cart is still saved and no money was charged.
         </p>
@@ -72,7 +73,7 @@
       <!-- Pending / ambiguous state (payment initiated but outcome unclear) -->
       <div id="pendingState" style="display:none;">
         <div style="font-size:52px; line-height:1; margin-bottom:16px;">🕐</div>
-        <h2 style="margin:0 0 10px;">Payment pending</h2>
+        <h1 style="margin:0 0 10px;font-size:1.5em;">Payment pending</h1>
         <p style="opacity:.8; line-height:1.6; margin:0 0 24px;">
           Your payment is being processed. This can take a few minutes.<br>
           Check <strong>My Orders</strong> for the latest status, or wait for a confirmation SMS/email from Razorpay.
@@ -86,6 +87,7 @@
     </div>
   </div>
 
+  </main>
   <div id="footer"></div>
 
   <script type="module">
@@ -117,7 +119,11 @@
     const rpLinkId   = params.get("razorpay_payment_link_id");
 
     // UI helpers
-    const show = (id) => document.getElementById(id).style.display = "";
+    const show = (id) => {
+      document.getElementById(id).style.display = "";
+      // Announce payment status transitions to screen readers (UX-037).
+      if (id !== "loadingState") setTimeout(() => window.announce?.(document.querySelector("#" + id + " h1")?.textContent || ""), 150);
+    };
     const hide = (id) => document.getElementById(id).style.display = "none";
 
     function showSuccess({ orderId }) {

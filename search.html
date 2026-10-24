@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en-IN">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -80,6 +80,7 @@
 
 <body>
   <div id="header"></div>
+  <main id="main" tabindex="-1">
 
   <div class="search-container">
     <h1 style="font-size: 32px; margin-bottom: 8px;">Search Products</h1>
@@ -114,6 +115,7 @@
     <div id="searchResults" class="results-grid"></div>
   </div>
 
+  </main>
   <div id="footer"></div>
 
   <script type="module">
@@ -186,6 +188,7 @@
           ? `Found ${products.length} product${products.length === 1 ? '' : 's'}`
           : 'No products found';
 
+        window.announce?.(searchStatus.textContent);
         searchResults.innerHTML = renderSearchResults(products);
 
       } catch (err) {

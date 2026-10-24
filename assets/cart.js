@@ -44,6 +44,7 @@ export function addToCart(product, qty = 1) {
       }];
 
   setCart(next);
+  if (typeof window !== "undefined") window.announce?.(`${product.title || "Item"} added to cart`);
 
   // GA4: add_to_cart. `gtag` is loaded globally by every storefront page's
   // own <script> tag (see index.html etc.) — guarded here since this module
@@ -68,6 +69,7 @@ export function addToCart(product, qty = 1) {
 export function removeFromCart(product_id) {
   const next = getCart().filter(i => i.product_id !== product_id);
   setCart(next);
+  if (typeof window !== "undefined") window.announce?.("Item removed from cart");
   return next;
 }
 

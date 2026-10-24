@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en-IN">
 <head>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CKQ1EXBHY6"></script>
@@ -29,6 +29,7 @@
 
 <body>
   <div id="header"></div>
+  <main id="main" tabindex="-1">
 
   <div class="container">
     <div id="breadcrumb-slot"></div>
@@ -43,7 +44,9 @@
             <div id="thumbs" class="pd-thumbs"></div>
 
             <div class="pd-main">
-              <img id="mainImg" alt="" loading="eager" decoding="async" />
+              <button type="button" id="pdZoomBtn" class="pd-zoom-btn" aria-label="Zoom image">
+                <img id="mainImg" alt="" loading="eager" decoding="async" />
+              </button>
             </div>
           </div>
           <div class="small" style="margin-top:10px; opacity:.7;">Click image to zoom</div>
@@ -52,7 +55,7 @@
         <!-- RIGHT: Details -->
         <div class="pd-right">
           <div class="card" style="padding:16px;border-radius:0;">
-            <div id="title" class="pd-title"></div>
+            <h1 id="title" class="pd-title"></h1>
 
             <div class="pd-meta">
               <div id="sku" class="small"></div>
@@ -135,7 +138,7 @@
                details), so naming a section "Fabric Care" or "Return &
                Exchange Policy" there is what makes it show up as a tab here. -->
           <div id="infoTabsCard" class="card pd-tabs-card" style="margin-top:24px;padding:16px;border-radius:0;">
-            <div id="infoTabBar" class="pd-tabbar"></div>
+            <div id="infoTabBar" class="pd-tabbar" role="tablist" aria-label="Product information"></div>
             <div id="infoTabPanels" class="pd-tabpanels"></div>
           </div>
 
@@ -173,12 +176,13 @@
   </div>
 
   <!-- Lightbox -->
-  <div id="lightbox" aria-hidden="true">
+  <div id="lightbox" role="dialog" aria-modal="true" aria-labelledby="lbTitle" aria-hidden="true">
+    <h2 id="lbTitle" class="vh">Image zoom</h2>
     <div id="lightboxInner">
       <img id="lightboxImg" alt="Product image enlarged" loading="lazy" decoding="async" />
-      <button id="lbClose" class="lb-btn" type="button">✕</button>
-      <button id="lbPrev" class="lb-btn" type="button">‹</button>
-      <button id="lbNext" class="lb-btn" type="button">›</button>
+      <button id="lbClose" class="lb-btn" type="button" aria-label="Close zoom">✕</button>
+      <button id="lbPrev" class="lb-btn" type="button" aria-label="Previous image">‹</button>
+      <button id="lbNext" class="lb-btn" type="button" aria-label="Next image">›</button>
       <div id="lb-zoom-hint">Double-tap to zoom &nbsp;·&nbsp; Swipe to navigate</div>
     </div>
   </div>
@@ -189,10 +193,12 @@
     <button id="pdMobileBarBtn" type="button" class="btn pd-add">Add to cart</button>
   </div>
 
+  </main>
   <div id="footer"></div>
 
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { openTrap } from "./assets/a11y.js";
     import { supabase } from "./assets/supabase.js";
     import { addToCart, getCart } from "./assets/cart.js";
     import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
@@ -700,13 +706,21 @@ if (!sessionStorage.getItem(viewKey)) {
         lightbox.classList.add("open");
         lightbox.setAttribute("aria-hidden", "false");
         document.body.style.overflow = "hidden";
+        if (releaseLbTrap) releaseLbTrap();
+        releaseLbTrap = openTrap(lightbox, {
+          onEscape: closeLightbox,
+          initialFocus: lbClose,
+          returnTo: document.getElementById("pdZoomBtn"),
+        });
       }
 
+      let releaseLbTrap = null;
       function closeLightbox() {
         resetZoom();
         lightbox.classList.remove("open");
         lightbox.setAttribute("aria-hidden", "true");
         document.body.style.overflow = "";
+        if (releaseLbTrap) { releaseLbTrap(); releaseLbTrap = null; }
       }
 
       // Keeps the page behind the lightbox on the image the visitor is
@@ -922,6 +936,13 @@ if (!sessionStorage.getItem(viewKey)) {
         }
         openLightbox(Number(mainImg.dataset.idx || "0"));
       });
+      // Keyboard activation (Enter/Space) of the wrapping button fires its
+      // click with the button itself as target; mouse/touch clicks arrive
+      // via the img handler above, so only handle the button-target case.
+      document.getElementById("pdZoomBtn").addEventListener("click", (e) => {
+        if (e.target !== e.currentTarget) return;
+        openLightbox(Number(mainImg.dataset.idx || "0"));
+      });
 
       // Clicking thumbs switches main image (Nalli-like) — crossfades the
       // swap instead of an instant cut, and keeps the clicked thumb marked
@@ -1085,17 +1106,34 @@ if (!sessionStorage.getItem(viewKey)) {
         tabsCard.style.display = "none";
       } else {
         tabBar.innerHTML = tabs.map((t, i) =>
-          `<button type="button" class="pd-tab-btn${i === 0 ? " active" : ""}" data-tab-idx="${i}">${escapeHtml(t.title)}</button>`
+          `<button type="button" role="tab" id="pdTab-${i}" aria-controls="pdPanel-${i}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" class="pd-tab-btn${i === 0 ? " active" : ""}" data-tab-idx="${i}">${escapeHtml(t.title)}</button>`
         ).join("");
         tabPanels.innerHTML = tabs.map((t, i) =>
-          `<div class="pd-tab-panel${i === 0 ? " active" : ""}" data-tab-panel="${i}">${t.html}</div>`
+          `<div role="tabpanel" id="pdPanel-${i}" aria-labelledby="pdTab-${i}" class="pd-tab-panel${i === 0 ? " active" : ""}" data-tab-panel="${i}">${t.html}</div>`
         ).join("");
-        tabBar.querySelectorAll(".pd-tab-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            tabBar.querySelectorAll(".pd-tab-btn").forEach(b => b.classList.remove("active"));
-            tabPanels.querySelectorAll(".pd-tab-panel").forEach(p => p.classList.remove("active"));
-            btn.classList.add("active");
-            tabPanels.querySelector(`[data-tab-panel="${btn.dataset.tabIdx}"]`).classList.add("active");
+        const tabBtns = Array.from(tabBar.querySelectorAll(".pd-tab-btn"));
+        const selectTab = (btn, focus) => {
+          tabBtns.forEach(b => {
+            const on = b === btn;
+            b.classList.toggle("active", on);
+            b.setAttribute("aria-selected", on ? "true" : "false");
+            b.tabIndex = on ? 0 : -1;
+          });
+          tabPanels.querySelectorAll(".pd-tab-panel").forEach(p => p.classList.remove("active"));
+          tabPanels.querySelector(`[data-tab-panel="${btn.dataset.tabIdx}"]`).classList.add("active");
+          if (focus) btn.focus();
+        };
+        tabBtns.forEach((btn, i) => {
+          btn.addEventListener("click", () => selectTab(btn, false));
+          btn.addEventListener("keydown", (e) => {
+            let next = null;
+            if (e.key === "ArrowRight") next = tabBtns[(i + 1) % tabBtns.length];
+            else if (e.key === "ArrowLeft") next = tabBtns[(i - 1 + tabBtns.length) % tabBtns.length];
+            else if (e.key === "Home") next = tabBtns[0];
+            else if (e.key === "End") next = tabBtns[tabBtns.length - 1];
+            if (!next) return;
+            e.preventDefault();
+            selectTab(next, true);
           });
         });
       }
