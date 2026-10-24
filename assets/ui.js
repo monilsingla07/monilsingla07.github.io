@@ -176,7 +176,7 @@ export function renderHeader(active = "") {
           </div>
 
           <a href="index.html" class="mobile-logo" aria-label="Ahamstree home">
-            <img src="assets/images/ahamstree-logo.png" alt="Ahamstree" width="230" height="220" decoding="async">
+            <img src="assets/images/ahamstree-logo.png" alt="AhamStree (अहम् स्त्री)" width="230" height="220" decoding="async">
           </a>
 
           <div class="header-mobile-right">
