@@ -33,7 +33,29 @@
 
   <div class="container">
     <div id="breadcrumb-slot"></div>
-    <div id="status" class="small" style="margin-top:12px;">Loading…</div>
+    <div id="status" class="small" style="margin-top:12px;" role="status"></div>
+
+    <!-- UX-028: layout-matching skeleton, swapped out once the product loads -->
+    <div id="pdSkeleton" class="pd-wrap pd-skel" aria-hidden="true">
+      <div class="pd-left">
+        <div class="pd-skel-gallery"><div class="skeleton pd-skel-img"></div></div>
+      </div>
+      <div class="pd-right">
+        <div class="skeleton pd-skel-line" style="width:75%;height:28px"></div>
+        <div class="skeleton pd-skel-line" style="width:30%;height:14px;margin-top:12px"></div>
+        <div class="skeleton pd-skel-line" style="width:35%;height:26px;margin-top:18px"></div>
+        <div class="skeleton pd-skel-line" style="width:100%;height:52px;margin-top:22px"></div>
+        <div class="skeleton pd-skel-line" style="width:100%;height:48px;margin-top:22px"></div>
+        <div class="skeleton pd-skel-line" style="width:100%;height:48px;margin-top:10px"></div>
+        <div class="pd-skel-tabs">
+          <div class="skeleton pd-skel-line" style="width:90px;height:14px"></div>
+          <div class="skeleton pd-skel-line" style="width:110px;height:14px"></div>
+        </div>
+        <div class="skeleton pd-skel-line" style="width:100%;height:12px;margin-top:16px"></div>
+        <div class="skeleton pd-skel-line" style="width:92%;height:12px;margin-top:8px"></div>
+        <div class="skeleton pd-skel-line" style="width:70%;height:12px;margin-top:8px"></div>
+      </div>
+    </div>
 
     <div id="content" style="display:none;">
       <!-- Nalli-style: left gallery, right details -->
@@ -45,7 +67,7 @@
 
             <div class="pd-main">
               <button type="button" id="pdZoomBtn" class="pd-zoom-btn" aria-label="Zoom image">
-                <img id="mainImg" alt="" loading="eager" decoding="async" />
+                <img id="mainImg" alt="" loading="eager" decoding="async" fetchpriority="high" />
               </button>
             </div>
           </div>
@@ -429,8 +451,13 @@
     async function loadProduct() {
       const status = document.getElementById("status");
 
+      const notFound = () => {
+        document.getElementById("pdSkeleton")?.remove();
+        status.innerHTML = 'Product not found. <a href="products.html">Browse all sarees</a>';
+      };
+
       if (!slugParam && !id) {
-        status.textContent = "Product not found.";
+        notFound();
         return;
       }
 
@@ -461,7 +488,7 @@
       }
 
       if (error || !data) {
-        status.textContent = "Product not found.";
+        notFound();
         return;
       }
 
@@ -472,8 +499,19 @@
       const main = images[0]?.image_url ?? "";
       const safeMain = safeUrl(main, { type: "src" });
 
+      // Warm the main image as early as we know its URL (UX-028).
+      if (safeMain && !document.getElementById("pdPreload")) {
+        const pl = document.createElement("link");
+        pl.id = "pdPreload";
+        pl.rel = "preload";
+        pl.as = "image";
+        pl.href = safeMain;
+        document.head.appendChild(pl);
+      }
+
       // Show page
       document.getElementById("status").style.display = "none";
+      document.getElementById("pdSkeleton")?.remove();
       document.getElementById("content").style.display = "block";
 // Increment view count — fire and forget, don't block page render
 const viewKey = `viewed_${data.id}`;
@@ -561,7 +599,15 @@ if (!sessionStorage.getItem(viewKey)) {
       // Images
       const mainImg = document.getElementById("mainImg");
       const pdMain = document.querySelector(".pd-main");
+      // Reserve the image's box from its stored size (CSS falls back to a
+      // 3/4 aspect-ratio) so the gallery doesn't jump when it loads.
+      const setImgDims = (img, im) => {
+        const w = Number(im?.width), h = Number(im?.height);
+        if (w > 0 && h > 0) { img.setAttribute("width", String(Math.round(w))); img.setAttribute("height", String(Math.round(h))); }
+        else { img.removeAttribute("width"); img.removeAttribute("height"); }
+      };
       if (safeMain) {
+        setImgDims(mainImg, images[0]);
         mainImg.src = safeMain;
         mainImg.style.display = "";
       } else {
@@ -744,6 +790,7 @@ if (!sessionStorage.getItem(viewKey)) {
         thumbs.querySelector(`.pd-thumb[data-idx="${idx}"]`)?.classList.add("is-active");
 
         const apply = () => {
+          setImgDims(mainImg, images[idx]);
           mainImg.src = safeUrl(images[idx].image_url, { type: "src" }) || "";
           mainImg.alt = images[idx].alt_text ?? data.title ?? "Product image";
           mainImg.dataset.idx = String(idx);
