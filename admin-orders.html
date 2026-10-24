@@ -480,7 +480,7 @@
         // customer checkout never sets this) can be edited/deleted here.
         // Editing is further blocked once the order has actually shipped or
         // landed in a terminal status — matches admin-edit-order's own guard.
-        const isAdminCreated = !!o.order_type;
+        const isAdminCreated = !!o.order_type && o.order_type !== "guest"; // "guest" = web guest checkout, not admin-made
         const isEditable     = isAdminCreated && !o.shiprocket_awb &&
           ["paid", "payment_link_created"].includes(o.status);
 
