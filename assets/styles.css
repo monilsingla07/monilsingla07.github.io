@@ -169,3 +169,23 @@ h1.pd-title{margin:0}
 .cart-returns-note a{color:var(--brand);text-decoration:underline;text-underline-offset:2px}
 .link-btn{background:none;border:0;padding:6px 4px;font:inherit;font-size:13px;color:var(--text-light);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .link-btn:hover{color:var(--brand)}
+
+/* Toast + confirm dialog (assets/ui.js) */
+.toast-host{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom));z-index:10001;display:flex;flex-direction:column;gap:8px;align-items:center;width:max-content;max-width:calc(100vw - 32px);pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:14px;background:#1a1a1a;color:#fff;padding:12px 16px;font-size:14px;box-shadow:var(--shadow-md)}
+.toast-action{background:none;border:0;color:#ffd9b8;font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px;cursor:pointer;padding:4px 2px}
+.toast-action:focus-visible{outline-color:#fff9f0}
+.dlg-bg{position:fixed;inset:0;z-index:10002;background:rgba(20,14,10,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.dlg{background:var(--surface);max-width:400px;width:100%;padding:22px;box-shadow:var(--shadow-lg)}
+.dlg-title{margin:0 0 8px;font-family:var(--font-heading);font-size:22px}
+.dlg-text{margin:0 0 18px;color:var(--text-light);font-size:14px;line-height:1.5}
+.dlg-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+
+/* Cart skeleton */
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skel{background:linear-gradient(90deg,#f2ece2 25%,#faf5ec 50%,#f2ece2 75%);background-size:800px 100%;animation:shimmer 1.4s linear infinite}
+.skel-row{display:flex;gap:14px;padding:14px;border:1px solid var(--border-light);margin-bottom:10px}
+.skel-thumb{width:96px;aspect-ratio:3/4;flex-shrink:0}
+.skel-lines{flex:1;display:flex;flex-direction:column;gap:10px;padding-top:6px}
+.skel-line{height:14px}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}

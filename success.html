@@ -10,16 +10,36 @@
   </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Order Confirmed — AhamStree</title>
+  <meta name="robots" content="noindex" />
+  <title>Payment status — AhamStree</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
+    .pay-panel { text-align:center; }
+    .pay-icon { width:56px; height:56px; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; border-radius:50%; }
+    .pay-icon svg { width:30px; height:30px; }
+    .pay-icon.ok   { background:rgba(22,101,52,.10); color:#166534; }
+    .pay-icon.bad  { background:rgba(179,38,30,.10); color:#b3261e; }
+    .pay-icon.wait { background:rgba(184,134,59,.14); color:#8a5d12; }
+    .pay-icon.off  { background:rgba(26,26,26,.07);  color:#4a4a4a; }
+    .pay-panel h1 { margin:0 0 10px; font-size:1.5em; }
+    .pay-panel h1:focus { outline:0; }
+    .pay-lead { color:var(--text-light); line-height:1.6; margin:0 0 20px; }
+    .pay-actions { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+    .pay-help { margin-top:16px; font-size:13.5px; color:var(--text-light); }
+    .pay-help a { color:var(--brand); text-decoration:underline; text-underline-offset:2px; font-weight:600; }
+    .pay-box { text-align:left; background:#f5f3f0; padding:12px 14px; font-size:13.5px; margin-bottom:14px; }
+    .pay-box .row2 { display:flex; justify-content:space-between; gap:10px; padding:3px 0; }
+    .pay-box .row2.total { border-top:1px solid #e0dad2; margin-top:6px; padding-top:8px; font-weight:800; }
+    .pay-eta { text-align:left; font-size:13.5px; color:var(--text); margin:0 0 14px; line-height:1.6; }
+    .pay-save { text-align:left; border:1.5px solid var(--brand); background:var(--brand-light); padding:14px; margin-top:16px; }
+    .pay-save strong { display:block; margin-bottom:4px; }
+    .pay-save p { margin:0 0 10px; font-size:13.5px; color:var(--text-light); }
     @media print {
-      #header, #footer, .btn, #printInvoiceBtn, #successIcon, #successTitle, #successBody { display: none !important; }
+      #header, #footer, .btn, .pay-actions, .pay-save, .pay-help { display: none !important; }
       body, .container { background: #fff !important; padding: 0 !important; max-width: 100% !important; }
-      #provisionalInvoice { border: 1px solid #ccc !important; }
     }
   </style>
 </head>
@@ -29,58 +49,76 @@
   <main id="main" tabindex="-1">
 
   <div class="container" style="max-width:560px; padding-top:40px; padding-bottom:60px;">
-    <div class="card" style="padding:32px 24px; border-radius:20px; text-align:center;" id="mainCard">
+    <div class="card" style="padding:32px 24px; border-radius:20px;" id="mainCard">
 
-      <!-- Loading state while we determine outcome -->
-      <div id="loadingState">
-        <div style="font-size:36px; margin-bottom:16px;">⏳</div>
-        <h1 style="margin:0 0 10px;font-size:1.5em;">Verifying your payment…</h1>
-        <p style="opacity:.8; line-height:1.6; margin:0 0 24px;">Please wait a moment.</p>
+      <!-- Loading -->
+      <div id="loadingState" class="pay-panel">
+        <div class="pay-icon wait" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </div>
+        <h1>Verifying your payment…</h1>
+        <p class="pay-lead">Please wait a moment.</p>
       </div>
 
-      <!-- Success state -->
-      <div id="successState" style="display:none;">
-        <div id="successIcon" style="font-size:52px; line-height:1; margin-bottom:16px;">✅</div>
-        <h1 id="successTitle" style="margin:0 0 10px;font-size:1.5em;">Payment successful!</h1>
-        <p id="successBody" style="opacity:.8; line-height:1.6; margin:0 0 24px;"></p>
-        <div id="orderIdBox" style="display:none; margin-bottom:20px; padding:10px 14px; border-radius:12px; background:#f5f3f0; font-size:13px;">
-          Order ID: <strong id="orderIdText"></strong>
+      <!-- PAID -->
+      <div id="paidState" class="pay-panel" style="display:none;">
+        <div class="pay-icon ok" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.6 2.6L16 9.5"/></svg>
         </div>
-
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <a class="btn" href="products.html">Continue shopping</a>
-          <a id="viewOrdersLink" class="btn secondary" href="orders.html">View my orders</a>
-        </div>
-      </div>
-
-      <!-- Cancelled / failed state -->
-      <div id="cancelledState" style="display:none;">
-        <div style="font-size:52px; line-height:1; margin-bottom:16px;">❌</div>
-        <h1 style="margin:0 0 10px;font-size:1.5em;">Payment not completed</h1>
-        <p id="cancelledBody" style="opacity:.8; line-height:1.6; margin:0 0 24px;">
-          Your payment was not completed. Don't worry — your cart is still saved and no money was charged.
-        </p>
-        <div id="retryBox" style="display:none; margin-bottom:20px; padding:10px 14px; border-radius:12px; background:#f5f3f0; font-size:13px;">
-          <div style="margin-bottom:8px;">You can retry this order directly:</div>
-          <a id="retryPayLink" href="#" class="btn" style="display:inline-block;">Retry payment →</a>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <a class="btn" href="checkout.html">Try again</a>
-          <a class="btn secondary" href="cart.html">Back to cart</a>
-        </div>
-      </div>
-
-      <!-- Pending / ambiguous state (payment initiated but outcome unclear) -->
-      <div id="pendingState" style="display:none;">
-        <div style="font-size:52px; line-height:1; margin-bottom:16px;">🕐</div>
-        <h1 style="margin:0 0 10px;font-size:1.5em;">Payment pending</h1>
-        <p style="opacity:.8; line-height:1.6; margin:0 0 24px;">
-          Your payment is being processed. This can take a few minutes.<br>
-          Check <strong>My Orders</strong> for the latest status, or wait for a confirmation SMS/email from Razorpay.
-        </p>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <a class="btn" href="orders.html">Check my orders</a>
+        <h1 tabindex="-1">Payment received, order confirmed</h1>
+        <p class="pay-lead">Thank you for shopping with AhamStree. We are getting your order ready.</p>
+        <div id="orderBox" class="pay-box" style="display:none;"></div>
+        <p class="pay-eta" id="etaLine"></p>
+        <div class="pay-actions">
+          <a id="viewOrderBtn" class="btn" href="orders.html">View order</a>
           <a class="btn secondary" href="products.html">Continue shopping</a>
+        </div>
+        <div id="saveBox" class="pay-save" style="display:none;">
+          <strong>Save these details for next time?</strong>
+          <p>Create an account with your phone to track this order and check out faster.</p>
+          <button type="button" id="saveBtn" class="btn" style="padding:9px 18px;">Create account with your phone</button>
+        </div>
+        <p class="pay-help">Need help? <a class="waLink" href="https://wa.me/919582297550" target="_blank" rel="noopener noreferrer">WhatsApp us</a></p>
+      </div>
+
+      <!-- FAILED -->
+      <div id="failedState" class="pay-panel" style="display:none;">
+        <div class="pay-icon bad" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
+        </div>
+        <h1 tabindex="-1">Payment did not complete</h1>
+        <p class="pay-lead">No money was taken for this attempt, and your cart is still saved. You can try the payment again.</p>
+        <div class="pay-actions">
+          <a class="btn" href="checkout.html">Retry payment</a>
+          <a class="btn secondary" href="cart.html">Return to cart</a>
+        </div>
+        <p class="pay-help">Something went wrong? <a class="waLink" href="https://wa.me/919582297550" target="_blank" rel="noopener noreferrer">WhatsApp us</a></p>
+      </div>
+
+      <!-- PENDING -->
+      <div id="pendingState" class="pay-panel" style="display:none;">
+        <div class="pay-icon wait" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </div>
+        <h1 tabindex="-1">Payment is processing</h1>
+        <p class="pay-lead">Your bank is still confirming this payment, which can take a few minutes. We'll update you via WhatsApp as soon as it is confirmed. Please do not pay again.</p>
+        <div class="pay-actions">
+          <a id="checkStatusBtn" class="btn" href="orders.html">Check order status</a>
+          <a class="btn secondary" href="products.html">Continue shopping</a>
+        </div>
+        <p class="pay-help">Questions? <a class="waLink" href="https://wa.me/919582297550" target="_blank" rel="noopener noreferrer">WhatsApp us</a></p>
+      </div>
+
+      <!-- CANCELLED -->
+      <div id="cancelledState" class="pay-panel" style="display:none;">
+        <div class="pay-icon off" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>
+        </div>
+        <h1 tabindex="-1">You cancelled the payment</h1>
+        <p class="pay-lead">Nothing was charged and your cart is still saved. Ready when you are.</p>
+        <div class="pay-actions">
+          <a class="btn" href="checkout.html">Try again</a>
+          <a class="btn secondary" href="cart.html">Return to cart</a>
         </div>
       </div>
 
@@ -94,174 +132,205 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { clearCart } from "./assets/cart.js";
     import { supabase } from "./assets/supabase.js";
+    import { escapeHtml } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
 
-    // ─── Read URL params ───────────────────────────────────────────────────────
-    // Razorpay (callback_method: "get") appends these on redirect:
-    //   razorpay_payment_id           — set when paid
-    //   razorpay_payment_link_id      — always
-    //   razorpay_payment_link_reference_id — the order_id we set as reference_id
-    //   razorpay_payment_link_status  — "paid" | "cancelled"
-    //   razorpay_signature            — HMAC for client-side verification (optional)
+    // ─── URL params ────────────────────────────────────────────────────────────
+    // Our own contract:   ?status=paid|failed|pending|cancelled[&order_id=<uuid>]
+    // Razorpay's callback (callback_method "get") appends:
+    //   razorpay_payment_link_status, razorpay_payment_link_reference_id (= our
+    //   order id), razorpay_payment_id, razorpay_payment_link_id, razorpay_signature.
     //
-    // NOTE: this page previously also handled a COD flow (?order_id=xxx&method=cod).
-    // COD has been removed — Razorpay is the only checkout path now. A legacy
-    // ?method=cod link (e.g. from an old bookmark or email) will just fall through
-    // to the "pending" state below rather than a false success.
-
+    // NOTHING in the URL is trusted for "paid": a claimed paid status is only
+    // shown (and the GA4 purchase event only fired) after get-order-status
+    // confirms the order is paid server-side. Anything unverifiable shows
+    // "processing" instead.
     const params     = new URLSearchParams(location.search);
-    const rpStatus   = params.get("razorpay_payment_link_status");      // "paid" | "cancelled"
-    const rpOrderId  = params.get("razorpay_payment_link_reference_id"); // = our order_id
-    const rpPayId    = params.get("razorpay_payment_id");
-    const rpLinkId   = params.get("razorpay_payment_link_id");
+    const UUID_RE    = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const WA_NUMBER  = "919582297550";
 
-    // UI helpers
-    const show = (id) => {
-      document.getElementById(id).style.display = "";
-      // Announce payment status transitions to screen readers (UX-037).
-      if (id !== "loadingState") setTimeout(() => window.announce?.(document.querySelector("#" + id + " h1")?.textContent || ""), 150);
+    function readStored() {
+      try { return JSON.parse(localStorage.getItem("ahamstree_pending_payment") || "null"); } catch { return null; }
+    }
+    const stored = readStored();
+
+    const orderId = [params.get("order_id"), params.get("razorpay_payment_link_reference_id"), stored?.order_id]
+      .map((v) => String(v || "").trim())
+      .find((v) => UUID_RE.test(v)) || null;
+
+    function claimedStatus() {
+      const s = String(params.get("status") || "").toLowerCase();
+      if (["paid", "failed", "pending", "cancelled"].includes(s)) return s;
+      const rp = String(params.get("razorpay_payment_link_status") || "").toLowerCase();
+      if (rp === "paid") return "paid";
+      if (rp === "cancelled") return "cancelled";
+      if (rp === "expired") return "failed";
+      if (rp) return "pending";
+      return "pending";
+    }
+
+    const PANELS = ["loadingState", "paidState", "failedState", "pendingState", "cancelledState"];
+    const TITLES = {
+      paidState:      ["Order confirmed — AhamStree",       "Payment received, order confirmed"],
+      failedState:    ["Payment did not complete — AhamStree", "Payment failed, you can retry"],
+      pendingState:   ["Payment processing — AhamStree",    "Payment is processing. We will update you on WhatsApp."],
+      cancelledState: ["Payment cancelled — AhamStree",     "You cancelled the payment, you can try again"],
     };
-    const hide = (id) => document.getElementById(id).style.display = "none";
 
-    function showSuccess({ orderId }) {
-      hide("loadingState");
-      hide("cancelledState");
-      hide("pendingState");
-      show("successState");
-      clearCart(); // Only clear cart on confirmed success
+    function showPanel(id) {
+      PANELS.forEach((p) => { document.getElementById(p).style.display = (p === id) ? "" : "none"; });
+      const t = TITLES[id];
+      if (!t) return;
+      document.title = t[0];
+      // Announce, then move focus to the new heading so keyboard/screen-reader users land on it.
+      setTimeout(() => {
+        window.announce?.(t[1]);
+        document.querySelector("#" + id + " h1")?.focus({ preventScroll: true });
+      }, 150);
+    }
 
-      // Also clear any pending payment stored from checkout
+    // ─── Helpers ───────────────────────────────────────────────────────────────
+    const money = (n) => "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+
+    async function fetchStatus(id) {
+      try {
+        const { data, error } = await supabase.functions.invoke("get-order-status", { body: { order_id: id } });
+        if (error || !data?.ok) return null;
+        return data;
+      } catch (_) { return null; }
+    }
+
+    function addBusinessDays(d, n) {
+      const out = new Date(d);
+      while (n > 0) { out.setDate(out.getDate() + 1); const w = out.getDay(); if (w !== 0 && w !== 6) n--; }
+      return out;
+    }
+
+    async function isLoggedIn() {
+      try { const { data } = await supabase.auth.getSession(); return !!data?.session?.user; } catch { return false; }
+    }
+
+    function setWhatsappLinks(order) {
+      const ref = order?.order_number || orderId || "";
+      const text = ref ? `Hi AhamStree, I need help with my order ${ref}.` : "Hi AhamStree, I need help with my order.";
+      document.querySelectorAll(".waLink").forEach((a) => {
+        a.href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
+      });
+    }
+
+    // GA4 purchase — only ever called after server-side paid verification, and
+    // at most once per order per browser (reloads / back-forward do not re-fire).
+    function firePurchaseOnce(order) {
+      if (typeof gtag !== "function" || !order?.order_id) return;
+      const key = "ahamstree_purchase_fired_" + order.order_id;
+      try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch (_) {}
+      gtag("event", "purchase", {
+        transaction_id: order.order_id,
+        payment_type: "razorpay",
+        currency: "INR",
+        value: Number(order.total_inr ?? 0),
+        items: (order.items || []).map((i) => ({
+          item_id: i.product_id,
+          item_name: i.title || "",
+          price: Number(i.price_inr ?? 0),
+          quantity: Number(i.qty ?? 1),
+        })),
+      });
+    }
+
+    async function renderPaid(order) {
+      clearCart(); // only ever cleared on a server-verified payment
       try { localStorage.removeItem("ahamstree_pending_payment"); } catch (_) {}
 
-      const icon   = document.getElementById("successIcon");
-      const title  = document.getElementById("successTitle");
-      const body   = document.getElementById("successBody");
-      const idBox  = document.getElementById("orderIdBox");
-      const idText = document.getElementById("orderIdText");
+      const box = document.getElementById("orderBox");
+      const lines = (order.items || []).map((i) =>
+        `<div class="row2"><span>${escapeHtml(i.title || "Item")} × ${Number(i.qty || 1)}</span><span>${money(Number(i.price_inr || 0) * Number(i.qty || 1))}</span></div>`
+      ).join("");
+      box.innerHTML =
+        (order.order_number ? `<div class="row2"><span>Order number</span><strong>${escapeHtml(order.order_number)}</strong></div>` : "") +
+        lines +
+        `<div class="row2 total"><span>Total paid</span><span>${money(order.total_inr)}</span></div>`;
+      box.style.display = "";
 
-      icon.textContent  = "✅";
-      title.textContent = "Payment successful!";
-      body.textContent  = "Your payment is complete and your order is being processed. We'll send you updates shortly.";
+      // Delivery estimate follows shipping.html: 3–5 business days.
+      const eta = addBusinessDays(new Date(), 5).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+      document.getElementById("etaLine").innerHTML =
+        `Expected by <strong>${escapeHtml(eta)}</strong>. You'll get WhatsApp updates as your order is packed, shipped and delivered.`;
 
-      const oid = orderId || rpOrderId;
-      if (oid) {
-        idBox.style.display = "block";
-        idText.textContent  = oid;
-      }
-
-      // Fire GA4 purchase event with real value/items so it's usable for
-      // revenue reporting and Google Ads conversion value — fetched fresh
-      // from the order + order_items tables (RLS-scoped to this user's own
-      // order) rather than localStorage, since clearCart() already ran above.
-      if (typeof gtag === "function" && oid) {
-        (async () => {
-          try {
-            const [{ data: orderRow }, { data: orderItems }] = await Promise.all([
-              supabase.from("orders").select("total_inr").eq("id", oid).maybeSingle(),
-              supabase.from("order_items").select("product_id,title,qty,price_inr").eq("order_id", oid),
-            ]);
-
-            gtag("event", "purchase", {
-              transaction_id: oid,
-              payment_type: "razorpay",
-              currency: "INR",
-              value: Number(orderRow?.total_inr ?? 0),
-              items: (orderItems || []).map((i) => ({
-                item_id: i.product_id,
-                item_name: i.title || "",
-                price: Number(i.price_inr ?? 0),
-                quantity: Number(i.qty ?? 1),
-              })),
-            });
-          } catch (_) {
-            // Fall back to a bare event rather than losing the conversion entirely.
-            gtag("event", "purchase", { transaction_id: oid, payment_type: "razorpay" });
-          }
-        })();
-      }
-    }
-
-    // Any outcome other than a confirmed "paid" sends the person to My
-    // Orders instead of showing an interstitial card here. orders.html is
-    // now the single place that owns the pending-payment countdown/timer and
-    // reflects real server-side order + reservation state, so there's no
-    // reason to duplicate that UI (or a stale localStorage guess) here.
-    function redirectToOrders(orderId) {
-      hide("loadingState");
-      if (orderId) {
-        window.location.replace(`orders.html#order-${orderId}`);
+      const loggedIn = await isLoggedIn();
+      const viewBtn = document.getElementById("viewOrderBtn");
+      if (loggedIn) {
+        viewBtn.href = `orders.html#order-${order.order_id}`;
       } else {
-        window.location.replace("orders.html");
+        viewBtn.href = "track.html";
+        viewBtn.textContent = "Track your order";
+        const saveBox = document.getElementById("saveBox");
+        saveBox.style.display = "";
+        document.getElementById("saveBtn").addEventListener("click", async () => {
+          const { openSignInModal } = await import("./assets/signin-popup.js");
+          await openSignInModal();
+          // Prefill the phone captured at checkout so the WhatsApp OTP is one tap away.
+          let phone = "";
+          try { phone = sessionStorage.getItem("ahamstree_guest_phone") || ""; } catch (_) {}
+          const input = document.getElementById("signinPopupPhone");
+          if (input && phone) input.value = phone;
+        });
+      }
+
+      setWhatsappLinks(order);
+      showPanel("paidState");
+      firePurchaseOnce(order);
+    }
+
+    // ─── Main ──────────────────────────────────────────────────────────────────
+    async function pollForPaid(id, tries = 8, delayMs = 4000) {
+      for (let i = 0; i < tries; i++) {
+        await new Promise((r) => setTimeout(r, delayMs));
+        const o = await fetchStatus(id);
+        if (o?.paid) { await renderPaid(o); return; }
+        if (o && ["failed", "cancelled", "payment_link_failed"].includes(o.status)) {
+          setWhatsappLinks(o); showPanel("failedState"); return;
+        }
       }
     }
 
-    // ─── Main logic ────────────────────────────────────────────────────────────
+    async function initPending(order) {
+      const loggedIn = await isLoggedIn();
+      document.getElementById("checkStatusBtn").href =
+        loggedIn && orderId ? `orders.html#order-${orderId}` : (loggedIn ? "orders.html" : "track.html");
+      setWhatsappLinks(order);
+      showPanel("pendingState");
+      if (orderId) pollForPaid(orderId);
+    }
 
     async function init() {
-      // ── Scenario: Razorpay callback with explicit status ────────────────────
-      // Razorpay sends ?razorpay_payment_link_status=paid OR =cancelled
-      if (rpStatus === "paid") {
-        // The webhook will also fire and update the DB — trust Razorpay's param
-        // for the UI. If signature verification is critical, do it server-side.
-        showSuccess({ orderId: rpOrderId });
-        return;
-      }
+      const claimed = claimedStatus();
+      const order = orderId ? await fetchStatus(orderId) : null;
 
-      if (rpStatus === "cancelled") {
-        redirectToOrders(rpOrderId);
-        return;
-      }
+      if (order?.paid) { await renderPaid(order); return; }   // verified, whatever the URL says
 
-      // ── Scenario: No Razorpay params — user navigated here directly,
-      //    OR they hit browser back from Razorpay before completing.
-      //    Check if there's a pending order in DB or localStorage.
-      if (!rpStatus) {
-        const stored = (() => {
-          try { return JSON.parse(localStorage.getItem("ahamstree_pending_payment") || ""); } catch { return null; }
-        })();
-
-        if (stored?.order_id) {
-          // Poll the DB for the actual order status
-          try {
-            const { data: order, error } = await supabase
-              .from("orders")
-              .select("id, status")
-              .eq("id", stored.order_id)
-              .maybeSingle();
-
-            if (!error && order) {
-              if (order.status === "paid") {
-                showSuccess({ orderId: order.id });
-                return;
-              }
-              // failed / cancelled / still payment_link_created / created —
-              // in every non-paid case, Orders is the right place to be.
-              redirectToOrders(order.id);
-              return;
-            }
-          } catch (_) {
-            // DB check failed — fall through below
-          }
-
-          redirectToOrders(stored.order_id);
-          return;
+      if (claimed === "paid") {
+        // Claimed paid but the server does not (yet) agree: either the webhook
+        // is still in flight, or the URL was forged. Never show success.
+        if (order && ["failed", "cancelled", "payment_link_failed"].includes(order.status)) {
+          setWhatsappLinks(order); showPanel("failedState"); return;
         }
-
-        // No stored order — nothing to show here, send them to Orders.
-        redirectToOrders(null);
+        await initPending(order);
         return;
       }
 
-      // ── Fallback: unknown state ────────────────────────────────────────────
-      redirectToOrders(rpOrderId);
+      setWhatsappLinks(order);
+      if (claimed === "failed")    { showPanel("failedState"); return; }
+      if (claimed === "cancelled") { showPanel("cancelledState"); return; }
+      await initPending(order);
     }
 
     init().catch((e) => {
       console.error("success.html init error:", e);
-      redirectToOrders(rpOrderId); // safe fallback — never show a false success
+      showPanel("pendingState"); // never show a false success
     });
   </script>
 </body>
