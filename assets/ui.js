@@ -416,8 +416,7 @@ export function renderFooter() {
           © ${new Date().getFullYear()} ahamstree.com &nbsp;•&nbsp; Handcrafted with ${icon("heart", { size: 14, cls: "icon-inline" })} in India
         </div>
 
-        <!-- OWNER: provide registered address + GSTIN. Fill in below and remove the "hidden" attribute. -->
-        <p class="footer-legal small" hidden>Registered: [address] &nbsp;•&nbsp; GSTIN: [number]</p>
+        <p class="footer-legal small">Registered: K1601, JMD Garden, Sector 33, Gurugram, Haryana 122001 &nbsp;•&nbsp; GSTIN: 06AYMPG2685D1ZF</p>
 
       </div>
     </footer>
