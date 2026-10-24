@@ -47,7 +47,7 @@ globalThis.location = { href: "http://localhost/", search: "", pathname: "/", ha
 globalThis.matchMedia = () => ({ matches: false, addEventListener: noop, addListener: noop });
 globalThis.navigator ??= { userAgent: "node" };
 
-const { renderHeader, renderFooter } = await import(pathToFileURL(path.join(root, "assets/ui.js")).href);
+const { renderHeader, renderFooter, cookieBannerHtml } = await import(pathToFileURL(path.join(root, "assets/ui.js")).href);
 
 const SKIP = /^(admin|print-)/;
 const files = readdirSync(root).filter((f) => f.endsWith(".html") && !SKIP.test(f));
@@ -60,7 +60,14 @@ for (const f of files) {
   let html = readFileSync(p, "utf8");
   // Pages that never call renderHeader() (checkout is deliberately header-less)
   // keep their empty slot.
-  if (!/<div id="header"/.test(html) || !/renderHeader\(/.test(html)) continue;
+  const before = html;
+  // Cookie consent banner (UX-057): pre-rendered just before </body> in every
+  // page that loads ui.js (which wires it), including header-less checkout.
+  if (/assets\/ui\.js/.test(html)) html = replaceCookie(html, `<!--shell:cookie-->${cookieBannerHtml()}<!--/shell:cookie-->`);
+  if (!/<div id="header"/.test(html) || !/renderHeader\(/.test(html)) {
+    if (html !== before) { writeFileSync(p, html); changed++; console.log("  updated", f); }
+    continue;
+  }
 
   // Which marker does this page pass to renderHeader()?
   const m = html.match(/renderHeader\(\s*(?:"([^"]*)")?/);
@@ -69,7 +76,6 @@ for (const f of files) {
   const header = `<!--shell:header-->${slim(renderHeader(active))}<!--/shell:header-->`;
   const footer = `<!--shell:footer-->${slim(renderFooter())}<!--/shell:footer-->`;
 
-  const before = html;
   html = replaceSlot(html, "header", header);
   html = replaceSlot(html, "footer", footer);
   if (html !== before) { writeFileSync(p, html); changed++; console.log("  updated", f); }
@@ -80,6 +86,14 @@ process.exit(0);
 // Drop author comments and indentation: ~10KB -> ~6KB per page.
 function slim(h) {
   return h.replace(/<!--[\s\S]*?-->/g, "").replace(/\n\s+/g, "\n").replace(/\n{2,}/g, "\n").trim();
+}
+
+// The banner sits outside #header/#footer so page scripts that reassign those
+// slots' innerHTML never wipe it.
+function replaceCookie(html, block) {
+  const marked = /<!--shell:cookie-->[\s\S]*?<!--\/shell:cookie-->/;
+  if (marked.test(html)) return html.replace(marked, () => block);
+  return html.replace(/<\/body>/, () => block + "\n</body>");
 }
 
 function replaceSlot(html, id, inner) {

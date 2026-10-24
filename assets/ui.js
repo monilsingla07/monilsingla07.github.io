@@ -1213,3 +1213,64 @@ export async function hydrateHeaderAuth() {
     supabase.auth.onAuthStateChange(() => hydrateHeaderAuth());
   }
 }
+
+
+// ── Cookie consent banner (UX-057) ──
+// Non-blocking bar. Choice lives in localStorage.cookieConsent ("accept" |
+// "decline"). Google Analytics is only loaded after "accept", via
+// window.loadAnalytics() from assets/analytics.js (also auto-run there on later
+// visits). The markup is pre-rendered into each page's static HTML by
+// scripts/build-shell.mjs (<!--shell:cookie-->); renderCookieBanner() wires it,
+// and creates it if a page (e.g. header-less checkout) doesn't have it.
+export function cookieBannerHtml() {
+  return `<div id="cookieConsent" class="cookie-banner" role="region" aria-label="Cookie consent" hidden>
+  <div class="cookie-banner__text">
+    We use cookies for analytics so we can improve the site. See our
+    <a href="/cookies.html">cookie policy</a>.
+  </div>
+  <div class="cookie-banner__actions">
+    <button type="button" class="btn secondary" data-consent="decline">Decline</button>
+    <button type="button" class="btn" data-consent="accept">Accept</button>
+  </div>
+</div>`;
+}
+
+function readCookieConsent() {
+  try { return localStorage.getItem("cookieConsent"); } catch (_) { return null; }
+}
+
+export function renderCookieBanner() {
+  if (typeof document === "undefined" || !document.body) return;
+  if (/^(admin|print-)/.test(location.pathname.split("/").pop() || "")) return;
+  let el = document.getElementById("cookieConsent");
+  const consent = readCookieConsent();
+  if (consent === "accept" || consent === "decline") {
+    if (el) el.hidden = true;
+    return;
+  }
+  if (!el) {
+    document.body.insertAdjacentHTML("beforeend", cookieBannerHtml());
+    el = document.getElementById("cookieConsent");
+  }
+  if (!el.dataset.wired) {
+    el.dataset.wired = "1";
+    el.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-consent]");
+      if (!btn) return;
+      const choice = btn.dataset.consent === "accept" ? "accept" : "decline";
+      try { localStorage.setItem("cookieConsent", choice); } catch (_) {}
+      el.hidden = true;
+      document.dispatchEvent(new CustomEvent("cookieconsentchange", { detail: choice }));
+      if (choice === "accept") { try { window.loadAnalytics?.(); } catch (_) {} }
+      window.announce?.(choice === "accept" ? "Analytics cookies accepted." : "Analytics cookies declined.");
+    });
+  }
+  el.hidden = false;
+}
+window.renderCookieBanner = renderCookieBanner;
+
+if (typeof document !== "undefined" && document.body !== undefined) {
+  const mountCookie = () => { try { renderCookieBanner(); } catch (_) {} };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountCookie, { once: true });
+  else mountCookie();
+}
