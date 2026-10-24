@@ -26,7 +26,7 @@
     .pbadge.shipped    { background:rgba(63,122,138,.1);color:#3f7a8a; }
     .pbadge.delivered  { background:rgba(63,107,79,.1);color:#3f6b4f;border-color:rgba(63,107,79,.28); }
     .pbadge.refunded   { background:rgba(122,74,107,.09);color:#7a4a6b; }
-    .pbadge.pending    { background:var(--accent-gold-light);color:var(--accent-gold); }
+    .pbadge.pending    { background:var(--color-accent-light);color:var(--color-accent); }
     .pbadge.unknown    { background:var(--border-light);color:var(--text-light); }
 
     .filter-tabs { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px; }
@@ -34,7 +34,7 @@
       padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;
       border:1.5px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text);
     }
-    .filter-tab.active { background:var(--brand);color:#fff;border-color:var(--brand); }
+    .filter-tab.active { background:var(--color-action);color:#fff;border-color:var(--color-action); }
 
     .pay-card { overflow:hidden;border:1px solid var(--border-light);background:var(--surface); }
     .pay-row { padding:10px 16px;border-top:1px solid var(--border-light);font-size:13px; }
@@ -121,7 +121,7 @@
       mainContent.style.display = "none";
       loadingState.innerHTML =
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +

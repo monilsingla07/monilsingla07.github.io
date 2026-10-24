@@ -50,7 +50,7 @@
       font-weight: 600;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--brand);
+      color: var(--color-action);
       margin-bottom: 10px;
       opacity: 0.8;
     }
@@ -62,7 +62,7 @@
       margin: 0 0 8px;
       line-height: 1.08;
     }
-    .products-hero h1 em { font-style: italic; color: var(--brand); }
+    .products-hero h1 em { font-style: italic; color: var(--color-action); }
     .products-hero-sub {
       font-size: 14px;
       color: var(--text-light);
@@ -108,10 +108,10 @@
       border-bottom: 2px solid transparent;
       transition: color 0.2s, border-color 0.2s;
     }
-    .category-tab:hover { color: var(--brand); }
+    .category-tab:hover { color: var(--color-action); }
     .category-tab.active {
       color: var(--text);
-      border-bottom-color: var(--brand);
+      border-bottom-color: var(--color-action);
     }
 
     /* ── Weave pill row ── smaller than the category tabs, sits just above
@@ -143,10 +143,10 @@
       white-space: nowrap;
       transition: border-color 0.2s, color 0.2s, background 0.2s;
     }
-    .weave-pill:hover { border-color: var(--brand); color: var(--brand); }
+    .weave-pill:hover { border-color: var(--color-action); color: var(--color-action); }
     .weave-pill.active {
-      background: var(--brand);
-      border-color: var(--brand);
+      background: var(--color-action);
+      border-color: var(--color-action);
       color: #fff;
       font-weight: 600;
     }
@@ -189,7 +189,7 @@
       white-space: nowrap;
       transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
     }
-    .filter-pill:hover { border-color: var(--brand); color: var(--brand); }
+    .filter-pill:hover { border-color: var(--color-action); color: var(--color-action); }
     .filter-pill-label {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -201,19 +201,19 @@
        "open" fought over the pill's color (open always won, so a selected
        pill visually looked unselected the moment you reopened it). */
     .filter-pill.is-active {
-      border-color: var(--accent-gold);
-      color: var(--accent-gold);
+      border-color: var(--color-accent);
+      color: var(--color-accent);
       background: rgba(184,134,59,0.08);
       font-weight: 600;
     }
     /* "Open" now only ever adds a focus ring; it never overrides a pill's
        own resting/active color underneath. */
     .filter-pill-wrap.open .filter-pill {
-      box-shadow: 0 0 0 3px var(--brand-lighter);
+      box-shadow: 0 0 0 3px var(--color-action-lighter);
     }
     .filter-pill-wrap.open .filter-pill:not(.is-active) {
-      border-color: var(--brand);
-      color: var(--brand);
+      border-color: var(--color-action);
+      color: var(--color-action);
     }
     .filter-pill-caret { transition: transform 0.2s; flex-shrink: 0; }
     .filter-pill-wrap.open .filter-pill-caret { transform: rotate(180deg); }
@@ -236,7 +236,7 @@
       flex: 0 0 auto;
       transition: color 0.2s;
     }
-    .filter-clear-btn:hover { color: var(--brand); }
+    .filter-clear-btn:hover { color: var(--color-action); }
 
     .filter-pill-panel {
       display: none;
@@ -323,7 +323,7 @@
       height: 20px;
       padding: 0 6px;
       border-radius: 999px;
-      background: var(--brand);
+      background: var(--color-action);
       color: #fff;
       font-size: 12px;
       font-weight: 700;
@@ -399,7 +399,7 @@
       min-height: 44px;
       box-sizing: border-box;
     }
-    .sheet-body .filter-option input { width: 18px; height: 18px; accent-color: var(--brand); flex-shrink: 0; }
+    .sheet-body .filter-option input { width: 18px; height: 18px; accent-color: var(--color-action); flex-shrink: 0; }
     .sheet-foot {
       display: flex;
       gap: 10px;

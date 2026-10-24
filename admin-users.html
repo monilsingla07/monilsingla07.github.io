@@ -28,7 +28,7 @@
       background:none; border:none; padding:10px 4px; margin-right:14px; font-size:13px; font-weight:700;
       color:var(--text-light); cursor:pointer; border-bottom:2px solid transparent;
     }
-    .tab-btn.active { color: var(--brand); border-bottom-color: var(--brand); }
+    .tab-btn.active { color: var(--color-action); border-bottom-color: var(--color-action); }
     .tab-panel { display:none; }
     .tab-panel.active { display:block; }
 
@@ -48,7 +48,7 @@
     }
     .pill.google  { background:var(--indigo-light); color:var(--indigo); }
     .pill.phone   { background:rgba(63,107,79,.1); color:#3f6b4f; }
-    .pill.email   { background:var(--accent-gold-light); color:var(--accent-gold); }
+    .pill.email   { background:var(--color-accent-light); color:var(--color-accent); }
     .pill.unknown { background:var(--border-light); color:var(--text-light); }
     .pill.never   { background:rgba(161,61,61,.09); color:#a13d3d; }
 
@@ -63,7 +63,7 @@
 
     .filter-chip {
       display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px;
-      background: var(--brand-lighter); border:1px solid var(--brand); font-size:12.5px; font-weight:700;
+      background: var(--color-action-lighter); border:1px solid var(--color-action); font-size:12.5px; font-weight:700;
       margin-bottom:14px;
     }
     .filter-chip button { background:none; border:none; cursor:pointer; font-weight:700; color:var(--text-light); }
@@ -240,7 +240,7 @@
       mainContent.style.display = "none";
       loadingState.innerHTML =
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +

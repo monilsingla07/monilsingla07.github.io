@@ -29,15 +29,15 @@
     .pm-badge { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
     .pm-badge.active { background: rgba(63,107,79,.1); color: #3f6b4f; }
     .pm-badge.inactive { background: var(--border-light); color: var(--text-light); }
-    .pm-badge.low { background: var(--accent-gold-light); color: var(--accent-gold); }
+    .pm-badge.low { background: var(--color-accent-light); color: var(--color-accent); }
     .pm-badge.out { background: rgba(161,61,61,.09); color: #a13d3d; }
-    .pm-badge.sale { background: var(--brand-lighter); color: var(--brand); }
+    .pm-badge.sale { background: var(--color-action-lighter); color: var(--color-action); }
     .pm-badge.neutral { background: var(--border-light); color: var(--text); }
     .section-title { font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); margin: 22px 0 10px; }
 
     .tabbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; border-bottom: 1.5px solid var(--border-light); }
     .tab-btn { border: none; background: none; padding: 10px 14px; font-weight: 700; font-size: 13px; color: var(--text-light); cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; }
-    .tab-btn.active { color: var(--brand); border-bottom-color: var(--brand); }
+    .tab-btn.active { color: var(--color-action); border-bottom-color: var(--color-action); }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
@@ -63,7 +63,7 @@
     .switch input { opacity: 0; width: 0; height: 0; }
     .switch .slider { position: absolute; inset: 0; background: var(--border); border-radius: 999px; cursor: pointer; transition: .15s; }
     .switch .slider:before { content: ""; position: absolute; height: 15px; width: 15px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: .15s; }
-    .switch input:checked + .slider { background: var(--brand); }
+    .switch input:checked + .slider { background: var(--color-action); }
     .switch input:checked + .slider:before { transform: translateX(15px); }
 
     .img-thumb-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
@@ -95,7 +95,7 @@
     .fs-row:last-of-type { border-bottom: none; }
     .fs-row .fs-name { font-weight: 600; font-size: 13px; }
     .fs-row .fs-coverage { font-size: 11px; color: var(--text-light); margin-top: 2px; }
-    .fs-row .fs-coverage.warn { color: var(--accent-gold); }
+    .fs-row .fs-coverage.warn { color: var(--color-accent); }
     .fs-row .input { max-width: 100%; }
     .fs-colhead { display: grid; grid-template-columns: 44px minmax(0,1fr) 160px 72px; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); padding: 14px 0 4px; }
     @media (max-width: 720px) {
@@ -158,7 +158,7 @@
                and stock changes are relative (+/- %, +/- units) since "set
                every selected product to the same price" is rarely what's
                wanted; "10% off this batch" or "restock +5 units" is. -->
-          <div id="bulkBar" style="display:none; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 14px; background:var(--brand-lighter); border:1.5px solid var(--brand); margin-bottom:12px;">
+          <div id="bulkBar" style="display:none; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 14px; background:var(--color-action-lighter); border:1.5px solid var(--color-action); margin-bottom:12px;">
             <strong id="bulkCount" style="font-size:13px;"></strong>
             <button id="bulkActivate" class="btn secondary" style="padding:6px 12px; font-size:12px;">Activate</button>
             <button id="bulkDeactivate" class="btn secondary" style="padding:6px 12px; font-size:12px;">Deactivate</button>
@@ -203,7 +203,7 @@
             </div>
 
             <div style="margin-top:16px;">
-              <label class="pm-label" style="color:var(--accent-gold);">Section templates — REPLACES every selected product's whole "Additional details" list (including any one-off custom blocks) with just the template(s) checked here</label>
+              <label class="pm-label" style="color:var(--color-accent);">Section templates — REPLACES every selected product's whole "Additional details" list (including any one-off custom blocks) with just the template(s) checked here</label>
               <div id="bulkSectionTemplateChips" class="chip-check-grid"></div>
               <button id="bulkApplySections" class="btn secondary" style="padding:8px 14px; font-size:12px; margin-top:8px;">Replace sections on selected</button>
             </div>
@@ -473,7 +473,7 @@
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +

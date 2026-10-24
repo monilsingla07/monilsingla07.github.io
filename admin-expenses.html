@@ -24,13 +24,13 @@
     .pm-label { font-size: 12px; color: var(--text-light); display: block; margin-bottom: 4px; }
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .tab-btn { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-weight: 700; font-size: 13px; cursor: pointer; color: var(--text); }
-    .tab-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .tab-btn.active { background: var(--color-action); color: #fff; border-color: var(--color-action); }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
     .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 8px; }
     .metric-card { background: var(--surface); border: 1px solid var(--border-light); padding: 16px; display: flex; flex-direction: column; gap: 6px; }
-    .metric-card.highlight { background: var(--brand-lighter); border-color: var(--brand); }
+    .metric-card.highlight { background: var(--color-action-lighter); border-color: var(--color-action); }
     .metric-card.warn { background: #fbeceb; border-color: #a13d3d; }
     .metric-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-light); }
     .metric-value { font-size: 26px; font-weight: 700; line-height: 1.15; font-family: 'Cormorant Garamond', serif; color: var(--text); }
@@ -48,7 +48,7 @@
     .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 3px 9px; border: 1px solid var(--border-light); }
     .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
     .badge.paid { color: #3f6b4f; border-color: #3f6b4f; }
-    .badge.unpaid { color: #b8863b; border-color: #b8863b; }
+    .badge.unpaid { color: var(--color-accent); border-color: var(--color-accent); }
 
     @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
   </style>
@@ -269,7 +269,7 @@
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +

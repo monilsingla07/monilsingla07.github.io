@@ -23,17 +23,17 @@
     .pm-row .full { grid-column: 1 / -1; }
     .pm-label { font-size: 12px; color: var(--text-light); display: block; margin-bottom: 4px; }
     .pm-list-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--border-light); background: var(--surface); cursor: pointer; transition: border-color .15s, background .15s; }
-    .pm-list-item:hover { border-color: var(--brand); background: var(--brand-lighter); }
+    .pm-list-item:hover { border-color: var(--color-action); background: var(--color-action-lighter); }
     .pm-list-item + .pm-list-item { margin-top: 10px; }
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .tab-btn { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-weight: 700; font-size: 13px; cursor: pointer; color: var(--text); }
-    .tab-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .tab-btn.active { background: var(--color-action); color: #fff; border-color: var(--color-action); }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
     .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 8px; }
     .metric-card { background: var(--surface); border: 1px solid var(--border-light); padding: 16px; display: flex; flex-direction: column; gap: 6px; }
-    .metric-card.highlight { background: var(--brand-lighter); border-color: var(--brand); }
+    .metric-card.highlight { background: var(--color-action-lighter); border-color: var(--color-action); }
     .metric-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-light); }
     .metric-value { font-size: 26px; font-weight: 700; line-height: 1.15; font-family: 'Cormorant Garamond', serif; color: var(--text); }
 
@@ -42,7 +42,7 @@
     .switch input { opacity: 0; width: 0; height: 0; }
     .switch .slider { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 999px; transition: .15s; }
     .switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .15s; }
-    .switch input:checked + .slider { background: var(--brand); }
+    .switch input:checked + .slider { background: var(--color-action); }
     .switch input:checked + .slider:before { transform: translateX(20px); }
 
     .ledger-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--border-light); background: var(--surface); }
@@ -194,7 +194,7 @@
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +

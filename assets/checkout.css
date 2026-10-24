@@ -1,0 +1,66 @@
+/* checkout.css — rules extracted from checkout.html inline styles (UX-053).
+   Visuals unchanged: each .co-N class is exactly the declarations that used to be
+   inline on that element. Scoped under body.checkout-page so it outranks the
+   shared component rules the way the inline styles did. display:none stays inline
+   on elements that checkout JS shows/hides via element.style.display. */
+body.checkout-page .co-1{height: 40px}
+body.checkout-page .co-2{padding: 12px 14px; border-radius: 0; margin-bottom: 12px; border: 1.5px solid var(--color-action); background: var(--color-action-light)}
+body.checkout-page .co-3{font-weight: 800; font-size: 14px}
+body.checkout-page .co-4{margin-top: 4px}
+body.checkout-page .co-5{display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap}
+body.checkout-page .co-6{padding: 8px 14px; font-size: 13px}
+body.checkout-page .co-7{padding: 12px 14px; border-radius: 0; margin-bottom: 12px}
+body.checkout-page .co-8{margin-bottom: 12px; padding: 14px 16px; border-radius: 0; border: 1.5px solid var(--color-action); background: var(--color-action-light)}
+body.checkout-page .co-9{display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap}
+body.checkout-page .co-10{display: flex; align-items: flex-start; gap: 10px}
+body.checkout-page .co-11{color: var(--color-action); flex-shrink: 0; margin-top: 2px}
+body.checkout-page .co-12{margin-top: 4px; opacity: .8}
+body.checkout-page .co-13{display: flex; gap: 8px}
+body.checkout-page .co-14{padding: 12px 14px; border-radius: 0; border: 1px solid rgba(179,38,30,.35); margin-bottom: 12px}
+body.checkout-page .co-15{color: #b3261e; font-weight: 600}
+body.checkout-page .co-16{padding: 16px; border-radius: 0}
+body.checkout-page .co-17{margin: 0 0 8px 0}
+body.checkout-page .co-18{opacity: .8; margin-bottom: 12px}
+body.checkout-page .co-19{flex: 1}
+body.checkout-page .co-20{height: 20px}
+body.checkout-page .co-21{margin-bottom: 14px}
+body.checkout-page .co-22{font-weight: 800; margin-bottom: 8px}
+body.checkout-page .co-23{display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 2px solid var(--color-action); border-radius: 0; background: var(--color-action-light)}
+body.checkout-page .co-24{opacity: .75; margin-top: 2px}
+body.checkout-page .co-25{opacity: .74; flex-shrink: 0}
+body.checkout-page .co-26{height: 14px}
+body.checkout-page .co-27{margin-bottom: 10px}
+body.checkout-page .co-28{margin-top: 12px; opacity: .8}
+body.checkout-page .co-29{display: flex; flex-direction: column; gap: 10px}
+body.checkout-page .co-30{margin-top: 14px}
+body.checkout-page .co-31{margin-top: 10px; border: 1px solid var(--border); padding: 14px; background: var(--surface)}
+body.checkout-page .co-32{font-weight: 800; font-size: 13px; margin-bottom: 10px}
+body.checkout-page .co-33{display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px}
+body.checkout-page .co-34{font-weight: 700; font-size: 12px; opacity: .8; margin-bottom: 6px}
+body.checkout-page .co-35{height: 42px; padding: 0 16px; flex-shrink: 0}
+body.checkout-page .co-36{margin-top: 8px; min-height: 18px}
+body.checkout-page .co-37{margin-top: 10px}
+body.checkout-page .co-38{display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1.5px solid var(--color-action); border-radius: 0; padding: 12px 14px; background: var(--color-action-light)}
+body.checkout-page .co-39{min-width: 0; display: flex; align-items: flex-start; gap: 10px}
+body.checkout-page .co-40{min-width: 0}
+body.checkout-page .co-41{opacity: .8; margin-top: 2px}
+body.checkout-page .co-42{display: flex; align-items: center; gap: 8px; cursor: pointer; flex-shrink: 0}
+body.checkout-page .co-43{font-weight: 700}
+body.checkout-page .co-44{margin-top: 6px; min-height: 16px}
+body.checkout-page .co-45{border-top: 1px solid var(--border-light); padding-top: 12px}
+body.checkout-page .co-46{cursor: default}
+body.checkout-page .co-47{opacity: .75}
+body.checkout-page .co-48{display: flex; gap: 10px; align-items: center}
+body.checkout-page .co-49{flex: 1; min-width: 0}
+body.checkout-page .co-50{font-size: 13.5px}
+body.checkout-page .co-51{opacity: .75; margin-top: 3px}
+body.checkout-page .co-52{text-decoration: line-through; margin-right: 5px}
+body.checkout-page .co-53{color: var(--color-action); font-weight: 700}
+body.checkout-page .co-54{color: crimson; margin-top: 2px}
+body.checkout-page .co-55{display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1.5px dashed var(--border); padding: 10px 12px; background: var(--bg-warm); cursor: pointer; text-align: left; width: 100%; transition: border-color .15s,background .15s}
+body.checkout-page .co-56{font-weight: 800; font-size: 13px; color: var(--color-action)}
+body.checkout-page .co-57{margin-left: 8px; font-size: 12px; font-weight: 700; background: var(--color-action); color: #fff; padding: 2px 7px; border-radius: 999px}
+body.checkout-page .co-58{font-size: 12px; opacity: .8; margin-top: 3px}
+body.checkout-page .co-59{font-size: 12px; font-weight: 800; color: var(--color-action); white-space: nowrap}
+/* Preserved from the inline era: #couponBox kept its 14px top margin even when the summary is collapsed on mobile. */
+body.checkout-page #summaryCard.sum-collapsed #couponBox{margin-top:14px}

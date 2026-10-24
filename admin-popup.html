@@ -34,7 +34,7 @@
     #pmPreviewBody { padding: 22px 24px 26px; }
     #pmPreviewHeadline { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; margin: 0 0 8px; }
     #pmPreviewSubtext { font-size: 14px; color: var(--text-light); margin: 0 0 18px; line-height: 1.5; }
-    #pmPreviewBtn { display: inline-block; background: var(--brand); color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 26px; border-radius: 999px; }
+    #pmPreviewBtn { display: inline-block; background: var(--color-action); color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 26px; border-radius: 999px; }
     @media (max-width: 560px) { .pm-row { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -183,7 +183,7 @@
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +

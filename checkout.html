@@ -18,9 +18,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="assets/checkout.css" />
 </head>
 
-<body>
+<body class="checkout-page">
   <a class="skip-link" href="#main">Skip to main content</a>
   <div id="header"></div>
   <main id="main" tabindex="-1">
@@ -37,7 +38,7 @@
         <h1 class="page-title">Checkout</h1>
         <div class="small page-subtitle">Confirm your cart, add shipping details, and pay securely via Razorpay.</div>
       </div>
-      <a class="btn ghost" href="cart.html" style="height:40px;">Edit cart</a>
+      <a class="btn ghost co-1" href="cart.html">Edit cart</a>
     </div>
 
     <!-- Guest checkout: signing in is optional and never blocks payment. -->
@@ -48,37 +49,37 @@
     </div>
 
     <!-- Shown to guests who return (browser back) with a payment already in progress -->
-    <div id="resumeBanner" class="card" role="status" style="padding:12px 14px; border-radius:0; display:none; margin-bottom:12px; border:1.5px solid var(--brand); background:var(--brand-light);">
-      <div style="font-weight:800;font-size:14px;">You have a payment in progress</div>
-      <div class="small" style="margin-top:4px;">Your items are held for a few minutes. Continue where you left off, or start again.</div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-        <a id="resumePayLink" class="btn" href="#" style="padding:8px 14px;font-size:13px;">Continue to payment</a>
-        <button type="button" id="resumeDismiss" class="btn secondary" style="padding:8px 14px;font-size:13px;">Start again</button>
+    <div id="resumeBanner" class="card co-2" role="status" style="display:none">
+      <div class="co-3">You have a payment in progress</div>
+      <div class="small co-4">Your items are held for a few minutes. Continue where you left off, or start again.</div>
+      <div class="co-5">
+        <a id="resumePayLink" class="btn co-6" href="#">Continue to payment</a>
+        <button type="button" id="resumeDismiss" class="btn secondary co-6">Start again</button>
       </div>
     </div>
 
-    <div id="authBanner" class="card" style="padding:12px 14px; border-radius:0; display:none; margin-bottom:12px;">
+    <div id="authBanner" class="card co-7" style="display:none">
       <div class="small" id="authText"></div>
     </div>
 
     <!-- Saved address banner (shown for logged-in users with a saved address) -->
-    <div id="savedAddressBanner" style="display:none; margin-bottom:12px; padding:14px 16px; border-radius:0; border:1.5px solid var(--brand); background:var(--brand-light);">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-        <div style="display:flex;align-items:flex-start;gap:10px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand);flex-shrink:0;margin-top:2px;" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+    <div id="savedAddressBanner" class="co-8" style="display:none">
+      <div class="co-9">
+        <div class="co-10">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="co-11"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
           <div>
-            <div style="font-weight:800; font-size:14px;">Prefilled from your account</div>
-            <div class="small" style="margin-top:4px; opacity:.8;" id="savedAddressPreview"></div>
+            <div class="co-3">Prefilled from your account</div>
+            <div class="small co-12" id="savedAddressPreview"></div>
           </div>
         </div>
-        <div style="display:flex; gap:8px;">
-          <button type="button" id="dismissSavedAddress" class="btn secondary" style="padding:8px 14px; font-size:13px;">Use a different address</button>
+        <div class="co-13">
+          <button type="button" id="dismissSavedAddress" class="btn secondary co-6">Use a different address</button>
         </div>
       </div>
     </div>
 
-    <div id="warn" class="card" role="alert" style="padding:12px 14px; border-radius:0; display:none; border:1px solid rgba(179,38,30,.35); margin-bottom:12px;">
-      <div class="small" style="color:#b3261e;font-weight:600;" id="warnText"></div>
+    <div id="warn" class="card co-14" role="alert" style="display:none">
+      <div class="small co-15" id="warnText"></div>
     </div>
 
     <!-- Validation summary: one assertive announcement listing every problem,
@@ -88,9 +89,9 @@
     <div class="checkout-grid">
 
       <!-- LEFT: Shipping -->
-      <form id="form" class="card" style="padding:16px; border-radius:0;" novalidate>
-        <h3 style="margin:0 0 8px 0;">Shipping details</h3>
-        <div class="small" style="opacity:.8; margin-bottom:12px;">Used for delivery updates and invoice.</div>
+      <form id="form" class="card co-16" novalidate>
+        <h3 class="co-17">Shipping details</h3>
+        <div class="small co-18">Used for delivery updates and invoice.</div>
 
         <div class="field">
           <label class="small" for="co-full_name">Full name</label>
@@ -122,12 +123,12 @@
         </div>
 
         <div class="row city-state-row">
-          <div class="field" style="flex:1;">
+          <div class="field co-19">
             <label class="small" for="co-city">City</label>
             <input class="input" id="co-city" name="city" required autocomplete="shipping address-level2" autocapitalize="words" />
             <div class="field-err" id="co-city_err" role="alert" hidden></div>
           </div>
-          <div class="field" style="flex:1;">
+          <div class="field co-19">
             <label class="small" for="co-state">State</label>
             <select class="input" id="co-state" name="state" required autocomplete="shipping address-level1">
               <option value="">Select state</option>
@@ -147,87 +148,87 @@
           <div class="country-fixed" aria-labelledby="co-country-label">India</div>
         </div>
 
-        <div style="height:20px;"></div>
+        <div class="co-20"></div>
 
         <!-- Payment method: Razorpay only. COD has been removed. -->
-        <div style="margin-bottom:14px;">
-          <div class="small" style="font-weight:800; margin-bottom:8px;">Payment method</div>
-          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid var(--brand);border-radius:0;background:var(--brand-light);">
-            <div style="flex:1;">
-              <div style="font-weight:800;font-size:14px;">Pay Online</div>
-              <div class="small" style="opacity:.75;margin-top:2px;">Cards, UPI, Net Banking via Razorpay</div>
+        <div class="co-21">
+          <div class="small co-22">Payment method</div>
+          <div class="co-23">
+            <div class="co-19">
+              <div class="co-3">Pay Online</div>
+              <div class="small co-24">Cards, UPI, Net Banking via Razorpay</div>
             </div>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.74;flex-shrink:0;"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="co-25"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           </div>
         </div>
 
-        <div style="height:14px;"></div>
+        <div class="co-26"></div>
 
-        <div id="status" class="small" style="margin-bottom:10px;" role="status" aria-live="polite"></div>
+        <div id="status" class="small co-27" role="status" aria-live="polite"></div>
         <div class="pay-bar">
           <div class="pay-bar-total"><span class="small">Total</span><strong id="payBarTotal">₹0</strong></div>
           <button class="btn pay-btn" type="button" id="payBtn">Pay with Razorpay</button>
         </div>
 
-        <div id="payNote" class="small" style="margin-top:12px; opacity:.8;">
+        <div id="payNote" class="small co-28">
           Note: Payments are processed by Razorpay. You'll be redirected to a secure payment page.
         </div>
       </form>
 
       <!-- RIGHT: Order Summary -->
-      <div class="card sum-collapsed" id="summaryCard" style="padding:16px; border-radius:0;">
+      <div class="card sum-collapsed co-16" id="summaryCard">
         <!-- Mobile only: the total is always visible; details expand on demand. -->
         <button type="button" class="sum-head" id="sumToggle" aria-expanded="false" aria-controls="summaryItems totalsBlock">
           <span class="sum-head-main"><span class="small">Order total</span><strong id="sumHeadTotal">₹0</strong></span>
           <span class="sum-head-meta"><span id="sumHeadCount">0 items</span><span class="sum-head-link" id="sumToggleLabel">View details</span></span>
         </button>
-        <h3 style="margin:0 0 8px 0;">Order summary</h3>
-        <div class="small sum-sub" style="opacity:.8; margin-bottom:12px;">Review your items before payment.</div>
+        <h3 class="co-17">Order summary</h3>
+        <div class="small sum-sub co-18">Review your items before payment.</div>
 
-        <div id="summaryItems" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div id="summaryItems" class="co-29"></div>
 
         <!-- Coupon -->
-        <div id="couponBox" style="margin-top:14px;">
-          <button id="couponToggle" type="button" aria-expanded="false" aria-controls="couponPanel" style="display:flex;align-items:center;gap:8px;background:var(--brand-light);border:1.5px dashed var(--brand);border-radius:0;padding:10px 14px;width:100%;cursor:pointer;color:var(--brand);font-weight:700;font-size:14px;">
+        <div id="couponBox" class="co-30">
+          <button id="couponToggle" type="button" aria-expanded="false" aria-controls="couponPanel" style="display:flex;align-items:center;gap:8px;background:var(--color-action-light);border:1.5px dashed var(--color-action);border-radius:0;padding:10px 14px;width:100%;cursor:pointer;color:var(--color-action);font-weight:700;font-size:14px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
             <span id="couponToggleLabel">Have a coupon? Tap to apply</span>
           </button>
 
           <!-- Coupon Panel (hidden by default) -->
-          <div id="couponPanel" role="group" aria-label="Coupons" style="display:none; margin-top:10px; border:1px solid var(--border); padding:14px; background:var(--surface);">
-            <div style="font-weight:800; font-size:13px; margin-bottom:10px;">Available coupons</div>
+          <div id="couponPanel" role="group" aria-label="Coupons" class="co-31" style="display:none">
+            <div class="co-32">Available coupons</div>
 
-            <div id="couponOptions" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
+            <div id="couponOptions" class="co-33"></div>
 
-            <div style="font-weight:700; font-size:12px; opacity:.8; margin-bottom:6px;">Or enter a code manually</div>
-            <div style="display:flex; gap:8px;">
-              <input id="couponInput" class="input" aria-label="Coupon code" placeholder="e.g. WELCOME10" style="flex:1;" autocapitalize="characters" />
-              <button id="applyCoupon" type="button" class="btn" style="height:42px; padding:0 16px; flex-shrink:0;">Apply</button>
+            <div class="co-34">Or enter a code manually</div>
+            <div class="co-13">
+              <input id="couponInput" class="input co-19" aria-label="Coupon code" placeholder="e.g. WELCOME10" autocapitalize="characters" />
+              <button id="applyCoupon" type="button" class="btn co-35">Apply</button>
             </div>
-            <div id="couponMsg" class="small" style="margin-top:8px; min-height:18px;"></div>
+            <div id="couponMsg" class="small co-36"></div>
           </div>
         </div>
 
         <!-- AhamStree Cash (signup wallet) — hidden until we know the user has a balance -->
-        <div id="walletBox" style="margin-top:10px; display:none;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid var(--brand);border-radius:0;padding:12px 14px;background:var(--brand-light);">
-            <div style="min-width:0;display:flex;align-items:flex-start;gap:10px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand);flex-shrink:0;margin-top:2px;" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.4 15.6c.5.7 1.5 1.1 2.6 1.1 1.7 0 2.9-.8 2.9-2.1 0-1.3-1.3-1.7-2.9-2.1-1.6-.4-2.9-.8-2.9-2.1 0-1.3 1.2-2.1 2.9-2.1 1.1 0 2.1.4 2.6 1.1"/><path d="M12 6.3v1.1M12 16.6v1.1"/></svg>
-              <div style="min-width:0;">
-                <div style="font-weight:800;font-size:14px;">AhamStree Cash</div>
-                <div class="small" id="walletBalanceText" style="opacity:.8;margin-top:2px;">Loading…</div>
+        <div id="walletBox" class="co-37" style="display:none">
+          <div class="co-38">
+            <div class="co-39">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="co-11"><circle cx="12" cy="12" r="9"/><path d="M9.4 15.6c.5.7 1.5 1.1 2.6 1.1 1.7 0 2.9-.8 2.9-2.1 0-1.3-1.3-1.7-2.9-2.1-1.6-.4-2.9-.8-2.9-2.1 0-1.3 1.2-2.1 2.9-2.1 1.1 0 2.1.4 2.6 1.1"/><path d="M12 6.3v1.1M12 16.6v1.1"/></svg>
+              <div class="co-40">
+                <div class="co-3">AhamStree Cash</div>
+                <div class="small co-41" id="walletBalanceText">Loading…</div>
               </div>
             </div>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0;">
+            <label class="co-42">
               <input type="checkbox" id="walletToggle" />
-              <span class="small" style="font-weight:700;">Redeem</span>
+              <span class="small co-43">Redeem</span>
             </label>
           </div>
-          <div id="walletMsg" class="small" style="margin-top:6px; min-height:16px;"></div>
+          <div id="walletMsg" class="small co-44"></div>
         </div>
 
-        <div style="height:14px;"></div>
-        <div id="totalsBlock" style="border-top:1px solid var(--border-light); padding-top:12px;">
+        <div class="co-26"></div>
+        <div id="totalsBlock" class="co-45">
           <div class="order-summary-row">
             <div>Subtotal</div>
             <div class="val" id="subtotal">₹0</div>
@@ -263,13 +264,13 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="7" width="15" height="12" rx="1"/><path d="M16 11h4l3 3.5V19h-7z"/><circle cx="6" cy="19.5" r="1.8"/><circle cx="18.5" cy="19.5" r="1.8"/></svg>
             <span>Ships across India</span>
           </a>
-          <div class="trust-strip-item" style="cursor:default;">
+          <div class="trust-strip-item co-46">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg>
             <span>Secure Razorpay payment</span>
           </div>
         </div>
 
-        <div class="small sum-foot" style="opacity:.75;">
+        <div class="small sum-foot co-47">
           If payment fails or is cancelled, you can retry from your cart.
         </div>
       </div>
@@ -452,7 +453,7 @@
       }
 
       if (!items.length) {
-        summaryItems.innerHTML = `<div class="small" style="opacity:.75;">Your cart is empty.</div>`;
+        summaryItems.innerHTML = `<div class="small co-47">Your cart is empty.</div>`;
         subtotalEl.textContent = money(0);
         shippingEl.textContent = money(0);
         totalEl.textContent    = money(0);
@@ -514,19 +515,19 @@
         const safeTitle = escapeHtml(title);
 
         return `
-          <div style="display:flex; gap:10px; align-items:center;">
+          <div class="co-48">
             <div class="line-item-thumb sm">
               ${safeImg ? `<img src="${safeImg}" alt="${safeAlt}">` : ""}
             </div>
-            <div style="flex:1; min-width:0;">
-              <div class="line-item-title" style="font-size:13.5px;">${safeTitle}</div>
-              <div class="small" style="opacity:.75;margin-top:3px;">
+            <div class="co-49">
+              <div class="line-item-title co-50">${safeTitle}</div>
+              <div class="small co-51">
                 ${hasSale
-                  ? `<span style="text-decoration:line-through;margin-right:5px;">${money(basePrice)}</span><span style="color:var(--brand);font-weight:700;">${money(unitPrice)}</span>`
+                  ? `<span class="co-52">${money(basePrice)}</span><span class="co-53">${money(unitPrice)}</span>`
                   : money(unitPrice)
                 } × ${qty}
               </div>
-              ${stockText ? `<div class="small" style="color:crimson; margin-top:2px;">${stockText}</div>` : ""}
+              ${stockText ? `<div class="small co-54">${stockText}</div>` : ""}
             </div>
             <div class="line-item-total">${money(lineTotal)}</div>
           </div>`;
@@ -978,17 +979,14 @@
         if (!coupons.length) { couponOptions.innerHTML = ""; return; }
 
         couponOptions.innerHTML = coupons.map(c => `
-          <button type="button" class="coupon-chip" data-code="${c.code}"
-            style="display:flex;align-items:center;justify-content:space-between;gap:10px;
-                   border:1.5px dashed var(--border);padding:10px 12px;
-                   background:var(--bg-warm);cursor:pointer;text-align:left;width:100%;
-                   transition:border-color .15s,background .15s;">
+          <button type="button" class="coupon-chip co-55" data-code="${c.code}"
+           >
             <div>
-              <span style="font-weight:800;font-size:13px;color:var(--brand);">${c.code}</span>
-              <span style="margin-left:8px;font-size:12px;font-weight:700;background:var(--brand);color:#fff;padding:2px 7px;border-radius:999px;">${c.label || (c.type === "percent" ? c.value + "% off" : "₹" + c.value + " off")}</span>
-              <div style="font-size:12px;opacity:.8;margin-top:3px;">${couponChipDescription(c)}</div>
+              <span class="co-56">${c.code}</span>
+              <span class="co-57">${c.label || (c.type === "percent" ? c.value + "% off" : "₹" + c.value + " off")}</span>
+              <div class="co-58">${couponChipDescription(c)}</div>
             </div>
-            <span style="font-size:12px;font-weight:800;color:var(--brand);white-space:nowrap;">Tap to apply →</span>
+            <span class="co-59">Tap to apply →</span>
           </button>
         `).join("");
 

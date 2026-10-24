@@ -101,7 +101,7 @@ function renderPopup(popup) {
       #welcomePopupSubtext { font-size: 14px; opacity: .78; margin: 0 0 18px; line-height: 1.5; color: #1a1a1a; }
       #welcomePopupBtn {
         display: inline-block;
-        background: var(--brand, #7c1c1c);
+        background: var(--color-action, #7c1c1c);
         color: #fff;
         text-decoration: none;
         font-weight: 700;

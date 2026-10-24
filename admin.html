@@ -44,13 +44,13 @@
     }
 
     .metric-card.highlight {
-      background: var(--brand-lighter);
-      border-color: var(--brand);
+      background: var(--color-action-lighter);
+      border-color: var(--color-action);
     }
 
     .metric-card.warn {
-      background: var(--accent-gold-light);
-      border-color: var(--accent-gold);
+      background: var(--color-accent-light);
+      border-color: var(--color-accent);
     }
 
     .metric-label {
@@ -99,8 +99,8 @@
     }
 
     .quick-link:hover {
-      border-color: var(--brand);
-      background: var(--brand-lighter);
+      border-color: var(--color-action);
+      background: var(--color-action-lighter);
     }
 
     .quick-link .small {
@@ -362,7 +362,7 @@
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +

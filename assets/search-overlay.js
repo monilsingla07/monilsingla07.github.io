@@ -74,7 +74,7 @@ function mount() {
       @keyframes searchOvSlide { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
       #searchOvInner { max-width: 720px; margin: 0 auto; padding: 18px 20px 26px; }
       #searchOvInputRow { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--border); border-radius: 999px; padding: 4px 6px 4px 16px; }
-      #searchOvInputRow:focus-within { border-color: var(--brand); }
+      #searchOvInputRow:focus-within { border-color: var(--color-action); }
       #searchOvInputRow svg { flex-shrink: 0; color: var(--text-light); }
       #searchOvInput { flex: 1; border: none; outline: none; font-size: 16px; font-family: var(--font-body); padding: 10px 0; background: transparent; color: var(--text); }
       #searchOvClose {
@@ -82,7 +82,7 @@ function mount() {
         background: var(--bg-warm); color: var(--text); font-size: 18px; line-height: 1;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
       }
-      #searchOvClose:hover { background: var(--brand-light); color: var(--brand); }
+      #searchOvClose:hover { background: var(--color-action-light); color: var(--color-action); }
       #searchOvBody { margin-top: 16px; }
       .search-ov-prompt { font-size: 13px; color: var(--text-light); padding: 4px 2px 14px; }
       .search-ov-section-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-light); margin-bottom: 8px; }
@@ -91,7 +91,7 @@ function mount() {
         font-size: 13px; font-weight: 600; text-decoration: none; color: var(--text);
         border: 1.5px solid var(--border); border-radius: 999px; padding: 7px 14px;
       }
-      .search-ov-quicklinks a:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-lighter); }
+      .search-ov-quicklinks a:hover { border-color: var(--color-action); color: var(--color-action); background: var(--color-action-lighter); }
       .search-preview-row { display: flex; align-items: center; gap: 12px; padding: 8px 4px; text-decoration: none; color: inherit; border-radius: 10px; }
       .search-preview-row:hover { background: var(--bg-warm); }
       .search-preview-thumb { width: 48px; height: 60px; flex-shrink: 0; border-radius: 8px; overflow: hidden; background: var(--bg-warm); }
@@ -100,10 +100,10 @@ function mount() {
       .search-preview-price { font-size: 13px; margin-top: 3px; }
       #searchOvViewAll {
         display: block; text-align: center; margin-top: 10px; padding: 11px; border-radius: 10px;
-        font-size: 13px; font-weight: 700; color: var(--brand); text-decoration: none;
+        font-size: 13px; font-weight: 700; color: var(--color-action); text-decoration: none;
         border: 1.5px solid var(--border);
       }
-      #searchOvViewAll:hover { border-color: var(--brand); background: var(--brand-lighter); }
+      #searchOvViewAll:hover { border-color: var(--color-action); background: var(--color-action-lighter); }
       @media (max-width: 560px) {
         #searchOvInner { padding: 14px 16px 20px; }
         .search-preview-title { max-width: 46vw; }

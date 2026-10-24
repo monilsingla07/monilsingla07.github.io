@@ -31,7 +31,7 @@
     .pm-thumb { width: 64px; height: 64px; object-fit: cover; background: var(--bg-warm); flex-shrink: 0; }
     .aht-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
     .aht-tab { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-weight: 700; font-size: 13px; cursor: pointer; color: var(--text); }
-    .aht-tab.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .aht-tab.active { background: var(--color-action); border-color: var(--color-action); color: #fff; }
     .aht-panel { display: none; }
     .aht-panel.active { display: block; }
     textarea.input { resize: vertical; min-height: 70px; font-family: inherit; }
@@ -222,7 +222,7 @@
       dashboard.style.display = "none";
       loadingState.innerHTML =
         '<div class="admin-gate">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +

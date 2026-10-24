@@ -29,7 +29,7 @@
       background: var(--surface); border: 1px solid var(--border-light);
       padding: 14px 16px; display: flex; flex-direction: column; gap: 5px;
     }
-    .metric-card.highlight { background: var(--brand-lighter); border-color: var(--brand); }
+    .metric-card.highlight { background: var(--color-action-lighter); border-color: var(--color-action); }
     .metric-label { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-light); }
     .metric-value { font-size: 26px; font-weight: 700; line-height: 1.15; font-family: 'Cormorant Garamond', serif; color: var(--text); }
     .metric-sub { font-size: 12px; color: var(--text-light); }
@@ -46,12 +46,12 @@
     .bar-row { display:flex; align-items:center; gap:10px; padding:6px 0; font-size:13px; }
     .bar-row .bar-label { flex: 0 0 auto; min-width: 0; max-width: 44%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .bar-row .bar-track { flex: 1 1 auto; height: 8px; border-radius: 999px; background: var(--border-light); overflow: hidden; }
-    .bar-row .bar-fill { height: 100%; border-radius: 999px; background: var(--brand); }
+    .bar-row .bar-fill { height: 100%; border-radius: 999px; background: var(--color-action); }
     .bar-row .bar-value { flex: 0 0 auto; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 42px; text-align: right; }
 
     .trend-chart { display: flex; align-items: flex-end; gap: 4px; height: 140px; padding-top: 10px; }
     .trend-col { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
-    .trend-bar { width: 100%; max-width: 22px; border-radius: 4px 4px 0 0; background: var(--brand); min-height: 2px; }
+    .trend-bar { width: 100%; max-width: 22px; border-radius: 4px 4px 0 0; background: var(--color-action); min-height: 2px; }
     .trend-day-label { font-size: 12px; color: var(--text-light); writing-mode: vertical-rl; transform: rotate(180deg); height: 34px; }
 
     .day-range { display:flex; gap:6px; }
@@ -59,7 +59,7 @@
       border:1px solid var(--border); background:var(--surface); border-radius:999px; padding:6px 14px;
       font-size:12.5px; font-weight:700; cursor:pointer; color: var(--text-light);
     }
-    .day-range button.active { color: var(--brand); background: var(--brand-lighter); border-color: var(--brand); }
+    .day-range button.active { color: var(--color-action); background: var(--color-action-lighter); border-color: var(--color-action); }
 
     .empty-note { font-size: 12.5px; color: var(--text-light); padding: 8px 0; }
   </style>
@@ -151,7 +151,7 @@
       mainContent.style.display = "none";
       loadingState.innerHTML =
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +

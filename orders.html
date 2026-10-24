@@ -29,7 +29,7 @@
       border: 1px solid transparent;
     }
     .status-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-    .status-badge.pending   { background: var(--accent-gold-light); color: var(--accent-gold); border-color: rgba(184,134,59,.3); }
+    .status-badge.pending   { background: var(--color-accent-light); color: var(--color-accent); border-color: rgba(184,134,59,.3); }
     .status-badge.paid      { background: var(--indigo-light); color: var(--indigo); border-color: rgba(47,72,88,.22); }
     .status-badge.shipped   { background: rgba(63,122,138,.1); color: #3f7a8a; border-color: rgba(63,122,138,.28); }
     .status-badge.delivered { background: rgba(63,107,79,.1); color: #3f6b4f; border-color: rgba(63,107,79,.28); }
@@ -44,7 +44,7 @@
 
     /* Pulsing border for urgent pending orders */
     @keyframes urgentPulse {
-      0%, 100% { border-color: var(--brand); }
+      0%, 100% { border-color: var(--color-action); }
       50%       { border-color: crimson; }
     }
     .pending-urgent { animation: urgentPulse 1.5s ease-in-out infinite; }
@@ -83,7 +83,7 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 12px;
     }
-    .tl-dot.latest { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .tl-dot.latest { background: var(--color-action); border-color: var(--color-action); color: #fff; }
     .tl-body { padding-bottom: 18px; }
     .tl-act  { font-size: 13px; font-weight: 700; line-height: 1.35; color: var(--text); }
     .tl-act.dim { color: var(--text-light); font-weight: 500; }
@@ -112,11 +112,11 @@
       transition: all 0.15s;
     }
     .chip:hover, .chip.sel, .chip:has(input:checked) {
-      border-color: var(--brand);
-      background: var(--brand-lighter);
-      color: var(--brand);
+      border-color: var(--color-action);
+      background: var(--color-action-lighter);
+      color: var(--color-action);
     }
-    .chip:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .chip:has(input:focus-visible) { outline: 2px solid var(--color-action); outline-offset: 2px; }
     fieldset.ret-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
     .ret-fieldset > legend { padding: 0; }
 
@@ -184,8 +184,8 @@
           <div id="retPhotoPreviews" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;"></div>
         </div>
 
-        <div style="margin-top:14px; padding:14px 16px; background:var(--accent-gold-light); border-left:2px solid var(--accent-gold);">
-          <div class="small" style="color:var(--accent-gold); font-weight:700; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; font-size:11px;">Please note</div>
+        <div style="margin-top:14px; padding:14px 16px; background:var(--color-accent-light); border-left:2px solid var(--color-accent);">
+          <div class="small" style="color:var(--color-accent); font-weight:700; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; font-size:11px;">Please note</div>
           <div class="small" style="color:var(--text); line-height:1.5;">
             Natural variation in colour, weave, or texture is part of handloom fabric and is not a manufacturing defect.
             We're unable to accept returns for sizing, change of mind, or personal preference — only genuine defects.
@@ -202,7 +202,7 @@
 
       <!-- Success state -->
       <div id="retSuccess" style="display:none; text-align:center; padding:16px 0;">
-        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--accent-gold)" stroke-width="1.5" style="margin-bottom:12px;"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.5 2.5L16 9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--color-accent)" stroke-width="1.5" style="margin-bottom:12px;"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.5 2.5L16 9" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <div style="font-family:var(--font-heading); font-weight:600; font-size:19px; margin-bottom:6px;">Return request submitted!</div>
         <div class="small" style="color:var(--text-light); max-width:32ch; margin:0 auto 18px;">
           Our team will review your photos and get back to you within 2–3 business days.
@@ -509,7 +509,7 @@
         }
         if (safeUrl) {
           html += `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer"
-            class="small" style="color:var(--brand,#7c3aed); font-weight:700; margin-left:auto;">
+            class="small" style="color:var(--color-action,#7c3aed); font-weight:700; margin-left:auto;">
             Carrier tracking →</a>`;
         }
         html += `</div>`;
@@ -687,7 +687,7 @@
 
       // ── Pending payment banner (only while still active) ─────────────────
       const pendingBanner = (isPendingPayment && isStillActive) ? `
-        <div style="padding:14px 16px; background:var(--brand-light); border-top:2px solid var(--brand);">
+        <div style="padding:14px 16px; background:var(--color-action-light); border-top:2px solid var(--color-action);">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
             <div>
               <div style="font-weight:700; font-size:14px; margin-bottom:4px;">Payment not completed</div>
@@ -696,7 +696,7 @@
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
                 <div class="small" style="opacity:.8;">Time left:</div>
-                <div id="${countdownId}" style="font-size:20px; font-weight:900; color:var(--brand); letter-spacing:1px; min-width:60px;">--:--</div>
+                <div id="${countdownId}" style="font-size:20px; font-weight:900; color:var(--color-action); letter-spacing:1px; min-width:60px;">--:--</div>
               </div>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap; flex-shrink:0;">
@@ -722,7 +722,7 @@
         </div>` : "";
 
       return `
-        <div class="card" id="${cardId}" style="border-radius:16px; overflow:hidden;${isStillActive ? " border:2px solid var(--brand);" : ""}">
+        <div class="card" id="${cardId}" style="border-radius:16px; overflow:hidden;${isStillActive ? " border:2px solid var(--color-action);" : ""}">
 
           <!-- Header row -->
           <div style="padding:14px 16px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; border-bottom:1px solid var(--border-light);">
@@ -839,7 +839,7 @@
             ? `<div style="padding:8px 16px; background:#f8fafc; border-top:1px solid var(--border-light);">
                  <div class="small" style="color:#64748b;">
                    Returns accepted only for manufacturing defects, within 48 hours of delivery ·
-                   <a href="returns.html" style="color:var(--brand,#7c3aed); font-weight:600;">Return policy →</a>
+                   <a href="returns.html" style="color:var(--color-action,#7c3aed); font-weight:600;">Return policy →</a>
                  </div>
                </div>`
             : ""}
@@ -944,7 +944,7 @@
       card.scrollIntoView({ behavior: "smooth", block: "center" });
       const prevBoxShadow = card.style.boxShadow;
       card.style.transition = "box-shadow .3s ease";
-      card.style.boxShadow = "0 0 0 3px var(--brand, #7c3aed)";
+      card.style.boxShadow = "0 0 0 3px var(--color-action, #7c3aed)";
       setTimeout(() => { card.style.boxShadow = prevBoxShadow; }, 2600);
     }
 

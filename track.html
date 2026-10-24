@@ -23,17 +23,17 @@
   <main id="main" tabindex="-1">
 
   <div class="container">
-    <div class="card" style="padding:22px;border-radius:18px;">
+    <div class="card" style="padding:var(--space-lg);border-radius: var(--radius-panel);">
       <h1 style="margin-top:0;font-size:1.5em;">Track Order</h1>
       <p class="small" style="max-width:72ch;">Enter your order number and the phone number you used at checkout.</p>
 
-      <div id="myOrdersWrap" style="display:none;margin-top:14px;">
-        <h2 style="font-size:1.1em;margin:0 0 10px;">Your orders</h2>
-        <div id="myOrders" style="display:grid;gap:12px;"></div>
-        <p class="small" style="margin:14px 0 0;opacity:.8;">Tracking someone else's order? Use the form below.</p>
+      <div id="myOrdersWrap" style="display:none;margin-top:var(--space-md);">
+        <h2 style="font-size:1.1em;margin:0 0 var(--space-sm);">Your orders</h2>
+        <div id="myOrders" style="display:grid;gap:var(--space-md);"></div>
+        <p class="small" style="margin:var(--space-md) 0 0;opacity:.8;">Tracking someone else's order? Use the form below.</p>
       </div>
 
-      <form id="lookupForm" class="form-grid" style="max-width:520px;margin-top:12px;" novalidate>
+      <form id="lookupForm" class="form-grid" style="max-width:520px;margin-top:var(--space-md);" novalidate>
         <div class="field">
           <label for="orderNo">Order number</label>
           <input id="orderNo" class="input" placeholder="e.g., AH2026000012" autocomplete="off" autocapitalize="characters" maxlength="12" />
@@ -43,32 +43,32 @@
           <label for="phone">Phone number</label>
           <input id="phone" class="input" placeholder="10-digit mobile number" inputmode="numeric" autocomplete="tel-national" maxlength="14" />
         </div>
-        <div class="row" style="gap:10px;">
+        <div class="row" style="gap:var(--space-sm);">
           <button id="btnLookup" class="btn" type="submit">Track</button>
           <a class="btn secondary" href="account.html?view=orders">Back to account</a>
         </div>
       </form>
 
-      <div id="lookupStatus" class="small" style="margin-top:14px;" role="status" aria-live="polite"></div>
-      <div id="orderResult" style="margin-top:12px;"></div>
+      <div id="lookupStatus" class="small" style="margin-top:var(--space-md);" role="status" aria-live="polite"></div>
+      <div id="orderResult" style="margin-top:var(--space-md);"></div>
 
-      <details id="awbBox" style="margin-top:18px;max-width:520px;">
+      <details id="awbBox" style="margin-top:var(--space-md);max-width:520px;">
         <summary style="cursor:pointer;font-weight:700;">I have an AWB number</summary>
-        <div class="form-grid" style="margin-top:12px;">
+        <div class="form-grid" style="margin-top:var(--space-md);">
           <div class="field">
             <label for="awb">AWB number</label>
             <input id="awb" class="input" placeholder="e.g., 788830567028" inputmode="numeric" />
             <div class="help-text">The AWB is on your shipping label or the dispatch message we sent you.</div>
           </div>
-          <div class="row" style="gap:10px;">
+          <div class="row" style="gap:var(--space-sm);">
             <button id="btnTrack" class="btn secondary" type="button">Track AWB</button>
           </div>
         </div>
-        <div id="status" class="small" style="margin-top:14px;"></div>
-        <div id="result" style="margin-top:12px;"></div>
+        <div id="status" class="small" style="margin-top:var(--space-md);"></div>
+        <div id="result" style="margin-top:var(--space-md);"></div>
       </details>
 
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+      <div style="margin-top:var(--space-md);display:flex;gap:var(--space-sm);flex-wrap:wrap;">
         <a class="btn" href="products.html">Browse Sarees</a>
         <a class="btn ghost" href="cart.html">Go to Cart</a>
         <a class="btn ghost" href="index.html">Home</a>
@@ -133,14 +133,14 @@
         .slice()
         .sort((a,b) => (new Date(b.date || 0)) - (new Date(a.date || 0)))
         .map(a => `
-          <div class="card" style="padding:12px;border-radius:14px;">
+          <div class="card" style="padding:var(--space-md);border-radius: var(--radius-panel);">
             <div style="font-weight:900;">${escapeHtml(a.activity || a.status || "Update")}</div>
-            <div class="small" style="margin-top:6px;">${escapeHtml(a.location || "")}</div>
+            <div class="small" style="margin-top:var(--space-sm);">${escapeHtml(a.location || "")}</div>
             <div class="small" style="opacity:.8;">${escapeHtml(a.date || "")}</div>
           </div>
         `)
         .join("");
-      return `<div style="display:grid;gap:10px;">${rows}</div>`;
+      return `<div style="display:grid;gap:var(--space-sm);">${rows}</div>`;
     }
 
     // Shared Shiprocket call (existing shiprocket-track edge function).
@@ -189,7 +189,7 @@
         if (r.shipped === false) { status.textContent = r.message || "This order has not been shipped yet."; return; }
         status.textContent = r.current ? ("Current status: " + r.current) : "Tracking loaded.";
         result.innerHTML = `
-          ${r.safeUrl ? `<div class="small" style="margin-bottom:10px;"><a href="${r.safeUrl}" target="_blank" rel="noopener noreferrer">Open Shiprocket tracking link</a></div>` : ""}
+          ${r.safeUrl ? `<div class="small" style="margin-bottom:var(--space-sm);"><a href="${r.safeUrl}" target="_blank" rel="noopener noreferrer">Open Shiprocket tracking link</a></div>` : ""}
           ${r.timelineHtml}
         `;
       } catch (e) {
@@ -206,37 +206,37 @@
     // ---- Order card ----
     function renderOrderCard(o, idx) {
       const items = (o.items || []).map(i => `
-        <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06);">
+        <div style="display:flex;justify-content:space-between;gap:var(--space-md);padding:var(--space-sm) 0;border-bottom:1px solid rgba(0,0,0,.06);">
           <span>${escapeHtml(i.title)} <span class="small" style="opacity:.7;">× ${escapeHtml(i.qty)}</span></span>
           <span>${money(Number(i.price_inr) * Number(i.qty))}</span>
         </div>`).join("");
       const row = (label, val, extra = "") =>
-        `<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;${extra}"><span class="small" style="opacity:.8;">${label}</span><span>${val}</span></div>`;
+        `<div style="display:flex;justify-content:space-between;gap:var(--space-md);padding:var(--space-xs) 0;${extra}"><span class="small" style="opacity:.8;">${label}</span><span>${val}</span></div>`;
       const addr = (o.shipping_address_lines || []).map(l => escapeHtml(l)).join("<br>");
       const safeTrack = o.tracking_url && /^https:\/\//i.test(o.tracking_url) ? escapeAttr(o.tracking_url) : "";
       return `
-        <div class="card order-lookup-card" style="padding:16px;border-radius:14px;" data-awb="${escapeAttr(o.awb || "")}" data-idx="${idx}">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+        <div class="card order-lookup-card" style="padding:var(--space-md);border-radius: var(--radius-panel);" data-awb="${escapeAttr(o.awb || "")}" data-idx="${idx}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-sm);flex-wrap:wrap;">
             <div>
               <div style="font-weight:900;font-size:1.05em;">Order ${escapeHtml(o.order_number || "")}</div>
               <div class="small" style="opacity:.75;">Placed ${escapeHtml(fmtDate(o.created_at))}</div>
             </div>
-            <span style="display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:800;background:rgba(124,28,28,.08);color:#7c1c1c;border:1px solid rgba(124,28,28,.25);">${escapeHtml(statusLabel(o.status))}</span>
+            <span style="display:inline-block;padding:var(--space-xs) var(--space-md);border-radius:999px;font-size:12px;font-weight:800;background:rgba(124,28,28,.08);color:#7c1c1c;border:1px solid rgba(124,28,28,.25);">${escapeHtml(statusLabel(o.status))}</span>
           </div>
-          <div style="margin-top:12px;">${items || `<div class="small">No item details.</div>`}</div>
-          <div style="margin-top:10px;">
+          <div style="margin-top:var(--space-md);">${items || `<div class="small">No item details.</div>`}</div>
+          <div style="margin-top:var(--space-sm);">
             ${row("Subtotal", money(o.subtotal_inr))}
             ${Number(o.discount_inr) > 0 ? row("Discount", "−" + money(o.discount_inr), "color:#16a34a;") : ""}
             ${Number(o.shipping_inr) > 0 ? row("Shipping", money(o.shipping_inr)) : ""}
             ${Number(o.gst_inr) > 0 ? row("GST (included)", money(o.gst_inr)) : ""}
-            ${row("<strong>Total</strong>", "<strong>" + money(o.total_inr) + "</strong>", "border-top:1px solid rgba(0,0,0,.1);margin-top:4px;padding-top:8px;")}
+            ${row("<strong>Total</strong>", "<strong>" + money(o.total_inr) + "</strong>", "border-top:1px solid rgba(0,0,0,.1);margin-top:var(--space-xs);padding-top:var(--space-sm);")}
           </div>
-          ${addr ? `<div class="small" style="margin-top:12px;"><span style="opacity:.75;">Delivering to</span><br>${addr}</div>` : ""}
-          ${o.delivered_at ? `<div class="small" style="margin-top:8px;">Delivered on <strong>${escapeHtml(fmtDate(o.delivered_at))}</strong></div>` : ""}
-          <div class="order-live" style="margin-top:12px;">
+          ${addr ? `<div class="small" style="margin-top:var(--space-md);"><span style="opacity:.75;">Delivering to</span><br>${addr}</div>` : ""}
+          ${o.delivered_at ? `<div class="small" style="margin-top:var(--space-sm);">Delivered on <strong>${escapeHtml(fmtDate(o.delivered_at))}</strong></div>` : ""}
+          <div class="order-live" style="margin-top:var(--space-md);">
             ${o.awb ? `<div class="small">Loading live tracking…</div>` : `<div class="small" style="opacity:.8;">Tracking details will appear here once your order is dispatched.</div>`}
           </div>
-          ${safeTrack ? `<div class="small" style="margin-top:8px;"><a href="${safeTrack}" target="_blank" rel="noopener noreferrer">Open Shiprocket tracking page →</a></div>` : ""}
+          ${safeTrack ? `<div class="small" style="margin-top:var(--space-sm);"><a href="${safeTrack}" target="_blank" rel="noopener noreferrer">Open Shiprocket tracking page →</a></div>` : ""}
         </div>`;
     }
 
@@ -253,7 +253,7 @@
             continue;
           }
           live.innerHTML = `
-            <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;">
+            <div style="display:flex;flex-wrap:wrap;gap:var(--space-md);margin-bottom:var(--space-sm);">
               ${r.current ? `<strong>${escapeHtml(r.current)}</strong>` : ""}
               ${r.etd ? `<span class="small">Expected: <strong>${escapeHtml(r.etd)}</strong></span>` : ""}
               ${r.courier ? `<span class="small" style="opacity:.8;">via ${escapeHtml(r.courier)}</span>` : ""}

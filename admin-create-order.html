@@ -68,7 +68,7 @@
     }
     .mode-toggle button.active {
       background: var(--surface);
-      color: var(--brand);
+      color: var(--color-action);
       box-shadow: 0 1px 4px rgba(0,0,0,.08);
     }
 
@@ -97,7 +97,7 @@
       transition: background .1s;
     }
     .search-result:last-child { border-bottom: none; }
-    .search-result:hover { background: var(--brand-lighter); }
+    .search-result:hover { background: var(--color-action-lighter); }
     .search-result-info { flex: 1; min-width: 0; }
     .search-result-title { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .search-result-price { font-size: 12px; color: var(--text-light); margin-top: 2px; }
@@ -153,11 +153,11 @@
       width: 100%;
       font-size: 12px;
       font-weight: 700;
-      color: var(--brand);
+      color: var(--color-action);
       cursor: pointer;
       margin-top: 4px;
     }
-    #addQuickRow:hover { background: var(--brand-lighter); }
+    #addQuickRow:hover { background: var(--color-action-lighter); }
 
     /* ── Choice cards (Order type / Payment) ── */
     .choice-option {
@@ -172,10 +172,10 @@
     }
     .choice-option:last-child { margin-bottom: 0; }
     .choice-option.selected {
-      border-color: var(--brand);
-      background: var(--brand-lighter);
+      border-color: var(--color-action);
+      background: var(--color-action-lighter);
     }
-    .choice-option input[type="radio"] { accent-color: var(--brand); flex-shrink: 0; }
+    .choice-option input[type="radio"] { accent-color: var(--color-action); flex-shrink: 0; }
     .choice-option-text { flex: 1; }
     .choice-option-title { font-weight: 700; font-size: 14px; }
     .choice-option-sub { font-size: 12px; color: var(--text-light); margin-top: 2px; }
@@ -195,8 +195,8 @@
       min-width: 70px;
     }
     .subpill.selected {
-      border-color: var(--brand);
-      background: var(--brand);
+      border-color: var(--color-action);
+      background: var(--color-action);
       color: #fff;
     }
 
@@ -494,7 +494,7 @@
       mainContent.style.display = "none";
       loadingState.innerHTML =
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
@@ -973,7 +973,7 @@
             </div>
             <div style="background:#fff; border:1px solid #d1fae5; border-radius:10px; padding:12px; margin-bottom:12px; word-break:break-all;">
               <div class="small" style="font-weight:700; margin-bottom:4px;">Payment Link:</div>
-              <a href="${safeHref(link)}" target="_blank" rel="noopener noreferrer" style="color:var(--brand); font-size:13px;">${escapeHtml(link)}</a>
+              <a href="${safeHref(link)}" target="_blank" rel="noopener noreferrer" style="color:var(--color-action); font-size:13px;">${escapeHtml(link)}</a>
             </div>
             <div class="small" style="color:var(--text-light); margin-bottom:10px;">
               Once the customer pays, this order will show a Ship Now button in Admin → Orders.

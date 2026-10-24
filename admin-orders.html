@@ -26,13 +26,13 @@
     .sbadge.paid         { background:var(--indigo-light);color:var(--indigo); }
     .sbadge.shipped      { background:rgba(63,122,138,.1);color:#3f7a8a; }
     .sbadge.delivered    { background:rgba(63,107,79,.1);color:#3f6b4f;border-color:rgba(63,107,79,.28); }
-    .sbadge.pending      { background:var(--accent-gold-light);color:var(--accent-gold); }
+    .sbadge.pending      { background:var(--color-accent-light);color:var(--color-accent); }
     .sbadge.failed       { background:rgba(161,61,61,.09);color:#a13d3d; }
     .sbadge.cancelled    { background:var(--border-light);color:var(--text-light); }
     .sbadge.refunded     { background:rgba(122,74,107,.09);color:#7a4a6b; }
 
     .pm-pill { display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600; }
-    .pm-pill.instore { background:var(--accent-gold-light);color:var(--accent-gold); }
+    .pm-pill.instore { background:var(--color-accent-light);color:var(--color-accent); }
     .pm-pill.online  { background:var(--indigo-light);color:var(--indigo); }
 
     .action-bar { padding:12px 16px;border-top:1px solid var(--border-light); }
@@ -167,7 +167,7 @@
       mainContent.style.display = "none";
       loadingState.innerHTML =
         '<div style="min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;">' +
-          '<div style="color:var(--accent-gold);">' + icon + '</div>' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
           '<h3 style="margin:0;">' + title + '</h3>' +
           '<div class="small" style="opacity:.8;">' + message + '</div>' +
           '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +

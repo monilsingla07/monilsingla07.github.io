@@ -107,7 +107,7 @@ export function renderSearchPreview(products) {
       const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
       const hasSale = Number.isFinite(sale) && sale > 0 && sale < price;
       const priceHtml = hasSale
-        ? `<span style="text-decoration:line-through;opacity:.55;margin-right:6px;">${moneyINR(price)}</span><span style="color:var(--brand);font-weight:700;">${moneyINR(sale)}</span>`
+        ? `<span style="text-decoration:line-through;opacity:.55;margin-right:6px;">${moneyINR(price)}</span><span style="color:var(--color-action);font-weight:700;">${moneyINR(sale)}</span>`
         : `<span style="font-weight:700;">${moneyINR(price)}</span>`;
       const imgHtml = p.image_url
         ? `<img src="${safeSrc(p.image_url)}" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;">`
