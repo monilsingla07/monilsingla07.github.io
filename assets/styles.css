@@ -313,3 +313,10 @@ h1.pd-title{margin:0}
 .link-btn{min-height:44px;padding:12px 8px}
 .category-tab{min-width:44px;justify-content:center}
 a.line-item-title{padding:10px 0;margin:-10px 0}
+
+/* Batch 4: card metadata line + empty/error states */
+.p-card-meta{font-size:12px;line-height:1.4;color:var(--text-light);margin:-4px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty-state,.error-state{grid-column:1/-1;text-align:center;padding:40px 20px;max-width:520px;margin:0 auto}
+.empty-state h3,.error-state h3{font-size:24px;margin:0 0 8px}
+.empty-state p,.error-state p{color:var(--text-light);margin:0 0 16px}
+.empty-state .btn,.error-state .btn{min-height:44px}

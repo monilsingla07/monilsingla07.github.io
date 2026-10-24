@@ -2,6 +2,7 @@
 import { supabase } from "./supabase.js";
 import { escapeHtml, escapeAttr, safeSrc } from "./safe.js";
 import { withCardImages, cardImageSrc, cardImageAttrs } from "./media.js";
+import { cardMetaLine } from "./listing-ui.js";
 
 /**
  * IMPORTANT
@@ -35,34 +36,62 @@ function moneyINR(v) {
   return "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
 }
 
-/**
- * Search for products
- */
-export async function searchProducts(query) {
-  const q = String(query || "").trim();
-  if (q.length < 2) return { data: [], error: null };
+export const SEARCH_PAGE_SIZE = 20;
 
-  // NOTE: We don't force lowercasing because Postgres ILIKE is already case-insensitive.
-  // Basic safety:
-  // - avoid wildcard injection (%)
-  // - avoid breaking PostgREST OR syntax with commas/parentheses
-  const term = q.replace(/[%,()]/g, "");
+/**
+ * Search for products (UX-007).
+ * Uses the public.search_products RPC, which matches title, description,
+ * colour, craft, occasion, zari, motif, border, print type, category, fabric,
+ * weave, saree type and care instructions (every word must match somewhere;
+ * falls back to typo-tolerant matching when there are no exact hits) and only
+ * ever considers is_active products. Returns { data, total, error }; each
+ * product carries _matched = { field: value } for the "matched:" badges.
+ */
+export async function searchProducts(query, { limit = SEARCH_PAGE_SIZE, offset = 0 } = {}) {
+  const q = String(query || "").trim();
+  if (q.length < 2) return { data: [], total: 0, error: null };
+
+  const { data: hits, error: rpcErr } = await supabase.rpc("search_products", { q, lim: limit, off: offset });
+  if (rpcErr) return { data: [], total: 0, error: rpcErr };
+  if (!hits || !hits.length) return { data: [], total: 0, error: null };
+
+  const total = Number(hits[0].total) || hits.length;
+  const ids = hits.map((h) => h.id);
 
   const { data, error } = await supabase
     .from("products")
     .select(
-      // NOTE: Your current schema does NOT have a `fabric` column.
-      // If you add it later, you can include it again.
-      "id,slug,title,description,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, thumb_url, width, height, sort_order)"
+      "id,slug,title,description,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)"
     )
     .eq("is_active", true)
-    .or(
-      `title.ilike.%${term}%,description.ilike.%${term}%`
-    )
-    .order("created_at", { ascending: false })
-    .limit(20);
+    .in("id", ids);
+  if (error) return { data: [], total: 0, error };
 
-  return { data: normalizeProducts(data || []), error };
+  const byId = new Map((data || []).map((p) => [p.id, p]));
+  const ordered = hits
+    .map((h) => {
+      const p = byId.get(h.id);
+      if (p) p._matched = h.matched || {};
+      return p;
+    })
+    .filter(Boolean);
+
+  return { data: normalizeProducts(ordered), total, error: null };
+}
+
+const MATCH_LABELS = {
+  colour: "colour", fabric: "fabric", weave: "weave", saree_type: "type", craft: "craft",
+  occasion: "occasion", zari: "zari", motif: "motif", border: "border", print: "print",
+  category: "category", care: "care",
+};
+
+// "matched: colour: Navy Blue" badges for fields other than title/description.
+function matchBadges(p) {
+  const m = p._matched || {};
+  const keys = Object.keys(MATCH_LABELS).filter((k) => m[k]);
+  if (!keys.length) return "";
+  return `<div class="p-card-matched">${keys.slice(0, 2).map((k) =>
+    `<span class="match-badge">matched ${MATCH_LABELS[k]}: ${escapeHtml(m[k])}</span>`).join("")}</div>`;
 }
 
 /**
@@ -102,15 +131,7 @@ export function renderSearchPreview(products) {
 export function renderSearchResults(products) {
   const items = products || [];
 
-  if (!items.length) {
-    return `
-      <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px;">
-        <p style="font-size: 18px; color: var(--text-light);">No products found</p>
-        <p style="margin-top: 10px;">Try different keywords or browse our collections</p>
-        <a href="products.html" class="btn" style="margin-top: 20px;">View All Products</a>
-      </div>
-    `;
-  }
+  if (!items.length) return "";
 
   return items
     .map((p, idx) => {
@@ -146,6 +167,8 @@ export function renderSearchResults(products) {
             </div>
             <div class="p-card-body">
               <div class="p-card-title">${escapeHtml(p.title || "")}</div>
+              ${cardMetaLine(p)}
+              ${matchBadges(p)}
               <div class="p-card-pricing">${priceHtml}</div>
               ${!soldOut && available <= 3 ? `<div class="p-card-stock low">Only ${available} left</div>` : ""}
               ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}

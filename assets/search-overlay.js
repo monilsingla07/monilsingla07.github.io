@@ -151,7 +151,7 @@ function mount() {
   async function runSearch(query) {
     body.innerHTML = `<div class="search-ov-prompt">Searching…</div>`;
     try {
-      const { data: products, error } = await searchProducts(query);
+      const { data: products, total, error } = await searchProducts(query, { limit: PREVIEW_LIMIT });
       if (error) {
         body.innerHTML = `<div class="search-ov-prompt">Something went wrong searching — please try again.</div>`;
         return;
@@ -164,7 +164,7 @@ function mount() {
       body.innerHTML = `
         ${renderSearchPreview(preview)}
         <a id="searchOvViewAll" href="search.html?q=${encodeURIComponent(query)}">
-          View all ${products.length}${products.length >= 20 ? "+" : ""} result${products.length === 1 ? "" : "s"} for "${escapeHtml(query)}" →
+          View all ${total} result${total === 1 ? "" : "s"} for "${escapeHtml(query)}" →
         </a>
       `;
     } catch (_e) {
