@@ -435,3 +435,28 @@ a.line-item-title{padding:10px 0;margin:-10px 0}
 /* Sit above sticky bottom bars where present */
 @media (max-width:980px){body:has(.pay-bar) .cookie-banner,body.has-sticky-pay-bar .cookie-banner{bottom:calc(66px + env(safe-area-inset-bottom));padding-bottom:12px}}
 @media (max-width:768px){body:has(.pd-mobile-bar.visible) .cookie-banner{bottom:calc(76px + env(safe-area-inset-bottom));padding-bottom:12px}}
+
+/* ==== Product reviews (UX-047) ==== */
+.rv-stars{display:inline-block;position:relative;color:#d9d0c1;letter-spacing:2px;line-height:1;white-space:nowrap;font-size:16px}
+.rv-stars::before{content:"★★★★★"}
+.rv-stars>span{position:absolute;inset:0 auto 0 0;overflow:hidden;color:#b7791f;white-space:nowrap}
+.rv-stars>span::before{content:"★★★★★"}
+.pd-rating{display:flex;align-items:center;gap:8px;margin:6px 0 2px;font-size:var(--font-size-base)}
+.pd-rating a{color:var(--text-light);text-decoration:underline;text-underline-offset:2px}
+.pd-reviews{margin-top:40px;padding-top:24px;border-top:1px solid var(--border-light,#eee)}
+.pd-reviews h2{font-family:var(--font-heading);font-size:var(--font-size-2xl);margin:0 0 16px}
+.rvw-summary{display:flex;gap:32px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+.rvw-avg{text-align:center;min-width:110px}
+.rvw-avg-num{font-family:var(--font-heading);font-size:var(--font-size-3xl);font-weight:700;line-height:1}
+.rvw-bars{flex:1;min-width:220px;max-width:420px;display:grid;gap:5px}
+.rvw-bar-row{display:grid;grid-template-columns:42px 1fr 28px;gap:8px;align-items:center;font-size:var(--font-size-sm);color:var(--text-light)}
+.rvw-bar{height:8px;background:var(--border-light,#eee);border-radius:4px;overflow:hidden}
+.rvw-bar>i{display:block;height:100%;background:#b7791f}
+.rvw-card{padding:16px 0;border-bottom:1px solid var(--border-light,#eee)}
+.rvw-card h3{margin:6px 0 4px;font-size:var(--font-size-md)}
+.rvw-card p{margin:0 0 6px;white-space:pre-wrap;overflow-wrap:anywhere}
+.rvw-meta{font-size:var(--font-size-sm);color:var(--text-light)}
+.rvw-empty{padding:24px;border:1px dashed var(--border,#ddd);color:var(--text-light);text-align:center}
+.rvw-skel div{height:14px;margin:10px 0;border-radius:4px;background:linear-gradient(90deg,#eee 25%,#f7f3ec 50%,#eee 75%);background-size:200% 100%;animation:rvwShimmer 1.4s infinite}
+@keyframes rvwShimmer{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.rvw-skel div{animation:none}}

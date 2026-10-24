@@ -195,6 +195,8 @@
           <div class="card" style="padding:16px;border-radius:0;">
             <h1 id="title" class="pd-title"></h1>
 
+            <div id="pdRating" class="pd-rating" hidden></div>
+
             <div class="pd-meta">
               <div id="sku" class="small"></div>
               <div id="stock" class="small"></div>
@@ -305,6 +307,15 @@
         </div>
       </div>
 
+      <!-- Customer reviews (UX-047): approved reviews only, from get-product-reviews -->
+      <section id="reviews" class="pd-reviews" aria-labelledby="reviewsHeading" tabindex="-1">
+        <h2 id="reviewsHeading">Customer reviews</h2>
+        <div id="reviewsBody" aria-live="polite">
+          <div class="rvw-skel" aria-hidden="true"><div style="width:30%"></div><div style="width:80%"></div><div style="width:60%"></div></div>
+        </div>
+        <button type="button" id="reviewsMore" class="btn secondary" hidden style="margin-top:16px;">Load more reviews</button>
+      </section>
+
       <!-- You may also like — New Arrivals / Best Sellers, Chidiyaa-style
            tabbed strip at the bottom of the PDP. Reuses the same product-card
            markup/CSS as the homepage grids (assets/home.js's productCard()),
@@ -403,13 +414,13 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth, showCartToast, toast, renderBreadcrumbs } from "./assets/ui.js";
     import { openTrap } from "./assets/a11y.js";
-    import { supabase } from "./assets/supabase.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
     import { addToCart, getCart, cartCount } from "./assets/cart.js";
     import { mountPolicySummary } from "./assets/policy-summary.js";
     import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
 	    import { escapeHtml, escapeAttr, safeSrc, safeUrl } from "./assets/safe.js";
 	    import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
-    import { setPageMeta, injectJsonLd, buildProductSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
+    import { setPageMeta, injectJsonLd, buildProductSchema, buildBreadcrumbSchema, buildReviewSchema, truncateForMeta } from "./assets/seo.js";
 
     document.getElementById("header").innerHTML = renderHeader("products");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -908,6 +919,123 @@ if (!sessionStorage.getItem(viewKey)) {
           { name: breadcrumb.label, path: breadcrumb.href },
           { name: data.title, path: canonicalPath },
         ]));
+      })();
+
+      // ── Customer reviews (UX-047) ──
+      (function initReviews() {
+        const FN = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-product-reviews";
+        const PAGE = 10;
+        const body = document.getElementById("reviewsBody");
+        const moreBtn = document.getElementById("reviewsMore");
+        const ratingRow = document.getElementById("pdRating");
+        const loaded = [];
+        let summary = null;
+
+        const starsHtml = (value, label) =>
+          `<span class="rv-stars" role="img" aria-label="${escapeAttr(label || (value + " out of 5 stars"))}"><span style="width:${Math.max(0, Math.min(100, (value / 5) * 100))}%"></span></span>`;
+
+        function relTime(iso) {
+          const t = new Date(iso).getTime();
+          if (!t) return "";
+          const days = Math.floor((Date.now() - t) / 86400000);
+          if (days < 1) return "today";
+          if (days === 1) return "yesterday";
+          if (days < 14) return days + " days ago";
+          if (days < 60) return Math.floor(days / 7) + " weeks ago";
+          if (days < 365) return Math.floor(days / 30) + " months ago";
+          const y = Math.floor(days / 365);
+          return y + (y === 1 ? " year ago" : " years ago");
+        }
+
+        function cardHtml(r) {
+          return `<article class="rvw-card">
+            ${starsHtml(r.rating, r.rating + " out of 5 stars")}
+            ${r.title ? `<h3>${escapeHtml(r.title)}</h3>` : ""}
+            ${r.body ? `<p>${escapeHtml(r.body)}</p>` : ""}
+            <div class="rvw-meta">${escapeHtml(r.customer_name)}${r.verified_purchase ? " · Verified purchase" : ""} · ${escapeHtml(relTime(r.created_at))}</div>
+          </article>`;
+        }
+
+        function summaryHtml(s) {
+          const rows = [5, 4, 3, 2, 1].map((n) => {
+            const c = s.distribution[String(n)] || 0;
+            const pct = s.total ? Math.round((c / s.total) * 100) : 0;
+            return `<div class="rvw-bar-row"><span>${n} star</span><div class="rvw-bar" aria-hidden="true"><i style="width:${pct}%"></i></div><span>${c}</span></div>`;
+          }).join("");
+          return `<div class="rvw-summary">
+            <div class="rvw-avg"><div class="rvw-avg-num">${escapeHtml(s.average.toFixed(1))}</div>
+              ${starsHtml(s.average, s.average.toFixed(1) + " out of 5 stars")}
+              <div class="rvw-meta">${s.total} review${s.total === 1 ? "" : "s"}</div></div>
+            <div class="rvw-bars">${rows}</div>
+          </div>`;
+        }
+
+        function render() {
+          if (!summary || !summary.total) {
+            body.innerHTML = `<div class="rvw-empty">Be the first to review this piece — email requests go out after your order is delivered.</div>`;
+            moreBtn.hidden = true;
+            return;
+          }
+          body.innerHTML = summaryHtml(summary) + `<div id="reviewsList">${loaded.map(cardHtml).join("")}</div>`;
+          moreBtn.hidden = loaded.length >= summary.total;
+        }
+
+        function applyHeadline() {
+          if (summary && summary.total) {
+            const n = summary.total;
+            ratingRow.innerHTML = `${starsHtml(summary.average, summary.average.toFixed(1) + " out of 5 stars")}<a href="#reviews">(${n} review${n === 1 ? "" : "s"})</a>`;
+            ratingRow.hidden = false;
+          }
+          // JSON-LD: merge AggregateRating + Review into the Product block applySeo() just wrote.
+          const el = document.getElementById("ld-product");
+          if (el && summary && summary.total) {
+            try {
+              injectJsonLd("ld-product", { ...JSON.parse(el.textContent), ...buildReviewSchema(summary, loaded) });
+            } catch (_) { /* leave the plain Product schema */ }
+          }
+        }
+
+        async function fetchPage(offset) {
+          const res = await fetch(FN, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY },
+            body: JSON.stringify({ product_id: data.id, limit: PAGE, offset }),
+          });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
+        }
+
+        moreBtn.addEventListener("click", async () => {
+          moreBtn.disabled = true;
+          try {
+            const j = await fetchPage(loaded.length);
+            loaded.push(...(j.reviews || []));
+            summary = { total: j.total, average: j.average, distribution: j.distribution };
+            const list = document.getElementById("reviewsList");
+            const firstNew = loaded.length - (j.reviews || []).length;
+            list.insertAdjacentHTML("beforeend", (j.reviews || []).map(cardHtml).join(""));
+            moreBtn.hidden = loaded.length >= j.total;
+            const el = list.children[firstNew];
+            if (el) { el.tabIndex = -1; el.focus({ preventScroll: true }); }
+          } catch (_) {
+            toast({ message: "Could not load more reviews. Please try again.", kind: "error" });
+          } finally {
+            moreBtn.disabled = false;
+          }
+        });
+
+        (async () => {
+          try {
+            const j = await fetchPage(0);
+            loaded.push(...(j.reviews || []));
+            summary = { total: j.total, average: j.average, distribution: j.distribution };
+            render();
+            applyHeadline();
+          } catch (e) {
+            console.error("Could not load reviews:", e);
+            document.getElementById("reviews").hidden = true;
+          }
+        })();
       })();
 
       // ── Lightbox zoom + drag-to-pan ──

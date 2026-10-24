@@ -273,3 +273,32 @@ export function truncateForMeta(text, maxLen = 160) {
   const lastSpace = cut.lastIndexOf(" ");
   return (lastSpace > 40 ? cut.slice(0, lastSpace) : cut) + "…";
 }
+
+/**
+ * AggregateRating + Review fields to merge into a Product schema.
+ * Returns {} when there are no approved reviews (Google rejects ratingCount 0).
+ * @param {{total:number, average:number}} summary
+ * @param {Array<{rating:number,title?:string,body?:string,customer_name?:string,created_at?:string}>} reviews
+ */
+export function buildReviewSchema(summary, reviews) {
+  if (!summary || !(summary.total >= 1)) return {};
+  const out = {
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": summary.average,
+      "reviewCount": summary.total,
+      "bestRating": 5,
+      "worstRating": 1,
+    },
+  };
+  const list = (reviews || []).map((r) => ({
+    "@type": "Review",
+    "reviewRating": { "@type": "Rating", "ratingValue": r.rating, "bestRating": 5, "worstRating": 1 },
+    "author": { "@type": "Person", "name": r.customer_name || "Verified buyer" },
+    "name": r.title || undefined,
+    "reviewBody": r.body || undefined,
+    "datePublished": r.created_at ? String(r.created_at).slice(0, 10) : undefined,
+  }));
+  if (list.length) out.review = list;
+  return out;
+}
