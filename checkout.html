@@ -25,20 +25,7 @@
   <div id="header"></div>
   <main id="main" tabindex="-1">
 
-  <!-- Login-required gate: shown until we confirm the shopper is authenticated.
-       Guest checkout has been removed — an order can no longer be placed without an account. -->
-  <div class="container" id="checkoutGate" style="display:none;">
-    <div style="max-width:420px; margin:60px auto; text-align:center; display:flex; flex-direction:column; gap:14px; align-items:center;">
-      <h2 style="margin:0;">Please log in to checkout</h2>
-      <div class="small" style="opacity:.75;">
-        An AhamStree account keeps your order history, saved address and delivery updates in one place. Log in or create an account to continue.
-      </div>
-      <button type="button" id="checkoutLoginBtn" class="btn" style="padding:10px 22px;">Log in / Create account →</button>
-      <a class="small" href="cart.html" style="opacity:.76;">← Back to cart</a>
-    </div>
-  </div>
-
-  <div class="container" id="checkoutMain" style="display:none;">
+  <div class="container" id="checkoutMain">
     <div class="breadcrumbs" aria-label="Breadcrumb">
       <a href="index.html">Home</a> <span class="sep">›</span>
       <a href="cart.html">Cart</a> <span class="sep">›</span>
@@ -53,6 +40,23 @@
       <a class="btn ghost" href="cart.html" style="height:40px;">Edit cart</a>
     </div>
 
+    <!-- Guest checkout: signing in is optional and never blocks payment. -->
+    <div id="guestSignin" class="guest-signin" hidden>
+      Have an account?
+      <button type="button" id="guestSigninBtn" class="link-btn guest-signin-btn">Sign in</button>
+      to prefill your details and track orders.
+    </div>
+
+    <!-- Shown to guests who return (browser back) with a payment already in progress -->
+    <div id="resumeBanner" class="card" role="status" style="padding:12px 14px; border-radius:0; display:none; margin-bottom:12px; border:1.5px solid var(--brand); background:var(--brand-light);">
+      <div style="font-weight:800;font-size:14px;">You have a payment in progress</div>
+      <div class="small" style="margin-top:4px;">Your items are held for a few minutes. Continue where you left off, or start again.</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <a id="resumePayLink" class="btn" href="#" style="padding:8px 14px;font-size:13px;">Continue to payment</a>
+        <button type="button" id="resumeDismiss" class="btn secondary" style="padding:8px 14px;font-size:13px;">Start again</button>
+      </div>
+    </div>
+
     <div id="authBanner" class="card" style="padding:12px 14px; border-radius:0; display:none; margin-bottom:12px;">
       <div class="small" id="authText"></div>
     </div>
@@ -63,13 +67,12 @@
         <div style="display:flex;align-items:flex-start;gap:10px;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand);flex-shrink:0;margin-top:2px;" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
           <div>
-            <div style="font-weight:800; font-size:14px;">Use your saved address?</div>
+            <div style="font-weight:800; font-size:14px;">Prefilled from your account</div>
             <div class="small" style="margin-top:4px; opacity:.8;" id="savedAddressPreview"></div>
           </div>
         </div>
         <div style="display:flex; gap:8px;">
-          <button type="button" id="useSavedAddress" class="btn" style="padding:8px 14px; font-size:13px;">Use this address</button>
-          <button type="button" id="dismissSavedAddress" class="btn secondary" style="padding:8px 14px; font-size:13px;">Enter new</button>
+          <button type="button" id="dismissSavedAddress" class="btn secondary" style="padding:8px 14px; font-size:13px;">Use a different address</button>
         </div>
       </div>
     </div>
@@ -137,6 +140,11 @@
           <label class="small" for="co-pincode">Pincode</label>
           <input class="input" id="co-pincode" name="pincode" required maxlength="6" placeholder="e.g., 560001" inputmode="numeric" autocomplete="shipping postal-code" />
         <div class="field-err" id="co-pincode_err" role="alert" hidden></div>
+        </div>
+
+        <div class="field">
+          <span class="small" id="co-country-label">Country</span>
+          <div class="country-fixed" aria-labelledby="co-country-label">India</div>
         </div>
 
         <div style="height:20px;"></div>
@@ -274,35 +282,31 @@
   <script type="module">
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
 
-    // ── Login required for checkout ─────────────────────────────────────────
-    // Guest checkout has been removed. Every order must be tied to an account,
-    // so we confirm a session exists before showing any of the checkout UI.
+    // ── Guest checkout ────────────────────────────────────────────────────────
+    // Signing in is optional. A signed-in shopper gets their details prefilled
+    // and the order is attached to their account; a guest pays with the details
+    // typed below and the order is stored with user_id = null.
     const sbModAuthGate = await import("./assets/supabase.js");
-    const { data: sessAuthGate } = await sbModAuthGate.supabase.auth.getSession();
-    const checkoutUser = sessAuthGate?.session?.user || null;
+    // Defines window.announce (live-region helper) on this header-less page.
+    import("./assets/ui.js").catch(() => {});
+    const { data: sessInit } = await sbModAuthGate.supabase.auth.getSession();
+    let checkoutUser = sessInit?.session?.user || null;
 
-    if (!checkoutUser) {
-      document.getElementById("checkoutGate").style.display = "block";
-      document.getElementById("checkoutMain").style.display = "none";
-
-      // Open the sign-in modal in place instead of navigating to
-      // login.html?next=checkout.html — checkout's own init logic below
-      // this throw never runs at all while logged out (not just hidden
-      // UI), so rather than try to hand-resume a payment page's in-flight
-      // state after login, just reload once a session appears: same URL,
-      // "returns to where they were" trivially, and re-enters this script
-      // from the top with a real session so the full checkout form renders
-      // exactly as if they'd been logged in the whole time.
+    const guestSigninEl = document.getElementById("guestSignin");
+    if (!checkoutUser) guestSigninEl.hidden = false;
+    document.getElementById("guestSigninBtn")?.addEventListener("click", async () => {
       const { openSignInModal } = await import("./assets/signin-popup.js");
-      document.getElementById("checkoutLoginBtn").addEventListener("click", () => openSignInModal());
-      sbModAuthGate.supabase.auth.onAuthStateChange((_event, session) => {
-        if (session?.user) window.location.reload();
-      });
-
-      throw new Error("login_required_for_checkout");
-    }
-    document.getElementById("checkoutGate").style.display = "none";
-    document.getElementById("checkoutMain").style.display = "";
+      openSignInModal();
+    });
+    // Signing in mid-checkout keeps everything typed so far and just prefills the rest.
+    sbModAuthGate.supabase.auth.onAuthStateChange((_event, session) => {
+      const u = session?.user || null;
+      if (u && (!checkoutUser || checkoutUser.id !== u.id)) {
+        checkoutUser = u;
+        guestSigninEl.hidden = true;
+        loadSavedAddress(u);
+      }
+    });
 
     // checkout.html doesn't call hydrateHeaderAuth() (see ui.js), which is
     // where every other page wires up pageview tracking — call it directly
@@ -783,6 +787,7 @@
         city:         sanitizeText(raw.city),
         state:        sanitizeText(raw.state),
         pincode:      normalizePincode6(raw.pincode),
+        country:      "India",
       };
     };
 
@@ -905,11 +910,27 @@
           if (currentSig !== pending.items_signature) return;
         }
 
+        const { data: sessP } = await (await import("./assets/supabase.js")).supabase.auth.getSession();
+        if (!sessP?.session?.user) {
+          // Guests have no order history page: offer to continue straight to
+          // the payment link instead of redirecting somewhere they can't open.
+          const url = String(pending.payment_link_url || "");
+          if (/^https:\/\/([a-z0-9-]+\.)*(rzp\.io|razorpay\.com)\//i.test(url)) {
+            document.getElementById("resumePayLink").href = url;
+            document.getElementById("resumeBanner").style.display = "block";
+          }
+          return;
+        }
         window.location.replace(`orders.html#order-${pending.order_id}`);
       } catch (_) {
         localStorage.removeItem("ahamstree_pending_payment");
       }
     }
+
+    document.getElementById("resumeDismiss")?.addEventListener("click", () => {
+      try { localStorage.removeItem("ahamstree_pending_payment"); } catch (_) {}
+      document.getElementById("resumeBanner").style.display = "none";
+    });
 
     checkPendingPaymentAndRedirect();
     window.addEventListener("pageshow", (event) => {
@@ -1054,52 +1075,52 @@
       await renderOrderSummary({ coupon_code: appliedCoupon, use_wallet_cash: useWalletCash });
     });
 
-    // ── Saved address (login is guaranteed by the gate above) ────────────────
-    (async () => {
+    // ── Signed-in shoppers: prefill from their profile ───────────────────────
+    // Only empty fields are filled, so nothing the shopper already typed is
+    // overwritten. Guests skip this entirely.
+    const savedBanner = document.getElementById("savedAddressBanner");
+    async function loadSavedAddress(user) {
+      if (!user) return;
       const sbMod = await import("./assets/supabase.js");
-      const user  = checkoutUser;
-
       const { data: profile } = await sbMod.supabase
         .from("profiles")
         .select("full_name,phone,email,address_line1,address_line2,city,state,pincode")
         .eq("user_id", user.id)
         .maybeSingle();
 
+      const fill = (name, val) => {
+        const el = form.querySelector('[name="' + name + '"]');
+        if (!el || !val || sanitizeText(el.value)) return;
+        if (el.tagName === "SELECT") { const m = matchState(val); if (m) el.value = m; }
+        else el.value = val;
+      };
+      fill("full_name",     profile?.full_name);
+      fill("phone",         normalizePhone10(profile?.phone || user.phone || ""));
+      fill("email",         profile?.email || user.email);
+      fill("address_line1", profile?.address_line1);
+      fill("address_line2", profile?.address_line2);
+      fill("city",          profile?.city);
+      fill("state",         profile?.state);
+      fill("pincode",       profile?.pincode);
+
       if (!profile?.address_line1) return;
-
-      const banner  = document.getElementById("savedAddressBanner");
       const preview = document.getElementById("savedAddressPreview");
-      if (!banner || !preview) return;
-
+      if (!savedBanner || !preview) return;
       const parts = [profile.address_line1, profile.address_line2, profile.city, profile.state, profile.pincode].filter(Boolean);
-      preview.textContent = `${profile.full_name || ""} • ${parts.join(", ")}`;
-      banner.style.display = "block";
+      preview.textContent = (profile.full_name || "") + " • " + parts.join(", ");
+      savedBanner.style.display = "block";
+    }
 
-      document.getElementById("useSavedAddress")?.addEventListener("click", () => {
-        const set = (name, val) => {
-          const el = form.querySelector(`[name="${name}"]`);
-          if (!el || !val) return;
-          if (el.tagName === "SELECT") { const m = matchState(val); if (m) el.value = m; }
-          else el.value = val;
-          el.dataset.touched = "1";
-        };
-        set("full_name",     profile.full_name);
-        set("phone",         profile.phone);
-        set("email",         profile.email);
-        set("address_line1", profile.address_line1);
-        set("address_line2", profile.address_line2);
-        set("city",          profile.city);
-        set("state",         profile.state);
-        set("pincode",       profile.pincode);
-        banner.style.display = "none";
-        validateAll({ showErrors: false });
-        renderErrSummary([]);
+    document.getElementById("dismissSavedAddress")?.addEventListener("click", () => {
+      ["address_line1", "address_line2", "city", "state", "pincode"].forEach((n) => {
+        const el = form.querySelector('[name="' + n + '"]');
+        if (el) { el.value = ""; clearMarks(el); }
       });
+      savedBanner.style.display = "none";
+      document.getElementById("co-address_line1")?.focus();
+    });
 
-      document.getElementById("dismissSavedAddress")?.addEventListener("click", () => {
-        banner.style.display = "none";
-      });
-    })();
+    loadSavedAddress(checkoutUser);
 
     renderOrderSummary({ coupon_code: "", use_wallet_cash: useWalletCash });
     attachLiveValidation();
@@ -1143,6 +1164,16 @@
       fieldEls().forEach(i => (i.dataset.touched = "1"));
       const errors = validateAll({ showErrors: true });
       renderErrSummary(errors);
+      // A guest using a coupon must give an email: coupon limits are enforced per email.
+      if (!checkoutUser && appliedCoupon) {
+        const emailEl = document.getElementById("co-email");
+        if (!sanitizeText(emailEl.value) && !errors.some((e) => e.el === emailEl)) {
+          const msg = "Enter your email to use coupon " + appliedCoupon + ".";
+          markInvalid(emailEl, msg);
+          errors.unshift({ el: emailEl, message: msg });
+          renderErrSummary(errors);
+        }
+      }
       if (errors.length) {
         window.announce?.("Please fix " + errors.length + (errors.length === 1 ? " problem" : " problems") + " before paying");
         errors[0].el.focus();
@@ -1168,17 +1199,13 @@
         const cart = cartMod.getCart?.() || [];
         if (!cart.length) { showError("Your cart is empty. Please add products first."); return; }
 
-        // Login is guaranteed by the gate at the top of this page, but double-check
-        // defensively in case the session expired mid-checkout.
+        // Signed-in or guest: the edge function derives which from the JWT.
         const { data: sess } = await sbMod.supabase.auth.getSession();
-        const userId = sess?.session?.user?.id ?? null;
-        if (!userId) {
-          showError("Your session has expired. Please log in again to continue.");
-          window.location.href = "login.html?next=checkout.html";
-          return;
-        }
+        const isGuest = !sess?.session?.user?.id;
 
         const shipping    = buildShipping();
+        // success.html prefills the optional "create account" prompt with this.
+        if (isGuest) { try { sessionStorage.setItem("ahamstree_guest_phone", shipping.phone); } catch (_) {} }
         const payloadCart = cart.map(i => ({ product_id: i.product_id, qty: i.qty }));
 
         // ── Razorpay (online payment — the only payment method) ──────────────
@@ -1234,6 +1261,19 @@
           // ── Resumed existing order ────────────────────────────────────────
           // Edge fn found a pending order for the same items within the TTL window.
           // Show a resume banner with a countdown instead of creating a new order.
+          if (data.resumed && isGuest) {
+            // Guests have no orders page: go straight back to the existing payment link.
+            try {
+              localStorage.setItem("ahamstree_pending_payment", JSON.stringify({
+                order_id: data.order_id, payment_link_id: data.payment_link_id,
+                payment_link_url: data.payment_link_url, expires_at: data.expires_at,
+                items_signature: cartSignature(cart), stored_at: Date.now(),
+              }));
+            } catch (_) {}
+            statusEl.textContent = "Resuming your payment…";
+            window.location.href = data.payment_link_url;
+            return;
+          }
           if (data.resumed) {
             statusEl.textContent = "";
             showResumeCheckoutBanner({
