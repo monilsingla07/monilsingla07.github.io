@@ -27,7 +27,7 @@
 
   <div class="container">
     <div class="breadcrumbs" aria-label="Breadcrumb">
-      <a href="index.html">Home</a> <span class="sep">›</span>
+      <a href="index.html">Home</a> <span class="sep"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></span>
       <span>Cart</span>
     </div>
     <div class="page-header">
@@ -443,6 +443,7 @@
       document.getElementById("clearBtn").onclick = async () => {
         const ok = await confirmDialog({
           title: "Clear cart?",
+          focus: "cancel",
           message: "This removes every item from your cart.",
           confirmLabel: "Clear cart",
           cancelLabel: "Keep items",

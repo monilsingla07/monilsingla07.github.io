@@ -8,7 +8,8 @@ import { escapeHtml, escapeAttr, safeUrl } from "./safe.js";
 import { grantSignupCashIfEligible } from "./profile-seed.js";
 import { mergeGuestWishlistIntoAccount } from "./wishlist.js";
 import { trackPageview } from "./visit-tracker.js";
-import { openTrap } from "./a11y.js";
+import { toast } from "./toast.js";
+import { icon } from "./icons.js";
 
 // ── Polite live region (UX-037) ──
 // One shared role=status node for screen-reader announcements; existing
@@ -38,39 +39,14 @@ window.announce = function announce(msg){
   _announceTimer = setTimeout(() => { el.textContent = ""; }, 3000);
 };
 
-// ── Toast + confirm dialog (Batch 2) ──
-// showToast(msg, { actionLabel, onAction, duration }) shows a small bottom
-// toast (optionally with one action button such as "Undo") and also routes the
-// text through window.announce so screen readers hear it. Returns dismiss().
+// ── Toast + confirm dialog ──
+// Implemented in toast.js (UX-046); re-exported here so existing imports keep
+// working. showToast(msg, { actionLabel, onAction, duration }) is the plain
+// icon-less toast (optional action such as "Undo"); toast({ message, kind })
+// is the typed version. Both announce through window.announce.
+export { toast, confirmDialog } from "./toast.js";
 export function showToast(msg, { actionLabel = "", onAction = null, duration = 5000 } = {}) {
-  let host = document.getElementById("toastHost");
-  if (!host) {
-    host = document.createElement("div");
-    host.id = "toastHost";
-    host.className = "toast-host";
-    document.body.appendChild(host);
-  }
-  const el = document.createElement("div");
-  el.className = "toast";
-  const text = document.createElement("span");
-  text.className = "toast-msg";
-  text.textContent = String(msg ?? "");
-  el.appendChild(text);
-
-  let timer = null;
-  const dismiss = () => { clearTimeout(timer); el.remove(); };
-  if (actionLabel) {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "toast-action";
-    b.textContent = actionLabel;
-    b.addEventListener("click", () => { dismiss(); try { onAction && onAction(); } catch (_) {} });
-    el.appendChild(b);
-  }
-  host.appendChild(el);
-  window.announce?.(String(msg ?? "") + (actionLabel ? ". " + actionLabel + " available." : ""));
-  if (duration > 0) timer = setTimeout(dismiss, duration);
-  return dismiss;
+  return toast({ message: msg, kind: "info", duration, actionLabel, onAction, icon: false });
 }
 
 // showCartToast({ title, image, count }) - add-to-cart confirmation (UX-025).
@@ -99,7 +75,7 @@ export function showCartToast({ title = "", image = "", count = 0, duration = 50
   body.className = "toast-cart-body";
   const head = document.createElement("div");
   head.className = "toast-cart-head";
-  head.textContent = "✓ Added to cart";
+  head.innerHTML = icon("check", { size: 16 }) + " Added to cart";
   const t = document.createElement("div");
   t.className = "toast-cart-title";
   t.textContent = String(title || "");
@@ -123,47 +99,6 @@ export function showCartToast({ title = "", image = "", count = 0, duration = 50
   window.announce?.("Added " + (title || "item") + " to cart. " + count + (count === 1 ? " item" : " items") + " in cart.");
   if (duration > 0) timer = setTimeout(dismiss, duration);
   return dismiss;
-}
-
-// confirmDialog({ title, message, confirmLabel, cancelLabel }) -> Promise<boolean>
-// A focus-trapped alertdialog that replaces native confirm().
-export function confirmDialog({ title = "Are you sure?", message = "", confirmLabel = "Confirm", cancelLabel = "Cancel" } = {}) {
-  return new Promise((resolve) => {
-    const bg = document.createElement("div");
-    bg.className = "dlg-bg";
-    const uid = "dlg" + Math.random().toString(36).slice(2, 8);
-    bg.innerHTML = `
-      <div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="${uid}t" aria-describedby="${uid}d">
-        <h2 id="${uid}t" class="dlg-title"></h2>
-        <p id="${uid}d" class="dlg-text"></p>
-        <div class="dlg-actions">
-          <button type="button" class="btn secondary" data-act="cancel"></button>
-          <button type="button" class="btn" data-act="ok"></button>
-        </div>
-      </div>`;
-    bg.querySelector(".dlg-title").textContent = title;
-    bg.querySelector(".dlg-text").textContent = message;
-    bg.querySelector('[data-act="cancel"]').textContent = cancelLabel;
-    bg.querySelector('[data-act="ok"]').textContent = confirmLabel;
-    document.body.appendChild(bg);
-
-    let done = false;
-    let release = () => {};
-    const finish = (val) => {
-      if (done) return;
-      done = true;
-      release();
-      bg.remove();
-      resolve(val);
-    };
-    release = openTrap(bg.querySelector(".dlg"), {
-      onEscape: () => finish(false),
-      initialFocus: bg.querySelector('[data-act="cancel"]'),
-    });
-    bg.addEventListener("click", (e) => { if (e.target === bg) finish(false); });
-    bg.querySelector('[data-act="cancel"]').addEventListener("click", () => finish(false));
-    bg.querySelector('[data-act="ok"]').addEventListener("click", () => finish(true));
-  });
 }
 
 // Admin pages share renderHeader() but have no <main id="main"> landmark;
@@ -477,7 +412,7 @@ export function renderFooter() {
         </div>
 
         <div class="copyright small">
-          © ${new Date().getFullYear()} ahamstree.com &nbsp;•&nbsp; Handcrafted with ♥ in India
+          © ${new Date().getFullYear()} ahamstree.com &nbsp;•&nbsp; Handcrafted with ${icon("heart", { size: 14, cls: "icon-inline" })} in India
         </div>
 
         <!-- OWNER: provide registered address + GSTIN. Fill in below and remove the "hidden" attribute. -->

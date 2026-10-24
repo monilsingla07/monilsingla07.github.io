@@ -29,7 +29,7 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, confirmDialog } from "./assets/ui.js";
     import { getWishlist, removeFromWishlist } from "./assets/wishlist.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
     import { cardImageSrc, cardImageAttrs } from "./assets/media.js";
@@ -125,7 +125,7 @@
         btn.addEventListener('click', async () => {
           const productId = btn.getAttribute('data-id');
           if (!productId) return;
-          if (!confirm('Remove this item from wishlist?')) return;
+          if (!(await confirmDialog({ title: 'Remove from wishlist?', body: 'This item will be removed from your wishlist.', confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
 
           const { success } = await removeFromWishlist(productId);
           if (success) loadWishlist();

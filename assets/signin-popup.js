@@ -30,6 +30,7 @@
 //     a separate login page). Closes itself automatically on success, or
 //     if the visitor signs in elsewhere (another tab) while it's open.
 
+import { icon } from "./icons.js";
 import { escapeHtml, escapeAttr, safeUrl } from "./safe.js";
 import { supabase } from "./supabase.js";
 import { whenEngaged } from "./engagement.js";
@@ -433,7 +434,7 @@ function renderPopup(config) {
       status.textContent = "";
       return;
     }
-    status.textContent = "Logged in ✅";
+    status.innerHTML = icon("check", { size: 16, cls: "icon-inline" }) + " Logged in";
     setTimeout(close, 700);
   });
   pinInput.addEventListener("keydown", (e) => { if (e.key === "Enter") pinSubmitBtn.click(); });
@@ -528,7 +529,7 @@ function renderPopup(config) {
     }
 
     if (!needsPinSetup) {
-      status.textContent = "Logged in ✅";
+      status.innerHTML = icon("check", { size: 16, cls: "icon-inline" }) + " Logged in";
       setTimeout(close, 700);
       return;
     }
@@ -590,7 +591,7 @@ function renderPopup(config) {
     }
 
     pinSetupPending = false;
-    status.textContent = "All set ✅";
+    status.innerHTML = icon("check", { size: 16, cls: "icon-inline" }) + " All set";
     setTimeout(close, 700);
   });
 

@@ -211,9 +211,9 @@
     <h2 id="lbTitle" class="vh">Image zoom</h2>
     <div id="lightboxInner">
       <img id="lightboxImg" alt="Product image enlarged" loading="lazy" decoding="async" />
-      <button id="lbClose" class="lb-btn" type="button" aria-label="Close zoom">✕</button>
-      <button id="lbPrev" class="lb-btn" type="button" aria-label="Previous image">‹</button>
-      <button id="lbNext" class="lb-btn" type="button" aria-label="Next image">›</button>
+      <button id="lbClose" class="lb-btn" type="button" aria-label="Close zoom"><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <button id="lbPrev" class="lb-btn" type="button" aria-label="Previous image"><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button id="lbNext" class="lb-btn" type="button" aria-label="Next image"><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></button>
       <div id="lb-zoom-hint">Double-tap to zoom &nbsp;·&nbsp; Swipe to navigate</div>
     </div>
   </div>
@@ -228,7 +228,7 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth, showCartToast } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, showCartToast, toast } from "./assets/ui.js";
     import { openTrap } from "./assets/a11y.js";
     import { supabase } from "./assets/supabase.js";
     import { addToCart, getCart, cartCount } from "./assets/cart.js";
@@ -1370,14 +1370,14 @@ if (!sessionStorage.getItem(viewKey)) {
           if (inWish) {
             const res = await removeFromWishlist(data.id);
             if (!res?.success) {
-              alert("Could not remove from wishlist. Please try again.");
+              toast({ message: "Could not remove from wishlist. Please try again.", kind: "error" });
             }
           } else {
             const res = await addToWishlist(data.id);
             if (!res?.success) {
               // Duplicate is not a hard error; still refresh UI
               if (res?.message && res.message !== "Already in wishlist") {
-                alert(res.message);
+                toast({ message: res.message, kind: "error" });
               }
             }
           }

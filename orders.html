@@ -216,7 +216,8 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, toast, confirmDialog } from "./assets/ui.js";
+    import { icon } from "./assets/icons.js";
     import { openTrap } from "./assets/a11y.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, safeHref, safeSrc } from "./assets/safe.js";
@@ -277,14 +278,14 @@
     function retStatusBadge(rs) {
       if (!rs) return "";
       const map = {
-        requested : { label: "↩ Return Requested", cls: "ret-req"  },
-        approved  : { label: "↩ Return Approved",  cls: "ret-ok"   },
-        picked    : { label: "↩ Item Picked Up",    cls: "ret-pick" },
-        rejected  : { label: "↩ Return Rejected",   cls: "ret-rej"  },
-        refunded  : { label: "↩ Refunded",          cls: "ret-refunded" },
+        requested : { label: "Return Requested", cls: "ret-req"  },
+        approved  : { label: "Return Approved",  cls: "ret-ok"   },
+        picked    : { label: "Item Picked Up",    cls: "ret-pick" },
+        rejected  : { label: "Return Rejected",   cls: "ret-rej"  },
+        refunded  : { label: "Refunded",          cls: "ret-refunded" },
       };
-      const s = map[rs] || { label: "↩ " + rs, cls: "ret-req" };
-      return `<span class="status-badge ${s.cls}">${s.label}</span>`;
+      const s = map[rs] || { label: escapeHtml(rs), cls: "ret-req" };
+      return `<span class="status-badge ${s.cls}">${icon("return", { size: 14, cls: "icon-inline" })} ${s.label}</span>`;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -312,7 +313,7 @@
         <div style="position:relative; width:64px; height:64px; border-radius:10px; overflow:hidden; border:1.5px solid var(--border-light);">
           <img src="${URL.createObjectURL(f)}" style="width:100%; height:100%; object-fit:cover; display:block;" />
           <button type="button" data-i="${i}" class="ret-photo-remove"
-            aria-label="Remove photo ${i + 1}" style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; border:none; background:rgba(0,0,0,0.65); color:#fff; font-size:12px; line-height:1; cursor:pointer;">✕</button>
+            aria-label="Remove photo ${i + 1}" style="position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; border:none; background:rgba(0,0,0,0.65); color:#fff; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0;">${icon("close", { size: 12 })}</button>
         </div>
       `).join("");
       retPhotoPreviews.querySelectorAll(".ret-photo-remove").forEach(btn => {
@@ -463,20 +464,20 @@
 
       if (panel.classList.contains("open")) {
         panel.classList.remove("open");
-        btn.textContent = "▼ Track order";
+        btn.innerHTML = icon("chevron-down", { size: 14, cls: "icon-inline" }) + " Track order";
         return;
       }
 
       // Already loaded — just re-open
       if (panel.dataset.loaded === "1") {
         panel.classList.add("open");
-        btn.textContent = "▲ Hide tracking";
+        btn.innerHTML = icon("chevron-up", { size: 14, cls: "icon-inline" }) + " Hide tracking";
         return;
       }
 
       panel.innerHTML = `<div class="small" style="color:#64748b;">Fetching live tracking…</div>`;
       panel.classList.add("open");
-      btn.textContent = "▲ Hide tracking";
+      btn.innerHTML = icon("chevron-up", { size: 14, cls: "icon-inline" }) + " Hide tracking";
       btn.disabled = true;
 
       try {
@@ -572,7 +573,7 @@
         }
         window.open(data.invoice_url, "_blank", "noopener,noreferrer");
       } catch (err) {
-        alert("Could not open invoice: " + err.message);
+        toast({ message: "Could not open invoice: " + err.message, kind: "error" });
       } finally {
         btn.disabled = false;
         btn.textContent = oldText;
@@ -583,7 +584,7 @@
     // SELF-CANCEL
     // ══════════════════════════════════════════════════════════════════════
     async function cancelOrder(orderId) {
-      if (!confirm("Cancel this order? This can't be undone.")) return;
+      if (!(await confirmDialog({ title: "Cancel this order?", body: "This can't be undone.", confirmLabel: "Cancel order", cancelLabel: "Keep order", focus: "cancel" }))) return;
       const btn = document.getElementById(`cancel-btn-${orderId}`);
       if (btn) { btn.disabled = true; btn.textContent = "Cancelling…"; }
       try {
@@ -593,10 +594,10 @@
         if (error || data?.error) {
           throw new Error(data?.error || error?.message || "Could not cancel order");
         }
-        if (data?.message) alert(data.message);
+        if (data?.message) toast({ message: data.message, kind: "success" });
         loadOrders();
       } catch (err) {
-        alert("Could not cancel order: " + err.message);
+        toast({ message: "Could not cancel order: " + err.message, kind: "error" });
         if (btn) { btn.disabled = false; btn.textContent = "Cancel order"; }
       }
     }
@@ -710,7 +711,7 @@
       // No pay button here — payment window is over.
       const expiredBanner = (isPendingPayment && !isStillActive) ? `
         <div style="padding:14px 16px; background:#fff7ed; border-top:2px solid #f97316;">
-          <div style="font-weight:900; font-size:14px; margin-bottom:4px;">⏱️ Payment window expired</div>
+          <div style="font-weight:900; font-size:14px; margin-bottom:4px;">${icon("clock", { size: 16, cls: "icon-inline" })} Payment window expired</div>
           <div class="small" style="opacity:.85; margin-bottom:10px;">
             This payment link is no longer active. Please start checkout again to create a fresh payment link.
           </div>
@@ -749,7 +750,7 @@
                      style="padding:8px 14px; font-size:13px;"
                      type="button"
                      onclick="window.__track('${o.id}','${escapeHtml(awb)}')">
-                     ▼ Track order
+                     ${icon("chevron-down", { size: 14, cls: "icon-inline" })} Track order
                    </button>`
                 : ""}
               ${canReturn
@@ -759,7 +760,7 @@
                      style="padding:8px 14px; font-size:13px;"
                      type="button"
                      onclick="window.__return('${o.id}')">
-                     ↩ Return
+                     ${icon("return", { size: 14, cls: "icon-inline" })} Return
                    </button>`
                 : ""}
               ${canInvoice
