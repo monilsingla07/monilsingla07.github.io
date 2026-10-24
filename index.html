@@ -29,6 +29,44 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://mgmgkwoxirvzdnmayhwq.supabase.co" crossorigin>
+  <!-- UX-027: LCP. Hero slides are admin-managed, so the first slide image can't
+       be a static preload. This tiny script (a) preloads it from the cached hero
+       payload on repeat visits and (b) on a cold visit starts the hero request
+       now, before the module graph loads, and preloads the image the moment the
+       JSON arrives. assets/site-content.js hydrateHero() consumes
+       window.__heroFetch and owns the cache (same key / shape). -->
+  <script>
+  (function () {
+    try {
+      var KEY = "ahamstree_hero_v1", TTL = 10 * 60 * 1000;
+      var URL_ = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-active-hero-slides";
+      function preload(s) {
+        if (!s) return;
+        var d = s.image_desktop_url, m = s.image_mobile_url;
+        function add(href, media) {
+          if (!href) return;
+          var l = document.createElement("link");
+          l.rel = "preload"; l.as = "image"; l.href = href;
+          l.setAttribute("fetchpriority", "high");
+          if (media) l.media = media;
+          document.head.appendChild(l);
+        }
+        if (m && d) { add(m, "(max-width: 768px)"); add(d, "(min-width: 769px)"); }
+        else add(d || m);
+      }
+      var c = null;
+      try { c = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+      var age = c ? Date.now() - Number(c.t || 0) : Infinity;
+      if (c && c.slides && c.slides.length && age >= 0) preload(c.slides[0]);
+      if (!(age >= 0 && age < TTL)) {
+        window.__heroFetch = fetch(URL_).then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (j) { if (!c && j && j.slides) preload(j.slides[0]); return j; })
+          .catch(function () { return null; });
+      }
+    } catch (e) {}
+  })();
+  </script>
   <link rel="stylesheet" href="assets/styles.css" />
     <link rel="icon" href="/favicon.ico">
     <script type="application/ld+json">
@@ -375,18 +413,23 @@
 </div>
 </footer><!--/shell:footer--></div>
 
+    <!-- Hero gets its own module so it paints as soon as site-content.js + safe.js
+         arrive, instead of waiting for the ui.js -> supabase module graph (UX-027). -->
+    <script type="module">
+      import { hydrateHero } from "./assets/site-content.js";
+      hydrateHero();
+    </script>
     <script type="module">
       import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
       import { hydrateHome } from "./assets/home.js";
       import { hydrateInstagramReels } from "./assets/instagram-reels.js";
-      import { hydrateHero, hydrateTestimonials } from "./assets/site-content.js";
+      import { hydrateTestimonials } from "./assets/site-content.js";
 
       document.getElementById("header").innerHTML = renderHeader("home");
       hydrateHeaderAuth();
       document.getElementById("footer").innerHTML = renderFooter();
 
       // Home page dynamic sections
-      hydrateHero();
       hydrateHome();
       hydrateInstagramReels();
       hydrateTestimonials();

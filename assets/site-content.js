@@ -46,37 +46,89 @@ function heroSlideHtml(slide, index, total) {
   `;
 }
 
+// UX-027: stale-while-revalidate. The last good hero payload lives in
+// localStorage; a repeat visit renders it instantly (no network wait before
+// the LCP image can start loading) and only re-fetches once it is older than
+// HERO_TTL_MS. A changed payload re-renders in place. The inline script in
+// index.html's <head> reads the same key to preload the first slide image and
+// starts the very first fetch early, exposing it as window.__heroFetch.
+const HERO_CACHE_KEY = "ahamstree_hero_v1";
+const HERO_TTL_MS = 10 * 60 * 1000;
+const HERO_MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
+
+function readHeroCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(HERO_CACHE_KEY) || "null");
+    if (!c || !Array.isArray(c.slides) || !c.slides.length) return null;
+    const age = Date.now() - Number(c.t || 0);
+    if (!(age >= 0) || age > HERO_MAX_STALE_MS) return null;
+    return { slides: c.slides, fresh: age < HERO_TTL_MS };
+  } catch (_) { return null; }
+}
+function writeHeroCache(slides) {
+  try {
+    if (slides && slides.length) localStorage.setItem(HERO_CACHE_KEY, JSON.stringify({ t: Date.now(), slides }));
+    else localStorage.removeItem(HERO_CACHE_KEY);
+  } catch (_) {}
+}
+
+async function fetchHeroSlides() {
+  // Reuse the request the <head> script already started, once.
+  const early = window.__heroFetch;
+  window.__heroFetch = null;
+  let data = null;
+  if (early) { try { data = await early; } catch (_) {} }
+  if (!data) {
+    const res = await fetch(HERO_URL, { method: "GET" });
+    data = res.ok ? await res.json().catch(() => null) : null;
+  }
+  return Array.isArray(data?.slides) ? data.slides : null;
+}
+
 export async function hydrateHero() {
   const section = document.getElementById("heroBannerSection");
   const track = document.getElementById("heroTrack");
   const dots = document.getElementById("heroDots");
   if (!section || !track) return;
 
-  try {
-    const res = await fetch(HERO_URL, { method: "GET" });
-    const data = res.ok ? await res.json().catch(() => null) : null;
-    const slides = Array.isArray(data?.slides) ? data.slides : [];
-
-    if (slides.length === 0) {
-      section.style.display = "none";
-      return;
-    }
-
+  let teardown = null;
+  let renderedSig = "";
+  const render = (slides) => {
+    if (teardown) teardown();
+    section.style.display = "";
     track.innerHTML = slides.map((s, i) => heroSlideHtml(s, i, slides.length)).join("");
-
     if (slides.length > 1 && dots) {
       dots.innerHTML = slides
         .map((_, i) => `<button class="hero-dot" data-go="${i + 1}" aria-label="Go to slide ${i + 1}" aria-current="${i === 0}" type="button"></button>`)
         .join("");
       dots.style.display = "";
     } else if (dots) {
+      dots.innerHTML = "";
       dots.style.display = "none";
     }
+    teardown = initHeroCarousel(section, track, dots, slides.length);
+    renderedSig = JSON.stringify(slides);
+  };
 
-    initHeroCarousel(section, track, dots, slides.length);
+  const cached = readHeroCache();
+  if (cached) {
+    try { render(cached.slides); } catch (e) { console.error("hero cache render:", e); }
+    if (cached.fresh) return;
+  }
+
+  try {
+    const slides = await fetchHeroSlides();
+    if (slides === null) throw new Error("hero fetch failed");
+    writeHeroCache(slides);
+    if (slides.length === 0) {
+      if (teardown) teardown();
+      section.style.display = "none";
+      return;
+    }
+    if (JSON.stringify(slides) !== renderedSig) render(slides);
   } catch (e) {
     console.error("hydrateHero error:", e);
-    section.style.display = "none";
+    if (!cached) section.style.display = "none";
   }
 }
 
@@ -84,7 +136,12 @@ const ICON_PAUSE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="curren
 const ICON_PLAY = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>';
 
 function initHeroCarousel(section, track, dots, count) {
-  if (count <= 1) return; // nothing to carousel
+  if (count <= 1) return null; // nothing to carousel
+
+  // Every listener below is tied to this controller so a re-render (fresh
+  // hero payload) can tear the previous carousel down cleanly.
+  const ac = new AbortController();
+  const sig = { signal: ac.signal };
 
   const dotEls = dots ? Array.from(dots.querySelectorAll(".hero-dot")) : [];
   const slideEls = Array.from(track.querySelectorAll(".hero-slide"));
@@ -112,7 +169,7 @@ function initHeroCarousel(section, track, dots, count) {
       userPaused = !userPaused;
       pauseBtn.setAttribute("aria-label", userPaused ? "Play slideshow" : "Pause slideshow");
       pauseBtn.innerHTML = userPaused ? ICON_PLAY : ICON_PAUSE;
-    });
+    }, sig);
   }
 
   // Off-screen slides are inert + aria-hidden so their CTAs are not tab stops.
@@ -157,23 +214,23 @@ function initHeroCarousel(section, track, dots, count) {
     }, 6500);
   }
 
-  section.addEventListener("mouseenter", () => { hovering = true; });
-  section.addEventListener("mouseleave", () => { hovering = false; });
-  section.addEventListener("focusin", () => { focusWithin = true; });
+  section.addEventListener("mouseenter", () => { hovering = true; }, sig);
+  section.addEventListener("mouseleave", () => { hovering = false; }, sig);
+  section.addEventListener("focusin", () => { focusWithin = true; }, sig);
   section.addEventListener("focusout", (e) => {
     if (!e.relatedTarget || !section.contains(e.relatedTarget)) focusWithin = false;
-  });
+  }, sig);
 
   dotEls.forEach(d => d.addEventListener("click", () => {
     go(Number(d.dataset.go));
     startAutoplay();
-  }));
+  }, sig));
 
   track.addEventListener("scroll", () => {
     const width = track.clientWidth || 1;
     const idx = Math.round(track.scrollLeft / width) + 1;
     if (idx >= 1 && idx <= count) setCurrent(idx);
-  }, { passive: true });
+  }, { passive: true, signal: ac.signal });
 
   if (reduceMq && reduceMq.addEventListener) {
     reduceMq.addEventListener("change", () => {
@@ -185,11 +242,18 @@ function initHeroCarousel(section, track, dots, count) {
         if (pauseBtn) pauseBtn.hidden = false;
         startAutoplay();
       }
-    });
+    }, sig);
   }
 
   syncSlideState();
   startAutoplay();
+
+  return () => {
+    ac.abort();
+    clearInterval(autoplayTimer);
+    clearTimeout(announceTimer);
+    if (pauseBtn) pauseBtn.remove();
+  };
 }
 
 /* ────────────────── Testimonials ────────────────── */

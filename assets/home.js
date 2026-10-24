@@ -295,9 +295,53 @@ async function fetchLatestActive(limit = 6) {
 
 /* ------------------ MAIN HYDRATOR ------------------ */
 
+// UX-027: stale-while-revalidate for the two home grids. Raw rows from the
+// last good fetch are kept in localStorage; a repeat visit paints them at once
+// and only re-queries once they are older than HOME_TTL_MS, re-rendering only
+// if the rows changed. Normalisation (image sizes, available_qty) runs on the
+// way out of the cache so the cached shape stays the plain query result.
+const HOME_CACHE_KEY = "ahamstree_home_products_v1";
+const HOME_TTL_MS = 10 * 60 * 1000;
+const HOME_MAX_STALE_MS = 24 * 60 * 60 * 1000;
+
+function readHomeCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(HOME_CACHE_KEY) || "null");
+    if (!c || !Array.isArray(c.mostLoved) || !Array.isArray(c.latest)) return null;
+    const age = Date.now() - Number(c.t || 0);
+    if (!(age >= 0) || age > HOME_MAX_STALE_MS) return null;
+    return { mostLoved: c.mostLoved, latest: c.latest, fresh: age < HOME_TTL_MS };
+  } catch (_) { return null; }
+}
+function writeHomeCache(mostLoved, latest) {
+  try { localStorage.setItem(HOME_CACHE_KEY, JSON.stringify({ t: Date.now(), mostLoved, latest })); } catch (_) {}
+}
+
+function paintHome(mostLovedRaw, latestRaw) {
+  const mostLoved = normalizeProducts(mostLovedRaw);
+  const latest = normalizeProducts(latestRaw);
+  renderGrid("bestsellersGrid", mostLoved);
+  setStatus("bestsellersStatus", "");
+  renderGrid("newCollectionGrid", latest);
+  setStatus("newCollectionStatus", "");
+  // Hero background from latest products
+  pickHeroBackground(latest);
+}
+
 export async function hydrateHome() {
   hydrateCategoryTiles();
   hydrateHomeCollections();
+
+  const cached = readHomeCache();
+  let shownSig = "";
+  if (cached) {
+    try {
+      paintHome(cached.mostLoved, cached.latest);
+      shownSig = JSON.stringify([cached.mostLoved, cached.latest]);
+    } catch (e) { console.error(e); }
+    if (cached.fresh) return;
+  }
+
   try {
     // FIX: these two queries are fully independent (different sort orders,
     // no shared data) but were awaited one after another — the New
@@ -309,18 +353,13 @@ export async function hydrateHome() {
       fetchLatestActive(8),
     ]);
 
-    renderGrid("bestsellersGrid", mostLoved);
-    setStatus("bestsellersStatus", "");
-
-    renderGrid("newCollectionGrid", latest);
-    setStatus("newCollectionStatus", "");
-
-    // Hero background from latest products
-    pickHeroBackground(latest);
-
+    writeHomeCache(mostLoved, latest);
+    if (JSON.stringify([mostLoved, latest]) !== shownSig) paintHome(mostLoved, latest);
   } catch (e) {
     console.error(e);
-    setStatus("bestsellersStatus", "Could not load products.");
-    setStatus("newCollectionStatus", "Could not load products.");
+    if (!cached) {
+      setStatus("bestsellersStatus", "Could not load products.");
+      setStatus("newCollectionStatus", "Could not load products.");
+    }
   }
 }

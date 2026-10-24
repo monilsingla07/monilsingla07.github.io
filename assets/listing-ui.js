@@ -42,3 +42,21 @@ export function errorStateHtml() {
 export function logListingError(where, error) {
   try { console.error("[" + where + "]", error); } catch (_) {}
 }
+
+// UX-027: card images are loading="lazy" by default, which is wrong for the
+// very first card — on mobile it is usually the LCP element. Watches a grid
+// and promotes its first card image to eager + fetchpriority=high whenever
+// the grid is (re)populated (filter change, pagination reset). Safe to call
+// once per grid; the observer stays attached for the page's lifetime.
+export function prioritizeFirstCardImage(grid) {
+  if (!grid || typeof MutationObserver === "undefined") return;
+  const promote = () => {
+    const img = grid.querySelector(".p-card img");
+    if (!img || img.dataset.prio === "1") return;
+    img.dataset.prio = "1";
+    img.loading = "eager";
+    img.setAttribute("fetchpriority", "high");
+  };
+  new MutationObserver(promote).observe(grid, { childList: true });
+  promote();
+}
