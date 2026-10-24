@@ -265,8 +265,14 @@
       if (loggedIn) {
         viewBtn.href = `orders.html#order-${order.order_id}`;
       } else {
-        viewBtn.href = "track.html";
+        viewBtn.href = order.order_number ? `track.html?order=${encodeURIComponent(order.order_number)}` : "track.html";
         viewBtn.textContent = "Track your order";
+        // Guest: ask the server to email the invoice (it checks guest + email on
+        // file + paid, and sends at most once). Fire-and-forget; never blocks the UI.
+        try {
+          supabase.functions.invoke("send-guest-invoice", { body: { order_id: order.order_id } })
+            .catch(() => {});
+        } catch (_) {}
         const saveBox = document.getElementById("saveBox");
         saveBox.style.display = "";
         document.getElementById("saveBtn").addEventListener("click", async () => {
