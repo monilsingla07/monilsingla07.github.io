@@ -155,8 +155,11 @@
 
         <div style="height:14px;"></div>
 
-        <button class="btn" type="button" id="payBtn" style="width:100%;">Pay with Razorpay</button>
-        <div id="status" class="small" style="margin-top:10px;" role="status" aria-live="polite"></div>
+        <div id="status" class="small" style="margin-bottom:10px;" role="status" aria-live="polite"></div>
+        <div class="pay-bar">
+          <div class="pay-bar-total"><span class="small">Total</span><strong id="payBarTotal">₹0</strong></div>
+          <button class="btn pay-btn" type="button" id="payBtn">Pay with Razorpay</button>
+        </div>
 
         <div id="payNote" class="small" style="margin-top:12px; opacity:.8;">
           Note: Payments are processed by Razorpay. You'll be redirected to a secure payment page.
@@ -164,9 +167,14 @@
       </form>
 
       <!-- RIGHT: Order Summary -->
-      <div class="card" style="padding:16px; border-radius:0;">
+      <div class="card sum-collapsed" id="summaryCard" style="padding:16px; border-radius:0;">
+        <!-- Mobile only: the total is always visible; details expand on demand. -->
+        <button type="button" class="sum-head" id="sumToggle" aria-expanded="false" aria-controls="summaryItems totalsBlock">
+          <span class="sum-head-main"><span class="small">Order total</span><strong id="sumHeadTotal">₹0</strong></span>
+          <span class="sum-head-meta"><span id="sumHeadCount">0 items</span><span class="sum-head-link" id="sumToggleLabel">View details</span></span>
+        </button>
         <h3 style="margin:0 0 8px 0;">Order summary</h3>
-        <div class="small" style="opacity:.8; margin-bottom:12px;">Review your items before payment.</div>
+        <div class="small sum-sub" style="opacity:.8; margin-bottom:12px;">Review your items before payment.</div>
 
         <div id="summaryItems" style="display:flex; flex-direction:column; gap:10px;"></div>
 
@@ -211,7 +219,7 @@
         </div>
 
         <div style="height:14px;"></div>
-        <div style="border-top:1px solid var(--border-light); padding-top:12px;">
+        <div id="totalsBlock" style="border-top:1px solid var(--border-light); padding-top:12px;">
           <div class="order-summary-row">
             <div>Subtotal</div>
             <div class="val" id="subtotal">₹0</div>
@@ -253,7 +261,7 @@
           </div>
         </div>
 
-        <div class="small" style="opacity:.75;">
+        <div class="small sum-foot" style="opacity:.75;">
           If payment fails or is cancelled, you can retry from your cart.
         </div>
       </div>
@@ -327,6 +335,43 @@
     function money(n) {
       return "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
     }
+
+    // Keeps the mobile summary header, the sticky bar and the Pay label in sync
+    // with the server-quoted total so the amount is never a mystery.
+    let currentTotal = 0;
+    function updateTotalsUI(total, count) {
+      currentTotal = Number(total || 0);
+      const t = money(currentTotal);
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      set("sumHeadTotal", t);
+      set("payBarTotal", t);
+      set("sumHeadCount", count + (count === 1 ? " item" : " items"));
+      updatePaymentUI();
+    }
+
+    // Mobile (<=980px): put the summary before the form in the DOM too, so
+    // reading order and Tab order match the visual order (total, coupon and
+    // AhamStree Cash come before the Pay controls). Desktop keeps form-left /
+    // summary-right.
+    const coGrid = document.querySelector(".checkout-grid");
+    const mqMobile = window.matchMedia("(max-width: 980px)");
+    function placeSummary() {
+      const card = document.getElementById("summaryCard");
+      if (!coGrid || !card) return;
+      if (mqMobile.matches) coGrid.insertBefore(card, form);
+      else coGrid.appendChild(card);
+    }
+    placeSummary();
+    mqMobile.addEventListener?.("change", placeSummary);
+
+    // Mobile summary expand/collapse
+    const sumToggle = document.getElementById("sumToggle");
+    sumToggle?.addEventListener("click", () => {
+      const card = document.getElementById("summaryCard");
+      const collapsed = card.classList.toggle("sum-collapsed");
+      sumToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      document.getElementById("sumToggleLabel").textContent = collapsed ? "View details" : "Hide details";
+    });
 
     function calcGST(net) {
       const rate = Number(GST_RATE || 0);
@@ -412,6 +457,7 @@
         if (gstLabel)    gstLabel.textContent = GST_INCLUDED_IN_PRICE ? "GST (included)" : "GST";
         if (couponMsg)   couponMsg.textContent = "";
         cartOk = false;
+        updateTotalsUI(0, 0);
         return;
       }
 
@@ -565,6 +611,7 @@
       subtotalEl.textContent = money(subtotal);
       shippingEl.textContent = money(shipping);
       totalEl.textContent    = money(total);
+      updateTotalsUI(total, items.reduce((n, i) => n + Number(i.qty || 1), 0));
 
       // GA4: begin_checkout — fire once per checkout session (not on every
       // coupon-triggered re-render of this same function), using the real
@@ -1065,7 +1112,7 @@
     }
 
     function updatePaymentUI() {
-      payBtn.textContent = "Pay with Razorpay";
+      payBtn.textContent = currentTotal > 0 ? "Pay " + money(currentTotal) : "Pay with Razorpay";
       if (payNote) payNote.textContent = "Note: Payments are processed by Razorpay. You'll be redirected to a secure payment page.";
     }
 

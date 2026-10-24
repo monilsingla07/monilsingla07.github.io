@@ -198,3 +198,27 @@ h1.pd-title{margin:0}
 .err-summary[hidden]{display:none}
 .err-summary ul{margin:8px 0 0;padding-left:20px}
 .err-summary a{color:#7a1a14;text-decoration:underline;text-underline-offset:2px}
+
+/* Checkout: guest prompt, fixed country, mobile summary + sticky pay bar (UX-002, UX-005) */
+.guest-signin{margin:0 0 12px;font-size:13.5px;color:var(--text-light)}
+.guest-signin-btn{font-size:13.5px;color:var(--brand);font-weight:700;padding:2px}
+.country-fixed{padding:11px 14px;border:1.5px solid var(--border-light);background:var(--bg-warm);font-size:14px;color:var(--text)}
+.pay-btn{width:100%}
+.pay-bar-total{display:none}
+.sum-head{display:none}
+@media (max-width:980px){
+  .checkout-grid>#summaryCard{order:-1}
+  .sum-head{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:2px 0 10px;background:none;border:0;border-bottom:1px solid var(--border-light);margin-bottom:12px;font:inherit;color:var(--text);text-align:left;cursor:pointer}
+  .sum-head-main{display:flex;flex-direction:column;line-height:1.15}
+  .sum-head-main strong{font-size:24px;font-weight:800}
+  .sum-head-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12.5px;color:var(--text-light)}
+  .sum-head-link{color:var(--brand);font-weight:700;text-decoration:underline;text-underline-offset:2px}
+  #summaryCard>h3,#summaryCard>.sum-sub{display:none}
+  #summaryCard.sum-collapsed #summaryItems,#summaryCard.sum-collapsed #totalsBlock,#summaryCard.sum-collapsed .trust-strip,#summaryCard.sum-collapsed .sum-foot{display:none!important}
+  #summaryCard.sum-collapsed #couponBox{margin-top:0}
+  .pay-bar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;align-items:center;gap:14px;background:#fff;border-top:1px solid var(--border);box-shadow:0 -4px 16px rgba(0,0,0,.08);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+  .pay-bar-total{display:flex;flex-direction:column;line-height:1.15}
+  .pay-bar-total strong{font-size:18px;font-weight:800}
+  .pay-bar .pay-btn{flex:1;width:auto;min-height:46px}
+  #main{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+}
