@@ -90,7 +90,130 @@
 </head>
 
 <body>
-  <div id="header"></div>
+  <div id="header"><!--shell:header--><a class="skip-link" href="#main">Skip to main content</a>
+<div id="aria-live" role="status" aria-live="polite" aria-atomic="true" class="vh"></div>
+<div class="site-header-wrap">
+<div class="topbar">
+<div class="container topbar-inner">
+<div class="topbar-left" id="topbarAnnouncement">Complimentary shipping across India</div>
+<div class="topbar-right">
+<a href="about.html">About</a>
+<a href="shipping.html">Shipping</a>
+<a href="returns.html">Returns</a>
+</div>
+</div>
+</div>
+<header class="header">
+<div class="container header-inner">
+<div class="header-mobile" aria-label="Mobile header">
+<div class="header-mobile-left">
+<button class="icon-btn mobile-menu-btn" type="button" aria-label="Open menu">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+<line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
+</svg>
+</button>
+<a id="searchLinkMobile" class="icon-link" href="search.html" aria-label="Search">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
+</svg>
+</a>
+</div>
+<a href="index.html" class="mobile-logo" aria-label="Ahamstree home">
+<img src="assets/images/ahamstree-logo.png" alt="AhamStree (अहम् स्त्री)" width="639" height="204" decoding="async">
+</a>
+<div class="header-mobile-right">
+<a id="cashLinkMobile" class="cash-link" href="account.html?view=wallet" aria-label="AhamStree Cash balance" hidden>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="12" cy="12" r="9"/>
+<path d="M9.4 15.6c.5.7 1.5 1.1 2.6 1.1 1.7 0 2.9-.8 2.9-2.1 0-1.3-1.3-1.7-2.9-2.1-1.6-.4-2.9-.8-2.9-2.1 0-1.3 1.2-2.1 2.9-2.1 1.1 0 2.1.4 2.6 1.1"/>
+<path d="M12 6.3v1.1M12 16.6v1.1"/>
+</svg><span id="cashAmountMobile">₹0</span>
+</a>
+<a id="accountLinkMobile" class="icon-link" href="login.html" aria-label="Account">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+</svg>
+</a>
+<a id="wishlistLinkMobile" class="icon-link" href="wishlist.html" aria-label="Wishlist">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+</svg>
+</a>
+<a class="icon-link" href="cart.html" aria-label="Cart">
+<span class="icon-badge" id="cartBadgeMobile" aria-label="Cart items">0</span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+</svg>
+</a>
+</div>
+<div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+<div class="mobile-drawer-panel" role="dialog" aria-modal="true" aria-label="Menu">
+<div class="mobile-drawer-head">
+<div class="mobile-drawer-title">AhamStree</div>
+<button class="icon-btn mobile-drawer-close" type="button" aria-label="Close menu">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+</svg>
+</button>
+</div>
+<nav class="mobile-drawer-links">
+<a href="products.html?type=saree">Sarees</a>
+<a href="products.html?type=suit">Suits</a>
+<a href="new-arrivals.html">New Arrivals</a>
+<a href="collections.html">Collections</a>
+<a href="sale.html">Sale</a>
+</nav>
+<div class="mobile-drawer-section mobile-drawer-account" aria-label="Your account">
+<a id="drawerAccountLink" href="login.html">Sign in</a>
+<a href="wishlist.html">Wishlist</a>
+<a href="orders.html">My Orders</a>
+<a href="track.html">Track Order</a>
+</div>
+<div class="mobile-drawer-section" id="adminSectionMobile" hidden>
+<a id="adminLinkMobile" href="admin.html">Admin dashboard</a>
+</div>
+<div class="mobile-drawer-section">
+<div class="mobile-drawer-section-title">Help & Info</div>
+<a href="about.html">About Us</a>
+<a href="shipping.html">Shipping</a>
+<a href="returns.html">Returns</a>
+<a href="contact.html">Contact</a>
+</div>
+</div>
+</div>
+</div>
+<div class="header-spacer" aria-hidden="true"></div>
+<a href="index.html" class="site-logo-center" aria-label="Ahamstree home">
+<img src="assets/images/ahamstree-logo.png" alt="Ahamstree" width="639" height="204" decoding="async">
+</a>
+<div class="utils utils-desktop">
+<a id="adminLink" class="util-link admin-link" href="admin.html" title="Admin dashboard" hidden>Admin</a>
+<a id="searchLink" class="util-link" href="search.html" title="Search">Search</a>
+<a id="cashLink" class="util-link cash-link" href="account.html?view=wallet" title="AhamStree Cash balance" hidden>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="12" cy="12" r="9"/>
+<path d="M9.4 15.6c.5.7 1.5 1.1 2.6 1.1 1.7 0 2.9-.8 2.9-2.1 0-1.3-1.3-1.7-2.9-2.1-1.6-.4-2.9-.8-2.9-2.1 0-1.3 1.2-2.1 2.9-2.1 1.1 0 2.1.4 2.6 1.1"/>
+<path d="M12 6.3v1.1M12 16.6v1.1"/>
+</svg><span id="cashAmountDesktop">₹0</span>
+</a>
+<a id="accountLink" class="util-link" href="login.html" title="Account">Login / Sign up</a>
+<a id="wishlistLink" class="util-link " href="wishlist.html" title="Wishlist">Wishlist</a>
+<a class="util-link " href="cart.html" title="Cart">Cart (<span id="cartCountDesktop">0</span>)</a>
+</div>
+</div>
+<div class="header-nav-row">
+<div class="container">
+<nav class="nav nav-desktop">
+<a href="products.html?type=saree" class="">Sarees</a>
+<a href="products.html?type=suit" class="">Suits</a>
+<a href="new-arrivals.html">New Arrivals</a>
+<a href="collections.html">Collections</a>
+<a href="sale.html">Sale</a>
+</nav>
+</div>
+</div>
+</header>
+</div><!--/shell:header--></div>
   <main id="main" tabindex="-1">
 
   <div class="search-container">
@@ -130,7 +253,64 @@
   </div>
 
   </main>
-  <div id="footer"></div>
+  <div id="footer"><!--shell:footer--><footer class="footer">
+<div class="container footer-grid">
+<div class="footer-monogram" style="grid-column:1/-1;">
+<div class="wordmark">AhamStree</div>
+<div class="tagline">Eternally Elegant</div>
+</div>
+<div>
+<div class="footer-title">Quick Links</div>
+<a href="products.html">Sarees</a>
+<a href="collections.html">Collections</a>
+<a href="sale.html">Sale</a>
+</div>
+<div>
+<div class="footer-title">Need Help</div>
+<a href="shipping.html">Shipping Policy</a>
+<a href="returns.html">Returns &amp; Cancellations</a>
+<a href="help.html">FAQs</a>
+<a href="track.html">Track Order</a>
+</div>
+<div>
+<div class="footer-title">Policies</div>
+<a href="terms.html">Terms of Use</a>
+<a href="privacy.html">Privacy Policy</a>
+<a href="cookies.html">Cookie Policy</a>
+</div>
+<div>
+<div class="footer-title">About AhamStree</div>
+<a href="about.html">Our Story</a>
+<a href="contact.html">Contact Us</a>
+</div>
+</div>
+<div class="container footer-bottom">
+<div class="social-links">
+<a href="https://www.instagram.com/ahamstree/" target="_blank" rel="noopener noreferrer" class="instagram" aria-label="Instagram" title="Instagram">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+<rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+</svg>
+</a>
+<a href="https://wa.me/919582297550" target="_blank" rel="noopener noreferrer" class="whatsapp" aria-label="WhatsApp" title="WhatsApp">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+</svg>
+</a>
+</div>
+<div class="payments" role="group" aria-label="Accepted payment methods">
+<span class="pay-chip">UPI</span>
+<span class="pay-chip">Visa</span>
+<span class="pay-chip">Mastercard</span>
+<span class="pay-chip">RuPay</span>
+<span class="pay-chip">Net banking</span>
+<span class="pay-note">Secured by Razorpay</span>
+</div>
+<div class="copyright small">
+© 2026 ahamstree.com &nbsp;•&nbsp; Handcrafted with <svg class="icon icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20.8 5.6a5.2 5.2 0 0 0-7.4 0L12 7l-1.4-1.4a5.2 5.2 0 0 0-7.4 7.4L12 21.8l8.8-8.8a5.2 5.2 0 0 0 0-7.4z"/></svg> in India
+</div>
+<p class="footer-legal small" hidden>Registered: [address] &nbsp;•&nbsp; GSTIN: [number]</p>
+</div>
+</footer><!--/shell:footer--></div>
 
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";

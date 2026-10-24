@@ -1,12 +1,17 @@
 // assets/supabase.js
 //
-// ⚠️  KEEP THIS VERSION PINNED.
-// @supabase/supabase-js@2.97+ introduced a breaking change in auth-js that uses
-// an exclusive LockManager Web Lock during initialisation. With autoRefreshToken
-// enabled, this causes a 10-second timeout on page load in some tab/network
-// conditions ("Acquiring an exclusive Navigator LockManager lock … timed out").
-// Pin to 2.49.1 — the same version used in all Edge Functions — which is stable.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
+// Supabase client, self-hosted (UX-026) so the site no longer depends on
+// esm.sh being reachable. assets/vendor/supabase.min.js is an esbuild bundle
+// of @supabase/supabase-js@2.112.4 (ESM, minified) exporting createClient.
+//
+// Re-vendor with:  npm i @supabase/supabase-js@<ver> esbuild
+//   echo 'export { createClient } from "@supabase/supabase-js";' > entry.js
+//   npx esbuild entry.js --bundle --minify --format=esm --platform=browser //     --target=es2020 --outfile=assets/vendor/supabase.min.js
+//
+// Note: this is NOT the 2.49.1 used by the Edge Functions; 2.112.4 is what
+// production has run on. If the "exclusive LockManager Web Lock ... timed
+// out" page-load symptom ever returns, suspect the version first.
+import { createClient } from "./vendor/supabase.min.js";
 export const SUPABASE_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co";
 export const SUPABASE_ANON_KEY = "sb_publishable_mS_exnQ_Am8_GWMNgCb63w_PfvFA7Mz";
 
