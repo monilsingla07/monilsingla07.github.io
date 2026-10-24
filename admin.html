@@ -225,6 +225,13 @@
             <div class="small">Piece-level stock ledger, QR labels, add inventory</div>
           </div>
         </a>
+        <a href="admin-reviews.html" class="quick-link" style="border-style:dashed;">
+          <span style="font-size:20px;">⭐</span>
+          <div>
+            <div>Reviews — <span id="reviewsPending">…</span> pending</div>
+            <div class="small">Moderate customer ratings before they appear on product pages</div>
+          </div>
+        </a>
         <a href="admin-print-agent.html" class="quick-link" style="border-style:dashed;">
           <span style="font-size:20px;">🖨️</span>
           <div>
@@ -428,6 +435,19 @@
       ].join("");
 
       statusMsg.textContent = "Last updated: " + new Date().toLocaleTimeString("en-IN");
+
+      // Pending reviews count (non-blocking; leaves "—" if unavailable)
+      try {
+        var _rr = await fetch("https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-reviews", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + _tokD, "apikey": SUPABASE_ANON_KEY },
+          body: JSON.stringify({ action: "pending_count" })
+        });
+        var _rj = await _rr.json();
+        document.getElementById("reviewsPending").textContent = _rr.ok ? (_rj.pending || 0) : "—";
+      } catch (_e) {
+        document.getElementById("reviewsPending").textContent = "—";
+      }
     }
 
     async function initAdmin() {
