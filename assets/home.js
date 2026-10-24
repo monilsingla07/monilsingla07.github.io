@@ -7,8 +7,8 @@ import { addToWishlist, removeFromWishlist, isInWishlist } from "./wishlist.js";
 
 /**
  * Home page helpers:
- * - Renders "Most loved" + "New Arrivals" (6 items each)
- * - Uses view_count for Most loved
+ * - Renders "Most viewed" + "New Arrivals" (6 items each)
+ * - Uses view_count for Most viewed
  * - Uses created_at for New Arrivals
  * - Sets hero background from latest product image
  */
@@ -262,7 +262,7 @@ function pickHeroBackground(products) {
 
 /* ------------------ DATA FETCHERS ------------------ */
 
-// Most loved = highest view_count
+// Most viewed = highest view_count
 async function fetchMostLoved(limit = 6) {
   const { data, error } = await supabase
     .from("products")

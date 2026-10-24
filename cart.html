@@ -95,10 +95,12 @@
       <div class="small" style="margin-top:10px;opacity:.75;">GST (where applicable) and any coupon or AhamStree Cash discount are applied at checkout.</div>
       <div id="stockMsg" class="small" style="margin-top:8px;color:crimson;display:none;"></div>
 
+      <!-- UX-023: shared policy summary (assets/policy-summary.js) -->
+      <div data-policy-summary></div>
+
       <div class="row" style="margin-top:16px;">
         <a id="checkoutBtn" class="btn" href="checkout.html" style="flex:1;text-align:center;">Checkout</a>
       </div>
-      <div class="cart-returns-note">Returns: 48h defect-only — <a href="returns.html">View policy</a></div>
       <div style="margin-top:10px;text-align:center;">
         <button id="clearBtn" class="link-btn" type="button">Clear cart</button>
       </div>
@@ -111,6 +113,7 @@
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth, showToast, confirmDialog } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
+    import { mountPolicySummary } from "./assets/policy-summary.js";
     import { getCart, setCart, updateQty, removeFromCart, clearCart } from "./assets/cart.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
 
@@ -240,6 +243,7 @@
     async function render() {
       document.getElementById("header").innerHTML = renderHeader("cart");
       document.getElementById("footer").innerHTML = renderFooter();
+      mountPolicySummary();
       hydrateHeaderAuth();
 
       const items = getCart();

@@ -467,17 +467,21 @@ export function renderFooter() {
           </a>
         </div>
 
-        <div class="payments">
+        <div class="payments" role="group" aria-label="Accepted payment methods">
+          <span class="pay-chip">UPI</span>
           <span class="pay-chip">Visa</span>
           <span class="pay-chip">Mastercard</span>
           <span class="pay-chip">RuPay</span>
-          <span class="pay-chip">UPI</span>
-          <span class="pay-chip">Razorpay</span>
+          <span class="pay-chip">Net banking</span>
+          <span class="pay-note">Secured by Razorpay</span>
         </div>
 
         <div class="copyright small">
           © ${new Date().getFullYear()} ahamstree.com &nbsp;•&nbsp; Handcrafted with ♥ in India
         </div>
+
+        <!-- OWNER: provide registered address + GSTIN. Fill in below and remove the "hidden" attribute. -->
+        <p class="footer-legal small" hidden>Registered: [address] &nbsp;•&nbsp; GSTIN: [number]</p>
 
       </div>
     </footer>

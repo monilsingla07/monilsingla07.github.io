@@ -335,7 +335,6 @@ a.line-item-title{padding:10px 0;margin:-10px 0}
 .policy-summary svg{flex-shrink:0;margin-top:1px;color:var(--text-light)}
 .policy-summary a{color:var(--brand);text-decoration:underline;text-underline-offset:2px}
 .policy-summary a:hover{color:var(--brand-hover)}
-@media (min-width:900px){.cart-policy .policy-summary{flex-direction:row;flex-wrap:wrap;gap:6px 18px}}
 
 /* Batch 5 (UX-025): add-to-cart confirmation toast */
 .toast.toast-cart{align-items:center;gap:12px;max-width:min(440px,calc(100vw - 32px));padding:10px 12px}
@@ -361,3 +360,10 @@ a.line-item-title{padding:10px 0;margin:-10px 0}
 .pd-similar-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:8px}
 .pd-similar-row .p-card{flex:0 0 150px;scroll-snap-align:start}
 .pd-fabric-sub{font-family:var(--font-body);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light);margin:18px 0 6px}
+
+/* Batch 5 (UX-048): footer payment chips, legal line, contact WhatsApp */
+.payments .pay-chip{padding:5px 12px;border:1px solid rgba(240,230,214,.5);border-radius:4px;font-size:12px;font-weight:600;letter-spacing:.03em;color:rgba(255,255,255,.92)}
+.payments .pay-note{flex-basis:100%;text-align:center;font-size:12px;color:rgba(240,230,214,.7)}
+.footer-legal{margin:0;text-align:center;color:rgba(255,255,255,.75);font-size:12px}
+.btn.contact-wa{display:inline-flex;align-items:center;gap:10px;min-height:48px;background:#1f8f4a;border-color:#1f8f4a;color:#fff}
+.btn.contact-wa:hover{background:#17703a;border-color:#17703a}
