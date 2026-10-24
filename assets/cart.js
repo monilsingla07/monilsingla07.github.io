@@ -44,7 +44,11 @@ export function addToCart(product, qty = 1) {
       }];
 
   setCart(next);
-  if (typeof window !== "undefined") window.announce?.(`${product.title || "Item"} added to cart`);
+  if (typeof window !== "undefined") {
+    window.announce?.(`${product.title || "Item"} added to cart`);
+    // Engagement signal for the promo popups (assets/engagement.js).
+    try { window.dispatchEvent(new CustomEvent("ahamstree:cart-add")); } catch (_) {}
+  }
 
   // GA4: add_to_cart. `gtag` is loaded globally by every storefront page's
   // own <script> tag (see index.html etc.) — guarded here since this module

@@ -14,6 +14,10 @@
 //   - Same markup for mobile and desktop; sizing is handled with CSS only.
 
 import { escapeHtml, escapeAttr, safeUrl } from "./safe.js";
+import { whenEngaged } from "./engagement.js";
+
+// Never interrupt checkout / payment-result pages, and never show on admin pages.
+const EXCLUDED_PATH_PATTERNS = [/\/admin/i, /\/checkout\.html$/i, /\/success\.html$/i, /\/cancel\.html$/i];
 
 const FUNCTIONS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-active-popup";
 const DISMISS_KEY = "ahamstree_popup_dismissed";
@@ -152,13 +156,16 @@ export async function mountWelcomePopup() {
   _mounted = true;
 
   try {
+    if (EXCLUDED_PATH_PATTERNS.some((rx) => rx.test(window.location.pathname))) return;
     const res = await fetch(FUNCTIONS_URL, { method: "GET" });
     if (!res.ok) return;
     const data = await res.json().catch(() => null);
     const popup = data?.popup;
     if (!popup) return;
     if (alreadyDismissed(popup)) return;
-    renderPopup(popup);
+    // Engagement-triggered (cart add, 50% scroll, or 2nd page in session) —
+    // never on bare page load.
+    whenEngaged(() => renderPopup(popup));
   } catch (_) {
     // Never let a popup failure break the page.
   }

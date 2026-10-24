@@ -32,6 +32,7 @@
 
 import { escapeHtml, escapeAttr, safeUrl } from "./safe.js";
 import { supabase } from "./supabase.js";
+import { whenEngaged } from "./engagement.js";
 import {
   upsertProfileIfPending, ensureProfileFromPhone,
   phoneOk, normalizePhone10, toE164, checkPhoneLoginMethod, signInWithPin, saveNameAndPin,
@@ -684,11 +685,14 @@ export async function mountSignInPopup() {
     if (!config) return; // disabled, or admin hasn't set it up yet
     if (shownRecently(config.reappear_hours)) return; // already shown once today
 
-    // Give the page a moment to settle, and never stack under/over the
-    // general promo popup if one is currently showing.
-    setTimeout(() => {
-      waitForWelcomePopupToClear(() => renderPopup(config));
-    }, 600);
+    // Engagement-triggered (cart add, 50% scroll, or 2nd page in session),
+    // never on bare page load; and never stacked on the general promo popup
+    // if that one is currently showing.
+    whenEngaged(() => {
+      setTimeout(() => {
+        waitForWelcomePopupToClear(() => renderPopup(config));
+      }, 600);
+    });
   } catch (_) {
     // Never let a popup failure break the page.
   }
