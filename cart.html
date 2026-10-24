@@ -149,10 +149,7 @@
   <main id="main" tabindex="-1">
 
   <div class="container">
-    <div class="breadcrumbs" aria-label="Breadcrumb">
-      <a href="index.html">Home</a> <span class="sep"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></span>
-      <span>Cart</span>
-    </div>
+    <div id="bcSlot"><nav class="breadcrumbs" aria-label="Breadcrumb"><ol class="bc-list"><li><a href="index.html">Home</a><span class="bc-sep" aria-hidden="true"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></span></li><li><span aria-current="page">Cart</span></li></ol></nav></div>
     <div class="page-header">
       <div>
         <h1 class="page-title">Your cart</h1>
@@ -291,7 +288,7 @@
 </footer><!--/shell:footer--></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth, showToast, confirmDialog } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, showToast, confirmDialog, renderBreadcrumbs } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { mountPolicySummary } from "./assets/policy-summary.js";
     import { getCart, setCart, updateQty, removeFromCart, clearCart } from "./assets/cart.js";
@@ -423,6 +420,7 @@
     async function render() {
       document.getElementById("header").innerHTML = renderHeader("cart");
       document.getElementById("footer").innerHTML = renderFooter();
+      document.getElementById("bcSlot").innerHTML = renderBreadcrumbs([{ label: "Home", href: "index.html" }, { label: "Cart" }]);
       mountPolicySummary();
       hydrateHeaderAuth();
 

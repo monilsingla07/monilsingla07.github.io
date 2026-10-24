@@ -26,7 +26,7 @@
 
     .acct-nav { padding: 18px; border: 1px solid var(--border-light); }
     .acct-nav .nav-title { font-family: var(--font-heading); font-weight: 600; font-size: 19px; margin-bottom: 10px; }
-    .acct-nav .nav-item {
+    .acct-nav .acc-nav-item {
       display:flex; align-items:center; justify-content:space-between;
       width:100%;
       padding: 10px 12px;
@@ -39,8 +39,8 @@
       color: var(--text);
       transition: border-color .15s ease, background .15s ease, color .15s ease;
     }
-    .acct-nav .nav-item:hover { border-color: var(--border-light); }
-    .acct-nav .nav-item.active { background: var(--color-action-lighter); border-color: var(--color-action); color: var(--color-action); font-weight: 700; }
+    .acct-nav .acc-nav-item:hover { border-color: var(--border-light); }
+    .acct-nav .acc-nav-item.active { background: var(--color-action-lighter); border-color: var(--color-action); color: var(--color-action); font-weight: 700; }
     .acct-nav .nav-muted { opacity: .75; }
 
     .acct-main { padding: 22px; border: 1px solid var(--border-light); min-height: 260px; }
@@ -181,8 +181,8 @@
   <div class="container acct-wrap">
     <h1 style="margin-top:0;font-size:1.5em;">My Account</h1>
     <div id="app">
-      <div class="acct-card">
-        <div class="small">Loading…</div>
+      <div class="acct-card" role="status" aria-busy="true" aria-label="Loading your account">
+        <div class="skel" style="height:14px;width:35%;margin-bottom:12px"></div><div class="skel" style="height:14px;width:80%;margin-bottom:10px"></div><div class="skel" style="height:14px;width:60%"></div>
       </div>
     </div>
   </div>
@@ -258,13 +258,20 @@
 
     const app = document.getElementById("app");
 
+    // Skeleton placeholder (shared .skel shimmer) instead of "Loading…" text.
+    function acctSkeleton() {
+      return '<div role="status" aria-busy="true" aria-label="Loading"><div class="skel" style="height:14px;width:35%;margin-bottom:12px"></div><div class="skel" style="height:14px;width:80%;margin-bottom:10px"></div><div class="skel" style="height:14px;width:60%"></div></div>';
+    }
+
+    // UX-060: send them back here (same ?view=) after signing in. login.html
+    // only honours same-site *.html paths for ?next=.
     function redirectToLogin() {
-      window.location.href = "login.html";
+      window.location.href = "login.html?next=" + encodeURIComponent("account.html" + location.search);
     }
 
     function navButton(id, label, rightText = "") {
       return `
-        <button class="nav-item" data-view="${id}" type="button">
+        <button class="acc-nav-item" data-view="${id}" type="button">
           <span>${label}</span>
           ${rightText ? `<span class="small nav-muted">${rightText}</span>` : ``}
         </button>
@@ -272,7 +279,7 @@
     }
 
     function setActive(viewId) {
-      document.querySelectorAll(".nav-item").forEach(btn => {
+      document.querySelectorAll(".acc-nav-item").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.view === viewId);
       });
     }
@@ -332,7 +339,7 @@
     async function renderProfilePanel(user) {
       document.getElementById("panelTitle").textContent = "Profile";
       const body = document.getElementById("panelBody");
-      body.innerHTML = `<div class="small">Loading…</div>`;
+      body.innerHTML = `${acctSkeleton()}`;
 
       const { error, profile } = await loadProfile(user.id);
       if (error) {
@@ -445,7 +452,7 @@
     function renderWalletPanel(user) {
       document.getElementById("panelTitle").textContent = "AhamStree Cash";
       const body = document.getElementById("panelBody");
-      body.innerHTML = `<div class="small">Loading…</div>`;
+      body.innerHTML = `${acctSkeleton()}`;
 
       const money = (v) => "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 
@@ -511,7 +518,7 @@
     async function renderAddressesPanel(user) {
       document.getElementById("panelTitle").textContent = "Addresses";
       const body = document.getElementById("panelBody");
-      body.innerHTML = `<div class="small">Loading…</div>`;
+      body.innerHTML = `${acctSkeleton()}`;
 
       const { error, profile } = await loadProfile(user.id);
       if (error) {
@@ -548,7 +555,7 @@
     function renderWishlistPanel() {
       document.getElementById("panelTitle").textContent = "Wishlist";
       const body = document.getElementById("panelBody");
-      body.innerHTML = `<div class="small">Loading…</div>`;
+      body.innerHTML = `${acctSkeleton()}`;
 
       const money = (p) => {
         const v = (p.sale_price_inr ?? p.price_inr ?? 0);
@@ -652,7 +659,7 @@
       const allowed = new Set(["profile","orders","wallet","addresses","wishlist","support"]);
       await renderView(allowed.has(initialView) ? initialView : "profile", user, false);
 
-      document.querySelectorAll(".nav-item").forEach(btn => {
+      document.querySelectorAll(".acc-nav-item").forEach(btn => {
         btn.addEventListener("click", async () => {
           await renderView(btn.dataset.view, user);
         });

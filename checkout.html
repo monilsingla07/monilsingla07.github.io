@@ -27,11 +27,7 @@
   <main id="main" tabindex="-1">
 
   <div class="container" id="checkoutMain">
-    <div class="breadcrumbs" aria-label="Breadcrumb">
-      <a href="index.html">Home</a> <span class="sep"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></span>
-      <a href="cart.html">Cart</a> <span class="sep"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></span>
-      <span>Checkout</span>
-    </div>
+    <div id="bcSlot"><nav class="breadcrumbs" aria-label="Breadcrumb"><ol class="bc-list"><li><a href="index.html">Home</a><span class="bc-sep" aria-hidden="true"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></span></li><li><a href="cart.html">Cart</a><span class="bc-sep" aria-hidden="true"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></span></li><li><span aria-current="page">Checkout</span></li></ol></nav></div>
 
     <div class="page-header">
       <div>
@@ -289,7 +285,9 @@
     // typed below and the order is stored with user_id = null.
     const sbModAuthGate = await import("./assets/supabase.js");
     // Defines window.announce (live-region helper) on this header-less page.
-    import("./assets/ui.js").catch(() => {});
+    import("./assets/ui.js").then((m) => {
+      document.getElementById("bcSlot").innerHTML = m.renderBreadcrumbs([{ label: "Home", href: "index.html" }, { label: "Cart", href: "cart.html" }, { label: "Checkout" }]);
+    }).catch(() => {});
     const { data: sessInit } = await sbModAuthGate.supabase.auth.getSession();
     let checkoutUser = sessInit?.session?.user || null;
 

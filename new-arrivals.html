@@ -382,6 +382,8 @@
 </div><!--/shell:header--></div>
   <main id="main" tabindex="-1">
 
+  <div class="container" style="padding-top:0;padding-bottom:0;"><div id="bcSlot"><nav class="breadcrumbs" aria-label="Breadcrumb"><ol class="bc-list"><li><a href="index.html">Home</a><span class="bc-sep" aria-hidden="true"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></span></li><li><span aria-current="page">New Arrivals</span></li></ol></nav></div></div>
+
   <section class="na-hero">
     <div class="na-hero-inner">
       <div class="na-badge"><span class="na-badge-dot"></span> Just Dropped</div>
@@ -470,14 +472,15 @@
 </footer><!--/shell:footer--></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, renderBreadcrumbs } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
     import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
-    import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError } from "./assets/listing-ui.js";
+    import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError, prioritizeFirstCardImage } from "./assets/listing-ui.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
+    document.getElementById("bcSlot").innerHTML = renderBreadcrumbs([{ label: "Home", href: "index.html" }, { label: "New Arrivals" }]);
     hydrateHeaderAuth();
 
     function money(n) {
@@ -534,6 +537,7 @@
     async function loadNewArrivals() {
       const status = document.getElementById("status");
       const grid = document.getElementById("grid");
+      prioritizeFirstCardImage(grid);
       const skeleton = document.getElementById("skeletonState");
 
       const { data, error } = await supabase

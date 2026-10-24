@@ -10,6 +10,7 @@ import { mergeGuestWishlistIntoAccount } from "./wishlist.js";
 import { trackPageview } from "./visit-tracker.js";
 import { toast } from "./toast.js";
 import { icon } from "./icons.js";
+import { buildBreadcrumbSchema } from "./seo.js";
 
 // ── Polite live region (UX-037) ──
 // One shared role=status node for screen-reader announcements; existing
@@ -423,6 +424,40 @@ export function renderFooter() {
   `;
 }
 
+
+// ── Breadcrumbs (UX-066) ──
+// One breadcrumb for every page. items = [{ label, href }]; the last item is
+// the current page and renders as plain text (aria-current="page") even if it
+// has an href. Includes an inline BreadcrumbList JSON-LD block (id
+// "ld-breadcrumb" — the same id seo.js's injectJsonLd() uses, so a page that
+// also calls injectJsonLd("ld-breadcrumb", …) updates this block in place
+// instead of duplicating it). Pass { jsonLd: false } to omit it.
+export function renderBreadcrumbs(items = [], { jsonLd = true } = {}) {
+  const list = (items || []).filter((i) => i && i.label);
+  if (!list.length) return "";
+  const last = list.length - 1;
+  const lis = list.map((it, i) => {
+    const body = (i === last || !it.href)
+      ? `<span aria-current="page">${escapeHtml(it.label)}</span>`
+      : `<a href="${escapeAttr(safeUrl(it.href, { type: "href" }))}">${escapeHtml(it.label)}</a>`;
+    const sep = i < last ? `<span class="bc-sep" aria-hidden="true">${icon("chevron-right", { size: 12 })}</span>` : "";
+    return `<li>${body}${sep}</li>`;
+  }).join("");
+
+  let ld = "";
+  if (jsonLd) {
+    const here = location.pathname + location.search;
+    const schema = buildBreadcrumbSchema(list.map((it, i) => ({
+      name: it.label,
+      path: (i === last || !it.href) ? here : it.href,
+    })));
+    if (schema) {
+      const json = JSON.stringify(schema).replace(/<\/script/gi, "<\\/script");
+      ld = `<script type="application/ld+json" id="ld-breadcrumb">${json}</script>`;
+    }
+  }
+  return `<nav class="breadcrumbs" aria-label="Breadcrumb"><ol class="bc-list">${lis}</ol>${ld}</nav>`;
+}
 
 // ── Mobile menu ──
 let _authHeaderListenerSet = false;

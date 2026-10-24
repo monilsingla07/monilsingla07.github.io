@@ -4,7 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Page not found • AhamStree</title>
-  <link rel="stylesheet" href="assets/styles.css" />
+  <!-- UX-054: GitHub Pages serves this file at ANY depth (/a/b/c), so every
+       relative URL (styles, header/footer links, module import) must resolve
+       from the site root. <base> does that for all of them. -->
+  <base href="/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/styles.css" />
   <meta name="robots" content="noindex" />
 </head>
 <body>
@@ -133,21 +140,23 @@
 </header>
 </div><!--/shell:header--></div>
 
-  <main class="container" style="padding:var(--space-lg) 0 var(--space-2xl);">
+  <main id="main" tabindex="-1" class="container" style="padding:var(--space-lg) 0 var(--space-2xl);">
     <div class="card" style="padding:var(--space-lg); border-radius: var(--radius-panel);">
       <h1 style="margin:0 0 var(--space-sm) 0; font-size:40px;">404</h1>
-      <p class="small" style="opacity:.8; margin:0 0 var(--space-md) 0;">We couldn’t find that page. Try one of these:</p>
+      <p class="small" style="margin:0 0 var(--space-md) 0;">We couldn’t find that page. Search for what you were after, or try one of these:</p>
 
-      <div class="row" style="flex-wrap:wrap; gap:var(--space-sm);">
-        <a class="btn" href="index.html">Home</a>
-        <a class="btn secondary" href="products.html">Shop products</a>
-        <a class="btn secondary" href="collections.html">Collections</a>
-        <a class="btn secondary" href="blogs.html">Blogs</a>
-      </div>
+      <form action="/search.html" method="get" role="search" style="display:flex; gap:var(--space-sm); flex-wrap:wrap; max-width:520px; margin-bottom:var(--space-md);">
+        <label for="nf-q" class="vh">Search AhamStree</label>
+        <input id="nf-q" class="input" type="search" name="q" placeholder="Search sarees, fabrics, colours" autocomplete="off" style="flex:1; min-width:200px;">
+        <button class="btn" type="submit">Search</button>
+      </form>
 
-      <div class="small" style="margin-top:var(--space-md); opacity:.75;">
-        If you think this is a mistake, please <a href="contact.html">contact us</a>.
-      </div>
+      <nav aria-label="Quick links" class="row" style="flex-wrap:wrap; gap:var(--space-sm);">
+        <a class="btn" href="/index.html">Home</a>
+        <a class="btn secondary" href="/products.html?type=saree">Sarees</a>
+        <a class="btn secondary" href="/returns.html">Returns</a>
+        <a class="btn secondary" href="/contact.html">Contact</a>
+      </nav>
     </div>
   </main>
 
@@ -211,7 +220,7 @@
 </footer><!--/shell:footer--></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "/assets/ui.js";
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();

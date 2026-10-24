@@ -72,7 +72,7 @@ for (const f of files) {
   const before = html;
   html = replaceSlot(html, "header", header);
   html = replaceSlot(html, "footer", footer);
-  if (html !== before) { writeFileSync(p, html); changed++; }
+  if (html !== before) { writeFileSync(p, html); changed++; console.log("  updated", f); }
 }
 console.log(`shell pre-rendered into ${changed} of ${files.length} pages`);
 process.exit(0);

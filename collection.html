@@ -373,7 +373,7 @@
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
     import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
-    import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError } from "./assets/listing-ui.js";
+    import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError, prioritizeFirstCardImage } from "./assets/listing-ui.js";
     import { setPageMeta, injectJsonLd, buildCollectionSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
@@ -438,6 +438,7 @@
     async function loadCollection() {
       const heroSlot = document.getElementById("heroSlot");
       const grid = document.getElementById("grid");
+      prioritizeFirstCardImage(grid);
       const skeletonGrid = document.getElementById("skeletonGrid");
       const status = document.getElementById("status");
       const colCount = document.getElementById("colCount");

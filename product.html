@@ -155,7 +155,7 @@
   <main id="main" tabindex="-1">
 
   <div class="container">
-    <div id="breadcrumb-slot"></div>
+    <div id="breadcrumb-slot" style="min-height:34px;"></div>
     <div id="status" class="small" style="margin-top:12px;" role="status"></div>
 
     <!-- UX-028: layout-matching skeleton, swapped out once the product loads -->
@@ -408,7 +408,7 @@
 </footer><!--/shell:footer--></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth, showCartToast, toast } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, showCartToast, toast, renderBreadcrumbs } from "./assets/ui.js";
     import { openTrap } from "./assets/a11y.js";
     import { supabase } from "./assets/supabase.js";
     import { addToCart, getCart, cartCount } from "./assets/cart.js";
@@ -867,11 +867,11 @@ if (!sessionStorage.getItem(viewKey)) {
 
       const breadcrumb = computeBreadcrumb();
       document.getElementById("breadcrumb-slot").innerHTML =
-        `<a class="page-breadcrumb" href="${escapeAttr(breadcrumb.href)}">
-           <span class="bc-arrow">&#8592;</span>
-           <span class="bc-trail">${escapeHtml(breadcrumb.trail)} /</span>
-           <span class="bc-label">${escapeHtml(breadcrumb.label)}</span>
-         </a>`;
+        renderBreadcrumbs([
+          { label: "Home", href: "index.html" },
+          { label: breadcrumb.label, href: breadcrumb.href },
+          { label: data.title || "Product" },
+        ]);
 
       // ── SEO: dynamic title/meta/canonical/OG + Product & Breadcrumb JSON-LD ──
       (function applySeo() {

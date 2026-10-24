@@ -161,7 +161,7 @@
   <div class="container">
     <div class="account-card" style="max-width:820px;">
       <h1 class="vh">Help &amp; FAQs</h1>
-      <div id="policyContent">
+      <div id="policyContent" aria-busy="true">
       <h2 style="margin-top:0;">Help &amp; FAQs</h2>
 
       <h3>Shipping &amp; Delivery</h3>
@@ -270,6 +270,7 @@
           if (page.title) document.title = page.title + " — AhamStree";
         }
       } catch (_e) { /* keep static fallback content */ }
+      finally { document.getElementById("policyContent")?.removeAttribute("aria-busy"); }
     })();
   </script>
 </body>

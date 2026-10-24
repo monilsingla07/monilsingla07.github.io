@@ -151,12 +151,19 @@
       <span class="bc-trail">Journal /</span>
       <span class="bc-label">All Posts</span>
     </a>
-    <h1 id="title" style="margin-top:12px;"></h1>
+    <h1 id="title" style="margin-top:12px;">AhamStree Journal</h1>
     <div id="meta" class="small" style="margin-top:6px;opacity:.8;"></div>
     <div id="cover" style="margin-top:14px;"></div>
     <hr />
     <div id="status" class="small">Loading…</div>
     <div id="content" style="line-height:1.7;"></div>
+    <aside id="shopThis" class="card" style="margin-top:32px;padding:var(--space-lg);border-radius:var(--radius-panel);display:flex;gap:var(--space-md);align-items:center;justify-content:space-between;flex-wrap:wrap;" hidden>
+      <div>
+        <div style="font-family:var(--font-heading);font-size:1.25em;">Love what you read?</div>
+        <div class="small">Browse our handwoven Chanderi sarees.</div>
+      </div>
+      <a class="btn" href="products.html?type=saree">Shop this</a>
+    </aside>
   </div>
 
   </main>
@@ -264,6 +271,10 @@
       // instead of innerHTML was the actual bug here: it showed the raw
       // <p>/<h3>/<ol> tags as literal text rather than formatting them.
       content.innerHTML = data.content ?? "";
+      document.title = data.title + " — AhamStree Journal";
+      // Posts carry no product tags today, so "Shop this" points at the saree
+      // listing. If a tags column is added, link to products.html?occasion=…/etc.
+      document.getElementById("shopThis").hidden = false;
 
     }
 

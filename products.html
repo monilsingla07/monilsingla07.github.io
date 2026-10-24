@@ -553,6 +553,8 @@
 </div><!--/shell:header--></div>
   <main id="main" tabindex="-1">
 
+  <div class="container" style="padding-top:0;padding-bottom:0;"><div id="bcSlot"><nav class="breadcrumbs" aria-label="Breadcrumb"><ol class="bc-list"><li><a href="index.html">Home</a><span class="bc-sep" aria-hidden="true"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></span></li><li><span aria-current="page">Sarees</span></li></ol></nav></div></div>
+
   <!-- Dynamic hero -->
   <section class="products-hero">
     <div class="products-hero-inner">
@@ -703,21 +705,23 @@
 </footer><!--/shell:footer--></div>
 
 <script type="module">
-  import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+  import { renderHeader, renderFooter, hydrateHeaderAuth, renderBreadcrumbs } from "./assets/ui.js";
   import { supabase } from "./assets/supabase.js";
   import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
   import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
-    import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError } from "./assets/listing-ui.js";
+    import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError, prioritizeFirstCardImage } from "./assets/listing-ui.js";
   import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
   import { setPageMeta, injectJsonLd, buildCollectionSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
   const _typeForHeader = (new URL(location.href)).searchParams.get("type");
   document.getElementById("header").innerHTML = renderHeader((_typeForHeader && _typeForHeader.toLowerCase()==="suit") ? "suits" : "products");
   document.getElementById("footer").innerHTML = renderFooter();
+  document.getElementById("bcSlot").innerHTML = renderBreadcrumbs([{ label: "Home", href: "index.html" }, { label: (_typeForHeader || "").toLowerCase() === "suit" ? "Suits" : "Sarees" }]);
   hydrateHeaderAuth();
 
   const status = document.getElementById("status");
   const grid = document.getElementById("grid");
+  prioritizeFirstCardImage(grid);
   const itemsCount = document.getElementById("itemsCount");
   const skeleton = document.getElementById("skeletonState");
 
