@@ -328,3 +328,36 @@ a.line-item-title{padding:10px 0;margin:-10px 0}
 .pd-skel-line{border-radius:0}
 .pd-skel-tabs{display:flex;gap:22px;margin-top:28px}
 #mainImg:not([width]){aspect-ratio:3/4}
+
+/* Batch 5 (UX-023): policy summary */
+.policy-summary{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:12.5px;line-height:1.45;color:var(--text-light)}
+.policy-summary li{display:flex;gap:8px;align-items:flex-start}
+.policy-summary svg{flex-shrink:0;margin-top:1px;color:var(--text-light)}
+.policy-summary a{color:var(--brand);text-decoration:underline;text-underline-offset:2px}
+.policy-summary a:hover{color:var(--brand-hover)}
+@media (min-width:900px){.cart-policy .policy-summary{flex-direction:row;flex-wrap:wrap;gap:6px 18px}}
+
+/* Batch 5 (UX-025): add-to-cart confirmation toast */
+.toast.toast-cart{align-items:center;gap:12px;max-width:min(440px,calc(100vw - 32px));padding:10px 12px}
+.toast-cart-thumb{width:44px;height:56px;object-fit:cover;background:var(--bg-warm);flex-shrink:0}
+.toast-cart-body{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.toast-cart-head{font-weight:700;font-size:13px}
+.toast-cart-title{font-size:12.5px;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toast-cart-actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.toast-cart-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;font:inherit;font-size:13px;font-weight:700;border:1px solid #fff;background:#fff;color:#1a1a1a;cursor:pointer;text-decoration:none}
+.toast-cart-btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
+.toast-cart-btn:focus-visible{outline-color:#ffd9b8}
+@media (max-width:768px){.has-mobile-cart-bar .toast-host{bottom:calc(84px + env(safe-area-inset-bottom))}}
+
+/* Batch 5 (UX-039/040): fabric details, sold-out similar pieces */
+.pd-fabric-table{display:grid;grid-template-columns:max-content 1fr;gap:0;margin:0;border-top:1px solid var(--border-light)}
+.pd-fabric-table dt,.pd-fabric-table dd{margin:0;padding:9px 0;border-bottom:1px solid var(--border-light)}
+.pd-fabric-table dt{padding-right:24px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light);align-self:center}
+.pd-fabric-table dd{font-size:14px;color:var(--text)}
+.pd-fabric-note{margin:14px 0 0;font-size:12.5px;line-height:1.55;color:var(--text-light)}
+.pd-fabric-note a{color:var(--brand);text-decoration:underline;text-underline-offset:2px}
+.pd-similar{margin-top:18px;padding-top:16px;border-top:1px solid var(--border-light)}
+.pd-similar-title{font-family:var(--font-heading);font-size:20px;font-weight:600;margin:0 0 10px}
+.pd-similar-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:8px}
+.pd-similar-row .p-card{flex:0 0 150px;scroll-snap-align:start}
+.pd-fabric-sub{font-family:var(--font-body);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light);margin:18px 0 6px}

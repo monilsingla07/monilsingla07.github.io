@@ -73,6 +73,58 @@ export function showToast(msg, { actionLabel = "", onAction = null, duration = 5
   return dismiss;
 }
 
+// showCartToast({ title, image, count }) - add-to-cart confirmation (UX-025).
+// Thumbnail + title with "View cart" / "Continue shopping"; dismisses itself
+// after `duration`. Announces once through window.announce (no navigation).
+export function showCartToast({ title = "", image = "", count = 0, duration = 5000 } = {}) {
+  let host = document.getElementById("toastHost");
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "toastHost";
+    host.className = "toast-host";
+    document.body.appendChild(host);
+  }
+  host.querySelectorAll(".toast-cart").forEach((n) => n.remove());
+  const el = document.createElement("div");
+  el.className = "toast toast-cart";
+  const src = safeUrl(image, { type: "src" });
+  if (src) {
+    const img = document.createElement("img");
+    img.className = "toast-cart-thumb";
+    img.alt = "";
+    img.src = src;
+    el.appendChild(img);
+  }
+  const body = document.createElement("div");
+  body.className = "toast-cart-body";
+  const head = document.createElement("div");
+  head.className = "toast-cart-head";
+  head.textContent = "✓ Added to cart";
+  const t = document.createElement("div");
+  t.className = "toast-cart-title";
+  t.textContent = String(title || "");
+  const actions = document.createElement("div");
+  actions.className = "toast-cart-actions";
+  const view = document.createElement("a");
+  view.className = "toast-cart-btn";
+  view.href = "cart.html";
+  view.textContent = "View cart";
+  const cont = document.createElement("button");
+  cont.type = "button";
+  cont.className = "toast-cart-btn ghost";
+  cont.textContent = "Continue shopping";
+  let timer = null;
+  const dismiss = () => { clearTimeout(timer); el.remove(); };
+  cont.addEventListener("click", dismiss);
+  actions.append(view, cont);
+  body.append(head, t, actions);
+  el.appendChild(body);
+  host.appendChild(el);
+  window.announce?.("Added " + (title || "item") + " to cart. " + count + (count === 1 ? " item" : " items") + " in cart.");
+  if (duration > 0) timer = setTimeout(dismiss, duration);
+  return dismiss;
+}
+
 // confirmDialog({ title, message, confirmLabel, cancelLabel }) -> Promise<boolean>
 // A focus-trapped alertdialog that replaces native confirm().
 export function confirmDialog({ title = "Are you sure?", message = "", confirmLabel = "Confirm", cancelLabel = "Cancel" } = {}) {

@@ -124,6 +124,15 @@
               <a class="pd-cart-link" href="cart.html">View cart</a>
             </div>
 
+            <!-- UX-040: shown only for sold-out pieces (filled from JS) -->
+            <section id="pdSimilar" class="pd-similar" hidden aria-labelledby="pdSimilarTitle">
+              <h2 id="pdSimilarTitle" class="pd-similar-title">Sold out - try these</h2>
+              <div id="pdSimilarRow" class="pd-similar-row"></div>
+            </section>
+
+            <!-- UX-023: shared policy summary (assets/policy-summary.js) -->
+            <div data-policy-summary></div>
+
             <!-- Trust strip — same 3 claims as the homepage's trust strip,
                  restyled as a compact icon row, now sitting right under the
                  buy buttons (Chidiyaa's PDP pattern) instead of after the
@@ -219,10 +228,11 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, showCartToast } from "./assets/ui.js";
     import { openTrap } from "./assets/a11y.js";
     import { supabase } from "./assets/supabase.js";
-    import { addToCart, getCart } from "./assets/cart.js";
+    import { addToCart, getCart, cartCount } from "./assets/cart.js";
+    import { mountPolicySummary } from "./assets/policy-summary.js";
     import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
 	    import { escapeHtml, escapeAttr, safeSrc, safeUrl } from "./assets/safe.js";
 	    import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
@@ -231,6 +241,7 @@
     document.getElementById("header").innerHTML = renderHeader("products");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+    mountPolicySummary();
 
     // ===== Delivery time estimate (pincode → Shiprocket serviceability) =====
     // Independent of the product data load below — works the instant the
@@ -329,6 +340,47 @@
       }
     })();
 
+    // Shared product-card markup (related strip + sold-out similar pieces).
+    function moneyINR(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 }) : "";
+    }
+
+    function relatedCard(rawProduct) {
+      const p = withCardImages(rawProduct);
+      const imgUrl = p.image_url;
+      const imgUrlHover = p.image_url_hover;
+      const base = Number(p.price_inr || 0);
+      const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
+      const hasSale = sale != null && sale > 0 && sale < base;
+      const available = Math.max(0, Number(p.inventory_qty || 0) - Number(p.reserved_qty || 0));
+      const soldOut = available <= 0;
+      // Sold Out wins the top-left corner slot over New — once stock hits
+      // zero, "recently added" stops being the useful thing to tell a shopper.
+      const isNewItem = !soldOut && isNew(p.created_at);
+      const priceHtml = hasSale
+        ? `<span class="p-card-original">${moneyINR(base)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
+        : `<span class="p-card-price">${moneyINR(base)}</span>`;
+      const imgHtml = imgUrl
+        ? `<img class="${imgUrlHover ? "p-card-img-primary" : ""}" src="${cardImageSrc(p._img)}" ${cardImageAttrs(p._img)} alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">${imgUrlHover ? `<img class="p-card-img-hover" src="${cardImageSrc(p._imgHover)}" ${cardImageAttrs(p._imgHover)} alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
+        : `<div class="p-card-img-empty"></div>`;
+      const href = p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`;
+      return `
+        <a href="${href}" class="p-card product-link">
+          <div class="p-card-img${imgUrlHover ? " has-hover-img" : ""}">
+            ${imgHtml}
+            ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
+          </div>
+          <div class="p-card-body">
+            <div class="p-card-title">${escapeHtml(p.title ?? "")}</div>
+            <div class="p-card-pricing">${priceHtml}</div>
+            ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
+          </div>
+        </a>
+      `;
+    }
+
+
     // ===== "You may also like" — New Arrivals / Best Sellers strip =====
     // Independent of loadProduct() below, same pattern as the delivery
     // check and offers list — a problem here must never break the PDP.
@@ -342,45 +394,6 @@
 
       const currentId = new URLSearchParams(location.search).get("id") || "";
       const currentSlug = new URLSearchParams(location.search).get("slug") || "";
-
-      function moneyINR(v) {
-        const n = Number(v);
-        return Number.isFinite(n) ? "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 }) : "";
-      }
-
-      function relatedCard(rawProduct) {
-        const p = withCardImages(rawProduct);
-        const imgUrl = p.image_url;
-        const imgUrlHover = p.image_url_hover;
-        const base = Number(p.price_inr || 0);
-        const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
-        const hasSale = sale != null && sale > 0 && sale < base;
-        const available = Math.max(0, Number(p.inventory_qty || 0) - Number(p.reserved_qty || 0));
-        const soldOut = available <= 0;
-        // Sold Out wins the top-left corner slot over New — once stock hits
-        // zero, "recently added" stops being the useful thing to tell a shopper.
-        const isNewItem = !soldOut && isNew(p.created_at);
-        const priceHtml = hasSale
-          ? `<span class="p-card-original">${moneyINR(base)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
-          : `<span class="p-card-price">${moneyINR(base)}</span>`;
-        const imgHtml = imgUrl
-          ? `<img class="${imgUrlHover ? "p-card-img-primary" : ""}" src="${cardImageSrc(p._img)}" ${cardImageAttrs(p._img)} alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">${imgUrlHover ? `<img class="p-card-img-hover" src="${cardImageSrc(p._imgHover)}" ${cardImageAttrs(p._imgHover)} alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
-          : `<div class="p-card-img-empty"></div>`;
-        const href = p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`;
-        return `
-          <a href="${href}" class="p-card product-link">
-            <div class="p-card-img${imgUrlHover ? " has-hover-img" : ""}">
-              ${imgHtml}
-              ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
-            </div>
-            <div class="p-card-body">
-              <div class="p-card-title">${escapeHtml(p.title ?? "")}</div>
-              <div class="p-card-pricing">${priceHtml}</div>
-              ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
-            </div>
-          </a>
-        `;
-      }
 
       async function fetchRelated(orderCol) {
         let q = supabase
@@ -466,9 +479,11 @@
         .from("products")
         .select(`
           id,slug,title,description,category,price_inr,sale_price_inr,sku,inventory_qty,reserved_qty,is_active,created_at,
-          colour,print_type,craft,motif,border_type,zari,occasion,
+          colour,print_type,craft,motif,border_type,zari,occasion,weave_line_id,
           fabric:fabrics(name),
           weave_line:weave_lines(name),
+          saree_type:saree_types(name),
+          care_instruction:care_instructions(text),
           product_images(image_url, thumb_url, width, height, sort_order, alt_text)
         `);
       productQuery = slugParam ? productQuery.eq("slug", slugParam) : productQuery.eq("id", id);
@@ -544,7 +559,7 @@ if (!sessionStorage.getItem(viewKey)) {
       // avoids ever showing/letting a shopper pick a qty that's already
       // known to be wrong.
       const alreadyInCart = getCart().find(i => i.product_id === data.id)?.qty || 0;
-      const remainingForCart = Math.max(0, available - alreadyInCart);
+      let remainingForCart = Math.max(0, available - alreadyInCart);
 
       const stockEl = document.getElementById("stock");
       stockEl.textContent = isDiscontinued
@@ -1130,9 +1145,35 @@ if (!sessionStorage.getItem(viewKey)) {
           : `<div>${escapeHtml(text).replace(/\r?\n/g, "<br>")}</div>`;
       }
 
+      // "Fabric & care" (UX-039): every populated attribute column, nothing
+      // for empty ones, plus the handloom-variation note.
+      const fabricRows = [
+        ["Colour", data.colour],
+        ["Fabric", data.fabric?.name],
+        ["Weave", data.weave_line?.name],
+        ["Craft", data.craft],
+        ["Occasion", data.occasion],
+        ["Zari", data.zari],
+        ["Motif", data.motif],
+        ["Border", data.border_type],
+        ["Print", data.print_type],
+        ["Saree type", data.saree_type?.name],
+        ["Care", data.care_instruction?.text],
+      ].filter(([, v]) => v != null && String(v).trim() !== "");
+      const fabricHtml = fabricRows.length
+        ? `<dl class="pd-fabric-table">${fabricRows.map(([k, v]) =>
+            `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(String(v).trim()).replace(/\r?\n/g, "<br>")}</dd>`).join("")}</dl>
+           <p class="pd-fabric-note">Each piece is handwoven &mdash; small variations in weave, colour and texture are intentional and signal the handmade nature. See <a href="returns.html">Returns policy</a> for details.</p>`
+        : "";
+
       const tabs = [];
       if (data.description && data.description.trim()) {
         tabs.push({ title: "Description", html: sectionContentHtml(data.description, "text") });
+      }
+      let fabricTab = null;
+      if (fabricHtml) {
+        fabricTab = { title: "Fabric & care", html: fabricHtml };
+        tabs.push(fabricTab);
       }
       if (!secErr && Array.isArray(sections)) {
         for (const sec of sections) {
@@ -1145,6 +1186,12 @@ if (!sessionStorage.getItem(viewKey)) {
           const content = live ? live.content : sec.content;
           const contentType = live ? live.content_type : sec.content_type;
           if (!title) continue;
+          // An admin-authored "Fabric care" section joins the built-in tab
+          // rather than appearing as a second, overlapping one.
+          if (fabricTab && /fabric|care/i.test(title)) {
+            fabricTab.html += `<h3 class="pd-fabric-sub">${escapeHtml(title)}</h3>` + sectionContentHtml(content, contentType);
+            continue;
+          }
           tabs.push({ title, html: sectionContentHtml(content, contentType) });
         }
       }
@@ -1190,23 +1237,39 @@ if (!sessionStorage.getItem(viewKey)) {
 
       // ===== Add to cart (uses qty) =====
       const addBtn = document.getElementById("addBtn");
-      if (remainingForCart <= 0) {
+      const buyNowBtn = document.getElementById("buyNowBtn");
+      const mobileBarBtn = document.getElementById("pdMobileBarBtn");
+      function lockPurchaseButtons(label) {
         addBtn.disabled = true;
-        addBtn.textContent = isDiscontinued ? "No longer available" : (available <= 0 ? "Sold out" : "Max qty already in cart");
+        addBtn.textContent = label;
         addBtn.style.background = "#ddd";
         addBtn.style.borderColor = "#ddd";
         addBtn.style.color = "#666";
+        if (mobileBarBtn) { mobileBarBtn.disabled = true; mobileBarBtn.textContent = label; }
+        if (buyNowBtn) { buyNowBtn.disabled = true; buyNowBtn.textContent = label; }
+        qtyInput.disabled = true; qtyMinus.disabled = true; qtyPlus.disabled = true;
+      }
+      if (remainingForCart <= 0) {
+        lockPurchaseButtons(isDiscontinued ? "No longer available" : (available <= 0 ? "Sold out" : "Max qty already in cart"));
       } else {
         addBtn.addEventListener("click", () => {
           const qty = getQty();
           addToCart({ ...data, image_url: safeMain || "" }, qty);
-          location.href = "cart.html";
+          // UX-025: stay on the page and confirm with a toast. Track what is
+          // now in the cart so the stepper can't exceed remaining stock.
+          remainingForCart = Math.max(0, remainingForCart - qty);
+          if (remainingForCart <= 0) lockPurchaseButtons("Max qty already in cart");
+          else setQty(1);
+          showCartToast({
+            title: data.title || "",
+            image: images[0]?.thumb_url || safeMain || "",
+            count: cartCount(),
+          });
         });
       }
 
       // ===== Buy it now (add to cart, then skip straight to checkout instead
       // of the cart page — same addToCart() call the regular button uses) =====
-      const buyNowBtn = document.getElementById("buyNowBtn");
       if (buyNowBtn) {
         if (remainingForCart <= 0) {
           buyNowBtn.disabled = true;
@@ -1226,7 +1289,6 @@ if (!sessionStorage.getItem(viewKey)) {
       // add-to-cart logic itself.
       const mobileBar = document.getElementById("pdMobileBar");
       const mobileBarPrice = document.getElementById("pdMobileBarPrice");
-      const mobileBarBtn = document.getElementById("pdMobileBarBtn");
       mobileBarPrice.innerHTML = priceEl.innerHTML;
       if (remainingForCart <= 0) {
         mobileBarBtn.disabled = true;
@@ -1257,6 +1319,34 @@ if (!sessionStorage.getItem(viewKey)) {
         // No IntersectionObserver support — fall back to the old always-on
         // behavior rather than never showing the bar at all.
         mobileBar.classList.add("visible");
+      }
+
+      // ===== Sold-out: similar pieces (UX-040) =====
+      // Same weave line first, topped up with the same colour. In-stock only.
+      // (Back-in-stock requests are intentionally not offered yet.) The
+      // wishlist heart below stays active so a shopper can still save it.
+      if (available <= 0 && !isDiscontinued) {
+        (async () => {
+          try {
+            const cols = "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name),product_images(image_url,thumb_url,width,height,sort_order)";
+            const inStock = (p) => Number(p.inventory_qty || 0) - Number(p.reserved_qty || 0) > 0;
+            const picks = [];
+            const seen = new Set([data.id]);
+            const take = (rows) => { for (const p of rows || []) { if (picks.length >= 6) break; if (!seen.has(p.id) && inStock(p)) { seen.add(p.id); picks.push(p); } } };
+            if (data.weave_line_id != null) {
+              const r = await supabase.from("products").select(cols).eq("is_active", true).eq("weave_line_id", data.weave_line_id).neq("id", data.id).order("created_at", { ascending: false }).limit(24);
+              if (!r.error) take(r.data);
+            }
+            if (picks.length < 6 && data.colour) {
+              const r = await supabase.from("products").select(cols).eq("is_active", true).ilike("colour", data.colour).neq("id", data.id).order("created_at", { ascending: false }).limit(24);
+              if (!r.error) take(r.data);
+            }
+            if (!picks.length) return; // nothing worth showing
+            const sec = document.getElementById("pdSimilar");
+            document.getElementById("pdSimilarRow").innerHTML = picks.map(relatedCard).join("");
+            sec.hidden = false;
+          } catch (_) { /* optional section - never break the PDP */ }
+        })();
       }
 
       // ===== Wishlist =====
