@@ -27,7 +27,7 @@
   <meta name="twitter:image" content="https://www.ahamstree.com/hero-1-launch.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
 
   <style>
@@ -150,7 +150,7 @@
       left: 18px;
       background: var(--brand);
       color: #fff;
-      font-size: 10px;
+      font-size: var(--font-size-xs);
       font-weight: 600;
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -170,7 +170,7 @@
       margin-bottom: 16px;
     }
     .article-tag {
-      font-size: 10px;
+      font-size: var(--font-size-xs);
       font-weight: 600;
       letter-spacing: 0.16em;
       text-transform: uppercase;
@@ -506,7 +506,7 @@
         : `<div class="featured-article-img-placeholder">${placeholderIcon}</div>`;
 
       return `
-        <a class="featured-article" href="blog.html?slug=${encodeURIComponent(p.slug)}" style="animation-delay:${idx * 80}ms">
+        <a class="featured-article" href="blog.html?slug=${encodeURIComponent(p.slug)}" style="animation-delay:${Math.min(idx, 3) * 60}ms">
           <div class="featured-article-img">
             ${imgHtml}
             <div class="featured-badge">Featured</div>
@@ -533,7 +533,7 @@
         : `<div class="blog-card-img-placeholder">${placeholderIcon}</div>`;
 
       return `
-        <a class="blog-card" href="blog.html?slug=${encodeURIComponent(p.slug)}" style="animation-delay:${idx * 70}ms">
+        <a class="blog-card" href="blog.html?slug=${encodeURIComponent(p.slug)}" style="animation-delay:${Math.min(idx, 3) * 60}ms">
           <div class="blog-card-img">${imgHtml}</div>
           <div class="blog-card-body">
             <div class="article-meta" style="margin-bottom:10px;">

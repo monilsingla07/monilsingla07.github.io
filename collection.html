@@ -19,7 +19,7 @@
   <meta property="og:image" content="https://www.ahamstree.com/hero-1-launch.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
     /* ── Collection Hero ── */
@@ -238,7 +238,7 @@
         : `<span class="p-card-price">${money(base)}</span>`;
 
       return `
-        <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
+        <div class="p-card" style="animation-delay:${(idx % 8) * 28}ms">
           <a href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}&from=collection&col=${encodeURIComponent(slug || '')}&colName=${encodeURIComponent(currentColName)}">
             <div class="p-card-img${p.image_url_hover ? " has-hover-img" : ""}">
               ${imgHtml}

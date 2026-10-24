@@ -158,7 +158,7 @@ export function renderSearchResults(products) {
         : `<div class="p-card-img-empty"></div>`;
 
       return `
-        <div class="p-card" style="animation-delay:${(idx % 8) * 55}ms">
+        <div class="p-card" style="animation-delay:${(idx % 8) * 28}ms">
           <a href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}&from=search" class="product-link">
             <div class="p-card-img${p.image_url_hover ? " has-hover-img" : ""}">
               ${imgHtml}
