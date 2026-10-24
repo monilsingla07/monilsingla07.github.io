@@ -74,7 +74,7 @@ function renderPopup(popup) {
       }
       #welcomePopupClose {
         position: absolute; top: 10px; right: 10px;
-        width: 34px; height: 34px;
+        width: 44px; height: 44px;
         border-radius: 999px;
         border: none;
         background: rgba(0,0,0,.55);

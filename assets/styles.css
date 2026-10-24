@@ -266,3 +266,39 @@ h1.pd-title{margin:0}
   .nav-submenu a{min-height:44px;display:flex;align-items:center}
 }
 
+/* UX-033 icon buttons / links: 44px */
+.icon-btn,.icon-link{width:44px;height:44px;min-width:44px;min-height:44px}
+@media (max-width:480px){
+  .icon-btn,.icon-link{width:44px;height:44px}
+  .header-mobile{gap:6px}
+  .header-mobile-left,.header-mobile-right{gap:0}
+}
+
+/* UX-031 card wishlist heart: 30px visual circle inside a 44px hit box */
+.p-card-wish{box-sizing:border-box;top:3px;right:3px;width:44px;height:44px;padding:7px;background-clip:content-box;-webkit-backdrop-filter:none;backdrop-filter:none}
+.p-card-wish svg{flex-shrink:0}
+
+/* UX-032 quantity steppers */
+.pd-qty-btn{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0 14px}
+.pd-qty-input{min-width:44px;min-height:44px;box-sizing:border-box;padding:0 4px}
+
+/* UX-033 misc targets */
+.filter-tab{min-height:44px}
+.pd-tab-btn{min-height:44px;display:inline-flex;align-items:flex-end;padding-top:14px}
+.remove.btn{min-height:44px}
+.footer a{margin:0;padding:11px 0;min-height:44px;display:flex;align-items:center;line-height:22px}
+.footer a:hover{padding-left:4px}
+.footer .social-links a{width:44px;height:44px;min-height:44px;padding:0;justify-content:center}
+
+/* Batch 3 extras: remaining sub-44px controls found while measuring at 390px */
+.mobile-logo,.site-logo-center{min-height:44px}
+.section-link{display:inline-flex;align-items:center;min-height:44px}
+.category-tab{min-height:44px;display:inline-flex;align-items:center}
+.weave-pill{min-height:44px}
+.page-breadcrumb{min-height:44px}
+.pd-cart-link{display:inline-flex;align-items:center;min-height:44px}
+.pd-delivery-input,.pd-delivery-btn{min-height:44px}
+.pd-related-tab{min-height:44px;padding-top:12px}
+.link-btn{min-height:44px;padding:12px 8px}
+.category-tab{min-width:44px;justify-content:center}
+a.line-item-title{padding:10px 0;margin:-10px 0}

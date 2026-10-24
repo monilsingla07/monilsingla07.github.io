@@ -127,7 +127,7 @@ function renderPopup(config) {
       }
       #signinPopupClose {
         position: absolute; top: 10px; right: 10px;
-        width: 34px; height: 34px;
+        width: 44px; height: 44px;
         border-radius: 999px;
         border: none;
         background: rgba(0,0,0,.55);
@@ -160,7 +160,7 @@ function renderPopup(config) {
       #signinPopupOtpStep { display: none; margin-top: 14px; }
       #signinPopupLater {
         display: block;
-        margin: 16px auto 0;
+        margin: 6px auto 0; padding: 14px 16px; min-height: 44px;
         background: none;
         border: none;
         font-size: 12px;
