@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <script src="assets/analytics.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Rate your saree — AhamStree</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .rv-wrap { max-width: 640px; margin: 0 auto; }
+    .rv-wrap [hidden] { display: none !important; }
+    .rv-product { display: flex; gap: 14px; align-items: center; margin-bottom: 20px; }
+    .rv-product img { width: 72px; height: 96px; object-fit: cover; background: var(--bg-warm); border-radius: 4px; }
+    .rv-product h2 { margin: 0; font-size: var(--font-size-xl); }
+    fieldset.rv-rate { border: 0; padding: 0; margin: 0 0 18px; }
+    fieldset.rv-rate legend { font-weight: 700; font-size: var(--font-size-md); padding: 0; margin-bottom: 6px; }
+    .stars { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; gap: 2px; }
+    .stars input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .stars label { font-size: 38px; line-height: 1; cursor: pointer; color: #cfc6b8; padding: 0 3px; }
+    .stars label:hover, .stars label:hover ~ label, .stars input:checked ~ label { color: #b7791f; }
+    .stars input:focus-visible + label { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: 4px; }
+    .rv-field { margin-bottom: 16px; }
+    .rv-field label { display: block; font-weight: 600; font-size: var(--font-size-base); margin-bottom: 4px; }
+    .rv-field .input, .rv-field textarea { width: 100%; }
+    .rv-hint { font-size: var(--font-size-sm); color: var(--text-light); margin-top: 3px; }
+    .rv-err { color: #b3261e; font-size: var(--font-size-base); min-height: 20px; margin: 4px 0 10px; }
+    .rv-msg { text-align: center; padding: 32px 8px; }
+    .rv-msg h2 { margin-top: 0; }
+    @media (prefers-reduced-motion: no-preference) { .stars label { transition: color .12s; } }
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+  <main id="main" tabindex="-1">
+    <div class="container">
+      <div class="card rv-wrap" style="padding:var(--space-lg);border-radius:var(--radius-panel);">
+        <div id="state" role="status" aria-live="polite" class="rv-msg">Checking your review link…</div>
+
+        <form id="form" hidden novalidate>
+          <h1 style="margin-top:0;font-size:var(--font-size-2xl);">Rate this saree</h1>
+          <div class="rv-product">
+            <img id="pImg" alt="" width="72" height="96" hidden />
+            <h2 id="pTitle"></h2>
+          </div>
+
+          <fieldset class="rv-rate">
+            <legend id="ratingLegend">Your rating <span aria-hidden="true">*</span><span class="vh">(required)</span></legend>
+            <div class="stars" id="stars">
+              <input type="radio" name="rating" id="r5" value="5"><label for="r5" title="5 stars"><span aria-hidden="true">★</span><span class="vh">5 stars</span></label>
+              <input type="radio" name="rating" id="r4" value="4"><label for="r4" title="4 stars"><span aria-hidden="true">★</span><span class="vh">4 stars</span></label>
+              <input type="radio" name="rating" id="r3" value="3"><label for="r3" title="3 stars"><span aria-hidden="true">★</span><span class="vh">3 stars</span></label>
+              <input type="radio" name="rating" id="r2" value="2"><label for="r2" title="2 stars"><span aria-hidden="true">★</span><span class="vh">2 stars</span></label>
+              <input type="radio" name="rating" id="r1" value="1"><label for="r1" title="1 star"><span aria-hidden="true">★</span><span class="vh">1 star</span></label>
+            </div>
+          </fieldset>
+
+          <div class="rv-field">
+            <label for="rvTitle">Headline <span style="font-weight:400;color:var(--text-light);">(optional)</span></label>
+            <input class="input" id="rvTitle" type="text" maxlength="100" autocomplete="off" />
+          </div>
+          <div class="rv-field">
+            <label for="rvBody">Your review <span style="font-weight:400;color:var(--text-light);">(optional)</span></label>
+            <textarea class="input" id="rvBody" rows="5" maxlength="2000" aria-describedby="bodyHint"></textarea>
+            <div class="rv-hint" id="bodyHint">How were the fabric, colour and fit? <span id="bodyCount">0</span>/2000</div>
+          </div>
+          <div class="rv-field">
+            <label for="rvName">Name shown with your review</label>
+            <input class="input" id="rvName" type="text" maxlength="60" autocomplete="name" aria-describedby="nameHint" />
+            <div class="rv-hint" id="nameHint">Only this name is shown publicly. Your phone and email are never shown.</div>
+          </div>
+
+          <!-- Honeypot: real people never see or fill this. -->
+          <div class="vh" aria-hidden="true">
+            <label for="website_url">Leave this field empty</label>
+            <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="rv-err" id="err" role="alert"></div>
+          <button class="btn" id="submit" type="submit">Submit review</button>
+        </form>
+      </div>
+    </div>
+  </main>
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { SUPABASE_ANON_KEY } from "./assets/supabase.js";
+    import { safeSrc } from "./assets/safe.js";
+
+    document.getElementById("header").innerHTML = renderHeader("");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+
+    const FN = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/submit-review";
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const token = (params.get("t") || "").trim();
+
+    function showMessage(title, text, withLink) {
+      $("form").hidden = true;
+      const box = $("state");
+      box.hidden = false;
+      box.innerHTML = "";
+      const h = document.createElement("h2");
+      h.textContent = title;
+      const p = document.createElement("p");
+      p.textContent = text;
+      box.append(h, p);
+      if (withLink) {
+        const a = document.createElement("a");
+        a.className = "btn";
+        a.href = "products.html";
+        a.textContent = "Continue shopping";
+        box.appendChild(a);
+      }
+      h.tabIndex = -1;
+      h.focus();
+    }
+
+    async function call(body) {
+      const res = await fetch(FN, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      return { status: res.status, ok: res.ok, json };
+    }
+
+    (async function init() {
+      if (!token) return showMessage("This review link isn't valid", "Please use the link from your review email.", true);
+      try {
+        const r = await call({ action: "validate", token });
+        if (r.status === 409) return showMessage("Already reviewed", "You've already reviewed this saree. Thank you!", true);
+        if (!r.ok) return showMessage("This review link isn't valid", r.json.message || "Please use the link from your review email.", true);
+        $("pTitle").textContent = r.json.product?.title || "Your saree";
+        const src = safeSrc(r.json.product?.image_url);
+        if (src) { $("pImg").src = src; $("pImg").hidden = false; }
+        $("rvName").value = r.json.customer_name || "";
+        $("state").hidden = true;
+        $("form").hidden = false;
+      } catch (_) {
+        showMessage("Something went wrong", "We couldn't check your link. Please try again in a moment.", false);
+      }
+    })();
+
+    $("rvBody").addEventListener("input", () => { $("bodyCount").textContent = $("rvBody").value.length; });
+
+    $("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = $("err");
+      err.textContent = "";
+      const checked = document.querySelector('input[name="rating"]:checked');
+      if (!checked) {
+        err.textContent = "Please choose a star rating.";
+        document.querySelector('input[name="rating"]').focus();
+        return;
+      }
+      const btn = $("submit");
+      btn.disabled = true;
+      btn.textContent = "Submitting…";
+      try {
+        const r = await call({
+          action: "submit", token,
+          rating: Number(checked.value),
+          title: $("rvTitle").value.trim(),
+          body: $("rvBody").value.trim(),
+          customer_name: $("rvName").value.trim(),
+          website_url: $("website_url").value,
+        });
+        if (r.ok) {
+          return showMessage("Thank you!", "Your review is being reviewed by our team and will appear on the site after moderation.", true);
+        }
+        if (r.status === 409) return showMessage("Already reviewed", "You've already reviewed this saree. Thank you!", true);
+        err.textContent = r.json.message || r.json.error || "We couldn't submit your review. Please try again.";
+      } catch (_) {
+        err.textContent = "Network error. Please check your connection and try again.";
+      }
+      btn.disabled = false;
+      btn.textContent = "Submit review";
+    });
+  </script>
+</body>
+</html>
