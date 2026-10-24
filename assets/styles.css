@@ -240,3 +240,29 @@ h1.pd-title{margin:0}
 .hero-pause[hidden]{display:none}
 @media (max-width:480px){.hero-pause{right:8px;bottom:2px}}
 
+/* UX-014 logo: PNG is now cropped to the glyphs, so heights describe real glyph height */
+.site-logo-center img,.site-logo img{height:44px;width:auto}
+.mobile-logo{min-width:0;max-width:100%}
+.mobile-logo img{height:auto;width:auto;max-height:34px;max-width:100%}
+@media (max-width:480px){
+  .mobile-logo{max-width:100%}
+  .mobile-logo img{max-width:100%;max-height:30px}
+}
+.ig-avatar{object-fit:contain;padding:5px;background:#fff}
+
+/* UX-016 drawer: secondary account section, 44px rows, 44px carets */
+.mobile-drawer-links a,.mobile-drawer-section a{min-height:44px}
+.mobile-drawer-submenu a{min-height:44px}
+.mobile-drawer-caret{width:44px;height:44px}
+
+/* UX-055 tablet submenu toggles: only 821-1100px; wider screens keep hover */
+.nav-sub-toggle{display:none;align-items:center;justify-content:center;width:44px;height:44px;margin-left:-6px;padding:0;background:none;border:0;color:var(--text);cursor:pointer;opacity:.7}
+.nav-sub-toggle svg{transition:transform .18s ease}
+.nav-item.open .nav-sub-toggle svg{transform:rotate(180deg)}
+@media (min-width:821px) and (max-width:1100px){
+  .nav-sub-toggle{display:inline-flex}
+  .nav-item:hover .nav-submenu,.nav-item:focus-within .nav-submenu{opacity:0;visibility:hidden;transform:translateY(4px)}
+  .nav-item.open .nav-submenu{opacity:1;visibility:visible;transform:translateY(0)}
+  .nav-submenu a{min-height:44px;display:flex;align-items:center}
+}
+

@@ -253,7 +253,7 @@ export function renderHeader(active = "") {
           </div>
 
           <a href="index.html" class="mobile-logo" aria-label="Ahamstree home">
-            <img src="assets/images/ahamstree-logo.png" alt="AhamStree (अहम् स्त्री)" width="230" height="220" decoding="async">
+            <img src="assets/images/ahamstree-logo.png" alt="AhamStree (अहम् स्त्री)" width="639" height="204" decoding="async">
           </a>
 
           <div class="header-mobile-right">
@@ -293,6 +293,15 @@ export function renderHeader(active = "") {
                 <a href="sale.html">Sale</a>
               </nav>
 
+              <!-- Secondary account links (UX-016): the header wishlist heart is
+                   hidden on phones, and Orders/Track had no mobile entry point. -->
+              <div class="mobile-drawer-section mobile-drawer-account" aria-label="Your account">
+                <a id="drawerAccountLink" href="login.html">Sign in</a>
+                <a href="wishlist.html">Wishlist</a>
+                <a href="orders.html">My Orders</a>
+                <a href="track.html">Track Order</a>
+              </div>
+
               <div class="mobile-drawer-section" id="adminSectionMobile" hidden>
                 <a id="adminLinkMobile" href="admin.html">Admin dashboard</a>
               </div>
@@ -314,7 +323,7 @@ export function renderHeader(active = "") {
 
         <!-- Desktop: Center logo -->
         <a href="index.html" class="site-logo-center" aria-label="Ahamstree home">
-          <img src="assets/images/ahamstree-logo.png" alt="Ahamstree" width="230" height="220" decoding="async">
+          <img src="assets/images/ahamstree-logo.png" alt="Ahamstree" width="639" height="204" decoding="async">
         </a>
 
         <!-- Desktop: Right utilities -->
@@ -534,6 +543,43 @@ function close() {
 let _navDropdownsHydrated = false;
 let _activeNavMarker = "";
 
+// Tablet-width submenu toggles (UX-055). The buttons are only displayed
+// between 821px and 1100px (see styles.css); on wider screens the hover and
+// focus-within behaviour is unchanged. One delegated handler, bound once.
+let _navToggleBound = false;
+function closeNavSubmenus(except) {
+  document.querySelectorAll(".nav-item.open").forEach((item) => {
+    if (item === except) return;
+    item.classList.remove("open");
+    item.querySelector(".nav-sub-toggle")?.setAttribute("aria-expanded", "false");
+  });
+}
+function initNavToggles() {
+  if (_navToggleBound) return;
+  _navToggleBound = true;
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest?.(".nav-sub-toggle");
+    if (!btn) {
+      if (!e.target.closest?.(".nav-item")) closeNavSubmenus(null);
+      return;
+    }
+    const item = btn.closest(".nav-item");
+    if (!item) return;
+    const open = !item.classList.contains("open");
+    closeNavSubmenus(item);
+    item.classList.toggle("open", open);
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const openItem = document.querySelector(".nav-item.open");
+    if (!openItem) return;
+    const btn = openItem.querySelector(".nav-sub-toggle");
+    closeNavSubmenus(null);
+    btn?.focus();
+  });
+}
+
 function initNavCarets() {
   document.querySelectorAll(".mobile-drawer-caret").forEach((btn) => {
     if (btn.dataset.caretInit === "1") return;
@@ -616,6 +662,7 @@ function buildNavHtml(tree, active) {
     return `
       <div class="nav-item has-submenu">
         <a href="${href}"${cls}>${label}</a>
+        <button class="nav-sub-toggle" type="button" aria-expanded="false" aria-label="Show ${escapeAttr(top.label)} links">${iconChevron()}</button>
         <div class="nav-submenu">${sub}</div>
       </div>`;
   }).join("");
@@ -643,6 +690,7 @@ function applyNavHtml(html) {
   document.querySelectorAll("nav.nav-desktop").forEach(el => { el.innerHTML = html.desktop; });
   document.querySelectorAll(".mobile-drawer-links").forEach(el => { el.innerHTML = html.mobile; });
   initNavCarets();
+  initNavToggles();
 }
 
 function readNavCache(active) {
@@ -932,6 +980,30 @@ async function showAdminLinkIfAdmin(email) {
 // the whole header needed. Also re-run from hydrateHeaderAuth() itself so a
 // login/logout event (which re-runs that function) can't leave a stale
 // count behind either, even though auth doesn't touch the cart itself.
+// Mobile drawer account entry (UX-016): "Hi, {firstName}" when signed in,
+// "Sign in" otherwise. Display only; no auth behaviour changes.
+async function hydrateDrawerAccount(user) {
+  const el = document.getElementById("drawerAccountLink");
+  if (!el) return;
+  if (!user) {
+    el.textContent = "Sign in";
+    el.href = "login.html";
+    return;
+  }
+  el.href = "account.html";
+  el.textContent = "Account";
+  const first = (n) => String(n || "").trim().split(/s+/)[0];
+  const meta = user.user_metadata || {};
+  let name = first(meta.full_name || meta.name);
+  if (!name) {
+    try {
+      const { data: prof } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
+      name = first(prof?.full_name);
+    } catch (_) {}
+  }
+  if (name) el.textContent = "Hi, " + name;
+}
+
 let _cartBadgeListenerSet = false;
 
 function refreshCartBadge() {
@@ -1047,6 +1119,8 @@ export async function hydrateHeaderAuth() {
       }
     });
   });
+
+  hydrateDrawerAccount(loggedIn ? data.session.user : null);
 
   const wishlistHref = loggedIn ? "account.html?view=wishlist" : "wishlist.html";
   if (wDesktop) wDesktop.href = wishlistHref;
