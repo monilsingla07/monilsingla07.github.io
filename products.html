@@ -855,8 +855,22 @@
     const panelWidth = Math.max(panel.offsetWidth, 220);
     let left = rect.left;
     if (left + panelWidth > window.innerWidth - 12) left = Math.max(12, window.innerWidth - 12 - panelWidth);
-    panel.style.top = (rect.bottom + 8) + "px";
     panel.style.left = left + "px";
+    // Keep the panel inside the viewport: use the roomier side of the trigger
+    // (below by default, above when the pill sits near the bottom edge) and
+    // cap the height to that space so every option stays reachable by scroll.
+    const gap = 8, margin = 12;
+    const below = window.innerHeight - rect.bottom - gap - margin;
+    const above = rect.top - gap - margin;
+    if (below < 200 && above > below) {
+      panel.style.top = "auto";
+      panel.style.bottom = (window.innerHeight - rect.top + gap) + "px";
+      panel.style.maxHeight = Math.min(320, above) + "px";
+    } else {
+      panel.style.bottom = "auto";
+      panel.style.top = (rect.bottom + gap) + "px";
+      panel.style.maxHeight = Math.min(320, Math.max(below, 120)) + "px";
+    }
   }
 
   document.addEventListener("click", () => closeAllPanels(null));
