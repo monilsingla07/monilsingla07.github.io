@@ -527,6 +527,7 @@
   import { supabase } from "./assets/supabase.js";
   import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
   import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
+    import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError } from "./assets/listing-ui.js";
   import { addToWishlist, removeFromWishlist, isInWishlist } from "./assets/wishlist.js";
   import { setPageMeta, injectJsonLd, buildCollectionSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
@@ -679,6 +680,7 @@
   window.addEventListener("resize", () => closeAllPanels(null));
   window.addEventListener("scroll", () => closeAllPanels(null), { passive: true });
 
+  window.clearAllFilters = clearAllFilters;
   function clearAllFilters(){
     ["weave", "collection", "fabric", "min", "max", "inStock", "sort", ...Object.keys(TEXT_FILTER_COLUMNS)]
       .forEach(k => params.delete(k));
@@ -1310,6 +1312,7 @@
           </div>
           <div class="p-card-body">
             <div class="p-card-title">${escapeHtml(p.title)}</div>
+            ${cardMetaLine(p)}
             <div class="p-card-pricing">${priceHtml}</div>
             ${!soldOut && stockCount <= 3 ? `<div class="p-card-stock low">Only ${stockCount} left</div>` : ""}
             ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
@@ -1406,7 +1409,7 @@
     if (selectedSlug){
       if (!col){ status.textContent = "Collection not found."; itemsCount.textContent = ""; skeleton.style.display = "none"; isLoading = false; return; }
       if (!cache.productIds || cache.productIds.length === 0){
-        status.textContent = "No products in this collection yet.";
+        status.innerHTML = emptyStateHtml({ filtered: true });
         itemsCount.textContent = "0 items";
         skeleton.style.display = "none";
         hasMore = false; updateLoadMoreUI(); isLoading = false; return;
@@ -1437,7 +1440,7 @@
 
     let query = supabase
       .from("products")
-      .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,product_images(image_url, thumb_url, width, height, sort_order)")
+      .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,colour,fabric:fabrics(name),product_images(image_url, thumb_url, width, height, sort_order)")
       .eq("is_active", true)
       .eq("category", type);
 
@@ -1474,7 +1477,7 @@
     const { data, error } = await query;
     skeleton.style.display = "none";
 
-    if (error){ status.textContent = "Error: " + error.message; isLoading = false; return; }
+    if (error){ logListingError("products", error); status.innerHTML = errorStateHtml(); isLoading = false; return; }
 
     let slice;
     if (restoreTarget > 0) {
@@ -1489,7 +1492,7 @@
     const normalized = normalize(slice);
 
     if (isFirst && normalized.length === 0){
-      status.textContent = "No products found.";
+      status.innerHTML = emptyStateHtml({ filtered: true });
       hasMore = false; updateLoadMoreUI(); isLoading = false; return;
     }
 

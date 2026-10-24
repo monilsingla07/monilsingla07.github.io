@@ -294,6 +294,7 @@
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
     import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
+    import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError } from "./assets/listing-ui.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -341,6 +342,7 @@
             </div>
             <div class="p-card-body">
               <div class="p-card-title">${escapeHtml(p.title)}</div>
+              ${cardMetaLine(p)}
               <div class="p-card-pricing">${priceHtml}</div>
               ${!soldOut && inv <= 3 ? `<div class="p-card-stock low">Only ${inv} left</div>` : ""}
               ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
@@ -356,18 +358,19 @@
 
       const { data, error } = await supabase
         .from("products")
-        .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, thumb_url, width, height, sort_order)")
+        .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(24);
 
       skeleton.style.display = "none";
 
-      if (error) { status.textContent = "Error: " + error.message; return; }
+      if (error) { logListingError("new-arrivals", error); status.innerHTML = errorStateHtml(); return; }
 
       const rows = (data ?? []).map(withCardImages);
 
-      status.textContent = `${rows.length} new arrivals`;
+      status.textContent = rows.length ? `${rows.length} new arrivals` : "";
+      if (!rows.length) { grid.innerHTML = emptyStateHtml({ filtered: false }); return; }
       grid.innerHTML = rows.map((p, i) => productCard(p, i)).join("");
 
       // Restore scroll — wait 300ms so images can start loading and page height settles

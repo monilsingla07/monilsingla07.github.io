@@ -193,6 +193,7 @@
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
     import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
+    import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError } from "./assets/listing-ui.js";
     import { setPageMeta, injectJsonLd, buildCollectionSchema, buildBreadcrumbSchema, truncateForMeta } from "./assets/seo.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
@@ -245,6 +246,7 @@
             </div>
             <div class="p-card-body">
               <div class="p-card-title">${escapeHtml(p.title)}</div>
+              ${cardMetaLine(p)}
               <div class="p-card-pricing">${priceHtml}</div>
               ${!soldOut && inv <= 3 ? `<div class="p-card-stock low">Only ${inv} left</div>` : ""}
               ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
@@ -324,13 +326,13 @@
 
       const { data, error } = await supabase
         .from("collection_products")
-        .select("sort_order, product:products(id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, thumb_url, width, height, sort_order))")
+        .select("sort_order, product:products(id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order))")
         .eq("collection_id", col.id)
         .order("sort_order", { ascending: true });
 
       skeletonGrid.style.display = "none";
 
-      if (error) { status.textContent = "Error: " + error.message; return; }
+      if (error) { logListingError("collection", error); status.innerHTML = errorStateHtml(); return; }
 
       const products = (data ?? [])
         .map(r => r.product)
@@ -341,10 +343,7 @@
       colCount.textContent = `${normalized.length} item${normalized.length !== 1 ? "s" : ""}`;
 
       if (normalized.length === 0) {
-        grid.innerHTML = `<div class="page-empty" style="grid-column:1/-1;">
-          <p style="font-family:var(--font-heading);font-size:22px;margin:0 0 6px;">No products yet</p>
-          <span style="font-size:13px;">Check back soon.</span>
-        </div>`;
+        grid.innerHTML = emptyStateHtml({ filtered: false });
         return;
       }
 

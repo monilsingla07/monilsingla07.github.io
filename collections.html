@@ -276,12 +276,14 @@
 
     <div id="grid" class="collections-grid"></div>
     <div id="emptyState" style="display:none;" class="collections-empty">
-      <p style="font-family:var(--font-heading);font-size:22px;margin:0 0 6px;">No collections yet</p>
-      <span style="font-size:13px;">Check back soon.</span>
+      <h3>No collections yet</h3>
+      <p>Check back soon, or browse <a href="products.html">all sarees</a>.</p>
     </div>
     <div id="errorState" style="display:none;" class="collections-empty">
-      <p style="font-family:var(--font-heading);font-size:22px;margin:0 0 6px;">Couldn't load collections</p>
-      <span style="font-size:13px;">Please refresh to try again.</span>
+      <h3>We couldn't load this page</h3>
+      <p>Please try again.</p>
+      <button type="button" class="btn" onclick="location.reload()">Retry</button>
+      <p><a href="contact.html">Need help?</a></p>
     </div>
   </div>
 

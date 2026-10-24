@@ -26,8 +26,7 @@
       padding: 16px 20px;
       font-size: 18px;
       border: 2px solid var(--border);
-      border-radius: 12px;
-      outline: none;
+      border-radius: var(--radius-md);
       transition: border-color 0.2s ease;
       font-family: var(--font-body);
     }
@@ -35,6 +34,18 @@
     .search-input:focus {
       border-color: var(--brand);
     }
+    .search-pager { display:flex; align-items:center; justify-content:center; gap:16px; margin-top:28px; }
+    .search-pager .btn { min-height:44px; }
+    .search-pager button[disabled] { opacity:.45; cursor:not-allowed; }
+    .search-pager-info { font-size:14px; color:var(--text-light); }
+    .search-recovery { text-align:center; padding:32px 16px; }
+    .search-recovery h2 { font-size:24px; margin:0 0 8px; }
+    .search-recovery p { color:var(--text-light); margin:0 0 16px; }
+    .search-recovery-links { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+    .search-recovery-links a { font-size:14px; font-weight:600; border:1.5px solid var(--border); padding:12px 18px; min-height:44px; display:inline-flex; align-items:center; }
+    .search-recovery-links a:hover { border-color:var(--brand); color:var(--brand); }
+    .p-card-matched { margin:0 0 6px; display:flex; flex-direction:column; gap:3px; }
+    .match-badge { font-size:11px; color:var(--brand-dark); background:var(--brand-lighter); padding:2px 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; align-self:flex-start; }
     
     .search-icon {
       position: absolute;
@@ -89,6 +100,7 @@
     </p>
 
     <div class="search-box">
+      <label for="searchInput" class="vh">Search products</label>
       <input 
         type="text" 
         id="searchInput" 
@@ -113,6 +125,8 @@
       </div>
     </div>
     <div id="searchResults" class="results-grid"></div>
+    <nav id="searchPager" class="search-pager" aria-label="Search results pages" hidden></nav>
+    <div id="searchRecovery"></div>
   </div>
 
   </main>
@@ -120,7 +134,9 @@
 
   <script type="module">
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
-    import { searchProducts, renderSearchResults } from "./assets/search.js";
+    import { searchProducts, renderSearchResults, SEARCH_PAGE_SIZE } from "./assets/search.js";
+    import { errorStateHtml, logListingError } from "./assets/listing-ui.js";
+    import { escapeHtml } from "./assets/safe.js";
 
     // Render header and footer
     document.getElementById("header").innerHTML = renderHeader();
@@ -132,7 +148,11 @@
     const searchStatus = document.getElementById('searchStatus');
     const searchPrompt = document.getElementById('searchPrompt');
 
+    const searchPager = document.getElementById('searchPager');
+    const searchRecovery = document.getElementById('searchRecovery');
     let debounceTimer;
+    let currentPage = 1;
+    let latestRequest = 0;
 
     // Get query from URL if present
     const urlParams = new URLSearchParams(window.location.search);
@@ -140,7 +160,8 @@
     if (initialQuery) {
       searchInput.value = initialQuery;
       searchPrompt.style.display = 'none';
-      performSearch(initialQuery);
+      currentPage = Math.max(1, parseInt(urlParams.get('page') || '1', 10) || 1);
+      performSearch(initialQuery, currentPage);
     }
 
     // Search when user types
@@ -149,6 +170,7 @@
 
       // Update URL
       const url = new URL(window.location);
+      url.searchParams.delete('page');
       if (query) {
         url.searchParams.set('q', query);
       } else {
@@ -162,6 +184,8 @@
       if (query.trim().length < 2) {
         searchResults.innerHTML = '';
         searchStatus.textContent = '';
+        searchPager.hidden = true;
+        searchRecovery.innerHTML = '';
         searchPrompt.style.display = '';
         return;
       }
@@ -170,30 +194,80 @@
       searchStatus.textContent = 'Searching...';
 
       debounceTimer = setTimeout(() => {
-        performSearch(query);
+        currentPage = 1;
+        performSearch(query, 1);
       }, 300);
     });
 
-    async function performSearch(query) {
-      try {
-        const { data: products, error } = await searchProducts(query);
+    function recoveryHtml(query) {
+      return `<div class="search-recovery">
+        <h2>No matches for "${escapeHtml(query)}"</h2>
+        <p>Try a different word, or:</p>
+        <div class="search-recovery-links">
+          <a href="products.html?type=saree">View all sarees</a>
+          <a href="search.html?q=chanderi+silk">Chanderi silk</a>
+          <a href="sale.html">Sale</a>
+          <a href="contact.html">Contact us</a>
+        </div>
+      </div>`;
+    }
 
+    function renderPager(query, page, total) {
+      const pages = Math.ceil(total / SEARCH_PAGE_SIZE);
+      if (pages <= 1) { searchPager.hidden = true; searchPager.innerHTML = ''; return; }
+      searchPager.hidden = false;
+      searchPager.innerHTML =
+        `<button type="button" class="btn secondary" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>Previous</button>` +
+        `<span class="search-pager-info">Page ${page} of ${pages}</span>` +
+        `<button type="button" class="btn secondary" data-page="${page + 1}" ${page >= pages ? 'disabled' : ''}>Next</button>`;
+    }
+
+    searchPager.addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-page]');
+      if (!b || b.disabled) return;
+      const page = parseInt(b.dataset.page, 10);
+      currentPage = page;
+      const url = new URL(window.location);
+      if (page > 1) url.searchParams.set('page', page); else url.searchParams.delete('page');
+      window.history.replaceState({}, '', url);
+      performSearch(searchInput.value, page, true);
+    });
+
+    async function performSearch(query, page = 1, scroll = false) {
+      const reqId = ++latestRequest;
+      try {
+        const { data: products, total, error } = await searchProducts(query, {
+          limit: SEARCH_PAGE_SIZE, offset: (page - 1) * SEARCH_PAGE_SIZE,
+        });
+        if (reqId !== latestRequest) return; // a newer search superseded this one
+
+        searchRecovery.innerHTML = '';
         if (error) {
-          searchStatus.textContent = 'Error searching. Please try again.';
+          logListingError('search', error);
+          searchStatus.textContent = '';
           searchResults.innerHTML = '';
+          searchPager.hidden = true;
+          searchRecovery.innerHTML = errorStateHtml();
+          window.announce?.("We couldn't load search results. Please try again.");
           return;
         }
 
-        searchStatus.textContent = products.length > 0 
-          ? `Found ${products.length} product${products.length === 1 ? '' : 's'}`
-          : 'No products found';
-
+        const q = query.trim();
+        if (products.length > 0) {
+          searchStatus.textContent = total + ' product' + (total === 1 ? '' : 's') + " found for '" + q + "'";
+        } else {
+          searchStatus.textContent = "No products found for '" + q + "'";
+          searchRecovery.innerHTML = recoveryHtml(q);
+        }
         window.announce?.(searchStatus.textContent);
         searchResults.innerHTML = renderSearchResults(products);
+        renderPager(query, page, total);
+        if (scroll) searchStatus.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       } catch (err) {
-        console.error('Search error:', err);
-        searchStatus.textContent = 'Error searching. Please try again.';
+        logListingError('search', err);
+        searchStatus.textContent = '';
+        searchRecovery.innerHTML = errorStateHtml();
       }
     }
   </script>

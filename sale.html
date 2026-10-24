@@ -317,6 +317,7 @@
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeSrc } from "./assets/safe.js";
     import { withCardImages, cardImageSrc, cardImageAttrs } from "./assets/media.js";
+    import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError } from "./assets/listing-ui.js";
 
     document.getElementById("header").innerHTML = renderHeader("");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -366,6 +367,7 @@
             </div>
             <div class="p-card-body">
               <div class="p-card-title">${escapeHtml(p.title)}</div>
+              ${cardMetaLine(p)}
               <div class="p-card-pricing">
                 <span class="p-card-original">${money(base)}</span>
                 <span class="p-card-sale-price">${money(sale)}</span>
@@ -418,7 +420,7 @@
 
       const { data, error } = await supabase
         .from("products")
-        .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, thumb_url, width, height, sort_order)")
+        .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)")
         .eq("is_active", true)
         .not("sale_price_inr", "is", null)
         .order("created_at", { ascending: false })
@@ -427,7 +429,7 @@
       skeleton.style.display = "none";
 
       if (error) {
-        status.textContent = "Error: " + error.message;
+        logListingError("sale", error); status.innerHTML = errorStateHtml();
         st.isLoading = false;
         return;
       }
@@ -438,6 +440,7 @@
 
       const normalized = slice.map(withCardImages);
 
+      if (st.offset === 0 && normalized.length === 0) { status.innerHTML = emptyStateHtml({ filtered: false }); st.hasMore = false; updateUI(); st.isLoading = false; return; }
       status.textContent = st.offset === 0 ? `${normalized.length}${st.hasMore ? "+" : ""} items on sale` : "";
 
       grid.insertAdjacentHTML("beforeend", normalized.map((p, i) => productCard(p, st.offset + i)).join(""));
