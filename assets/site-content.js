@@ -15,7 +15,7 @@ const TESTIMONIALS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/
 
 /* ────────────────── Hero banner ────────────────── */
 
-function heroSlideHtml(slide, index) {
+function heroSlideHtml(slide, index, total) {
   const isFirst = index === 0;
   const desktopSrc = safeSrc(slide.image_desktop_url || "");
   const mobileSrc = slide.image_mobile_url ? safeSrc(slide.image_mobile_url) : "";
@@ -26,7 +26,7 @@ function heroSlideHtml(slide, index) {
   const TitleTag = isFirst ? "h1" : "h2"; // only one <h1> per page — first slide keeps it
 
   return `
-    <article class="hero-slide" data-slide="${index + 1}">
+    <article class="hero-slide" data-slide="${index + 1}" role="group" aria-roledescription="slide" aria-label="Slide ${index + 1} of ${total}"${isFirst ? "" : ' inert aria-hidden="true"'}>
       <picture class="hero-media">
         ${mobileSrc ? `<source media="(max-width: 768px)" srcset="${mobileSrc}">` : ""}
         <img src="${desktopSrc}" alt="${alt}" loading="${isFirst ? "eager" : "lazy"}" ${isFirst ? 'fetchpriority="high"' : ""}>
@@ -62,42 +62,107 @@ export async function hydrateHero() {
       return;
     }
 
-    track.innerHTML = slides.map(heroSlideHtml).join("");
+    track.innerHTML = slides.map((s, i) => heroSlideHtml(s, i, slides.length)).join("");
 
     if (slides.length > 1 && dots) {
       dots.innerHTML = slides
-        .map((_, i) => `<button class="hero-dot" data-go="${i + 1}" aria-label="Go to slide ${i + 1}" aria-current="${i === 0}"></button>`)
+        .map((_, i) => `<button class="hero-dot" data-go="${i + 1}" aria-label="Go to slide ${i + 1}" aria-current="${i === 0}" type="button"></button>`)
         .join("");
       dots.style.display = "";
     } else if (dots) {
       dots.style.display = "none";
     }
 
-    initHeroCarousel(track, dots, slides.length);
+    initHeroCarousel(section, track, dots, slides.length);
   } catch (e) {
     console.error("hydrateHero error:", e);
     section.style.display = "none";
   }
 }
 
-function initHeroCarousel(track, dots, count) {
+const ICON_PAUSE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+const ICON_PLAY = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>';
+
+function initHeroCarousel(section, track, dots, count) {
   if (count <= 1) return; // nothing to carousel
 
   const dotEls = dots ? Array.from(dots.querySelectorAll(".hero-dot")) : [];
+  const slideEls = Array.from(track.querySelectorAll(".hero-slide"));
+  const reduceMq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  const reduced = () => !!(reduceMq && reduceMq.matches);
+
   let current = 1;
-  let autoplayTimer;
+  let autoplayTimer = null;
+  let userPaused = false;
+  let hovering = false;
+  let focusWithin = false;
+  let announceTimer = null;
+
+  // Pause/Play control (UX-012). Not created when the visitor prefers
+  // reduced motion: there is no autoplay to pause in that case.
+  let pauseBtn = null;
+  if (!reduced()) {
+    pauseBtn = document.createElement("button");
+    pauseBtn.type = "button";
+    pauseBtn.className = "hero-pause";
+    pauseBtn.setAttribute("aria-label", "Pause slideshow");
+    pauseBtn.innerHTML = ICON_PAUSE;
+    section.appendChild(pauseBtn);
+    pauseBtn.addEventListener("click", () => {
+      userPaused = !userPaused;
+      pauseBtn.setAttribute("aria-label", userPaused ? "Play slideshow" : "Pause slideshow");
+      pauseBtn.innerHTML = userPaused ? ICON_PLAY : ICON_PAUSE;
+    });
+  }
+
+  // Off-screen slides are inert + aria-hidden so their CTAs are not tab stops.
+  function syncSlideState() {
+    slideEls.forEach((el, i) => {
+      const on = i + 1 === current;
+      if (on) { el.removeAttribute("inert"); el.removeAttribute("aria-hidden"); }
+      else { el.setAttribute("inert", ""); el.setAttribute("aria-hidden", "true"); }
+    });
+    dotEls.forEach((d, i) => d.setAttribute("aria-current", String(i + 1 === current)));
+  }
+
+  function announceSlide() {
+    clearTimeout(announceTimer);
+    announceTimer = setTimeout(() => {
+      window.announce?.("Slide " + current + " of " + count);
+    }, 700);
+  }
+
+  function setCurrent(n, { announce } = {}) {
+    if (n === current) return;
+    current = n;
+    syncSlideState();
+    if (announce !== false) announceSlide();
+  }
 
   function go(n) {
-    current = n;
+    // Make the target interactive before scrolling to it.
+    setCurrent(n);
     const width = track.clientWidth || 0;
-    if (width) track.scrollTo({ left: (n - 1) * width, behavior: "smooth" });
-    dotEls.forEach((d, i) => d.setAttribute("aria-current", String(i + 1 === n)));
+    if (width) track.scrollTo({ left: (n - 1) * width, behavior: reduced() ? "auto" : "smooth" });
   }
+
+  const paused = () => userPaused || hovering || focusWithin || document.hidden;
 
   function startAutoplay() {
     clearInterval(autoplayTimer);
-    autoplayTimer = setInterval(() => go((current % count) + 1), 6500);
+    autoplayTimer = null;
+    if (reduced()) return; // static first slide, no motion
+    autoplayTimer = setInterval(() => {
+      if (!paused()) go((current % count) + 1);
+    }, 6500);
   }
+
+  section.addEventListener("mouseenter", () => { hovering = true; });
+  section.addEventListener("mouseleave", () => { hovering = false; });
+  section.addEventListener("focusin", () => { focusWithin = true; });
+  section.addEventListener("focusout", (e) => {
+    if (!e.relatedTarget || !section.contains(e.relatedTarget)) focusWithin = false;
+  });
 
   dotEls.forEach(d => d.addEventListener("click", () => {
     go(Number(d.dataset.go));
@@ -107,13 +172,23 @@ function initHeroCarousel(track, dots, count) {
   track.addEventListener("scroll", () => {
     const width = track.clientWidth || 1;
     const idx = Math.round(track.scrollLeft / width) + 1;
-    if (idx !== current && idx >= 1 && idx <= count) {
-      current = idx;
-      dotEls.forEach((d, i) => d.setAttribute("aria-current", String(i + 1 === current)));
-    }
+    if (idx >= 1 && idx <= count) setCurrent(idx);
   }, { passive: true });
 
-  go(1);
+  if (reduceMq && reduceMq.addEventListener) {
+    reduceMq.addEventListener("change", () => {
+      if (reduced()) {
+        clearInterval(autoplayTimer);
+        autoplayTimer = null;
+        if (pauseBtn) pauseBtn.hidden = true;
+      } else {
+        if (pauseBtn) pauseBtn.hidden = false;
+        startAutoplay();
+      }
+    });
+  }
+
+  syncSlideState();
   startAutoplay();
 }
 

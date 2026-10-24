@@ -222,3 +222,21 @@ h1.pd-title{margin:0}
   .pay-bar .pay-btn{flex:1;width:auto;min-height:46px}
   #main{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
 }
+
+/* ============================================================
+   Batch 3 (UX-012/013/014/016/031/032/033/049/055):
+   hero controls, logo, drawer, touch targets, tablet submenus, help CTA
+   ============================================================ */
+
+/* UX-013 hero dots: 7px visual, 24px hit area via padding */
+.hero-dots{bottom:12px;gap:0}
+.hero-dot{box-sizing:border-box;width:24px;height:24px;padding:8.5px;background-clip:content-box;background-color:rgba(255,255,255,.35)}
+.hero-dot[aria-current=true]{width:39px;background-color:#fff;background-clip:content-box;box-shadow:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
+@media (max-width:480px){.hero-dots{bottom:6px}}
+
+/* UX-012 hero pause/play, 44x44 bottom-right */
+.hero-pause{position:absolute;z-index:11;right:16px;bottom:8px;width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:rgba(36,24,17,.55);color:#fff;cursor:pointer;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:background .15s ease}
+.hero-pause:hover{background:rgba(36,24,17,.8)}
+.hero-pause[hidden]{display:none}
+@media (max-width:480px){.hero-pause{right:8px;bottom:2px}}
+
