@@ -25,23 +25,49 @@
   <div class="container">
     <div class="card" style="padding:22px;border-radius:18px;">
       <h1 style="margin-top:0;font-size:1.5em;">Track Order</h1>
-      <p class="small" style="max-width:72ch;">Enter your Shiprocket AWB to see the latest tracking updates.</p>
+      <p class="small" style="max-width:72ch;">Enter your order number and the phone number you used at checkout.</p>
 
-      <div class="form-grid" style="max-width:520px;margin-top:12px;">
-        <div class="field">
-          <label for="awb">AWB number</label>
-          <input id="awb" class="input" placeholder="e.g., 788830567028" inputmode="numeric" />
-          <div class="help-text">You can find the AWB in your Shiprocket panel or shipping label.</div>
-        </div>
-
-        <div class="row" style="gap:10px;">
-          <button id="btnTrack" class="btn" type="button">Track</button>
-          <a class="btn secondary" href="account.html?view=orders">Back to account</a>
-        </div>
+      <div id="myOrdersWrap" style="display:none;margin-top:14px;">
+        <h2 style="font-size:1.1em;margin:0 0 10px;">Your orders</h2>
+        <div id="myOrders" style="display:grid;gap:12px;"></div>
+        <p class="small" style="margin:14px 0 0;opacity:.8;">Tracking someone else's order? Use the form below.</p>
       </div>
 
-      <div id="status" class="small" style="margin-top:14px;"></div>
-      <div id="result" style="margin-top:12px;"></div>
+      <form id="lookupForm" class="form-grid" style="max-width:520px;margin-top:12px;" novalidate>
+        <div class="field">
+          <label for="orderNo">Order number</label>
+          <input id="orderNo" class="input" placeholder="e.g., AH2026000012" autocomplete="off" autocapitalize="characters" maxlength="12" />
+          <div class="help-text">You can find it on the payment success page or in your confirmation email.</div>
+        </div>
+        <div class="field">
+          <label for="phone">Phone number</label>
+          <input id="phone" class="input" placeholder="10-digit mobile number" inputmode="numeric" autocomplete="tel-national" maxlength="14" />
+        </div>
+        <div class="row" style="gap:10px;">
+          <button id="btnLookup" class="btn" type="submit">Track</button>
+          <a class="btn secondary" href="account.html?view=orders">Back to account</a>
+        </div>
+      </form>
+
+      <div id="lookupStatus" class="small" style="margin-top:14px;" role="status" aria-live="polite"></div>
+      <div id="orderResult" style="margin-top:12px;"></div>
+
+      <details id="awbBox" style="margin-top:18px;max-width:520px;">
+        <summary style="cursor:pointer;font-weight:700;">I have an AWB number</summary>
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="field">
+            <label for="awb">AWB number</label>
+            <input id="awb" class="input" placeholder="e.g., 788830567028" inputmode="numeric" />
+            <div class="help-text">The AWB is on your shipping label or the dispatch message we sent you.</div>
+          </div>
+          <div class="row" style="gap:10px;">
+            <button id="btnTrack" class="btn secondary" type="button">Track AWB</button>
+          </div>
+        </div>
+        <div id="status" class="small" style="margin-top:14px;"></div>
+        <div id="result" style="margin-top:12px;"></div>
+      </details>
+
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <a class="btn" href="products.html">Browse Sarees</a>
         <a class="btn ghost" href="cart.html">Go to Cart</a>
@@ -66,10 +92,39 @@
     const status = document.getElementById("status");
     const result = document.getElementById("result");
 
+    const form = document.getElementById("lookupForm");
+    const elOrderNo = document.getElementById("orderNo");
+    const elPhone = document.getElementById("phone");
+    const btnLookup = document.getElementById("btnLookup");
+    const lookupStatus = document.getElementById("lookupStatus");
+    const orderResult = document.getElementById("orderResult");
+
+    const money = (n) => "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+    const fmtDate = (iso) => {
+      if (!iso) return "";
+      const d = new Date(iso);
+      return isNaN(d) ? "" : d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    };
+
+    const STATUS_LABELS = {
+      created: "Awaiting payment",
+      payment_pending: "Awaiting payment",
+      payment_link_created: "Awaiting payment",
+      payment_link_failed: "Payment failed",
+      cod_pending: "Order placed",
+      paid: "Payment received",
+      confirmed: "Confirmed",
+      shipped: "Shipped",
+      delivered: "Delivered",
+      cancelled: "Cancelled",
+      refunded: "Refunded",
+      failed: "Payment failed / expired",
+    };
+    const statusLabel = (s) => STATUS_LABELS[s] || String(s || "").replace(/_/g, " ");
+
     function getAwbFromUrl() {
       const p = new URLSearchParams(location.search);
-      const v = (p.get("awb") || "").trim();
-      return v;
+      return (p.get("awb") || "").trim();
     }
 
     function renderTimeline(acts = []) {
@@ -88,6 +143,36 @@
       return `<div style="display:grid;gap:10px;">${rows}</div>`;
     }
 
+    // Shared Shiprocket call (existing shiprocket-track edge function).
+    async function fetchAwbTracking(awb) {
+      const { data, error } = await supabase.functions.invoke("shiprocket-track", { body: { awb } });
+      if (error) {
+        // supabase.functions.invoke() only puts a generic message in error.message;
+        // the function's real reason lives in error.context.
+        let msg = error.message || "Unknown error";
+        try {
+          if (error.context && typeof error.context.json === "function") {
+            const body = await error.context.json();
+            if (body?.error) msg = body.error;
+          }
+        } catch (_) { /* keep generic message */ }
+        return { error: msg };
+      }
+      if (data?.shipped === false) return { shipped: false, message: data.message };
+      const tracking = data?.tracking_data;
+      const st = tracking?.shipment_track?.[0] || {};
+      const trackUrl = tracking?.track_url || "";
+      return {
+        shipped: true,
+        current: st.current_status || "",
+        etd: st.etd || "",
+        courier: st.courier_name || "",
+        safeUrl: trackUrl && /^https?:\/\//i.test(trackUrl) ? escapeAttr(trackUrl) : "",
+        timelineHtml: renderTimeline(tracking?.shipment_track_activities || []),
+      };
+    }
+
+    // ---- AWB-only flow (kept for people who already have an AWB) ----
     async function doTrack(awb) {
       const clean = String(awb || "").trim();
       if (!clean) {
@@ -95,55 +180,20 @@
         result.innerHTML = "";
         return;
       }
-
       status.textContent = "Fetching tracking…";
       result.innerHTML = "";
       btn.disabled = true;
-
       try {
-        // Requires the Supabase Edge Function: shiprocket-track
-        const { data, error } = await supabase.functions.invoke("shiprocket-track", {
-          body: { awb: clean }
-        });
-
-        if (error) {
-          // FIX: supabase.functions.invoke() only ever put a generic
-          // "Edge Function returned a non-2xx status code" in error.message —
-          // the function's real reason (order not found, no access, etc.)
-          // lives in error.context, which was never read here. Same fix
-          // already applied to the admin pages in an earlier round.
-          let msg = error.message || "Unknown error";
-          try {
-            if (error.context && typeof error.context.json === "function") {
-              const body = await error.context.json();
-              if (body?.error) msg = body.error;
-            }
-          } catch (_) { /* fall back to the generic message above */ }
-          status.textContent = "Could not fetch tracking: " + msg;
-          return;
-        }
-
-        const tracking = data?.tracking_data;
-        const shipmentTrack = tracking?.shipment_track?.[0];
-        const current = shipmentTrack?.current_status || "";
-        const trackUrl = tracking?.track_url || "";
-        const safeUrl = trackUrl && /^https?:\/\//i.test(trackUrl) ? escapeAttr(trackUrl) : "";
-
-        if (data?.shipped === false) {
-          status.textContent = data.message || "This order has not been shipped yet.";
-          result.innerHTML = "";
-          return;
-        }
-
-        status.textContent = current ? ("Current status: " + current) : "Tracking loaded.";
+        const r = await fetchAwbTracking(clean);
+        if (r.error) { status.textContent = "Could not fetch tracking: " + r.error; return; }
+        if (r.shipped === false) { status.textContent = r.message || "This order has not been shipped yet."; return; }
+        status.textContent = r.current ? ("Current status: " + r.current) : "Tracking loaded.";
         result.innerHTML = `
-          ${safeUrl ? `<div class="small" style="margin-bottom:10px;"><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open Shiprocket tracking link</a></div>` : ``}
-          ${renderTimeline(tracking?.shipment_track_activities || [])}
+          ${r.safeUrl ? `<div class="small" style="margin-bottom:10px;"><a href="${r.safeUrl}" target="_blank" rel="noopener noreferrer">Open Shiprocket tracking link</a></div>` : ""}
+          ${r.timelineHtml}
         `;
       } catch (e) {
-        // FIX: with no try/catch, a thrown network error (not just a non-2xx
-        // response) left the button permanently disabled — this ensures it
-        // always gets re-enabled below no matter what goes wrong.
+        // Without this, a thrown network error would leave the button disabled.
         status.textContent = "Could not fetch tracking: " + (e?.message || "Network error");
       } finally {
         btn.disabled = false;
@@ -151,15 +201,173 @@
     }
 
     btn.addEventListener("click", () => doTrack(elAwb.value));
-    elAwb.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") doTrack(elAwb.value);
-    });
+    elAwb.addEventListener("keydown", (e) => { if (e.key === "Enter") doTrack(elAwb.value); });
+
+    // ---- Order card ----
+    function renderOrderCard(o, idx) {
+      const items = (o.items || []).map(i => `
+        <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06);">
+          <span>${escapeHtml(i.title)} <span class="small" style="opacity:.7;">× ${escapeHtml(i.qty)}</span></span>
+          <span>${money(Number(i.price_inr) * Number(i.qty))}</span>
+        </div>`).join("");
+      const row = (label, val, extra = "") =>
+        `<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;${extra}"><span class="small" style="opacity:.8;">${label}</span><span>${val}</span></div>`;
+      const addr = (o.shipping_address_lines || []).map(l => escapeHtml(l)).join("<br>");
+      const safeTrack = o.tracking_url && /^https:\/\//i.test(o.tracking_url) ? escapeAttr(o.tracking_url) : "";
+      return `
+        <div class="card order-lookup-card" style="padding:16px;border-radius:14px;" data-awb="${escapeAttr(o.awb || "")}" data-idx="${idx}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:900;font-size:1.05em;">Order ${escapeHtml(o.order_number || "")}</div>
+              <div class="small" style="opacity:.75;">Placed ${escapeHtml(fmtDate(o.created_at))}</div>
+            </div>
+            <span style="display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:800;background:rgba(124,28,28,.08);color:#7c1c1c;border:1px solid rgba(124,28,28,.25);">${escapeHtml(statusLabel(o.status))}</span>
+          </div>
+          <div style="margin-top:12px;">${items || `<div class="small">No item details.</div>`}</div>
+          <div style="margin-top:10px;">
+            ${row("Subtotal", money(o.subtotal_inr))}
+            ${Number(o.discount_inr) > 0 ? row("Discount", "−" + money(o.discount_inr), "color:#16a34a;") : ""}
+            ${Number(o.shipping_inr) > 0 ? row("Shipping", money(o.shipping_inr)) : ""}
+            ${Number(o.gst_inr) > 0 ? row("GST (included)", money(o.gst_inr)) : ""}
+            ${row("<strong>Total</strong>", "<strong>" + money(o.total_inr) + "</strong>", "border-top:1px solid rgba(0,0,0,.1);margin-top:4px;padding-top:8px;")}
+          </div>
+          ${addr ? `<div class="small" style="margin-top:12px;"><span style="opacity:.75;">Delivering to</span><br>${addr}</div>` : ""}
+          ${o.delivered_at ? `<div class="small" style="margin-top:8px;">Delivered on <strong>${escapeHtml(fmtDate(o.delivered_at))}</strong></div>` : ""}
+          <div class="order-live" style="margin-top:12px;">
+            ${o.awb ? `<div class="small">Loading live tracking…</div>` : `<div class="small" style="opacity:.8;">Tracking details will appear here once your order is dispatched.</div>`}
+          </div>
+          ${safeTrack ? `<div class="small" style="margin-top:8px;"><a href="${safeTrack}" target="_blank" rel="noopener noreferrer">Open Shiprocket tracking page →</a></div>` : ""}
+        </div>`;
+    }
+
+    // Once the card is in the DOM, pivot to the existing Shiprocket integration when an AWB exists.
+    async function hydrateLive(container) {
+      for (const card of container.querySelectorAll(".order-lookup-card")) {
+        const awb = card.dataset.awb;
+        if (!awb) continue;
+        const live = card.querySelector(".order-live");
+        try {
+          const r = await fetchAwbTracking(awb);
+          if (r.error || r.shipped === false) {
+            live.innerHTML = `<div class="small" style="opacity:.8;">${escapeHtml(r.error ? "Live tracking is unavailable right now." : (r.message || "Not yet shipped."))}</div>`;
+            continue;
+          }
+          live.innerHTML = `
+            <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;">
+              ${r.current ? `<strong>${escapeHtml(r.current)}</strong>` : ""}
+              ${r.etd ? `<span class="small">Expected: <strong>${escapeHtml(r.etd)}</strong></span>` : ""}
+              ${r.courier ? `<span class="small" style="opacity:.8;">via ${escapeHtml(r.courier)}</span>` : ""}
+            </div>
+            ${r.timelineHtml}`;
+        } catch (_) {
+          live.innerHTML = `<div class="small" style="opacity:.8;">Live tracking is unavailable right now.</div>`;
+        }
+      }
+    }
+
+    // ---- Public lookup (order number + phone) ----
+    async function doLookup(orderNo, phone) {
+      const on = String(orderNo || "").trim().toUpperCase();
+      const ph = String(phone || "").replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
+      if (!/^AH\d{10}$/.test(on)) {
+        lookupStatus.textContent = "Enter your order number in the format AH followed by 10 digits (e.g., AH2026000012).";
+        orderResult.innerHTML = "";
+        elOrderNo.focus();
+        return;
+      }
+      if (!/^\d{10}$/.test(ph)) {
+        lookupStatus.textContent = "Enter the 10-digit phone number used at checkout.";
+        orderResult.innerHTML = "";
+        elPhone.focus();
+        return;
+      }
+
+      lookupStatus.textContent = "Looking up your order…";
+      orderResult.innerHTML = "";
+      btnLookup.disabled = true;
+      try {
+        const { data, error } = await supabase.functions.invoke("get-public-order-status", {
+          body: { order_number: on, phone: ph },
+        });
+        if (error) {
+          let msg = "";
+          let code = "";
+          try {
+            if (error.context && typeof error.context.json === "function") {
+              const body = await error.context.json();
+              msg = body?.message || body?.error || "";
+              code = body?.error || "";
+            }
+          } catch (_) { /* ignore */ }
+          const httpStatus = error.context?.status;
+          if (httpStatus === 404 || code === "not_found") {
+            lookupStatus.textContent = "Order not found. Check the order number (format AHxxxxxxx) and the phone used at checkout.";
+          } else if (httpStatus === 429) {
+            lookupStatus.textContent = msg || "Too many attempts. Please wait a minute and try again.";
+          } else {
+            lookupStatus.textContent = msg || "Could not look up your order right now. Please try again.";
+          }
+          return;
+        }
+        lookupStatus.textContent = "";
+        orderResult.innerHTML = renderOrderCard(data, 0);
+        hydrateLive(orderResult);
+      } catch (e) {
+        lookupStatus.textContent = "Could not look up your order: " + (e?.message || "Network error");
+      } finally {
+        btnLookup.disabled = false;
+      }
+    }
+
+    form.addEventListener("submit", (e) => { e.preventDefault(); doLookup(elOrderNo.value, elPhone.value); });
+    elOrderNo.addEventListener("input", () => { elOrderNo.value = elOrderNo.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); });
+
+    // ---- Logged-in: show their own orders (same RLS-scoped query as orders.html) ----
+    async function loadMyOrders() {
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        const user = sess?.session?.user;
+        if (!user) return;
+        const { data, error } = await supabase
+          .from("orders")
+          .select("order_number, status, subtotal_inr, shipping_inr, discount_inr, gst_inr, total_inr, shipping_address, delivered_at, created_at, shiprocket_awb, order_items(qty, title, price_inr)")
+          .eq("user_id", user.id)
+          .not("order_number", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(5);
+        if (error || !data || !data.length) return;
+        const cards = data.map((o, i) => {
+          const a = o.shipping_address || {};
+          const cityLine = [[a.city, a.state].filter(Boolean).join(", "), a.pincode].filter(Boolean).join(" - ");
+          const lines = [a.address_line1, a.address_line2, cityLine]
+            .map(x => String(x ?? "").trim()).filter(Boolean).slice(-2);
+          return renderOrderCard({
+            ...o,
+            items: o.order_items || [],
+            shipping_address_lines: lines,
+            awb: o.shiprocket_awb || null,
+            tracking_url: o.shiprocket_awb ? "https://shiprocket.co/tracking/" + encodeURIComponent(o.shiprocket_awb) : null,
+          }, i);
+        });
+        const box = document.getElementById("myOrders");
+        box.innerHTML = cards.join("");
+        document.getElementById("myOrdersWrap").style.display = "";
+        hydrateLive(box);
+      } catch (_) { /* signed out or RLS: the form still works */ }
+    }
+
+    // ---- Boot ----
+    const params = new URLSearchParams(location.search);
+    const preOrder = (params.get("order") || "").trim().toUpperCase();
+    if (/^AH\d{10}$/.test(preOrder)) elOrderNo.value = preOrder;
 
     const awbFromUrl = getAwbFromUrl();
     if (awbFromUrl) {
+      document.getElementById("awbBox").open = true;
       elAwb.value = awbFromUrl;
       doTrack(awbFromUrl);
     }
+    loadMyOrders();
   </script>
 </body>
 </html>
