@@ -2,6 +2,7 @@
 import { supabase } from "./supabase.js";
 import { escapeHtml, escapeAttr, safeSrc, safeCssUrl } from "./safe.js";
 import { withCardImages, cardImageSrc, cardImageAttrs } from "./media.js";
+import { cardMetaLine, emptyStateHtml, errorStateHtml, logListingError } from "./listing-ui.js";
 import { addToWishlist, removeFromWishlist, isInWishlist } from "./wishlist.js";
 
 /**
@@ -189,6 +190,7 @@ function productCard(p) {
         </div>
         <div class="p-card-body">
           <div class="p-card-title">${escapeHtml(p.title ?? "")}</div>
+          ${cardMetaLine(p)}
           <div class="p-card-pricing">${priceHtml}</div>
           ${!soldOut && available <= 3 ? `<div class="p-card-stock low">Only ${available} left</div>` : ""}
           ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
@@ -265,7 +267,7 @@ async function fetchMostLoved(limit = 6) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count, product_images(image_url, thumb_url, width, height, sort_order)"
+      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)"
     )
     .eq("is_active", true)
     .order("view_count", { ascending: false })
@@ -281,7 +283,7 @@ async function fetchLatestActive(limit = 6) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at, product_images(image_url, thumb_url, width, height, sort_order)"
+      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)"
     )
     .eq("is_active", true)
     .order("created_at", { ascending: false })
