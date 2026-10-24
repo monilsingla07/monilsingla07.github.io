@@ -74,35 +74,43 @@
       </div>
     </div>
 
-    <div id="warn" class="card" style="padding:12px 14px; border-radius:0; display:none; border:1px solid rgba(220,20,60,.22); margin-bottom:12px;">
-      <div class="small" style="color:crimson;" id="warnText"></div>
+    <div id="warn" class="card" role="alert" style="padding:12px 14px; border-radius:0; display:none; border:1px solid rgba(179,38,30,.35); margin-bottom:12px;">
+      <div class="small" style="color:#b3261e;font-weight:600;" id="warnText"></div>
     </div>
+
+    <!-- Validation summary: one assertive announcement listing every problem,
+         each item linking to its field (inline errors sit under each field). -->
+    <div id="errSummary" class="err-summary" role="alert" aria-live="assertive" tabindex="-1" hidden></div>
 
     <div class="checkout-grid">
 
       <!-- LEFT: Shipping -->
-      <form id="form" class="card" style="padding:16px; border-radius:0;">
+      <form id="form" class="card" style="padding:16px; border-radius:0;" novalidate>
         <h3 style="margin:0 0 8px 0;">Shipping details</h3>
         <div class="small" style="opacity:.8; margin-bottom:12px;">Used for delivery updates and invoice.</div>
 
         <div class="field">
           <label class="small" for="co-full_name">Full name</label>
           <input class="input" id="co-full_name" name="full_name" required placeholder="e.g., Monil Gupta" autocomplete="name" autocapitalize="words" />
+        <div class="field-err" id="co-full_name_err" role="alert" hidden></div>
         </div>
 
         <div class="field">
           <label class="small" for="co-phone">Phone</label>
           <input class="input" id="co-phone" type="tel" name="phone" required maxlength="10" placeholder="10-digit mobile" inputmode="numeric" autocomplete="tel" />
+        <div class="field-err" id="co-phone_err" role="alert" hidden></div>
         </div>
 
         <div class="field">
           <label class="small" for="co-email">Email (optional)</label>
           <input class="input" id="co-email" type="email" name="email" placeholder="name@email.com" inputmode="email" autocomplete="email" />
+        <div class="field-err" id="co-email_err" role="alert" hidden></div>
         </div>
 
         <div class="field">
           <label class="small" for="co-address_line1">Address line 1</label>
           <input class="input" id="co-address_line1" name="address_line1" required placeholder="House / street" autocomplete="shipping address-line1" autocapitalize="words" />
+        <div class="field-err" id="co-address_line1_err" role="alert" hidden></div>
         </div>
 
         <div class="field">
@@ -114,16 +122,21 @@
           <div class="field" style="flex:1;">
             <label class="small" for="co-city">City</label>
             <input class="input" id="co-city" name="city" required autocomplete="shipping address-level2" autocapitalize="words" />
+            <div class="field-err" id="co-city_err" role="alert" hidden></div>
           </div>
           <div class="field" style="flex:1;">
             <label class="small" for="co-state">State</label>
-            <input class="input" id="co-state" name="state" required autocomplete="shipping address-level1" autocapitalize="words" />
+            <select class="input" id="co-state" name="state" required autocomplete="shipping address-level1">
+              <option value="">Select state</option>
+            </select>
+            <div class="field-err" id="co-state_err" role="alert" hidden></div>
           </div>
         </div>
 
         <div class="field">
           <label class="small" for="co-pincode">Pincode</label>
           <input class="input" id="co-pincode" name="pincode" required maxlength="6" placeholder="e.g., 560001" inputmode="numeric" autocomplete="shipping postal-code" />
+        <div class="field-err" id="co-pincode_err" role="alert" hidden></div>
         </div>
 
         <div style="height:20px;"></div>
@@ -143,7 +156,7 @@
         <div style="height:14px;"></div>
 
         <button class="btn" type="button" id="payBtn" style="width:100%;">Pay with Razorpay</button>
-        <div id="status" class="small" style="margin-top:10px;"></div>
+        <div id="status" class="small" style="margin-top:10px;" role="status" aria-live="polite"></div>
 
         <div id="payNote" class="small" style="margin-top:12px; opacity:.8;">
           Note: Payments are processed by Razorpay. You'll be redirected to a secure payment page.
@@ -159,13 +172,13 @@
 
         <!-- Coupon -->
         <div id="couponBox" style="margin-top:14px;">
-          <button id="couponToggle" type="button" style="display:flex;align-items:center;gap:8px;background:var(--brand-light);border:1.5px dashed var(--brand);border-radius:0;padding:10px 14px;width:100%;cursor:pointer;color:var(--brand);font-weight:700;font-size:14px;">
+          <button id="couponToggle" type="button" aria-expanded="false" aria-controls="couponPanel" style="display:flex;align-items:center;gap:8px;background:var(--brand-light);border:1.5px dashed var(--brand);border-radius:0;padding:10px 14px;width:100%;cursor:pointer;color:var(--brand);font-weight:700;font-size:14px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
             <span id="couponToggleLabel">Have a coupon? Tap to apply</span>
           </button>
 
           <!-- Coupon Panel (hidden by default) -->
-          <div id="couponPanel" style="display:none; margin-top:10px; border:1px solid var(--border); padding:14px; background:var(--surface);">
+          <div id="couponPanel" role="group" aria-label="Coupons" style="display:none; margin-top:10px; border:1px solid var(--border); padding:14px; background:var(--surface);">
             <div style="font-weight:800; font-size:13px; margin-bottom:10px;">Available coupons</div>
 
             <div id="couponOptions" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
@@ -399,7 +412,6 @@
         if (gstLabel)    gstLabel.textContent = GST_INCLUDED_IN_PRICE ? "GST (included)" : "GST";
         if (couponMsg)   couponMsg.textContent = "";
         cartOk = false;
-        validateAll({ showErrors: false });
         return;
       }
 
@@ -575,11 +587,13 @@
           }),
         });
       }
-
-      validateAll({ showErrors: false });
     }
 
     // ---------- Validation ----------
+    // Pay stays enabled. Clicking it validates; each problem gets an inline
+    // message (aria-invalid + aria-describedby, role="alert", icon + text, not
+    // colour alone), the first invalid field takes focus, and one assertive
+    // summary lists everything.
     const isValidEmail      = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(e);
     const sanitizeText      = (s) => String(s || "").trim().replace(/\s+/g, " ");
     const normalizePhone10  = (raw) => {
@@ -589,31 +603,53 @@
       return d;
     };
     const normalizePincode6 = (raw) => String(raw || "").replace(/\D/g, "");
-    const markInvalid  = (el, msg) => { el.classList.add("is-invalid"); el.dataset.error = msg; };
-    const markValid    = (el)      => { el.classList.remove("is-invalid"); delete el.dataset.error; };
-    const clearMarks   = (el)      => { el.classList.remove("is-invalid"); delete el.dataset.error; };
+
+    const errEl = (el) => document.getElementById(el.id + "_err");
+    const fieldLabel = (el) => (document.querySelector('label[for="' + el.id + '"]')?.textContent || el.name).replace(/\s*\(optional\)/i, "").trim();
+
+    const markInvalid = (el, msg) => {
+      const err = errEl(el);
+      el.classList.add("is-invalid");
+      el.setAttribute("aria-invalid", "true");
+      if (err) {
+        el.setAttribute("aria-describedby", err.id);
+        err.textContent = msg;
+        err.hidden = false;
+      }
+    };
+    const clearMarks = (el) => {
+      const err = errEl(el);
+      el.classList.remove("is-invalid");
+      el.removeAttribute("aria-invalid");
+      el.removeAttribute("aria-describedby");
+      if (err) { err.hidden = true; err.textContent = ""; }
+    };
 
     const validateField = (name, valueRaw) => {
       if (name === "full_name") {
         const v = sanitizeText(valueRaw);
-        if (!v || v.length < 3) return { ok: false, message: "Enter a valid full name (min 3 chars)." };
+        if (!v) return { ok: false, message: "Enter your full name." };
+        if (v.length < 3) return { ok: false, message: "Full name must be at least 3 characters." };
         return { ok: true };
       }
       if (name === "phone") {
-        const p = normalizePhone10(valueRaw);
-        if (!p || p.length !== 10 || !/^[6-9]\d{9}$/.test(p))
-          return { ok: false, message: "Enter a valid 10-digit Indian mobile (starts 6–9)." };
+        const raw = String(valueRaw || "").trim();
+        const p = normalizePhone10(raw);
+        if (!raw) return { ok: false, message: "Enter your 10-digit mobile number." };
+        if (p.length !== 10) return { ok: false, message: "Phone must be 10 digits (you entered " + p.length + ")." };
+        if (!/^[6-9]\d{9}$/.test(p)) return { ok: false, message: "Phone must start with 6, 7, 8 or 9." };
         return { ok: true };
       }
       if (name === "email") {
         const e = sanitizeText(valueRaw).toLowerCase();
         if (!e) return { ok: true };
-        if (!isValidEmail(e)) return { ok: false, message: "Enter a valid email or leave blank." };
+        if (!isValidEmail(e)) return { ok: false, message: "Email should look like name@example.com, or leave it blank." };
         return { ok: true };
       }
       if (name === "address_line1") {
         const v = sanitizeText(valueRaw);
-        if (!v || v.length < 5) return { ok: false, message: "Enter Address line 1 (min 5 chars)." };
+        if (!v) return { ok: false, message: "Enter your house or street address." };
+        if (v.length < 5) return { ok: false, message: "Address line 1 must be at least 5 characters." };
         return { ok: true };
       }
       if (name === "city") {
@@ -621,67 +657,69 @@
         return { ok: true };
       }
       if (name === "state") {
-        if (!sanitizeText(valueRaw)) return { ok: false, message: "Enter your state." };
+        if (!sanitizeText(valueRaw)) return { ok: false, message: "Select your state." };
         return { ok: true };
       }
       if (name === "pincode") {
         const p = normalizePincode6(valueRaw);
-        if (!p || p.length !== 6) return { ok: false, message: "Enter a valid 6-digit pincode." };
+        if (!p) return { ok: false, message: "Enter your 6-digit pincode." };
+        if (p.length !== 6) return { ok: false, message: "Pincode must be 6 digits (you entered " + p.length + ")." };
         return { ok: true };
       }
       return { ok: true };
     };
 
-    const requiredFields = ["full_name", "phone", "address_line1", "city", "state", "pincode"];
+    const fieldEls = () => Array.from(form.querySelectorAll("input[name], select[name]"));
 
+    // Validates every field. Marks a field invalid inline when showErrors is
+    // true or the shopper has already visited it. Returns the full error list.
     const validateAll = ({ showErrors = false } = {}) => {
-      let allOk = true;
-      let firstError = null;
-
-      form.querySelectorAll("input[name]").forEach((input) => {
-        const name = input.name;
-        const res  = validateField(name, input.value);
-        const isRequired = requiredFields.includes(name);
-
-        if ((isRequired || name === "email") && !res.ok) {
-          allOk = false;
-          if (showErrors || input.dataset.touched === "1") markInvalid(input, res.message);
-          else clearMarks(input);
-          if (!firstError) firstError = res.message;
+      const errors = [];
+      fieldEls().forEach((el) => {
+        const res = validateField(el.name, el.value);
+        if (!res.ok) {
+          errors.push({ el, message: res.message });
+          if (showErrors || el.dataset.touched === "1") markInvalid(el, res.message);
+          else clearMarks(el);
         } else {
-          if (!isRequired && name !== "email" && input.value.trim() === "") clearMarks(input);
-          else if (name === "email" && input.value.trim() === "")           clearMarks(input);
-          else markValid(input);
+          clearMarks(el);
         }
       });
-
-      const canPay = allOk && cartOk;
-      payBtn.disabled      = !canPay;
-      payBtn.style.opacity = canPay ? "1" : "0.6";
-      payBtn.style.cursor  = canPay ? "pointer" : "not-allowed";
-
-      if (showErrors) {
-        if (!allOk && firstError) showError(firstError);
-        else clearError();
-      }
-      return allOk && cartOk;
+      return errors;
     };
 
+    function renderErrSummary(errors) {
+      const box = document.getElementById("errSummary");
+      if (!box) return;
+      if (!errors.length) { box.hidden = true; box.innerHTML = ""; return; }
+      box.innerHTML =
+        '<strong>Please fix ' + errors.length + (errors.length === 1 ? ' problem' : ' problems') + ' before paying:</strong><ul>' +
+        errors.map((e) => '<li><a href="#' + e.el.id + '" data-focus="' + e.el.id + '">' + escapeHtml(fieldLabel(e.el)) + ': ' + escapeHtml(e.message) + '</a></li>').join("") +
+        '</ul>';
+      box.hidden = false;
+      box.querySelectorAll("a[data-focus]").forEach((a) => a.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        document.getElementById(a.dataset.focus)?.focus();
+      }));
+    }
+
     const attachLiveValidation = () => {
-      form.querySelectorAll("input[name]").forEach((input) => {
-        const name = input.name;
-        input.addEventListener("input", () => {
-          if (name === "phone")   input.value = String(input.value || "").replace(/\D/g, "").slice(0, 10);
-          if (name === "pincode") input.value = String(input.value || "").replace(/\D/g, "").slice(0, 6);
-          validateAll({ showErrors: false });
+      fieldEls().forEach((el) => {
+        const name = el.name;
+        const evt = el.tagName === "SELECT" ? "change" : "input";
+        el.addEventListener(evt, () => {
+          if (name === "phone")   el.value = String(el.value || "").replace(/\D/g, "").slice(0, 10);
+          if (name === "pincode") el.value = String(el.value || "").replace(/\D/g, "").slice(0, 6);
+          // Once a field has been flagged, re-check it as the shopper fixes it.
+          if (el.getAttribute("aria-invalid") === "true") {
+            const res = validateField(name, el.value);
+            if (res.ok) clearMarks(el); else markInvalid(el, res.message);
+          }
         });
-        input.addEventListener("blur", () => {
-          input.dataset.touched = "1";
-          validateAll({ showErrors: false });
-          const res = validateField(name, input.value);
-          const isRequired = requiredFields.includes(name);
-          if ((isRequired || name === "email") && !res.ok) showError(res.message);
-          else clearError();
+        el.addEventListener("blur", () => {
+          el.dataset.touched = "1";
+          const res = validateField(name, el.value);
+          if (res.ok) clearMarks(el); else markInvalid(el, res.message);
         });
       });
     };
@@ -700,6 +738,71 @@
         pincode:      normalizePincode6(raw.pincode),
       };
     };
+
+    // ---------- State list + pincode auto-fill (UX-044) ----------
+    const INDIAN_STATES = [
+      "Andaman and Nicobar Islands","Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chandigarh","Chhattisgarh",
+      "Dadra and Nagar Haveli and Daman and Diu","Delhi","Goa","Gujarat","Haryana","Himachal Pradesh","Jammu and Kashmir",
+      "Jharkhand","Karnataka","Kerala","Ladakh","Lakshadweep","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram",
+      "Nagaland","Odisha","Puducherry","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh",
+      "Uttarakhand","West Bengal",
+    ];
+    const stateSelect = document.getElementById("co-state");
+    INDIAN_STATES.forEach((n) => {
+      const o = document.createElement("option");
+      o.value = n; o.textContent = n;
+      stateSelect.appendChild(o);
+    });
+
+    const STATE_ALIASES = {
+      "orissa": "odisha", "uttaranchal": "uttarakhand", "pondicherry": "puducherry",
+      "nct of delhi": "delhi", "new delhi": "delhi",
+      "dadra and nagar haveli": "dadra and nagar haveli and daman and diu",
+      "daman and diu": "dadra and nagar haveli and daman and diu",
+    };
+    const stateKey = (v) => String(v || "").toLowerCase().replace(/&/g, "and").replace(/\s+/g, " ").trim();
+    function matchState(v) {
+      let k = stateKey(v);
+      k = STATE_ALIASES[k] || k;
+      return INDIAN_STATES.find((n) => stateKey(n) === k) || "";
+    }
+
+    // India Post pincode lookup: purely a convenience. Any failure (network,
+    // unknown pincode, timeout) is silent and the shopper types it manually.
+    // It never blocks submit and never overwrites a city the shopper typed.
+    let pinLookupSeq = 0;
+    async function lookupPincode() {
+      const pinEl = document.getElementById("co-pincode");
+      const pin = normalizePincode6(pinEl.value);
+      if (pin.length !== 6) return;
+      const seq = ++pinLookupSeq;
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 5000);
+      try {
+        const res = await fetch("https://api.postalpincode.in/pincode/" + pin, { signal: ctrl.signal });
+        if (!res.ok) return;
+        const json = await res.json();
+        const po = json?.[0]?.Status === "Success" ? json[0].PostOffice?.[0] : null;
+        if (!po || seq !== pinLookupSeq || normalizePincode6(pinEl.value) !== pin) return;
+        const cityEl = document.getElementById("co-city");
+        const city = sanitizeText(po.District || po.Block || po.Name);
+        if (city && (!sanitizeText(cityEl.value) || cityEl.dataset.auto === "1")) {
+          cityEl.value = city; cityEl.dataset.auto = "1";
+          if (cityEl.getAttribute("aria-invalid") === "true") clearMarks(cityEl);
+        }
+        const st = matchState(po.State);
+        if (st) {
+          stateSelect.value = st;
+          if (stateSelect.getAttribute("aria-invalid") === "true") clearMarks(stateSelect);
+        }
+      } catch (_) {
+        // silent by design
+      } finally {
+        clearTimeout(t);
+      }
+    }
+    document.getElementById("co-pincode").addEventListener("blur", lookupPincode);
+    document.getElementById("co-city").addEventListener("input", (e) => { delete e.target.dataset.auto; });
 
 // ---------- Init ----------
     statusEl.textContent = "";
@@ -847,6 +950,7 @@
       const isOpen = couponPanel.style.display !== "none";
       couponPanel.style.display    = isOpen ? "none" : "block";
       couponToggle.style.borderStyle = isOpen ? "dashed" : "solid";
+      couponToggle.setAttribute("aria-expanded", isOpen ? "false" : "true");
     });
 
     const applyCouponNow = async (code) => {
@@ -927,7 +1031,10 @@
       document.getElementById("useSavedAddress")?.addEventListener("click", () => {
         const set = (name, val) => {
           const el = form.querySelector(`[name="${name}"]`);
-          if (el && val) { el.value = val; el.dataset.touched = "1"; }
+          if (!el || !val) return;
+          if (el.tagName === "SELECT") { const m = matchState(val); if (m) el.value = m; }
+          else el.value = val;
+          el.dataset.touched = "1";
         };
         set("full_name",     profile.full_name);
         set("phone",         profile.phone);
@@ -939,6 +1046,7 @@
         set("pincode",       profile.pincode);
         banner.style.display = "none";
         validateAll({ showErrors: false });
+        renderErrSummary([]);
       });
 
       document.getElementById("dismissSavedAddress")?.addEventListener("click", () => {
@@ -948,7 +1056,6 @@
 
     renderOrderSummary({ coupon_code: "", use_wallet_cash: useWalletCash });
     attachLiveValidation();
-    validateAll({ showErrors: false });
 
     // ---------- Payment method (Razorpay only — COD removed) ----------
     const payNote = document.getElementById("payNote");
@@ -985,15 +1092,27 @@
     let isProcessing = false;
 
     payBtn.addEventListener("click", async () => {
-      form.querySelectorAll("input[name]").forEach(i => (i.dataset.touched = "1"));
-      if (!validateAll({ showErrors: true })) return;
       if (isProcessing) return;
+      fieldEls().forEach(i => (i.dataset.touched = "1"));
+      const errors = validateAll({ showErrors: true });
+      renderErrSummary(errors);
+      if (errors.length) {
+        window.announce?.("Please fix " + errors.length + (errors.length === 1 ? " problem" : " problems") + " before paying");
+        errors[0].el.focus();
+        return;
+      }
+      if (!cartOk) {
+        // Stock / quote problem already shown in the warning box above.
+        warnBox.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (!warnText.textContent) showError("Please review your cart before paying.");
+        return;
+      }
 
       const method = getPaymentMethod();
 
       try {
         isProcessing      = true;
-        payBtn.disabled   = true;
+        payBtn.setAttribute("aria-busy", "true");
         clearError();
 
         const cartMod = await import("./assets/cart.js");
@@ -1108,9 +1227,8 @@
         console.error(e);
       } finally {
         isProcessing = false;
-        payBtn.disabled = false;
+        payBtn.removeAttribute("aria-busy");
         updatePaymentUI();
-        validateAll({ showErrors: false });
       }
     });
   </script>

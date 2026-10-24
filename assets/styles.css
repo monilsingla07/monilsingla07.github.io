@@ -189,3 +189,12 @@ h1.pd-title{margin:0}
 .skel-lines{flex:1;display:flex;flex-direction:column;gap:10px;padding-top:6px}
 .skel-line{height:14px}
 @media (prefers-reduced-motion:reduce){.skel{animation:none}}
+
+/* Checkout inline validation (UX-006) */
+.field-err{display:flex;align-items:flex-start;gap:6px;margin-top:6px;font-size:12.5px;font-weight:600;line-height:1.4;color:#b3261e}
+.field-err[hidden]{display:none}
+.field-err::before{content:"";flex:0 0 14px;height:14px;margin-top:1px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b3261e' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 7v6M12 17h.01'/%3E%3C/svg%3E") center/14px no-repeat}
+.err-summary{border:1.5px solid #b3261e;background:#fdf3f2;color:#7a1a14;padding:12px 14px;margin-bottom:12px;font-size:13.5px}
+.err-summary[hidden]{display:none}
+.err-summary ul{margin:8px 0 0;padding-left:20px}
+.err-summary a{color:#7a1a14;text-decoration:underline;text-underline-offset:2px}
