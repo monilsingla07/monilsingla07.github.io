@@ -5,24 +5,43 @@
     <link>https://www.ahamstree.com</link>
     <description>Auto-generated Google Merchant Center product feed for AhamStree, regenerated from live Supabase product data.</description>
     <item>
-      <g:id>3a14a968-d986-465a-8048-a173e0340b59</g:id>
-      <title><![CDATA[Turquoise Saree with Maroon & Gold Stripe Pallu]]></title>
-      <description><![CDATA[Fresh turquoise saree accented with a maroon-gold stripe pallu and gold butis — festive yet modern.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-maroon-gold-stripe-pallu</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33_2.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/cc5458a7-ee08-4f2b-8cce-13962af77e2a.webp</g:additional_image_link>
+      <g:id>bb252e60-08e6-44de-bfed-b5efa6e2d6c8</g:id>
+      <title><![CDATA[Aqua Saree with Gold Motifs & Contrast Border]]></title>
+      <description><![CDATA[Beautiful aqua saree with large gold woven motifs and a contrasting beige-gold border. Perfect when you want something elegant yet eye-catching for functions and parties.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=aqua-saree-with-gold-motifs-contrast-border</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_2.jpg</g:additional_image_link>
       <g:availability>in_stock</g:availability>
-      <g:price>5799.00 INR</g:price>
+      <g:price>5299.00 INR</g:price>
       <g:brand>AhamStree</g:brand>
       <g:condition>new</g:condition>
       <g:google_product_category>8248</g:google_product_category>
       <g:product_type><![CDATA[Saree]]></g:product_type>
       <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-33]]></g:mpn>
-      <g:color><![CDATA[Turquoise]]></g:color>
+      <g:mpn><![CDATA[AH-CH-53]]></g:mpn>
+      <g:color><![CDATA[Aqua]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>18078aa5-1bfd-4a8d-99f3-41aa1749472d</g:id>
+      <title><![CDATA[Black Printed Saree with Green Tribal Border & Red Florals]]></title>
+      <description><![CDATA[Black saree with a bold green tribal-style border and red floral motifs for a statement look. Great for casual festive wear and unique styling.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=black-printed-saree-with-green-tribal-border-red-florals</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104_2.jpg</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>2999.00 INR</g:price>
+      <g:sale_price>2799.00 INR</g:sale_price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-104]]></g:mpn>
+      <g:color><![CDATA[Black]]></g:color>
+      <g:material><![CDATA[Cotton]]></g:material>
     </item>
     <item>
       <g:id>79823aec-e527-4328-b21e-482c9be975e9</g:id>
@@ -41,6 +60,45 @@
       <g:product_type><![CDATA[Saree]]></g:product_type>
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-22]]></g:mpn>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>98d2386b-1570-484f-b8e4-f83f22b988f4</g:id>
+      <title><![CDATA[Forest-Green Saree with Gold Butti]]></title>
+      <description><![CDATA[Deep forest-green saree with a simple gold butti motif placement. A versatile option for regular festive wear and family occasions.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=forest-green-saree-with-gold-butti</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32_2.jpg</g:additional_image_link>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>5799.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-32]]></g:mpn>
+      <g:color><![CDATA[Forest Green]]></g:color>
+      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
+    </item>
+    <item>
+      <g:id>3a14a968-d986-465a-8048-a173e0340b59</g:id>
+      <title><![CDATA[Turquoise Saree with Maroon & Gold Stripe Pallu]]></title>
+      <description><![CDATA[Fresh turquoise saree accented with a maroon-gold stripe pallu and gold butis — festive yet modern.]]></description>
+      <link>https://www.ahamstree.com/product.html?slug=turquoise-saree-with-maroon-gold-stripe-pallu</link>
+      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33.jpg</g:image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33_1.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-33_2.jpg</g:additional_image_link>
+      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/cc5458a7-ee08-4f2b-8cce-13962af77e2a.webp</g:additional_image_link>
+      <g:availability>in_stock</g:availability>
+      <g:price>5799.00 INR</g:price>
+      <g:brand>AhamStree</g:brand>
+      <g:condition>new</g:condition>
+      <g:google_product_category>8248</g:google_product_category>
+      <g:product_type><![CDATA[Saree]]></g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:mpn><![CDATA[AH-CH-33]]></g:mpn>
+      <g:color><![CDATA[Turquoise]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
@@ -218,25 +276,6 @@
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
-      <g:id>98d2386b-1570-484f-b8e4-f83f22b988f4</g:id>
-      <title><![CDATA[Forest-Green Saree with Gold Butti]]></title>
-      <description><![CDATA[Deep forest-green saree with a simple gold butti motif placement. A versatile option for regular festive wear and family occasions.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=forest-green-saree-with-gold-butti</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-32_2.jpg</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>5799.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-32]]></g:mpn>
-      <g:color><![CDATA[Forest Green]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
       <g:id>2dac0fdd-9cc6-4556-9e05-18e626881465</g:id>
       <title><![CDATA[Pink Saree with Elephant Motif]]></title>
       <description><![CDATA[Vibrant pink saree featuring a standout elephant motif and a soft, festive finish. A great pick for celebrations, gifting, and traditional events.]]></description>
@@ -254,26 +293,6 @@
       <g:mpn><![CDATA[AH-CH-97]]></g:mpn>
       <g:color><![CDATA[Pink]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>18078aa5-1bfd-4a8d-99f3-41aa1749472d</g:id>
-      <title><![CDATA[Black Printed Saree with Green Tribal Border & Red Florals]]></title>
-      <description><![CDATA[Black saree with a bold green tribal-style border and red floral motifs for a statement look. Great for casual festive wear and unique styling.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=black-printed-saree-with-green-tribal-border-red-florals</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-104_2.jpg</g:additional_image_link>
-      <g:availability>out_of_stock</g:availability>
-      <g:price>2999.00 INR</g:price>
-      <g:sale_price>2799.00 INR</g:sale_price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-104]]></g:mpn>
-      <g:color><![CDATA[Black]]></g:color>
-      <g:material><![CDATA[Cotton]]></g:material>
     </item>
     <item>
       <g:id>afed1a27-68a7-4606-a460-0eb6463d3019</g:id>
@@ -370,25 +389,6 @@
       <g:identifier_exists>no</g:identifier_exists>
       <g:mpn><![CDATA[AH-CH-113]]></g:mpn>
       <g:color><![CDATA[Beige]]></g:color>
-      <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
-    </item>
-    <item>
-      <g:id>bb252e60-08e6-44de-bfed-b5efa6e2d6c8</g:id>
-      <title><![CDATA[Aqua Saree with Gold Motifs & Contrast Border]]></title>
-      <description><![CDATA[Beautiful aqua saree with large gold woven motifs and a contrasting beige-gold border. Perfect when you want something elegant yet eye-catching for functions and parties.]]></description>
-      <link>https://www.ahamstree.com/product.html?slug=aqua-saree-with-gold-motifs-contrast-border</link>
-      <g:image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53.jpg</g:image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_1.jpg</g:additional_image_link>
-      <g:additional_image_link>https://mgmgkwoxirvzdnmayhwq.supabase.co/storage/v1/object/public/product-images/All%20Images/AH-CH-53_2.jpg</g:additional_image_link>
-      <g:availability>in_stock</g:availability>
-      <g:price>5299.00 INR</g:price>
-      <g:brand>AhamStree</g:brand>
-      <g:condition>new</g:condition>
-      <g:google_product_category>8248</g:google_product_category>
-      <g:product_type><![CDATA[Saree]]></g:product_type>
-      <g:identifier_exists>no</g:identifier_exists>
-      <g:mpn><![CDATA[AH-CH-53]]></g:mpn>
-      <g:color><![CDATA[Aqua]]></g:color>
       <g:material><![CDATA[Silk-Cotton Cotton-Silk]]></g:material>
     </item>
     <item>
