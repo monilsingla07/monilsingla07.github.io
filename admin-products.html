@@ -113,12 +113,12 @@
     <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
+      <div id="adminBreadcrumb"></div>
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Product Catalogue</h2>
           <div class="small" style="color:var(--text-light); margin-top:4px;">Add, edit, deactivate, or delete products — prices, stock, fabric, weave, images, specs, and collections, all from here.</div>
         </div>
-        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
 
       <div class="tabbar">
@@ -437,7 +437,7 @@
   <script type="module">
     import { renderPieceRows, pieceSummary, printUrl } from "./scripts/inventory-rows.js";
     import { listTagOptions, fillSelect } from "./scripts/tag-options.js";
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, renderAdminBreadcrumb, hydrateAdminBreadcrumb } from "./assets/ui.js";
     import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeHref, safeSrc } from "./assets/safe.js";
     import { enqueueLabels, showPrintChoice } from "./assets/print-queue.js";
@@ -446,6 +446,8 @@
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+    document.getElementById("adminBreadcrumb").innerHTML = renderAdminBreadcrumb("Product Catalogue");
+    hydrateAdminBreadcrumb();
 
     const BASE = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/";
     const PRODUCTS_FN = BASE + "admin-manage-products";

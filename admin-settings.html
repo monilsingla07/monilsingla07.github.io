@@ -53,12 +53,12 @@
     <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
 
     <div id="dashboard" style="display:none;">
+      <div id="adminBreadcrumb"></div>
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Site Settings</h2>
           <div class="small" style="color:var(--text-light); margin-top:4px;">Store-wide text and business parameters that used to require a code change — plus who can log into this admin area.</div>
         </div>
-        <a href="admin.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">← Dashboard</a>
       </div>
 
       <div class="tabs">
@@ -168,13 +168,15 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, renderAdminBreadcrumb, hydrateAdminBreadcrumb } from "./assets/ui.js";
     import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+    document.getElementById("adminBreadcrumb").innerHTML = renderAdminBreadcrumb("Site Settings");
+    hydrateAdminBreadcrumb();
 
     const FN_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/admin-manage-settings";
 

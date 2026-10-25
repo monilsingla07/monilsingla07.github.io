@@ -66,6 +66,7 @@
     <div id="loadingState" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">Verifying admin access…</div>
 
     <div id="mainContent" style="display:none;">
+      <div id="adminBreadcrumb"></div>
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
         <div>
           <h2 style="margin:0;">Visitor Analytics</h2>
@@ -74,7 +75,6 @@
             Not Google Analytics; this lives in your own database.
           </div>
         </div>
-        <a class="btn secondary" href="admin.html" style="padding:8px 14px;font-size:13px;">← Dashboard</a>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
@@ -125,13 +125,15 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, renderAdminBreadcrumb, hydrateAdminBreadcrumb } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+    document.getElementById("adminBreadcrumb").innerHTML = renderAdminBreadcrumb("Visitors");
+    hydrateAdminBreadcrumb();
 
     const loadingState = document.getElementById("loadingState");
     const mainContent  = document.getElementById("mainContent");

@@ -458,6 +458,83 @@ export function renderBreadcrumbs(items = [], { jsonLd = true } = {}) {
   return `<nav class="breadcrumbs" aria-label="Breadcrumb"><ol class="bc-list">${lis}</ol>${ld}</nav>`;
 }
 
+// ── Admin breadcrumb + quick-switch ──────────────────────────────────────
+// Every admin-*.html page is one level below admin.html (the Dashboard),
+// so a plain trail is only ever "Dashboard > This Page" — on its own that
+// still means going back to Dashboard every time to reach a different
+// section. ADMIN_NAV mirrors admin.html's own quick-link groupings so the
+// "Jump to…" dropdown always matches what's on the Dashboard.
+export const ADMIN_NAV = [
+  { group: "Orders & fulfillment", items: [
+    { href: "admin-orders.html", label: "All Orders" },
+    { href: "admin-returns.html", label: "Returns" },
+    { href: "admin-payments.html", label: "Payments & Refunds" },
+    { href: "admin-create-order.html", label: "Create Order" },
+  ] },
+  { group: "Catalog & promotions", items: [
+    { href: "admin-products.html", label: "Product Catalogue" },
+    { href: "admin-inventory.html", label: "Inventory" },
+    { href: "admin-reviews.html", label: "Reviews" },
+    { href: "admin-print-agent.html", label: "Print Queue" },
+    { href: "admin-pos.html", label: "POS" },
+    { href: "admin-coupons.html", label: "Coupon Manager" },
+    { href: "admin-issue-coupon.html", label: "Issue Coupon" },
+    { href: "admin-wallet.html", label: "AhamStree Cash" },
+  ] },
+  { group: "Finance", items: [
+    { href: "admin-expenses.html", label: "Expenses & Invoices" },
+  ] },
+  { group: "Site content", items: [
+    { href: "admin-hero-testimonials.html", label: "Hero & Testimonials" },
+    { href: "admin-popup.html", label: "Popup Manager" },
+    { href: "admin-reels.html", label: "Reel Manager" },
+    { href: "admin-policies.html", label: "Policy Pages" },
+    { href: "admin-blog.html", label: "Blog Manager" },
+  ] },
+  { group: "Store & customers", items: [
+    { href: "admin-settings.html", label: "Site Settings" },
+    { href: "admin-users.html", label: "Registered Users" },
+    { href: "admin-visitors.html", label: "Visitors" },
+  ] },
+];
+
+// currentLabel: the current page's own label (as it appears in ADMIN_NAV),
+// or omit it on admin.html itself. Call hydrateAdminBreadcrumb() once after
+// inserting this markup so the dropdown opens/closes correctly.
+export function renderAdminBreadcrumb(currentLabel = "") {
+  const trail = [{ label: "Dashboard", href: "admin.html" }];
+  if (currentLabel) trail.push({ label: currentLabel });
+
+  const groupsHtml = ADMIN_NAV.map((g) => `
+    <div class="admin-qs-group">
+      <div class="admin-qs-group-title">${escapeHtml(g.group)}</div>
+      ${g.items.map((it) => `<a href="${escapeAttr(it.href)}"${it.label === currentLabel ? ' class="current" aria-current="page"' : ""}>${escapeHtml(it.label)}</a>`).join("")}
+    </div>
+  `).join("");
+
+  return `
+    <div class="admin-bc-bar">
+      ${renderBreadcrumbs(trail, { jsonLd: false })}
+      <details class="admin-qs" id="adminQuickSwitch">
+        <summary class="admin-qs-trigger">Jump to… ${icon("chevron-down", { size: 12 })}</summary>
+        <div class="admin-qs-menu">${groupsHtml}</div>
+      </details>
+    </div>
+  `;
+}
+
+export function hydrateAdminBreadcrumb() {
+  const details = document.getElementById("adminQuickSwitch");
+  if (!details || details.dataset.hydrated === "1") return;
+  details.dataset.hydrated = "1";
+  document.addEventListener("click", (e) => {
+    if (details.open && !details.contains(e.target)) details.removeAttribute("open");
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && details.open) { details.removeAttribute("open"); details.querySelector("summary").focus(); }
+  });
+}
+
 // ── Mobile menu ──
 let _authHeaderListenerSet = false;
 let _escListenerSet = false;

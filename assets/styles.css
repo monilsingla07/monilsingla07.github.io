@@ -37,6 +37,25 @@
 .breadcrumbs .bc-list li>a,.breadcrumbs .bc-list li>span[aria-current]{display:inline-block;padding:3px 0;max-width:40ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .breadcrumbs .bc-list [aria-current]{color:var(--text);font-weight:600}
 .breadcrumbs .bc-sep{display:inline-flex;margin:0 6px;opacity:.5}
+/* Admin breadcrumb bar (renderAdminBreadcrumb(), assets/ui.js): the trail
+   reuses .breadcrumbs above; this is just the extra layout + the
+   "Jump to…" quick-switch dropdown so any admin-*.html page can reach any
+   other section without detouring back through the Dashboard first. */
+.admin-bc-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 18px}
+.admin-bc-bar .breadcrumbs{margin:0}
+.admin-qs{position:relative}
+.admin-qs-trigger{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--border-light);background:var(--surface);font-size:13px;font-weight:700;color:var(--text);user-select:none}
+.admin-qs-trigger::-webkit-details-marker{display:none}
+.admin-qs-trigger:hover{border-color:var(--color-action)}
+.admin-qs[open] .admin-qs-trigger{border-color:var(--color-action);background:var(--color-action-lighter)}
+.admin-qs-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:40;min-width:260px;max-height:70vh;overflow:auto;background:var(--surface);border:1px solid var(--border-light);box-shadow:0 10px 30px rgba(0,0,0,.14);padding:10px}
+.admin-qs-group+.admin-qs-group{margin-top:10px}
+.admin-qs-group-title{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-light);margin-bottom:4px;padding:0 8px}
+.admin-qs-menu a{display:block;padding:7px 8px;font-size:13px;color:var(--text);text-decoration:none}
+.admin-qs-menu a:hover{background:var(--bg-warm)}
+.admin-qs-menu a.current{font-weight:700;color:var(--color-action)}
+@media (max-width:640px){.admin-qs-menu{right:auto;left:0;width:calc(100vw - 32px)}}
+
 .page-header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
 .page-title{margin:0;font-family:var(--font-heading);font-size:32px;font-weight:600;letter-spacing:.01em;color:var(--text)}
 .page-subtitle{display:block;margin-top:6px;color:var(--text-light);opacity:1}

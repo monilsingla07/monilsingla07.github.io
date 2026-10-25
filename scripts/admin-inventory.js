@@ -1,4 +1,4 @@
-import { renderHeader, renderFooter, hydrateHeaderAuth } from "../assets/ui.js";
+import { renderHeader, renderFooter, hydrateHeaderAuth, renderAdminBreadcrumb, hydrateAdminBreadcrumb } from "../assets/ui.js";
 import { supabase, SUPABASE_ANON_KEY } from "../assets/supabase.js";
 import { escapeHtml, escapeAttr } from "../assets/safe.js";
 import { money, day, thumbOf, printUrl } from "./inventory-rows.js";
@@ -9,6 +9,8 @@ import { listTagOptions, createTagOption, updateTagOption, deleteTagOption, fill
 document.getElementById("header").innerHTML = renderHeader("admin");
 document.getElementById("footer").innerHTML = renderFooter();
 hydrateHeaderAuth();
+document.getElementById("adminBreadcrumb").innerHTML = renderAdminBreadcrumb("Inventory");
+hydrateAdminBreadcrumb();
 
 const BASE = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/";
 const INV_FN = BASE + "admin-manage-inventory";

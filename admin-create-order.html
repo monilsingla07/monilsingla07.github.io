@@ -251,6 +251,7 @@
 
     <div id="mainContent" style="display:none;">
 
+      <div id="adminBreadcrumb"></div>
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
         <div>
           <h2 style="margin:0;">Create Order</h2>
@@ -258,7 +259,6 @@
             Ring up a walk-in sale or place an order for a customer who needs it shipped.
           </div>
         </div>
-        <a class="btn secondary" href="admin-orders.html" style="padding:8px 14px; font-size:13px;">← Back to orders</a>
       </div>
 
       <div class="create-grid">
@@ -469,13 +469,22 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, renderAdminBreadcrumb, renderBreadcrumbs, hydrateAdminBreadcrumb } from "./assets/ui.js";
     import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr, safeHref } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+    (function () {
+      var qsOnly = renderAdminBreadcrumb("").replace(/<nav class="breadcrumbs"[\s\S]*?<\/nav>/, "");
+      var trail = renderBreadcrumbs(
+        [{ label: "Dashboard", href: "admin.html" }, { label: "All Orders", href: "admin-orders.html" }, { label: "Create Order" }],
+        { jsonLd: false }
+      );
+      document.getElementById("adminBreadcrumb").innerHTML = qsOnly.replace('<div class="admin-bc-bar">', '<div class="admin-bc-bar">' + trail);
+      hydrateAdminBreadcrumb();
+    })();
 
     var loadingState = document.getElementById("loadingState");
     var mainContent  = document.getElementById("mainContent");

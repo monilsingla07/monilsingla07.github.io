@@ -82,12 +82,12 @@
     <div id="loadingState" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">Verifying admin access…</div>
 
     <div id="mainContent" style="display:none;">
+      <div id="adminBreadcrumb"></div>
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
         <div>
           <h2 style="margin:0;">Registered Users</h2>
           <div class="small" style="color:var(--text-light);margin-top:4px;">Every account that's signed up, and a full login history for each one.</div>
         </div>
-        <a class="btn secondary" href="admin.html" style="padding:8px 14px;font-size:13px;">← Dashboard</a>
       </div>
 
       <div class="tabs">
@@ -215,13 +215,15 @@
   <div id="footer"></div>
 
   <script type="module">
-    import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
+    import { renderHeader, renderFooter, hydrateHeaderAuth, renderAdminBreadcrumb, hydrateAdminBreadcrumb } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, safeHref } from "./assets/safe.js";
 
     document.getElementById("header").innerHTML = renderHeader("admin");
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
+    document.getElementById("adminBreadcrumb").innerHTML = renderAdminBreadcrumb("Registered Users");
+    hydrateAdminBreadcrumb();
 
     const loadingState = document.getElementById("loadingState");
     const mainContent  = document.getElementById("mainContent");

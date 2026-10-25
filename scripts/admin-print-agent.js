@@ -1,7 +1,7 @@
 // admin-print-agent.js: the ONE device paired to the Seznik thermal printer.
 // Picks queued jobs from print_jobs (Realtime + polling), renders them to a
 // canvas, converts to ESC/POS raster (GS v 0) and writes over Bluetooth.
-import { renderHeader, renderFooter, hydrateHeaderAuth } from "../assets/ui.js";
+import { renderHeader, renderFooter, hydrateHeaderAuth, renderAdminBreadcrumb, hydrateAdminBreadcrumb } from "../assets/ui.js";
 import { supabase, SUPABASE_ANON_KEY } from "../assets/supabase.js";
 import { escapeHtml } from "../assets/safe.js";
 import { queueCall } from "../assets/print-queue.js";
@@ -9,6 +9,8 @@ import { queueCall } from "../assets/print-queue.js";
 document.getElementById("header").innerHTML = renderHeader("admin");
 document.getElementById("footer").innerHTML = renderFooter();
 hydrateHeaderAuth();
+document.getElementById("adminBreadcrumb").innerHTML = renderAdminBreadcrumb("Print Queue");
+hydrateAdminBreadcrumb();
 
 const BASE = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/";
 const INV_FN = BASE + "admin-manage-inventory";
