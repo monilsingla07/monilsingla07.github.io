@@ -318,7 +318,7 @@
           const r = await callFn("list");
           if (!r.ok) return;
           const returns = r.data.returns || [];
-          statusMsg.textContent = returns.length ? "" : "No return requests yet.";
+          statusMsg.textContent = returns.length ? "" : "No returns yet.";
           list.innerHTML = returns.map(renderReturn).join("");
           wireEvents();
         } catch (e) {

@@ -103,11 +103,20 @@
       .pm-row { grid-template-columns: 1fr; }
       .repeat-row, .repeat-row.sections { grid-template-columns: 1fr; }
     }
+
+    #toast {
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+      background:var(--text);color:#fff;padding:10px 20px;font-size:13px;
+      font-weight:700;opacity:0;transition:all .25s ease;pointer-events:none;z-index:9999;
+      white-space:nowrap;
+    }
+    #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
   </style>
 </head>
 
 <body>
   <div id="header"></div>
+  <div id="toast"></div>
 
   <div class="container" style="max-width:1120px;">
     <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
@@ -496,6 +505,14 @@
 
     function money(v) {
       return "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+    }
+
+    const toastEl = document.getElementById("toast");
+    function toast(msg, color) {
+      toastEl.textContent = msg;
+      toastEl.style.background = color || "var(--text)";
+      toastEl.classList.add("show");
+      setTimeout(() => toastEl.classList.remove("show"), 2600);
     }
 
     // ══════════════════════════════════════ TABS ══════════════════════════════════════
@@ -1208,6 +1225,7 @@
         status.textContent = "Deleting…";
         await authedFetch(PRODUCTS_FN, { action: "delete", id });
         closeProductEditor(true);
+        toast("Product deleted", "#3f6b4f");
       } catch (e) {
         status.textContent = "";
         if (e.message === "cannot_delete_sku_with_pieces") {
