@@ -162,6 +162,10 @@ function syncCustUi() {
   $("btnLookup").style.display = m === "lookup" ? "" : "none";
   $("custName").style.display = m === "walkin" ? "" : "none";
   $("custFound").style.display = m === "lookup" && customer ? "" : "none";
+  // A phone is only on hand once a lookup has matched someone or the
+  // cashier is keying in a walk-in — that's the only time there's a real
+  // number to ask consent for.
+  $("custOptInRow").style.display = (m === "walkin" || (m === "lookup" && customer)) ? "flex" : "none";
 }
 
 function resetCustomerLookup(msg = "") {
@@ -196,11 +200,12 @@ async function lookupCustomer() {
 
 function customerPayload() {
   const m = custMode();
-  if (m === "lookup" && customer) return { user_id: customer.user_id, phone: customer.phone, name: customer.name, address: customer.address };
+  const marketing_opt_in = $("custOptIn").checked;
+  if (m === "lookup" && customer) return { user_id: customer.user_id, phone: customer.phone, name: customer.name, address: customer.address, marketing_opt_in };
   if (m === "walkin") {
     const phone = $("custPhone").value.replace(/\D/g, "");
     const name = $("custName").value.trim();
-    if (phone || name) return { phone, name };
+    if (phone || name) return { phone, name, marketing_opt_in };
   }
   return null;
 }
@@ -260,7 +265,7 @@ function newSale() {
   $("discType").value = "flat";
   document.querySelector('input[name="custMode"][value="anon"]').checked = true;
   document.querySelector('input[name="payMethod"][value="cash"]').checked = true;
-  $("custPhone").value = ""; $("custName").value = ""; $("custMsg").textContent = ""; $("custFound").innerHTML = "";
+  $("custPhone").value = ""; $("custName").value = ""; $("custMsg").textContent = ""; $("custFound").innerHTML = ""; $("custOptIn").checked = false;
   $("lastSerial").textContent = "—"; $("lastSerial").classList.remove("ok", "err");
   syncCustUi(); render(); focusScan();
 }
