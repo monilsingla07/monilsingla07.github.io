@@ -207,7 +207,9 @@ function customerPayload() {
   if (m === "walkin") {
     const phone = $("custPhone").value.replace(/\D/g, "");
     const name = $("custName").value.trim();
-    if (phone || name) return { phone, name, marketing_opt_in };
+    // marketing_opt_in has nothing to attach to without a phone — omit it
+    // rather than send a consent flag pos-checkout would just discard.
+    if (phone || name) return phone ? { phone, name, marketing_opt_in } : { phone, name };
   }
   return null;
 }
