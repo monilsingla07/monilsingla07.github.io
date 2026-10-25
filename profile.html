@@ -330,6 +330,15 @@
           </div>
         </div>
 
+        <div id="marketingCard" style="margin:16px 0; padding:14px 16px; border:1px solid var(--border-light); background:var(--bg-warm);">
+          <div style="font-weight:600; font-size:14px; margin-bottom:8px;">Marketing updates</div>
+          <label class="small" style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-weight:400;">
+            <input type="checkbox" id="marketingOptInToggle" style="margin-top:3px; width:16px; height:16px; flex-shrink:0;" ${p.marketing_opt_in ? "checked" : ""} />
+            <span>Send me order updates and offers on WhatsApp</span>
+          </label>
+          <div id="marketingOptInStatus" class="small" style="margin-top:6px; min-height:16px;"></div>
+        </div>
+
         <hr/>
 
         <div id="warn" class="small" style="display:none; margin-bottom:12px; padding:10px 14px; border-left:2px solid #a13d3d; background:rgba(161,61,61,.07); color:#a13d3d;"></div>
@@ -509,6 +518,46 @@
           otpStep.style.display = "none";
           document.getElementById("phoneLoginRow").innerHTML =
             `<span>Phone / OTP</span><span class="small" style="color:#3f6b4f;">✓ linked (+91 ${escapeHtml(pendingPhone10)})</span>`;
+        };
+      }
+
+      // ── Marketing opt-in toggle (see 2026-10-25_marketing_consent.sql) ───
+      // Updates profiles.marketing_opt_in directly (same RLS as the rest of
+      // this form) and records an audit-trail row via the narrow
+      // self-insert policy added for source='profile'. The phone used for
+      // that audit row is whatever's currently saved on the profile — if
+      // none is saved yet, only the profiles flag is updated; the row gets
+      // written next time this account has a usable phone (checkout, or a
+      // later edit here).
+      const marketingToggle = document.getElementById("marketingOptInToggle");
+      const marketingStatus = document.getElementById("marketingOptInStatus");
+      if (marketingToggle) {
+        marketingToggle.onchange = async () => {
+          const optedIn = marketingToggle.checked;
+          marketingToggle.disabled = true;
+          marketingStatus.textContent = "Saving…";
+
+          const { error } = await supabase
+            .from("profiles")
+            .update({ marketing_opt_in: optedIn, updated_at: new Date().toISOString() })
+            .eq("user_id", user.id);
+
+          if (!error) {
+            const currentPhone = normalizePhone10(document.getElementById("phone").value);
+            if (currentPhone) {
+              await supabase.from("marketing_consents").insert({
+                phone: currentPhone,
+                opted_in: optedIn,
+                source: "profile",
+                user_id: user.id,
+              });
+            }
+            marketingStatus.textContent = "Saved";
+          } else {
+            marketingToggle.checked = !optedIn;
+            marketingStatus.textContent = "Error: " + error.message;
+          }
+          marketingToggle.disabled = false;
         };
       }
 
