@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <script src="assets/analytics.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Marketing Automation — AhamStree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <style>
+    .admin-gate { min-height: 60vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; text-align: center; }
+    .mkt-card { background: var(--surface); border: 1px solid var(--border-light); padding: 20px; margin-bottom: 20px; }
+    .mkt-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .mkt-title { font-weight: 700; font-size: 16px; }
+    .mkt-hint { font-size: 12px; color: var(--text-light); margin-top: 4px; max-width: 520px; }
+    .mkt-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .mkt-badge.ok { background: rgba(63,107,79,.1); color: #3f6b4f; }
+    .mkt-badge.warn { background: var(--color-accent-light); color: var(--color-accent); }
+    .mkt-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .mkt-stat { border: 1px solid var(--border-light); padding: 12px 14px; }
+    .mkt-stat-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-light); }
+    .mkt-stat-value { font-size: 24px; font-weight: 700; font-family: 'Cormorant Garamond', serif; margin-top: 4px; }
+    .mkt-stat-value.warn { color: var(--color-accent); }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <div class="container" style="max-width:860px;">
+    <div id="loadingState" style="text-align:center; padding:48px; color:var(--text-light);">Verifying admin access…</div>
+
+    <div id="dashboard" style="display:none;">
+      <div id="adminBreadcrumb"></div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0;">Marketing Automation</h2>
+          <div class="small" style="color:var(--text-light); margin-top:4px;">Read-only health check for the automated WhatsApp campaigns — are they configured, and are they actually doing anything.</div>
+        </div>
+        <button id="btnRefresh" class="btn secondary" style="padding:8px 14px; font-size:13px;">↻ Refresh</button>
+      </div>
+
+      <div id="statusArea" class="small" style="margin-bottom:12px;"></div>
+
+      <div class="mkt-card">
+        <div class="mkt-card-head">
+          <div>
+            <div class="mkt-title">Cart / Checkout Abandonment Nudges</div>
+            <div class="mkt-hint">Runs every 15 minutes. Nudges a customer 2h after their payment link expired or failed, if they've opted in to WhatsApp marketing.</div>
+          </div>
+          <span id="cartTemplateBadge" class="mkt-badge">—</span>
+        </div>
+        <div class="mkt-stats">
+          <div class="mkt-stat"><div class="mkt-stat-label">Sent (all time)</div><div class="mkt-stat-value" id="cartSent">—</div></div>
+          <div class="mkt-stat"><div class="mkt-stat-label">Send failed</div><div class="mkt-stat-value" id="cartFailed">—</div></div>
+          <div class="mkt-stat"><div class="mkt-stat-label">Waiting to be sent</div><div class="mkt-stat-value" id="cartPending">—</div></div>
+          <div class="mkt-stat"><div class="mkt-stat-label">Last sent</div><div class="mkt-stat-value" id="cartLastSent" style="font-size:15px;">—</div></div>
+        </div>
+      </div>
+
+      <div class="mkt-card">
+        <div class="mkt-card-head">
+          <div>
+            <div class="mkt-title">Win-back Campaigns</div>
+            <div class="mkt-hint">Runs daily. Mints and sends a one-time coupon to a customer whose last paid order is 60+ days old and who's opted in to WhatsApp marketing.</div>
+          </div>
+          <span id="winbackTemplateBadge" class="mkt-badge">—</span>
+        </div>
+        <div class="mkt-stats">
+          <div class="mkt-stat"><div class="mkt-stat-label">Sent</div><div class="mkt-stat-value" id="wbSent">—</div></div>
+          <div class="mkt-stat"><div class="mkt-stat-label">Send failed</div><div class="mkt-stat-value" id="wbFailed">—</div></div>
+          <div class="mkt-stat"><div class="mkt-stat-label">Skipped — no consent</div><div class="mkt-stat-value" id="wbNoConsent">—</div></div>
+          <div class="mkt-stat"><div class="mkt-stat-label">Skipped — bad phone</div><div class="mkt-stat-value" id="wbBadPhone">—</div></div>
+        </div>
+        <div class="small" style="color:var(--text-light); margin-top:12px;">Last processed: <span id="wbLastProcessed">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script type="module">
+    import { renderHeader, renderFooter, hydrateHeaderAuth, renderAdminBreadcrumb, hydrateAdminBreadcrumb } from "./assets/ui.js";
+    import { supabase, SUPABASE_ANON_KEY } from "./assets/supabase.js";
+
+    document.getElementById("header").innerHTML = renderHeader("admin");
+    document.getElementById("footer").innerHTML = renderFooter();
+    hydrateHeaderAuth();
+    document.getElementById("adminBreadcrumb").innerHTML = renderAdminBreadcrumb("Marketing Automation");
+    hydrateAdminBreadcrumb();
+
+    const BASE = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/";
+    const STATS_FN = BASE + "admin-marketing-stats";
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard    = document.getElementById("dashboard");
+
+    const ICON_WARN = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>';
+    const ICON_LOCK = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+    function showGateError(icon, title, message) {
+      loadingState.style.display = "block";
+      dashboard.style.display = "none";
+      loadingState.innerHTML =
+        '<div class="admin-gate">' +
+          '<div style="color:var(--color-accent);">' + icon + '</div>' +
+          '<h3 style="margin:0;">' + title + '</h3>' +
+          '<div class="small" style="opacity:.8;">' + message + '</div>' +
+          '<a class="btn secondary" href="index.html" style="margin-top:8px;">Go to store</a>' +
+        '</div>';
+    }
+
+    async function authedFetch(url, body) {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || "";
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify(body || {}),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || ("HTTP " + res.status));
+      return json;
+    }
+
+    function fmtDateTime(iso) {
+      if (!iso) return "Never";
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return "—";
+      return d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+    }
+
+    function templateBadge(el, configured) {
+      el.textContent = configured ? "Template configured" : "Template not configured";
+      el.className = "mkt-badge " + (configured ? "ok" : "warn");
+    }
+
+    async function load() {
+      document.getElementById("statusArea").textContent = "Loading…";
+      try {
+        const r = await authedFetch(STATS_FN, {});
+        const ca = r.cart_abandonment, wb = r.winback;
+
+        templateBadge(document.getElementById("cartTemplateBadge"), ca.template_configured);
+        document.getElementById("cartSent").textContent = ca.sent_total;
+        document.getElementById("cartFailed").textContent = ca.failed_total;
+        document.getElementById("cartPending").textContent = ca.queue_pending;
+        document.getElementById("cartPending").className = "mkt-stat-value" + (ca.queue_pending > 0 && !ca.template_configured ? " warn" : "");
+        document.getElementById("cartLastSent").textContent = fmtDateTime(ca.last_sent_at);
+
+        templateBadge(document.getElementById("winbackTemplateBadge"), wb.template_configured);
+        document.getElementById("wbSent").textContent = wb.outcome_counts.sent;
+        document.getElementById("wbFailed").textContent = wb.outcome_counts.send_failed;
+        document.getElementById("wbNoConsent").textContent = wb.outcome_counts.skipped_no_consent;
+        document.getElementById("wbBadPhone").textContent = wb.outcome_counts.skipped_bad_phone;
+        document.getElementById("wbLastProcessed").textContent = fmtDateTime(wb.last_processed_at);
+
+        document.getElementById("statusArea").textContent = "Updated " + new Date().toLocaleTimeString("en-IN");
+      } catch (e) {
+        document.getElementById("statusArea").textContent = "Error loading stats: " + e.message;
+      }
+    }
+
+    document.getElementById("btnRefresh").addEventListener("click", load);
+
+    async function initAdmin() {
+      try {
+        const sessResult = await supabase.auth.getSession();
+        if (sessResult.error) return showGateError(ICON_WARN, "Auth Error", sessResult.error.message);
+        if (!sessResult.data || !sessResult.data.session) { window.location.href = "login.html"; return; }
+
+        const session = sessResult.data.session;
+        const adminResult = await supabase.from("admin_users").select("email").eq("email", session.user.email.toLowerCase()).maybeSingle();
+        if (adminResult.error) return showGateError(ICON_WARN, "Access Check Failed", "Could not verify admin status: " + adminResult.error.message);
+        if (!adminResult.data) return showGateError(ICON_LOCK, "Access Denied", "Your account does not have admin access.");
+
+        loadingState.style.display = "none";
+        dashboard.style.display = "block";
+
+        await load();
+      } catch (e) {
+        console.error("Marketing automation admin page error:", e);
+        showGateError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

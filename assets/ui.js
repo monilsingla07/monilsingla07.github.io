@@ -480,6 +480,7 @@ export const ADMIN_NAV = [
     { href: "admin-coupons.html", label: "Coupon Manager" },
     { href: "admin-issue-coupon.html", label: "Issue Coupon" },
     { href: "admin-wallet.html", label: "AhamStree Cash" },
+    { href: "admin-marketing.html", label: "Marketing Automation" },
   ] },
   { group: "Finance", items: [
     { href: "admin-expenses.html", label: "Expenses & Invoices" },
