@@ -594,7 +594,8 @@
               <div class="section-lbl" style="width:100%;margin-bottom:2px;">WhatsApp</div>
               ${o.shiprocket_awb ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${safeHref(waLink(phone, shippedMsg))}" target="_blank" rel="noopener noreferrer">🚚 Share tracking</a>` : ""}
               ${isOnline && canRegen ? `<a class="btn secondary" style="padding:7px 12px;font-size:12px;" href="${safeHref(waLink(phone, reminderMsg))}" target="_blank" rel="noopener noreferrer">🔔 Payment reminder</a>` : ""}
-              <a class="btn secondary" data-wa-invoice href="#" style="padding:7px 12px;font-size:12px;opacity:.72;" data-phone="${escapeAttr(phone)}" data-id="${escapeAttr(o.id)}">📄 Send invoice</a>
+              <a class="btn secondary" data-wa-invoice href="#" style="padding:7px 12px;font-size:12px;opacity:.72;" data-phone="${escapeAttr(phone)}" data-id="${escapeAttr(o.id)}" title="Share link manually via your own WhatsApp">📄 Share invoice link</a>
+              <button class="btn secondary" style="padding:7px 12px;font-size:12px;" data-action="wa-send-invoice" data-id="${escapeAttr(o.id)}" title="Sends the invoice PDF automatically from the AhamStree WhatsApp Business number">💬 Send invoice (WhatsApp)</button>
             </div>` : ""}
 
           </div>
@@ -973,6 +974,37 @@
               toast("Invoice generated ✅", "#3f6b4f");
             } catch (e) {
               toast("Invoice error: " + e.message, "#a13d3d");
+            } finally {
+              btn.disabled = false;
+              btn.textContent = oldText;
+            }
+          });
+        });
+
+        // Automated WhatsApp invoice send (Business API, template-based).
+        // Reuses admin-generate-invoice internally, so no need to click
+        // "Generate invoice" first. Needs an approved WhatsApp template —
+        // see send-whatsapp-invoice's "template_not_configured" handling.
+        list.querySelectorAll("button[data-action='wa-send-invoice']").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = "Sending…";
+
+            try {
+              const r = await callFn("send-whatsapp-invoice", { order_id: id });
+              if (!r.ok) return; // 401/403 already handled by callFn
+              toast("Invoice sent on WhatsApp ✅", "#3f6b4f");
+            } catch (e) {
+              const msg = e.message || "";
+              if (msg.startsWith("template_not_configured")) {
+                toast("WhatsApp invoice template isn't approved yet.", "#a13d3d");
+              } else if (msg.startsWith("no_phone")) {
+                toast("This order has no usable phone number.", "#a13d3d");
+              } else {
+                toast("Send failed: " + msg, "#a13d3d");
+              }
             } finally {
               btn.disabled = false;
               btn.textContent = oldText;
