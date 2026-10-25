@@ -209,6 +209,7 @@
     import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";
     import { supabase } from "./assets/supabase.js";
     import { escapeHtml, escapeAttr } from "./assets/safe.js";
+    import { toE164, claimOrdersByPhoneIfNeeded } from "./assets/profile-seed.js";
 
     document.getElementById("header").innerHTML = renderHeader("account");
     document.getElementById("footer").innerHTML = renderFooter();
@@ -295,6 +296,40 @@
           </div>
         </div>
 
+        <div id="loginMethodsCard" style="margin:16px 0; padding:14px 16px; border:1px solid var(--border-light); background:var(--bg-warm);">
+          <div style="font-weight:600; font-size:14px; margin-bottom:8px;">Login methods</div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:6px;">
+            <span>Google / Email</span>
+            <span class="small" style="color:#3f6b4f;">✓ connected</span>
+          </div>
+          <div id="phoneLoginRow" style="display:flex; align-items:center; gap:8px; font-size:13px;">
+            ${user.phone
+              ? `<span>Phone / OTP</span><span class="small" style="color:#3f6b4f;">✓ linked (+91 ${escapeHtml(String(user.phone).replace(/\D/g, "").slice(-10))})</span>`
+              : `<span>Phone / OTP</span><button id="addPhoneBtn" type="button" class="btn secondary" style="padding:6px 12px; font-size:12px;">Add phone number</button>`}
+          </div>
+          <div id="addPhoneFlow" style="display:none; margin-top:10px; max-width:320px;">
+            <div class="small" style="opacity:.75; margin-bottom:8px;">
+              Adding a phone number lets you also sign in with WhatsApp OTP (or a PIN) — same account either way.
+            </div>
+            <label class="small" for="newPhone">WhatsApp number</label>
+            <input id="newPhone" class="input" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile" autocomplete="tel" />
+            <div id="errNewPhone" class="small" style="display:none; color:#a13d3d; margin-top:4px;"></div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button id="sendPhoneOtpBtn" type="button" class="btn" style="padding:8px 14px; font-size:13px;">Send code</button>
+              <button id="cancelAddPhoneBtn" type="button" class="btn secondary" style="padding:8px 14px; font-size:13px;">Cancel</button>
+            </div>
+            <div id="phoneOtpStep" style="display:none; margin-top:12px;">
+              <label class="small" for="newPhoneOtp">Enter the 6-digit code</label>
+              <input id="newPhoneOtp" class="input" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" style="max-width:140px; letter-spacing:3px; font-weight:700;" />
+              <div id="errNewPhoneOtp" class="small" style="display:none; color:#a13d3d; margin-top:4px;"></div>
+              <div style="display:flex; gap:8px; margin-top:8px;">
+                <button id="verifyPhoneOtpBtn" type="button" class="btn" style="padding:8px 14px; font-size:13px;">Verify</button>
+              </div>
+            </div>
+            <div id="addPhoneStatus" class="small" style="margin-top:6px; min-height:16px;"></div>
+          </div>
+        </div>
+
         <hr/>
 
         <div id="warn" class="small" style="display:none; margin-bottom:12px; padding:10px 14px; border-left:2px solid #a13d3d; background:rgba(161,61,61,.07); color:#a13d3d;"></div>
@@ -357,6 +392,125 @@
         try { await supabase.auth.signOut(); } catch (_) {}
         window.location.href = "login.html";
       };
+
+      // ── Add phone number to an existing (Google/email) account ──────────
+      // Uses Supabase's own phone-change flow (updateUser + verifyOtp type
+      // "phone_change") instead of a custom edge function: the project's
+      // send-whatsapp-otp-hook is registered as Supabase's native "Send SMS"
+      // hook, so it already fires for this flow the same way it does for a
+      // normal sign-in OTP — same WhatsApp delivery, same abuse policy, and
+      // Supabase itself refuses to link a phone that's already someone
+      // else's verified identity (unique across auth.users).
+      const addPhoneBtn = document.getElementById("addPhoneBtn");
+      if (addPhoneBtn) {
+        const flow       = document.getElementById("addPhoneFlow");
+        const phoneInput = document.getElementById("newPhone");
+        const errPhone   = document.getElementById("errNewPhone");
+        const sendBtn    = document.getElementById("sendPhoneOtpBtn");
+        const cancelBtn  = document.getElementById("cancelAddPhoneBtn");
+        const otpStep    = document.getElementById("phoneOtpStep");
+        const otpInput   = document.getElementById("newPhoneOtp");
+        const errOtp     = document.getElementById("errNewPhoneOtp");
+        const verifyBtn  = document.getElementById("verifyPhoneOtpBtn");
+        const statusEl   = document.getElementById("addPhoneStatus");
+        let pendingPhone10 = "";
+
+        const showErr = (el, msg) => { el.textContent = msg; el.style.display = "block"; };
+        const hideErr = (el) => { el.textContent = ""; el.style.display = "none"; };
+
+        addPhoneBtn.onclick = () => {
+          addPhoneBtn.style.display = "none";
+          flow.style.display = "block";
+          phoneInput.focus();
+        };
+
+        cancelBtn.onclick = () => {
+          flow.style.display = "none";
+          otpStep.style.display = "none";
+          addPhoneBtn.style.display = "inline-flex";
+          phoneInput.value = "";
+          otpInput.value = "";
+          hideErr(errPhone);
+          hideErr(errOtp);
+          statusEl.textContent = "";
+        };
+
+        phoneInput.addEventListener("input", () => {
+          phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
+        });
+
+        sendBtn.onclick = async () => {
+          hideErr(errPhone);
+          const p10 = normalizePhone10(phoneInput.value);
+          if (!/^[6-9]\d{9}$/.test(p10)) {
+            showErr(errPhone, "Enter a valid 10-digit Indian mobile number.");
+            return;
+          }
+          pendingPhone10 = p10;
+          sendBtn.disabled = true;
+          statusEl.textContent = "Sending code on WhatsApp…";
+          const { error } = await supabase.auth.updateUser({ phone: toE164(p10) });
+          sendBtn.disabled = false;
+          if (error) {
+            statusEl.textContent = "";
+            // Supabase's own message for "phone already belongs to another
+            // verified identity" varies by version — normalize it so the
+            // guidance always points the visitor at the right fix.
+            if (/already (registered|exists|in use)|duplicate|taken/i.test(error.message || "")) {
+              showErr(errPhone, "This number is already linked to a different AhamStree account. Sign in to that account instead, or use a different number.");
+            } else {
+              showErr(errPhone, error.message || "Couldn't send the code — please try again.");
+            }
+            return;
+          }
+          statusEl.textContent = `Code sent to +91 ${p10} on WhatsApp.`;
+          otpStep.style.display = "block";
+          otpInput.value = "";
+          otpInput.focus();
+        };
+
+        verifyBtn.onclick = async () => {
+          hideErr(errOtp);
+          const code = otpInput.value.trim();
+          if (!/^\d{6}$/.test(code)) {
+            showErr(errOtp, "Enter the 6-digit code.");
+            return;
+          }
+          verifyBtn.disabled = true;
+          statusEl.textContent = "Verifying…";
+          const { error } = await supabase.auth.verifyOtp({
+            phone: toE164(pendingPhone10),
+            token: code,
+            type: "phone_change",
+          });
+          verifyBtn.disabled = false;
+          if (error) {
+            statusEl.textContent = "";
+            showErr(errOtp, error.message || "That code didn't match — try again.");
+            return;
+          }
+
+          // Keep profiles.phone in sync so checkout prefill and
+          // check-phone-login-method see the same number immediately.
+          await supabase.from("profiles").upsert({
+            user_id: user.id,
+            phone: pendingPhone10,
+            updated_at: new Date().toISOString(),
+          });
+
+          // Any past POS/guest orders under this phone attach right away —
+          // same idempotent call hydrateHeaderAuth already makes on every
+          // login (see assets/profile-seed.js).
+          const { data: freshSess } = await supabase.auth.getSession();
+          claimOrdersByPhoneIfNeeded(freshSess?.session);
+
+          statusEl.textContent = "Phone linked! You can now sign in with Google or this number.";
+          flow.style.display = "none";
+          otpStep.style.display = "none";
+          document.getElementById("phoneLoginRow").innerHTML =
+            `<span>Phone / OTP</span><span class="small" style="color:#3f6b4f;">✓ linked (+91 ${escapeHtml(pendingPhone10)})</span>`;
+        };
+      }
 
       const form    = document.getElementById("profileForm");
       const warnBox = document.getElementById("warn");
