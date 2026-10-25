@@ -102,6 +102,28 @@ export async function grantSignupCashIfEligible(session) {
   }
 }
 
+// Links any POS or guest web orders placed under this account's own
+// verified phone number — same reasoning as grantSignupCashIfEligible
+// above: safe to call on EVERY login (the server-side RPC is idempotent,
+// a no-op once everything under that phone is already linked), so this is
+// the one call site that covers every sign-in path site-wide. A customer
+// who had in-store purchases before ever creating an account sees their
+// full order history the first time they log in — and any future POS
+// sale under the same phone also lands in their account automatically.
+export async function claimOrdersByPhoneIfNeeded(session) {
+  const token = session?.access_token;
+  if (!token) return;
+
+  try {
+    await supabase.functions.invoke("claim-orders-by-phone", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch (_) {
+    // Never let this block login — worst case the orders link on the next
+    // login instead (still idempotent, still safe).
+  }
+}
+
 // ── Phone helpers — the one place these live. login.html and
 // assets/signin-popup.js both import these instead of keeping their own
 // duplicate copies (previously duplicated in both files).

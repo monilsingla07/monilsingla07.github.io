@@ -35,6 +35,7 @@
       background: var(--border-light); color: var(--text-light);
     }
     .payment-pill.online { background: var(--indigo-light); color: var(--indigo); }
+    .payment-pill.in-store { background: var(--color-accent-light); color: var(--color-accent); }
 
     /* Pulsing border for urgent pending orders */
     @keyframes urgentPulse {
@@ -426,7 +427,10 @@
       return `<span class="status-badge ${s.cls}">${s.label}</span>`;
     }
 
-    function paymentPill() {
+    function paymentPill(_method, source) {
+      if (source === "pos") {
+        return `<span class="payment-pill in-store">Purchased in-store</span>`;
+      }
       return `<span class="payment-pill online">Online Payment</span>`;
     }
 
@@ -904,7 +908,7 @@
               <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
                 <span style="font-weight:900; font-size:15px;">Order #${shortId}</span>
                 ${statusBadge(effectiveStatus)}
-                ${paymentPill(o.payment_method)}
+                ${paymentPill(o.payment_method, o.source)}
               </div>
               <div class="small" style="opacity:.78;">${formatDate(o.created_at)}</div>
             </div>
@@ -1077,7 +1081,7 @@
       const { data, error } = await supabase
         .from("orders")
         .select(`
-          id, order_number, status, payment_method,
+          id, order_number, status, payment_method, source,
           subtotal_inr, shipping_inr, discount_inr, total_inr,
           razorpay_payment_link_url, shiprocket_awb,
           return_status, return_reason,

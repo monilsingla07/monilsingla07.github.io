@@ -5,7 +5,7 @@ import { mountWelcomePopup } from "./welcome-popup.js";
 import { mountSignInPopup, openSignInModal } from "./signin-popup.js";
 import { openSearchOverlay } from "./search-overlay.js";
 import { escapeHtml, escapeAttr, safeUrl } from "./safe.js";
-import { grantSignupCashIfEligible } from "./profile-seed.js";
+import { grantSignupCashIfEligible, claimOrdersByPhoneIfNeeded } from "./profile-seed.js";
 import { mergeGuestWishlistIntoAccount } from "./wishlist.js";
 import { trackPageview } from "./visit-tracker.js";
 import { toast } from "./toast.js";
@@ -1134,6 +1134,11 @@ export async function hydrateHeaderAuth() {
   // grantSignupCashIfEligible is itself idempotent server-side, so calling
   // it again on every page load / every auth event is harmless.
   if (loggedIn) grantSignupCashIfEligible(data.session);
+
+  // Same reasoning as above: link any POS / guest web orders placed under
+  // this account's own verified phone number. See claimOrdersByPhoneIfNeeded
+  // for why every login (not just signup) is the right call site.
+  if (loggedIn) claimOrdersByPhoneIfNeeded(data.session);
 
   // Same reasoning as above: pull in anything the visitor wishlisted as a
   // guest, on whichever page/auth event first sees them logged in.
