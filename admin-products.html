@@ -173,6 +173,7 @@
               <input id="bulkStockDelta" class="input" type="number" placeholder="e.g. +5" style="width:80px; padding:6px 8px; font-size:12px;" />
               <button id="bulkApplyStock" class="btn secondary" style="padding:6px 12px; font-size:12px;">± stock</button>
             </span>
+            <button id="bulkMarkOutOfStock" class="btn secondary" style="padding:6px 12px; font-size:12px; color:#a13d3d;">Mark out of stock</button>
             <button id="bulkMoreToggle" class="btn secondary" style="padding:6px 12px; font-size:12px;">More bulk actions ▾</button>
             <button id="bulkClear" class="btn secondary" style="padding:6px 12px; font-size:12px; margin-left:auto;">Clear selection</button>
           </div>
@@ -632,6 +633,9 @@
             </div>
             <div class="prod-actions">
               <button class="btn secondary" data-edit="${escapeAttr(p.id)}">Edit</button>
+              ${(p.inventory_qty || 0) > 0 && !p.inventory_managed
+                ? `<button class="btn secondary" style="color:#a13d3d;" data-mark-oos="${escapeAttr(p.id)}" title="Set quantity to 0 — stays on the site marked Sold Out">Out of stock</button>`
+                : ""}
               <label class="switch" title="Toggle active">
                 <input type="checkbox" data-toggle="${escapeAttr(p.id)}" ${p.is_active ? "checked" : ""} />
                 <span class="slider"></span>
@@ -643,6 +647,22 @@
 
       grid.querySelectorAll("button[data-edit]").forEach(btn => {
         btn.addEventListener("click", () => openProductEditor(btn.dataset.edit));
+      });
+      grid.querySelectorAll("button[data-mark-oos]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.markOos;
+          const p = productsCache.find(x => x.id === id);
+          if (!confirm(`Mark "${p?.title || "this product"}" out of stock (sets quantity to 0)? It'll still show on the site as "Sold Out."`)) return;
+          btn.disabled = true;
+          try {
+            await authedFetch(PRODUCTS_FN, { action: "bulk_update", ids: [id], set_inventory_qty: 0 });
+            if (p) p.inventory_qty = 0;
+            renderProductGrid();
+          } catch (e) {
+            alert("Couldn't update: " + e.message);
+            btn.disabled = false;
+          }
+        });
       });
       grid.querySelectorAll("input[data-select]").forEach(chk => {
         chk.addEventListener("change", () => {
@@ -694,7 +714,17 @@
         const r = await authedFetch(PRODUCTS_FN, { action: "bulk_update", ids, ...patch });
         selectedIds.clear();
         await loadProductsList();
-        if (r.updated < r.total) alert(`${r.updated} of ${r.total} products updated — the rest failed (see console for details).`);
+        const skipped = r.skipped || 0;
+        const realFailures = r.total - r.updated - skipped;
+        if (skipped > 0) {
+          // Piece-tracked SKUs ignore a stock change on purpose — their
+          // quantity comes from the inventory ledger, not a typed number —
+          // so this isn't a failure, just worth telling the admin why the
+          // count didn't change for those.
+          alert(`${r.updated} of ${r.total} products updated. ${skipped} skipped — piece-tracked stock, which updates automatically from inventory.` + (realFailures > 0 ? ` ${realFailures} failed (see console for details).` : ""));
+        } else if (realFailures > 0) {
+          alert(`${r.updated} of ${r.total} products updated — the rest failed (see console for details).`);
+        }
       } catch (e) {
         alert("Bulk update failed: " + e.message);
       }
@@ -711,6 +741,9 @@
       const delta = Number(document.getElementById("bulkStockDelta").value);
       if (!Number.isFinite(delta) || delta === 0) return alert("Enter a non-zero number, e.g. 5 or -3.");
       applyBulk({ stock_delta: Math.trunc(delta) }, `Apply ${delta > 0 ? "+" : ""}${delta} stock change to {n} selected products?`);
+    });
+    document.getElementById("bulkMarkOutOfStock").addEventListener("click", () => {
+      applyBulk({ set_inventory_qty: 0 }, "Mark {n} selected products out of stock (sets quantity to 0)? They'll still show on the site as \"Sold Out.\" Piece-tracked products are skipped — their stock updates automatically.");
     });
     document.getElementById("bulkClear").addEventListener("click", () => {
       selectedIds.clear();
