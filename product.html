@@ -207,6 +207,19 @@
               <div id="taxNote" class="pd-tax small">Inclusive of all taxes</div>
             </div>
 
+            <!-- Guest-only "login price" preview — the real, checkout-accurate
+                 best offer a new signup would get (max of the WELCOME5
+                 coupon or the signup wallet bonus; quote-order.ts treats
+                 them as mutually exclusive, so this mirrors that same rule
+                 rather than adding them together). Computed in
+                 hydrateLoginPricePreview() below; stays hidden for logged-in
+                 visitors and whenever neither offer is currently live. -->
+            <div id="loginPricePreview" class="pd-login-price" hidden>
+              <span class="pd-login-price-label">Login price:</span>
+              <span id="loginPriceValue" class="pd-login-price-value"></span>
+              <a href="login.html" class="pd-login-price-link">Sign up &amp; save →</a>
+            </div>
+
             <!-- Specs table (Color / Material / Craft, etc.) — moved directly
                  under the price, above the buy buttons, to mirror Chidiyaa's
                  PDP flow instead of a separate "Specifications" card far
@@ -426,6 +439,62 @@
     document.getElementById("footer").innerHTML = renderFooter();
     hydrateHeaderAuth();
     mountPolicySummary();
+
+    // ===== Guest "login price" preview =====
+    // Shows a guest the real, checkout-accurate price they'd pay after
+    // signing up — not a marketing estimate. The two live signup offers
+    // (the WELCOME5-style coupon and the AhamStree Cash wallet bonus) are
+    // mutually exclusive at checkout (see quote-order.ts: "either the
+    // coupon or AhamStree Cash, not both"), so this takes whichever is
+    // larger for this specific price, exactly like a shopper would end up
+    // choosing. Hidden entirely for logged-in visitors (they already see
+    // their real wallet balance/coupons at checkout) and whenever neither
+    // offer is actually live, so it never shows a number nothing backs up.
+    const SITE_SETTINGS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-site-settings";
+    const AVAILABLE_COUPONS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-available-coupons";
+    async function hydrateLoginPricePreview(effectivePrice){
+      const el = document.getElementById("loginPricePreview");
+      if (!el || !effectivePrice || effectivePrice <= 0) return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) return; // logged-in visitors don't need this
+
+        const [settingsRes, couponsRes] = await Promise.all([
+          fetch(SITE_SETTINGS_URL).then(r => r.json()).catch(() => null),
+          fetch(AVAILABLE_COUPONS_URL).then(r => r.json()).catch(() => null),
+        ]);
+        const settings = settingsRes?.settings || {};
+        const coupons = Array.isArray(couponsRes?.coupons) ? couponsRes.coupons : [];
+
+        // Best public, first-order-eligible coupon for this price.
+        let couponDiscount = 0;
+        for (const c of coupons) {
+          if (!c.first_order_only) continue;
+          if (c.min_order_inr && effectivePrice < c.min_order_inr) continue;
+          let d = c.type === "percent" ? effectivePrice * (Number(c.value) || 0) / 100 : (Number(c.value) || 0);
+          if (c.max_discount_inr) d = Math.min(d, c.max_discount_inr);
+          d = Math.min(d, effectivePrice);
+          if (d > couponDiscount) couponDiscount = d;
+        }
+
+        // Signup wallet bonus, redeemable up to the admin-configured % of
+        // this item's price (same formula as quote-order.ts's redeemable_inr).
+        let walletDiscount = 0;
+        if (settings.wallet_enabled && settings.wallet_signup_bonus_inr > 0) {
+          const rate = (Number(settings.wallet_redemption_rate_percent) || 0) / 100;
+          walletDiscount = Math.min(settings.wallet_signup_bonus_inr, Math.floor(effectivePrice * rate));
+        }
+
+        const bestDiscount = Math.round(Math.max(couponDiscount, walletDiscount));
+        if (bestDiscount <= 0) return;
+
+        const loginPrice = Math.max(effectivePrice - bestDiscount, 0);
+        document.getElementById("loginPriceValue").textContent = `₹${loginPrice.toLocaleString("en-IN")}`;
+        el.hidden = false;
+      } catch (_e) {
+        // Never let a pricing-preview problem affect the real price shown above.
+      }
+    }
 
     // ===== Delivery time estimate (pincode → Shiprocket serviceability) =====
     // Independent of the product data load below — works the instant the
@@ -765,6 +834,8 @@ if (!sessionStorage.getItem(viewKey)) {
         const pctOff = Math.round((1 - sale / price) * 100);
         document.querySelector(".pd-main").insertAdjacentHTML("afterbegin", `<div class="pd-badge">${pctOff}% OFF</div>`);
       }
+
+      hydrateLoginPricePreview(hasSale ? sale : price);
 
       // Sold Out / New corner tag on the main product image — same rule as
       // the listing-page cards: Sold Out wins over New, New is created_at
