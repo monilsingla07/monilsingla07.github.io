@@ -124,19 +124,19 @@
     .weave-pill {
       display: inline-flex;
       align-items: center;
-      height: 34px;
-      padding: 0 14px;
+      height: 38px;
+      padding: 0 18px;
       border: 1px solid var(--border);
-      border-radius: 0;
+      border-radius: var(--radius-sm);
       background: var(--surface);
       font-size: 13px;
       font-weight: 500;
       color: var(--text-light);
       cursor: pointer;
       white-space: nowrap;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
     }
-    .weave-pill:hover { border-color: var(--color-action); color: var(--color-action); }
+    .weave-pill:hover { border-color: var(--color-action); color: var(--color-action); box-shadow: var(--shadow-sm); }
     .weave-pill.active {
       background: var(--color-action);
       border-color: var(--color-action);
@@ -169,11 +169,11 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      height: 38px;
+      height: 40px;
       max-width: 220px;
-      padding: 0 14px;
+      padding: 0 18px;
       border: 1px solid var(--border);
-      border-radius: 0;
+      border-radius: var(--radius-sm);
       background: var(--surface);
       font-size: 13px;
       font-weight: 500;
@@ -182,7 +182,7 @@
       white-space: nowrap;
       transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
     }
-    .filter-pill:hover { border-color: var(--color-action); color: var(--color-action); }
+    .filter-pill:hover { border-color: var(--color-action); color: var(--color-action); box-shadow: var(--shadow-sm); }
     .filter-pill-label {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -272,17 +272,18 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      padding: 7px 12px;
+      padding: 9px 16px;
       border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
       background: var(--surface);
       color: var(--text);
       font-size: 13px;
       line-height: 1.2;
       cursor: pointer;
       user-select: none;
-      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
     }
-    .filter-chip:hover { border-color: var(--color-action); }
+    .filter-chip:hover { border-color: var(--color-action); box-shadow: var(--shadow-sm); }
     .filter-chip.is-selected {
       background: var(--color-action);
       border-color: var(--color-action);
