@@ -19,27 +19,18 @@
 import { escapeHtml, escapeAttr, safeHref, safeSrc } from "./safe.js";
 
 const FUNCTIONS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-active-reels";
-const LOGO_SRC = "assets/images/ahamstree-logo.png";
 
-function iconHeartOutline() {
-  return `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20.5s-7.5-4.6-10-9.2C.4 8 1.8 4.5 5 3.4c2.3-.8 4.6.1 6 2 1.4-1.9 3.7-2.8 6-2 3.2 1.1 4.6 4.6 3 7.9-2.5 4.6-10 9.2-10 9.2z"/></svg>`;
-}
-function iconCommentOutline() {
-  return `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.4 8.4 0 0 1-3.9-.94L3 20l1.06-4.24A8.4 8.4 0 0 1 3.5 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z"/></svg>`;
-}
-function iconShareOutline() {
-  return `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>`;
-}
-function iconBookmarkOutline() {
-  return `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>`;
-}
-function iconDots() {
-  return `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>`;
-}
 function iconPlay() {
   return `<svg viewBox="0 0 24 24" width="26" height="26" fill="#fff" stroke="none"><path d="M8 5v14l11-7L8 5z"/></svg>`;
 }
 
+// Simplified card (homepage restructure, round 4): previously this
+// replicated Instagram's own UI chrome — avatar/handle header, three-dot
+// menu, and a full like/comment/share/bookmark action row — none of which
+// was functional (the heart didn't like anything, the comment icon opened
+// nothing). It just added visual noise this far down the page and read as
+// a bit of a dated pattern. Now it's just the media (clickable straight to
+// the real post) + caption + a plain link — everything here still works.
 function videoCard(r) {
   const postUrl = safeHref(r.reel_url);
   const videoSrc = safeSrc(r.video_url);
@@ -60,24 +51,7 @@ function videoCard(r) {
   return `
     <div class="reel-tile">
       <div class="ig-card">
-        <div class="ig-card-head">
-          <img class="ig-avatar" src="${LOGO_SRC}" alt="" loading="lazy" />
-          <div class="ig-head-text">
-            <div class="ig-handle">ahamstree</div>
-          </div>
-          ${postUrl ? `<a class="ig-dots-link" href="${postUrl}" target="_blank" rel="noopener noreferrer" aria-label="View this post on Instagram">${iconDots()}</a>` : iconDots()}
-        </div>
-
         ${mediaHtml}
-
-        <div class="ig-actions">
-          <span class="ig-action">${iconHeartOutline()}</span>
-          <span class="ig-action">${iconCommentOutline()}</span>
-          <span class="ig-action">${iconShareOutline()}</span>
-          <span class="ig-spacer"></span>
-          <span class="ig-action">${iconBookmarkOutline()}</span>
-        </div>
-
         ${caption ? `<div class="ig-caption"><strong>ahamstree</strong> ${caption}</div>` : ""}
         ${postUrl ? `<a class="ig-view-link" href="${postUrl}" target="_blank" rel="noopener noreferrer">Watch on Instagram ↗</a>` : ""}
       </div>

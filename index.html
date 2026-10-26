@@ -226,39 +226,92 @@
 
     <div class="container" style="margin-top:22px;">
 
-      <!-- Trust strip -->
+      <!-- Trust strip — includes the authenticity/provenance signals from
+           the homepage review: handloom is a category where power-loom
+           fakes get sold as "handloom," so naming the real thing (GI-tag,
+           direct from weaver families) does real work here. The
+           one-of-a-kind line also reframes the site's real sold-out pieces
+           as a feature of genuine handloom, not a stocking failure. -->
       <section class="section" style="margin-top:0;">
         <div style="display:flex; flex-wrap:wrap; gap:0; justify-content:space-between; padding:8px 0;">
-          <div class="trust-col" style="flex:1; min-width:220px; display:flex; align-items:center; gap:10px; padding:6px 20px 6px 0;">
-            <span style="font-size:13.5px; color:var(--text-light);">Handwoven by master artisans</span>
+          <div class="trust-col" style="flex:1; min-width:200px; display:flex; align-items:center; gap:10px; padding:6px 16px 6px 0;">
+            <span style="font-size:13.5px; color:var(--text-light);">GI-tagged Chanderi, direct from weaver families</span>
           </div>
-          <div class="trust-col" style="flex:1; min-width:220px; display:flex; align-items:center; gap:10px; padding:6px 20px; border-left:1px solid var(--border); border-right:1px solid var(--border);">
+          <div class="trust-col" style="flex:1; min-width:200px; display:flex; align-items:center; gap:10px; padding:6px 16px; border-left:1px solid var(--border);">
+            <span style="font-size:13.5px; color:var(--text-light);">One-of-a-kind — once sold, never repeated</span>
+          </div>
+          <div class="trust-col" style="flex:1; min-width:200px; display:flex; align-items:center; gap:10px; padding:6px 16px; border-left:1px solid var(--border);">
             <span id="trustStripShipping" style="font-size:13.5px; color:var(--text-light);">Complimentary shipping across India</span>
           </div>
-          <div class="trust-col" style="flex:1; min-width:220px; display:flex; align-items:center; gap:10px; padding:6px 0 6px 20px;">
+          <div class="trust-col" style="flex:1; min-width:200px; display:flex; align-items:center; gap:10px; padding:6px 0 6px 16px; border-left:1px solid var(--border);">
             <span style="font-size:13.5px; color:var(--text-light);">Quality checked before dispatch</span>
           </div>
         </div>
       </section>
 
-      <!-- Category quick links: exactly 2 boxes (Sarees, Suits) — the weave
-           names (Chanderi Handloom, Chanderi Cotton, ...) live in each
-           tile's subtitle and as the real filter on the category page, not
-           as their own separate boxes here. No section heading/"View all"
-           here — the two tiles are self-explanatory and each links straight
-           into its category (per user request, round 7). -->
-      <section class="section">
-        <div id="homeCategoryTiles" class="category-tile-groups">
+      <!-- Quick-jump circle row — one tap straight into Sarees, Suits, New
+           Arrivals, Sale, or any curated collection. Replaces the old flat
+           Sarees/Suits text tiles. Inspired by Suta.in's circular category
+           row (homepage restructure, round 4) — adapted to this catalog's
+           real breadth (2 categories + 4 collections, not a dozen product
+           types), with real photo thumbnails rather than abstract icons.
+           Horizontally scrollable on mobile, wraps on desktop — see
+           .qj-row in styles.css. -->
+      <section class="section" style="margin-top:4px;">
+        <div id="quickJumpRow" class="qj-row" aria-label="Shop by category or collection">
+          <div class="qj-item is-skeleton" aria-hidden="true"><span class="qj-circle"></span></div>
+          <div class="qj-item is-skeleton" aria-hidden="true"><span class="qj-circle"></span></div>
+          <div class="qj-item is-skeleton" aria-hidden="true"><span class="qj-circle"></span></div>
+          <div class="qj-item is-skeleton" aria-hidden="true"><span class="qj-circle"></span></div>
+        </div>
+      </section>
+
+      <!-- Curated collections (from backend) — promoted up from its old
+           position after New Arrivals/Most Viewed, since this is the
+           strongest visual section on the page (homepage restructure,
+           round 1-2). -->
+      <section class="section section-tinted">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Curated For You</span>
+            <h2 class="section-title">Curated Collections</h2>
+          </div>
+          <a class="section-link" href="collections.html">View all</a>
+        </div>
+
+        <div id="homeCollectionTiles" class="category-tiles">
+          <div class="cat-tile is-skeleton" aria-hidden="true"></div>
+          <div class="cat-tile is-skeleton" aria-hidden="true"></div>
           <div class="cat-tile is-skeleton" aria-hidden="true"></div>
           <div class="cat-tile is-skeleton" aria-hidden="true"></div>
         </div>
       </section>
 
-      <!-- New Arrivals (renamed from "New Collection", moved above Curated
-           Collections and Most Viewed). Kicker label + tinted-panel bands
-           below are the "bolder identity + motion" pass — alternating
-           white/warm panels for visual rhythm, each .section fades in on
-           scroll via assets/ui.js's initScrollReveal(). -->
+      <!-- "Why handloom" story band — new section (homepage restructure,
+           round 2-4). No homepage section previously told this story at
+           all; it only lived on about.html, which a new visitor rarely
+           clicks. Copy drawn from the existing About page voice rather
+           than invented fresh. Deliberately typography-led (no process
+           photography exists in the asset library yet to use here
+           honestly — swap in a real loom/weaver photo later if one
+           becomes available). -->
+      <section class="section section-tinted story-band">
+        <div class="story-band-inner">
+          <span class="section-kicker">The Craft Behind Every Saree</span>
+          <h2 class="story-band-title">Slow, mindful, rooted in authenticity.</h2>
+          <p class="story-band-copy">Every AhamStree saree is handwoven by artisan families in Chanderi — not mass-produced, never repeated. We work directly with weavers, with no middlemen, to bring you the real thing in a category full of power-loom imitations.</p>
+          <div class="story-band-points">
+            <div class="story-point"><strong>100%</strong><span>Handloom, GI-tagged Chanderi</span></div>
+            <div class="story-point"><strong>0</strong><span>Middlemen — direct from weaver families</span></div>
+            <div class="story-point"><strong>1-of-1</strong><span>Each piece is one-of-a-kind, never restocked</span></div>
+          </div>
+          <a class="btn secondary" href="about.html">Read our story</a>
+        </div>
+      </section>
+
+      <!-- New Arrivals — sold-out items filtered out at the query level
+           (home.js fetchLatestActive), so this rail only ever shows pieces
+           a visitor can actually buy (homepage restructure, round 3). -->
       <section class="section">
         <div class="section-head">
           <div>
@@ -277,54 +330,6 @@
         </div>
       </section>
 
-      <!-- Curated collections (from backend) -->
-      <section class="section section-tinted">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Curated For You</span>
-            <h2 class="section-title">Curated Collections</h2>
-          </div>
-          <a class="section-link" href="collections.html">View all</a>
-        </div>
-
-        <div id="homeCollectionTiles" class="category-tiles">
-          <div class="cat-tile is-skeleton" aria-hidden="true"></div>
-          <div class="cat-tile is-skeleton" aria-hidden="true"></div>
-          <div class="cat-tile is-skeleton" aria-hidden="true"></div>
-          <div class="cat-tile is-skeleton" aria-hidden="true"></div>
-        </div>
-      </section>
-
-      <!-- Bestsellers -->
-      <section class="section">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">By page views</span>
-            <h2 class="section-title">Most viewed</h2>
-          </div>
-          <a class="section-link" href="products.html">Shop all</a>
-        </div>
-
-        <div id="bestsellersStatus" class="small" style="margin-bottom:10px;"></div>
-        <div id="bestsellersGrid" class="grid grid-4">
-          <div class="skeleton skeleton-card" aria-hidden="true"></div>
-          <div class="skeleton skeleton-card" aria-hidden="true"></div>
-          <div class="skeleton skeleton-card" aria-hidden="true"></div>
-          <div class="skeleton skeleton-card" aria-hidden="true"></div>
-        </div>
-      </section>
-
-
-      <!-- Instagram reels (admin-managed) -->
-      <section class="section section-tinted" id="instagramReelsSection">
-        <div class="section-head">
-          <h2 class="section-title">From Our Instagram</h2>
-          <a class="section-link section-follow-link" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noopener noreferrer">Follow @ahamstree</a>
-        </div>
-
-        <div id="instagramReelsStrip" class="reel-strip"></div>
-      </section>
-
       <!-- Testimonials — admin-managed (Admin → Hero & Testimonials), see
            assets/site-content.js's hydrateTestimonials(). Hidden
            automatically if there are zero active testimonials. -->
@@ -336,6 +341,19 @@
         <div id="testimonialsGrid" class="testimonial-grid"></div>
       </section>
 
+      <!-- Instagram reels (admin-managed) — moved to after Testimonials
+           (homepage restructure); UI simplified to drop the non-functional
+           fake Instagram chrome (like/comment/share icons, "54 likes",
+           comment input) that was here before — see
+           assets/instagram-reels.js. -->
+      <section class="section section-tinted" id="instagramReelsSection">
+        <div class="section-head">
+          <h2 class="section-title">From Our Instagram</h2>
+          <a class="section-link section-follow-link" href="https://www.instagram.com/ahamstree/" target="_blank" rel="noopener noreferrer">Follow @ahamstree</a>
+        </div>
+
+        <div id="instagramReelsStrip" class="reel-strip"></div>
+      </section>
 
     </div>
 
