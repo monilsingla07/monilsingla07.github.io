@@ -251,9 +251,6 @@ export function renderHeader(active = "") {
             <a id="accountLinkMobile" class="icon-link" href="login.html" aria-label="Account">
               ${iconUser()}
             </a>
-            <a id="wishlistLinkMobile" class="icon-link" href="wishlist.html" aria-label="Wishlist">
-              ${iconHeart()}
-            </a>
             <a class="icon-link" href="cart.html" aria-label="Cart">
               <span class="icon-badge" id="cartBadgeMobile" aria-label="Cart items">${count}</span>
               ${iconBag()}
