@@ -51,51 +51,72 @@ function heroSlideHtml(slide, index, total) {
 // the LCP image can start loading) and only re-fetches once it is older than
 // HERO_TTL_MS. A changed payload re-renders in place. The inline script in
 // index.html's <head> reads the same key to preload the first slide image and
-// starts the very first fetch early, exposing it as window.__heroFetch.
-const HERO_CACHE_KEY = "ahamstree_hero_v1";
+// starts the very first fetch early, exposing it as window.__heroFetch — that
+// early-fetch optimization only exists for the 'top' placement (the one
+// preloaded before the page even renders); the New Arrivals banner just
+// fetches normally, since it's further down the page anyway.
+const HERO_CACHE_KEY_BASE = "ahamstree_hero_v1";
 const HERO_TTL_MS = 10 * 60 * 1000;
 const HERO_MAX_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 
-function readHeroCache() {
+function readHeroCache(cacheKey) {
   try {
-    const c = JSON.parse(localStorage.getItem(HERO_CACHE_KEY) || "null");
+    const c = JSON.parse(localStorage.getItem(cacheKey) || "null");
     if (!c || !Array.isArray(c.slides) || !c.slides.length) return null;
     const age = Date.now() - Number(c.t || 0);
     if (!(age >= 0) || age > HERO_MAX_STALE_MS) return null;
     return { slides: c.slides, fresh: age < HERO_TTL_MS };
   } catch (_) { return null; }
 }
-function writeHeroCache(slides) {
+function writeHeroCache(cacheKey, slides) {
   try {
-    if (slides && slides.length) localStorage.setItem(HERO_CACHE_KEY, JSON.stringify({ t: Date.now(), slides }));
-    else localStorage.removeItem(HERO_CACHE_KEY);
+    if (slides && slides.length) localStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), slides }));
+    else localStorage.removeItem(cacheKey);
   } catch (_) {}
 }
 
-async function fetchHeroSlides() {
-  // Reuse the request the <head> script already started, once.
-  const early = window.__heroFetch;
-  window.__heroFetch = null;
+async function fetchHeroSlides(placement) {
   let data = null;
-  if (early) { try { data = await early; } catch (_) {} }
+  if (placement === "top") {
+    // Reuse the request the <head> script already started, once.
+    const early = window.__heroFetch;
+    window.__heroFetch = null;
+    if (early) { try { data = await early; } catch (_) {} }
+  }
   if (!data) {
-    const res = await fetch(HERO_URL, { method: "GET" });
+    const res = await fetch(HERO_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ placement }),
+    });
     data = res.ok ? await res.json().catch(() => null) : null;
   }
   return Array.isArray(data?.slides) ? data.slides : null;
 }
 
-export async function hydrateHero() {
-  const section = document.getElementById("heroBannerSection");
-  const track = document.getElementById("heroTrack");
-  const dots = document.getElementById("heroDots");
+// opts: { sectionId, trackId, dotsId, placement } — defaults render the top
+// hero carousel (unchanged call sites keep working as-is); pass
+// placement:"new_arrivals" + the New Arrivals banner's own element ids to
+// render that slot instead. Both slots use the exact same markup/carousel
+// behavior, just different content and a separately-cached payload.
+export async function hydrateHero(opts = {}) {
+  const {
+    sectionId = "heroBannerSection",
+    trackId = "heroTrack",
+    dotsId = "heroDots",
+    placement = "top",
+  } = opts;
+  const cacheKey = placement === "top" ? HERO_CACHE_KEY_BASE : `${HERO_CACHE_KEY_BASE}_${placement}`;
+  const section = document.getElementById(sectionId);
+  const track = document.getElementById(trackId);
+  const dots = document.getElementById(dotsId);
   if (!section || !track) return;
 
   let teardown = null;
   let renderedSig = "";
   const render = (slides) => {
     if (teardown) teardown();
-    section.style.display = "";
+    section.hidden = false;
     track.innerHTML = slides.map((s, i) => heroSlideHtml(s, i, slides.length)).join("");
     if (slides.length > 1 && dots) {
       dots.innerHTML = slides
@@ -110,25 +131,25 @@ export async function hydrateHero() {
     renderedSig = JSON.stringify(slides);
   };
 
-  const cached = readHeroCache();
+  const cached = readHeroCache(cacheKey);
   if (cached) {
     try { render(cached.slides); } catch (e) { console.error("hero cache render:", e); }
     if (cached.fresh) return;
   }
 
   try {
-    const slides = await fetchHeroSlides();
+    const slides = await fetchHeroSlides(placement);
     if (slides === null) throw new Error("hero fetch failed");
-    writeHeroCache(slides);
+    writeHeroCache(cacheKey, slides);
     if (slides.length === 0) {
       if (teardown) teardown();
-      section.style.display = "none";
+      section.hidden = true;
       return;
     }
     if (JSON.stringify(slides) !== renderedSig) render(slides);
   } catch (e) {
     console.error("hydrateHero error:", e);
-    if (!cached) section.style.display = "none";
+    if (!cached) section.hidden = true;
   }
 }
 

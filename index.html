@@ -275,10 +275,43 @@
         </div>
       </section>
 
-      <!-- Curated collections (from backend) — promoted up from its old
-           position after New Arrivals/Most Viewed, since this is the
-           strongest visual section on the page (homepage restructure,
-           round 1-2). -->
+      <!-- New Arrivals banner — a second admin-managed slide slot (same
+           hero_slides table/admin form as the top banner, just
+           placement='new_arrivals'; Admin → Hero & Testimonials → "New
+           Arrivals Banner" tab). Entirely hidden when there are zero active
+           slides for this placement — never a placeholder/empty box. -->
+      <section class="hero-banner hero-banner-secondary" id="newArrivalsBannerSection" hidden>
+        <div class="hero-track" id="newArrivalsBannerTrack" aria-label="New Arrivals"></div>
+        <div class="hero-dots" id="newArrivalsBannerDots" role="group" aria-label="New Arrivals banner slides"></div>
+      </section>
+
+      <!-- New Arrivals — sold-out items filtered out at the query level
+           (home.js fetchLatestActive), so this rail only ever shows pieces
+           a visitor can actually buy (homepage restructure, round 3).
+           Moved up above Curated Collections (round 5) so the banner above
+           and this grid read as one "what's new" moment, Suta.in-style. -->
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Fresh In</span>
+            <h2 class="section-title">New Arrivals</h2>
+          </div>
+          <a class="section-link" href="new-arrivals.html">See more</a>
+        </div>
+
+        <div id="newCollectionStatus" class="small" style="margin-bottom:10px;"></div>
+        <div id="newCollectionGrid" class="grid grid-4">
+          <div class="skeleton skeleton-card" aria-hidden="true"></div>
+          <div class="skeleton skeleton-card" aria-hidden="true"></div>
+          <div class="skeleton skeleton-card" aria-hidden="true"></div>
+          <div class="skeleton skeleton-card" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <!-- Curated collections (from backend) — now below New Arrivals
+           (round 5); still the strongest visual browsing section on the
+           page, just no longer the very first thing after the quick-jump
+           row now that New Arrivals has its own banner + grid up top. -->
       <section class="section section-tinted">
         <div class="section-head">
           <div>
@@ -323,27 +356,6 @@
             <div class="story-point"><strong>1-of-1</strong><span>Each piece is one-of-a-kind, never restocked</span></div>
           </div>
           <a class="btn secondary" href="about.html">Read our story</a>
-        </div>
-      </section>
-
-      <!-- New Arrivals — sold-out items filtered out at the query level
-           (home.js fetchLatestActive), so this rail only ever shows pieces
-           a visitor can actually buy (homepage restructure, round 3). -->
-      <section class="section">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Fresh In</span>
-            <h2 class="section-title">New Arrivals</h2>
-          </div>
-          <a class="section-link" href="new-arrivals.html">See more</a>
-        </div>
-
-        <div id="newCollectionStatus" class="small" style="margin-bottom:10px;"></div>
-        <div id="newCollectionGrid" class="grid grid-4">
-          <div class="skeleton skeleton-card" aria-hidden="true"></div>
-          <div class="skeleton skeleton-card" aria-hidden="true"></div>
-          <div class="skeleton skeleton-card" aria-hidden="true"></div>
-          <div class="skeleton skeleton-card" aria-hidden="true"></div>
         </div>
       </section>
 
@@ -445,6 +457,12 @@
     <script type="module">
       import { hydrateHero } from "./assets/site-content.js";
       hydrateHero();
+      hydrateHero({
+        sectionId: "newArrivalsBannerSection",
+        trackId: "newArrivalsBannerTrack",
+        dotsId: "newArrivalsBannerDots",
+        placement: "new_arrivals",
+      });
     </script>
     <script type="module">
       import { renderHeader, renderFooter, hydrateHeaderAuth } from "./assets/ui.js";

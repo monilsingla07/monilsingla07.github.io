@@ -55,9 +55,19 @@
 
       <!-- ══════════ HERO SLIDES ══════════ -->
       <div class="aht-panel active" id="panelHero">
+        <!-- Which homepage slot these slides belong to — the top banner
+             carousel, or the "New Arrivals" banner further down the page.
+             Same form/table/admin flow for both, just a different
+             hero_slides.placement value. -->
+        <div class="aht-tabs" id="heroPlacementTabs" style="margin-bottom:12px;">
+          <button type="button" class="aht-tab active" data-placement="top">Top Hero Carousel</button>
+          <button type="button" class="aht-tab" data-placement="new_arrivals">New Arrivals Banner</button>
+        </div>
+
         <div class="pm-card">
           <div style="font-weight:700;" id="heroFormTitle">New slide</div>
           <input type="hidden" id="h_id" />
+          <input type="hidden" id="h_placement" value="top" />
 
           <div class="pm-row">
             <div class="full">
@@ -293,8 +303,19 @@
     const heroFormStatus = document.getElementById("heroFormStatus");
     const heroFormTitle  = document.getElementById("heroFormTitle");
 
+    let currentHeroPlacement = "top";
+    document.querySelectorAll("#heroPlacementTabs .aht-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentHeroPlacement = btn.dataset.placement;
+        document.querySelectorAll("#heroPlacementTabs .aht-tab").forEach(b => b.classList.toggle("active", b === btn));
+        clearHeroForm();
+        loadHeroList();
+      });
+    });
+
     function clearHeroForm() {
       document.getElementById("h_id").value = "";
+      document.getElementById("h_placement").value = currentHeroPlacement;
       document.getElementById("h_title").value = "";
       document.getElementById("h_kicker").value = "";
       document.getElementById("h_subtitle").value = "";
@@ -317,6 +338,7 @@
 
     function fillHeroForm(s) {
       document.getElementById("h_id").value = s.id;
+      document.getElementById("h_placement").value = s.placement || "top";
       document.getElementById("h_title").value = s.title || "";
       document.getElementById("h_kicker").value = s.kicker || "";
       document.getElementById("h_subtitle").value = s.subtitle || "";
@@ -380,7 +402,7 @@
     }
 
     async function loadHeroList() {
-      const result = await authedFetch({ action: "list", entity: "hero_slide" });
+      const result = await authedFetch({ action: "list", entity: "hero_slide", placement: currentHeroPlacement });
       renderHeroList(result.items || []);
     }
 
@@ -396,6 +418,7 @@
           action: "save",
           entity: "hero_slide",
           id: document.getElementById("h_id").value || null,
+          placement: document.getElementById("h_placement").value || currentHeroPlacement,
           title: document.getElementById("h_title").value,
           kicker: document.getElementById("h_kicker").value,
           subtitle: document.getElementById("h_subtitle").value,
