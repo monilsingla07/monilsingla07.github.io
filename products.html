@@ -231,6 +231,34 @@
     }
     .filter-clear-btn:hover { color: var(--color-action); }
 
+    /* Standalone "Available only" toggle — the inStock filter already
+       existed buried inside the Price panel behind an Apply click; this
+       applies instantly, same as every other filter pill. */
+    .filter-instock-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .filter-instock-toggle:hover { border-color: var(--color-action); box-shadow: var(--shadow-sm); }
+    .filter-instock-toggle input { width: 15px; height: 15px; accent-color: var(--color-action); cursor: pointer; }
+    .filter-instock-toggle.is-active {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+      background: rgba(184,134,59,0.08);
+      font-weight: 600;
+    }
+
     .filter-pill-panel {
       display: none;
       /* position: fixed (not absolute) — .filter-bar scrolls horizontally
@@ -623,6 +651,11 @@
     <div class="filter-bar" id="filterBar">
       <div class="filter-pill-set" id="filterPills"></div>
 
+      <label class="filter-instock-toggle" id="inStockToggle">
+        <input type="checkbox" id="inStockCheckbox" />
+        <span>Available only</span>
+      </label>
+
       <button type="button" class="filter-clear-btn" id="clearAll">Clear all</button>
 
       <div class="filter-bar-spacer"></div>
@@ -930,10 +963,27 @@
     history.replaceState({}, "", url.pathname + (params.get("type") ? ("?type=" + params.get("type")) : ""));
     document.getElementById("sortBy").value = "newest";
     closeAllPanels(null);
+    syncInStockToggle();
     refreshFiltersAndGrid();
   }
   document.getElementById("clearAll").addEventListener("click", clearAllFilters);
   document.getElementById("sheetClear").addEventListener("click", clearAllFilters);
+
+  // Standalone "Available only" toggle — applies instantly, no Apply click
+  // (unlike the same inStock filter tucked inside the Price panel).
+  const inStockToggle = document.getElementById("inStockToggle");
+  const inStockCheckbox = document.getElementById("inStockCheckbox");
+  function syncInStockToggle(){
+    const on = params.get("inStock") === "true";
+    inStockCheckbox.checked = on;
+    inStockToggle.classList.toggle("is-active", on);
+  }
+  syncInStockToggle();
+  inStockCheckbox.addEventListener("change", () => {
+    setParam("inStock", inStockCheckbox.checked ? "true" : "");
+    syncInStockToggle();
+    refreshFiltersAndGrid();
+  });
 
   // How many filters are currently narrowing the results — drives the count
   // badge on the mobile "Filters" button.
