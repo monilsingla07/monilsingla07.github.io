@@ -207,17 +207,19 @@
               <div id="taxNote" class="pd-tax small">Inclusive of all taxes</div>
             </div>
 
-            <!-- Guest-only "login price" preview — the real, checkout-accurate
-                 best offer a new signup would get (max of the WELCOME5
-                 coupon or the signup wallet bonus; quote-order.ts treats
-                 them as mutually exclusive, so this mirrors that same rule
-                 rather than adding them together). Computed in
-                 hydrateLoginPricePreview() below; stays hidden for logged-in
-                 visitors and whenever neither offer is currently live. -->
+            <!-- Best-offer price preview, right under the price instead of
+                 buried in the "Available Offers" card far down the page.
+                 Works for both guests (best public first-order coupon vs.
+                 the signup wallet bonus — whichever's bigger, mirroring
+                 quote-order.ts's "coupon or wallet cash, not both" rule)
+                 and logged-in visitors (their best applicable coupon,
+                 public or personal, category-matched to this product).
+                 Computed in hydrateLoginPricePreview() below; stays hidden
+                 whenever no offer actually applies. -->
             <div id="loginPricePreview" class="pd-login-price" hidden>
-              <span class="pd-login-price-label">Login price:</span>
+              <span id="loginPriceLabel" class="pd-login-price-label">Login price:</span>
               <span id="loginPriceValue" class="pd-login-price-value"></span>
-              <a href="login.html" class="pd-login-price-link">Sign up &amp; save →</a>
+              <a id="loginPriceLink" href="login.html" class="pd-login-price-link">Sign up &amp; save →</a>
             </div>
 
             <!-- Specs table (Color / Material / Craft, etc.) — moved directly
@@ -440,47 +442,63 @@
     hydrateHeaderAuth();
     mountPolicySummary();
 
-    // ===== Guest "login price" preview =====
-    // Shows a guest the real, checkout-accurate price they'd pay after
-    // signing up — not a marketing estimate. The two live signup offers
-    // (the WELCOME5-style coupon and the AhamStree Cash wallet bonus) are
-    // mutually exclusive at checkout (see quote-order.ts: "either the
-    // coupon or AhamStree Cash, not both"), so this takes whichever is
-    // larger for this specific price, exactly like a shopper would end up
-    // choosing. Hidden entirely for logged-in visitors (they already see
-    // their real wallet balance/coupons at checkout) and whenever neither
-    // offer is actually live, so it never shows a number nothing backs up.
+    // ===== Best-offer price preview (under the price, for everyone) =====
+    // Replaces the old guest-only "login price" box. get-available-coupons
+    // now accepts a `category` (so a sarees-only coupon never shows while
+    // browsing a suit) and an Authorization header (so a logged-in
+    // customer's own personal/email-locked coupons are included, not just
+    // public ones). Guests additionally get the signup wallet bonus folded
+    // in — mutually exclusive with a coupon at checkout (quote-order.ts:
+    // "either the coupon or AhamStree Cash, not both"), so this takes
+    // whichever is larger, same as a shopper would end up choosing.
+    // Logged-in visitors see their best coupon only (not their real wallet
+    // balance — that needs a cart-priced quote-order call, not a cheap PDP
+    // teaser) with the code to use at checkout. Hidden whenever nothing
+    // actually applies, so it never shows a number nothing backs up.
     const SITE_SETTINGS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-site-settings";
     const AVAILABLE_COUPONS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-available-coupons";
-    async function hydrateLoginPricePreview(effectivePrice){
+    async function hydrateLoginPricePreview(effectivePrice, category){
       const el = document.getElementById("loginPricePreview");
       if (!el || !effectivePrice || effectivePrice <= 0) return;
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) return; // logged-in visitors don't need this
+        const accessToken = session?.access_token || null;
 
         const [settingsRes, couponsRes] = await Promise.all([
-          fetch(SITE_SETTINGS_URL).then(r => r.json()).catch(() => null),
-          fetch(AVAILABLE_COUPONS_URL).then(r => r.json()).catch(() => null),
+          accessToken ? Promise.resolve(null) : fetch(SITE_SETTINGS_URL).then(r => r.json()).catch(() => null),
+          fetch(AVAILABLE_COUPONS_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+            },
+            body: JSON.stringify({ category: category || null }),
+          }).then(r => r.json()).catch(() => null),
         ]);
         const settings = settingsRes?.settings || {};
         const coupons = Array.isArray(couponsRes?.coupons) ? couponsRes.coupons : [];
 
-        // Best public, first-order-eligible coupon for this price.
+        // Best coupon for this price — for a guest, only first-order
+        // coupons make sense to advertise (get-available-coupons already
+        // excludes a first_order_only coupon for a logged-in caller who
+        // has a prior order, so any coupon it returns for a logged-in
+        // caller is fair game).
         let couponDiscount = 0;
+        let bestCoupon = null;
         for (const c of coupons) {
-          if (!c.first_order_only) continue;
+          if (!accessToken && !c.first_order_only) continue;
           if (c.min_order_inr && effectivePrice < c.min_order_inr) continue;
           let d = c.type === "percent" ? effectivePrice * (Number(c.value) || 0) / 100 : (Number(c.value) || 0);
           if (c.max_discount_inr) d = Math.min(d, c.max_discount_inr);
           d = Math.min(d, effectivePrice);
-          if (d > couponDiscount) couponDiscount = d;
+          if (d > couponDiscount) { couponDiscount = d; bestCoupon = c; }
         }
 
-        // Signup wallet bonus, redeemable up to the admin-configured % of
-        // this item's price (same formula as quote-order.ts's redeemable_inr).
+        // Signup wallet bonus (guests only), redeemable up to the
+        // admin-configured % of this item's price (same formula as
+        // quote-order.ts's redeemable_inr).
         let walletDiscount = 0;
-        if (settings.wallet_enabled && settings.wallet_signup_bonus_inr > 0) {
+        if (!accessToken && settings.wallet_enabled && settings.wallet_signup_bonus_inr > 0) {
           const rate = (Number(settings.wallet_redemption_rate_percent) || 0) / 100;
           walletDiscount = Math.min(settings.wallet_signup_bonus_inr, Math.floor(effectivePrice * rate));
         }
@@ -488,8 +506,17 @@
         const bestDiscount = Math.round(Math.max(couponDiscount, walletDiscount));
         if (bestDiscount <= 0) return;
 
-        const loginPrice = Math.max(effectivePrice - bestDiscount, 0);
-        document.getElementById("loginPriceValue").textContent = `₹${loginPrice.toLocaleString("en-IN")}`;
+        const bestPrice = Math.max(effectivePrice - bestDiscount, 0);
+        const label = document.getElementById("loginPriceLabel");
+        const link = document.getElementById("loginPriceLink");
+        if (accessToken && bestCoupon) {
+          label.textContent = `Price with code ${bestCoupon.code}:`;
+          link.hidden = true;
+        } else {
+          label.textContent = "Login price:";
+          link.hidden = false;
+        }
+        document.getElementById("loginPriceValue").textContent = `₹${bestPrice.toLocaleString("en-IN")}`;
         el.hidden = false;
       } catch (_e) {
         // Never let a pricing-preview problem affect the real price shown above.
@@ -546,20 +573,23 @@
     })();
 
     // ===== Available Offers (product page) =====
-    // Independent of the product data load below — same pattern as the
-    // delivery check above. Mirrors checkout.html's loadAvailableCoupons():
-    // pulls live from the public get-available-coupons endpoint, which
-    // reflects exactly what admin-coupons.html controls (active +
-    // show_on_checkout + within its date window + under its use limit).
-    // No coupons back → the whole card stays hidden, never a fallback to a
-    // static/fake offer.
-    (async function loadAvailableOffers() {
+    // Called after product data loads (needs the category to filter by —
+    // see the hydrateLoginPricePreview call below). Mirrors checkout.html's
+    // loadAvailableCoupons(): pulls live from the public
+    // get-available-coupons endpoint, which reflects exactly what
+    // admin-coupons.html controls (active + show_on_checkout + within its
+    // date window + under its use limit + category-matched). supabase.
+    // functions.invoke() already attaches the caller's session token when
+    // logged in, so this surfaces that customer's personal coupons too, not
+    // just public ones. No coupons back → the whole card stays hidden,
+    // never a fallback to a static/fake offer.
+    async function loadAvailableOffers(category) {
       const offersCard = document.getElementById("offersCard");
       const offersList = document.getElementById("offersList");
       if (!offersCard || !offersList) return;
       try {
         const { data, error } = await supabase.functions.invoke("get-available-coupons", {
-          body: {},
+          body: { category: category || null },
         });
         if (error) throw new Error(error.message);
         const coupons = Array.isArray(data?.coupons) ? data.coupons : [];
@@ -591,7 +621,7 @@
         // Silent — an offers-list problem must never break the product page.
         // Card stays hidden (its default state).
       }
-    })();
+    }
 
     // Shared product-card markup (related strip + sold-out similar pieces).
     function moneyINR(v) {
@@ -835,7 +865,8 @@ if (!sessionStorage.getItem(viewKey)) {
         document.querySelector(".pd-main").insertAdjacentHTML("afterbegin", `<div class="pd-badge">${pctOff}% OFF</div>`);
       }
 
-      hydrateLoginPricePreview(hasSale ? sale : price);
+      hydrateLoginPricePreview(hasSale ? sale : price, data.category);
+      loadAvailableOffers(data.category);
 
       // Sold Out / New corner tag on the main product image — same rule as
       // the listing-page cards: Sold Out wins over New, New is created_at

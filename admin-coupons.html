@@ -147,6 +147,23 @@
               <input id="f_email" class="input" type="email" placeholder="customer@example.com" />
               <div class="pm-hint">Leave blank for a general, public coupon.</div>
             </div>
+            <div class="full">
+              <label class="pm-label">Product categories (optional)</label>
+              <!-- Hardcoded to the catalog's current two categories rather
+                   than fetched from products.category — if a new category
+                   value is ever added (see the hand-block/screen-print
+                   category plan, which uses a Collection instead so this
+                   likely won't need to change), add a checkbox here too. -->
+              <div style="display:flex; gap:16px; flex-wrap:wrap; padding:8px 0;">
+                <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                  <input id="f_cat_saree" type="checkbox" value="saree" /> Sarees
+                </label>
+                <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                  <input id="f_cat_suit" type="checkbox" value="suit" /> Suits
+                </label>
+              </div>
+              <div class="pm-hint">Leave both unchecked to apply to every category. Check one or more to restrict this coupon.</div>
+            </div>
             <div>
               <label class="pm-label">Total use limit across all customers (optional)</label>
               <input id="f_max_uses" class="input" type="number" min="1" step="1" placeholder="Leave blank for unlimited" />
@@ -294,6 +311,10 @@
       if (c.first_order_only) badges.push('<span class="pm-badge warn">First order only</span>');
       if (!c.one_per_customer) badges.push('<span class="pm-badge warn">Reusable per customer</span>');
       if (c.email) badges.push('<span class="pm-badge neutral">Locked to ' + escapeHtml(c.email) + '</span>');
+      if (Array.isArray(c.categories) && c.categories.length) {
+        const label = c.categories.map(x => x === "saree" ? "Sarees" : x === "suit" ? "Suits" : escapeHtml(x)).join(" + ");
+        badges.push('<span class="pm-badge neutral">' + label + ' only</span>');
+      }
       const now = new Date();
       if (c.starts_at && new Date(c.starts_at) > now) badges.push('<span class="pm-badge neutral">Starts ' + fmtDate(c.starts_at) + '</span>');
       if (c.expires_at && new Date(c.expires_at) <= now) badges.push('<span class="pm-badge neutral">Expired ' + fmtDate(c.expires_at) + '</span>');
@@ -393,6 +414,8 @@
       document.getElementById("f_max_uses").value = "";
       document.getElementById("f_starts_at").value = "";
       document.getElementById("f_expires_at").value = "";
+      document.getElementById("f_cat_saree").checked = false;
+      document.getElementById("f_cat_suit").checked = false;
       document.getElementById("f_first_order_only").checked = false;
       document.getElementById("f_one_per_customer").checked = true;
       document.getElementById("f_show_on_checkout").checked = false;
@@ -445,6 +468,9 @@
         document.getElementById("f_max_uses").value = c.max_uses ?? "";
         document.getElementById("f_starts_at").value = toLocalDateTimeInputValue(c.starts_at);
         document.getElementById("f_expires_at").value = toLocalDateTimeInputValue(c.expires_at);
+        const cCategories = Array.isArray(c.categories) ? c.categories : [];
+        document.getElementById("f_cat_saree").checked = cCategories.includes("saree");
+        document.getElementById("f_cat_suit").checked = cCategories.includes("suit");
         document.getElementById("f_first_order_only").checked = !!c.first_order_only;
         document.getElementById("f_one_per_customer").checked = !!c.one_per_customer;
         document.getElementById("f_show_on_checkout").checked = !!c.show_on_checkout;
@@ -499,6 +525,10 @@
           max_uses: toIntOrNull(document.getElementById("f_max_uses").value),
           starts_at: toIsoOrNull(document.getElementById("f_starts_at").value),
           expires_at: toIsoOrNull(document.getElementById("f_expires_at").value),
+          categories: [
+            document.getElementById("f_cat_saree").checked ? "saree" : null,
+            document.getElementById("f_cat_suit").checked ? "suit" : null,
+          ].filter(Boolean),
           first_order_only: document.getElementById("f_first_order_only").checked,
           one_per_customer: document.getElementById("f_one_per_customer").checked,
           show_on_checkout: document.getElementById("f_show_on_checkout").checked,
