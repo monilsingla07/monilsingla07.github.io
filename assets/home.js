@@ -81,60 +81,37 @@ function renderCollectionsShowcase(rows){
 // A fast, visual way to jump straight into Sarees/Suits/New Arrivals/Sale
 // or any curated collection — one tap, no scrolling, no price/story
 // required first (see the homepage restructure discussion: inspired by
-// Suta's circular category row, adapted to this catalog's actual breadth —
-// plain categories mixed with real collections rather than a dozen product
-// types this store doesn't carry).
-
-function firstImage(product){
-  const imgs = (product?.product_images || []).slice().sort((a,b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-  return imgs[0]?.image_url || null;
-}
-
-async function fetchQuickJumpCategoryImages(){
-  const [sareeR, suitR, saleR] = await Promise.all([
-    supabase.from("products").select("product_images(image_url,sort_order)")
-      .eq("is_active", true).eq("category", "saree")
-      .order("created_at", { ascending: false }).limit(1).maybeSingle(),
-    supabase.from("products").select("product_images(image_url,sort_order)")
-      .eq("is_active", true).eq("category", "suit")
-      .order("created_at", { ascending: false }).limit(1).maybeSingle(),
-    supabase.from("products").select("product_images(image_url,sort_order)")
-      .eq("is_active", true).not("sale_price_inr", "is", null)
-      .order("created_at", { ascending: false }).limit(1).maybeSingle(),
-  ]);
-  return {
-    saree: firstImage(sareeR.data),
-    suit: firstImage(suitR.data),
-    sale: firstImage(saleR.data),
-  };
-}
+// Suta's circular category row). Fully admin-controlled: every circle's
+// label, photo, and redirect link live in the home_quicklinks table
+// (Admin → Product Catalogue → Homepage Row), not hardcoded here.
 
 function quickJumpItemHtml(href, label, photoUrl){
   const photo = safeCssUrl(photoUrl || "");
   const style = photo ? ` style="background-image:url('${photo}')"` : "";
   return `
-    <a class="qj-item" href="${href}">
+    <a class="qj-item" href="${escapeAttr(href)}">
       <span class="qj-circle${photo ? "" : " is-empty"}"${style}></span>
       <span class="qj-label">${escapeHtml(label)}</span>
     </a>
   `;
 }
 
-async function hydrateQuickJumpRow(newArrivalsFirstImage, collectionsRows){
+async function hydrateQuickJumpRow(){
   const row = document.getElementById("quickJumpRow");
   if (!row) return;
 
-  let catImages = { saree: null, suit: null, sale: null };
-  try { catImages = await fetchQuickJumpCategoryImages(); } catch (_e) { /* circles just render as plain tinted discs */ }
-
-  const items = [
-    quickJumpItemHtml("products.html?type=saree", "Sarees", catImages.saree),
-    quickJumpItemHtml("products.html?type=suit", "Suits", catImages.suit),
-    quickJumpItemHtml("new-arrivals.html", "New Arrivals", newArrivalsFirstImage),
-    ...collectionsRows.map(c => quickJumpItemHtml(`products.html?collection=${encodeURIComponent(c.slug)}`, c.name, c.cover_image_url)),
-    quickJumpItemHtml("sale.html", "Sale", catImages.sale),
-  ];
-  row.innerHTML = items.join("");
+  try {
+    const { data, error } = await supabase
+      .from("home_quicklinks")
+      .select("name,link_url,cover_image_url")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) throw error;
+    row.innerHTML = (data ?? []).map(q => quickJumpItemHtml(q.link_url, q.name, q.cover_image_url)).join("");
+  } catch (_e) {
+    row.innerHTML = "";
+  }
 }
 
 function productCard(p) {
@@ -353,17 +330,16 @@ export async function hydrateHome() {
 
   const cached = readHomeCache();
   let shownSig = "";
-  let latestForQuickJump = null;
   if (cached) {
     try {
-      latestForQuickJump = paintHome(cached.latest);
+      paintHome(cached.latest);
       shownSig = JSON.stringify(cached.latest);
     } catch (e) { console.error(e); }
   }
 
   const collections = await collectionsPromise;
   renderCollectionsShowcase(collections);
-  hydrateQuickJumpRow(latestForQuickJump?.[0]?.image_url || null, collections);
+  hydrateQuickJumpRow();
   hydrateCategoryRails();
 
   if (cached?.fresh) return;
@@ -372,11 +348,7 @@ export async function hydrateHome() {
     const latest = await fetchLatestActive(8);
     writeHomeCache(latest);
     if (JSON.stringify(latest) !== shownSig) {
-      const painted = paintHome(latest);
-      // Quick-jump's "New Arrivals" circle photo may have been missing (or
-      // stale) on the first pass above — refresh it now that a live fetch
-      // landed, same collections already rendered.
-      hydrateQuickJumpRow(painted?.[0]?.image_url || null, collections);
+      paintHome(latest);
     }
   } catch (e) {
     console.error(e);

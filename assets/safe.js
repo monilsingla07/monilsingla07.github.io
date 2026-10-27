@@ -69,6 +69,11 @@ export function safeCssUrl(raw) {
   // For CSS url(...) contexts. We URL-encode dangerous characters.
   const u = safeUrl(raw, { type: "src" });
   if (!u) return "";
+  // Storage URLs often arrive already percent-encoded (e.g. a folder name
+  // with a space becomes "%20"). Decode first so encodeURI below doesn't
+  // double-encode it into "%2520" and break the image.
+  let decoded = u;
+  try { decoded = decodeURI(u); } catch (_) { /* malformed sequence — encode as-is */ }
   // Encode quotes and parentheses to avoid breaking out of url('...')
-  return encodeURI(u).replace(/'/g, "%27").replace(/\)/g, "%29").replace(/\(/g, "%28");
+  return encodeURI(decoded).replace(/'/g, "%27").replace(/\)/g, "%29").replace(/\(/g, "%28");
 }
