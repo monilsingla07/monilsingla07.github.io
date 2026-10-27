@@ -156,6 +156,10 @@ function productCard(p) {
     ? `<img class="${p.image_url_hover ? "p-card-img-primary" : ""}" src="${cardImageSrc(p._img)}" ${cardImageAttrs(p._img)} alt="${escapeAttr(p.title ?? "")}" loading="lazy" decoding="async">${p.image_url_hover ? `<img class="p-card-img-hover" src="${cardImageSrc(p._imgHover)}" ${cardImageAttrs(p._imgHover)} alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
     : `<div class="p-card-img-empty"></div>`;
 
+  const includeTagText = p.category === "saree"
+    ? (p.includes_blouse_piece === false ? "Saree" : (p.includes_blouse_piece === true ? "Saree with Blouse Piece" : ""))
+    : "";
+
   return `
     <div class="p-card">
       <button type="button" class="p-card-wish" data-product-id="${escapeAttr(p.id)}" aria-label="Add to wishlist" aria-pressed="false">${heartIcon()}</button>
@@ -164,6 +168,7 @@ function productCard(p) {
           ${imgHtml}
           ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
           ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
+          ${includeTagText ? `<div class="p-card-include-tag">${escapeHtml(includeTagText)}</div>` : ""}
         </div>
         <div class="p-card-body">
           <div class="p-card-title">${escapeHtml(p.title ?? "")}</div>
@@ -251,7 +256,7 @@ async function fetchLatestActive(displayLimit = 8) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)"
+      "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,category,includes_blouse_piece,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)"
     )
     .eq("is_active", true)
     .gt("inventory_qty", 0)
@@ -270,7 +275,7 @@ async function fetchLatestActive(displayLimit = 8) {
 // needs to touch this code again to "turn on" Hand Block & Prints or Suits.
 const RAIL_MIN_COUNT = 4;
 const RAIL_SELECT =
-  "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)";
+  "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,category,includes_blouse_piece,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)";
 
 async function fetchCategoryRail({ category, weaveSlug, limit = 8 }) {
   let q = supabase

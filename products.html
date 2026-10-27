@@ -1636,6 +1636,44 @@
     });
   }
 
+  // Logged-in "login price" preview for the card grid — same best-coupon
+  // formula as the PDP's loginPricePreview, but fetched ONCE per page load
+  // (not once per card) to avoid an N+1 burst of requests across a grid of
+  // dozens of cards. Guests see nothing here; this is intentionally a
+  // logged-in-only perk, unlike the PDP box which also covers the guest
+  // signup-wallet case.
+  const AVAILABLE_COUPONS_URL = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/get-available-coupons";
+  let loginCouponState = { loaded: false, accessToken: null, coupons: [] };
+  async function ensureLoginCoupon(category){
+    if (loginCouponState.loaded) return;
+    loginCouponState.loaded = true;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token || null;
+      if (!accessToken) return; // guest — card grid shows no login price
+      loginCouponState.accessToken = accessToken;
+      const res = await fetch(AVAILABLE_COUPONS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ category: category || null }),
+      }).then(r => r.json()).catch(() => null);
+      loginCouponState.coupons = Array.isArray(res?.coupons) ? res.coupons : [];
+    } catch (_e) { loginCouponState.coupons = []; }
+  }
+  function bestCouponPriceFor(effectivePrice){
+    if (!loginCouponState.accessToken || !loginCouponState.coupons.length) return null;
+    let bestDiscount = 0, bestCoupon = null;
+    for (const c of loginCouponState.coupons) {
+      if (c.min_order_inr && effectivePrice < c.min_order_inr) continue;
+      let d = c.type === "percent" ? effectivePrice * (Number(c.value) || 0) / 100 : (Number(c.value) || 0);
+      if (c.max_discount_inr) d = Math.min(d, c.max_discount_inr);
+      d = Math.min(d, effectivePrice);
+      if (d > bestDiscount) { bestDiscount = d; bestCoupon = c; }
+    }
+    if (bestDiscount <= 0) return null;
+    return { price: Math.max(Math.round(effectivePrice - bestDiscount), 0), code: bestCoupon.code };
+  }
+
   function productCard(p, idx){
     const base = Number(p.price_inr || 0);
     const sale = p.sale_price_inr == null ? null : Number(p.sale_price_inr);
@@ -1651,6 +1689,11 @@
       ? `<span class="p-card-original">${moneyINR(base)}</span><span class="p-card-sale-price">${moneyINR(sale)}</span>`
       : `<span class="p-card-price">${moneyINR(base)}</span>`;
 
+    const loginPrice = bestCouponPriceFor(hasSale ? sale : base);
+    const includeTagText = p.category === "saree"
+      ? (p.includes_blouse_piece === false ? "Saree" : (p.includes_blouse_piece === true ? "Saree with Blouse Piece" : ""))
+      : "";
+
     const imgHtml = p.image_url
       ? `<img class="${p.image_url_hover ? "p-card-img-primary" : ""}" src="${cardImageSrc(p._img)}" ${cardImageAttrs(p._img)} alt="${escapeAttr(p.title)}" loading="lazy" decoding="async">${p.image_url_hover ? `<img class="p-card-img-hover" src="${cardImageSrc(p._imgHover)}" ${cardImageAttrs(p._imgHover)} alt="" loading="lazy" decoding="async" aria-hidden="true">` : ""}`
       : `<div class="p-card-img-empty"></div>`;
@@ -1663,11 +1706,13 @@
             ${imgHtml}
             ${soldOut ? `<div class="p-card-status-badge is-sold">Sold Out</div>` : (isNewItem ? `<div class="p-card-status-badge is-new">New</div>` : "")}
             ${pctOff > 0 ? `<div class="p-card-badge">${pctOff}% OFF</div>` : ""}
+            ${includeTagText ? `<div class="p-card-include-tag">${escapeHtml(includeTagText)}</div>` : ""}
           </div>
           <div class="p-card-body">
             <div class="p-card-title">${escapeHtml(p.title)}</div>
             ${cardMetaLine(p)}
             <div class="p-card-pricing">${priceHtml}</div>
+            ${loginPrice ? `<div class="p-card-login-price">With code ${escapeHtml(loginPrice.code)}: ${moneyINR(loginPrice.price)}</div>` : ""}
             ${!soldOut && stockCount <= 3 ? `<div class="p-card-stock low">Only ${stockCount} left</div>` : ""}
             ${soldOut ? `<div class="p-card-stock">Sold out</div>` : ""}
           </div>
@@ -1794,7 +1839,7 @@
 
     let query = supabase
       .from("products")
-      .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,colour,fabric:fabrics(name),product_images(image_url, thumb_url, width, height, sort_order)")
+      .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,view_count,colour,category,includes_blouse_piece,fabric:fabrics(name),product_images(image_url, thumb_url, width, height, sort_order)")
       .eq("is_active", true)
       .eq("category", type);
 
@@ -1848,6 +1893,8 @@
     }
 
     const normalized = normalize(slice);
+
+    await ensureLoginCoupon(type);
 
     if (isFirst && normalized.length === 0){
       status.innerHTML = emptyStateHtml({ filtered: true });

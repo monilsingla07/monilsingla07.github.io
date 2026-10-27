@@ -326,6 +326,13 @@
                 <input id="f_zari" class="input" placeholder="e.g. Gold zari border and pallu" />
               </div>
               <div>
+                <label class="pm-label">Includes blouse piece? (sarees only)</label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:400;">
+                  <input type="checkbox" id="f_includes_blouse_piece" style="width:auto;" />
+                  <span>Unstitched blouse piece included — shows as "Saree with Blouse Piece" on listing cards; unticked shows plain "Saree".</span>
+                </label>
+              </div>
+              <div>
                 <label class="pm-label">Occasion</label>
                 <input id="f_occasion" class="input" placeholder="e.g. Festive, Office wear, Wedding" />
               </div>
@@ -1020,6 +1027,7 @@
       document.getElementById("f_motif").value = "";
       document.getElementById("f_border_type").value = "";
       document.getElementById("f_zari").value = "";
+      document.getElementById("f_includes_blouse_piece").checked = true;
       document.getElementById("f_occasion").value = "";
       document.getElementById("reservedHint").textContent = "";
       editorImages = []; editorSpecs = []; editorSections = [];
@@ -1094,6 +1102,7 @@
         document.getElementById("f_motif").value = p.motif || "";
         document.getElementById("f_border_type").value = p.border_type || "";
         document.getElementById("f_zari").value = p.zari || "";
+        document.getElementById("f_includes_blouse_piece").checked = p.includes_blouse_piece !== false;
         document.getElementById("f_occasion").value = p.occasion || "";
         document.getElementById("reservedHint").textContent = p.reserved_qty ? p.reserved_qty + " unit(s) currently reserved by in-progress checkouts (not editable here)." : "";
 
@@ -1202,6 +1211,7 @@
           motif: document.getElementById("f_motif").value,
           border_type: document.getElementById("f_border_type").value,
           zari: document.getElementById("f_zari").value,
+          includes_blouse_piece: document.getElementById("f_includes_blouse_piece").checked,
           occasion: document.getElementById("f_occasion").value,
           saree_type_id: document.getElementById("f_saree_type_id").value || null,
           care_instruction_id: document.getElementById("f_care_instruction_id").value || null,

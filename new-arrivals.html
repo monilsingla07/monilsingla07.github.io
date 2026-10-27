@@ -508,6 +508,10 @@
         ? `<span class="p-card-original">${money(base)}</span><span class="p-card-sale-price">${money(sale)}</span>`
         : `<span class="p-card-price">${money(base)}</span>`;
 
+      const includeTagText = p.category === "saree"
+        ? (p.includes_blouse_piece === false ? "Saree" : (p.includes_blouse_piece === true ? "Saree with Blouse Piece" : ""))
+        : "";
+
       return `
         <div class="p-card" style="animation-delay:${(idx % 8) * 28}ms">
           <a href="${p.slug ? `product.html?slug=${encodeURIComponent(p.slug)}` : `product.html?id=${encodeURIComponent(p.id)}`}&from=new-arrivals">
@@ -515,6 +519,7 @@
               ${imgHtml}
               ${soldOut ? `<div class="p-card-sold-badge">Sold Out</div>` : (hasNewBadge ? `<div class="p-card-new-badge">New</div>` : "")}
               ${pctOff > 0 ? `<div class="p-card-sale-badge">${pctOff}% off</div>` : ""}
+              ${includeTagText ? `<div class="p-card-include-tag">${escapeHtml(includeTagText)}</div>` : ""}
             </div>
             <div class="p-card-body">
               <div class="p-card-title">${escapeHtml(p.title)}</div>
@@ -535,7 +540,7 @@
 
       const { data, error } = await supabase
         .from("products")
-        .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)")
+        .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,category,includes_blouse_piece,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)")
         .eq("is_active", true)
         .order("is_sold_out", { ascending: true })
         .order("created_at", { ascending: false })
