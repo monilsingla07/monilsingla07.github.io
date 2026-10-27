@@ -1807,6 +1807,10 @@
     if (max !== null) query = query.lte("price_inr", max);
     if (inStockOnly) query = query.gt("inventory_qty", 0);
 
+    // Sold-out items always sort to the end, regardless of the chosen sort
+    // order — a shopper sees everything buyable first, then sold-out pieces
+    // last (still visible, just not competing with in-stock results).
+    query = query.order("is_sold_out", { ascending: true });
     if (sort === "mostLoved") query = query.order("view_count", { ascending: false }).order("created_at", { ascending: false });
     else if (sort === "priceLow") query = query.order("price_inr", { ascending: true });
     else if (sort === "priceHigh") query = query.order("price_inr", { ascending: false });

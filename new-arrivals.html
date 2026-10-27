@@ -537,6 +537,7 @@
         .from("products")
         .select("id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)")
         .eq("is_active", true)
+        .order("is_sold_out", { ascending: true })
         .order("created_at", { ascending: false })
         .limit(24);
 
