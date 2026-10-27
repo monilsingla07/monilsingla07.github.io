@@ -65,9 +65,10 @@ const printEngine = createPrintEngine({
     pill.dataset.state = pst;
     pill.textContent = pst === "connected" ? "Connected" : pst === "reconnecting" ? "Reconnecting…" : "Disconnected";
     const btn = $("posPrinterBtn");
-    if (pst === "connected") { btn.textContent = "Disconnect printer"; btn.disabled = false; }
-    else if (pst === "reconnecting") { btn.textContent = "Reconnecting…"; btn.disabled = true; }
-    else { btn.textContent = st.hasDefault ? "Reconnect printer" : "Connect printer"; btn.disabled = false; }
+    btn.disabled = false; // never trap the admin — a click always has somewhere to go
+    if (pst === "connected") btn.textContent = "Disconnect printer";
+    else if (pst === "reconnecting") btn.textContent = "Stuck? Tap to pick printer";
+    else btn.textContent = st.hasDefault ? "Reconnect printer" : "Connect printer";
   },
   onToast: (msg, ms) => toast(msg, "", ms),
 });
@@ -76,6 +77,10 @@ function wirePrinterWidget() {
   $("posPrinterBtn").addEventListener("click", async () => {
     try {
       if (printEngine.isConnected()) { printEngine.disconnect(); return; }
+      // Stuck silently retrying the remembered printer (out of range, powered
+      // off, or this browser never had a real pairing for it) — break out and
+      // open a fresh native picker instead of retrying the same thing forever.
+      if (printEngine.isReconnecting()) { printEngine.forgetDefault(); await printEngine.connectBluetooth(); return; }
       if (localStorage.getItem("defaultPrinter")) await printEngine.reconnectDefault();
       else await printEngine.connectBluetooth();
     } catch (e) {

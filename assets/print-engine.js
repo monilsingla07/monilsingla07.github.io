@@ -713,6 +713,7 @@ export function createPrintEngine({
     },
     nudgeReconnect: () => tryAutoConnect(),
     isConnected: () => !!transport,
+    isReconnecting: () => reconnecting,
     isSerialSupported: () => "serial" in navigator,
     isBluetoothSupported: () => !!navigator.bluetooth,
     isMockAllowed: () => mockAllowed,
