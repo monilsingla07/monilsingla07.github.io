@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css" />
   <link rel="stylesheet" href="assets/admin-pos.css" />
+  <link rel="stylesheet" href="assets/admin-print-agent.css" />
 </head>
 <body>
   <div id="header"></div>
@@ -19,7 +20,13 @@
       <div id="adminBreadcrumb"></div>
       <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
         <h2 style="margin:0;">Point of Sale</h2>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <!-- Exhibition billing printer — connects once, right here on the POS page, and
+               stays connected through every sale since there's no navigation away. See
+               assets/print-engine.js (shared with admin-print-agent.html's home station). -->
+          <span class="small" style="color:var(--text-light);">Printer: <strong id="posPrinterName">no device</strong></span>
+          <span class="pa-conn" id="posPrinterPill" data-state="disconnected">Disconnected</span>
+          <button class="btn secondary" id="posPrinterBtn" type="button" style="padding:6px 12px; font-size:12px;">Connect printer</button>
           <a href="admin-inventory.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">Inventory</a>
         </div>
       </div>

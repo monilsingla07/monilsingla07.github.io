@@ -58,8 +58,6 @@
           </label>
           <span class="pa-sub">Top offset: shift content on the label. Positive = up (crop top), negative = down (pad top). Range −25 to +25 mm. Trailing feed: extra paper advance after each label so you can tear at the gap (ESC/POS invoices only). In TSPL label mode the printer aligns labels itself, so Top offset normally stays 0.</span>
           <span class="pa-sub">Labels are sent as TSPL (label-aware, same protocol Open Label uses). Invoices use ESC/POS continuous-roll mode.</span>
-          <label><input type="checkbox" id="showCanvas" /> Show render canvas (debug)</label>
-          <span class="pa-sub" id="wakeInfo"></span>
         </div>
       </div>
 
@@ -71,10 +69,6 @@
         </table>
       </div>
       <div class="pa-sub" style="margin-top:6px;">Click a failed job to retry it (re-queues a new job). Keep this page open; the screen is kept awake.</div>
-
-      <div id="canvasWrap" class="pa-canvas-wrap" hidden>
-        <canvas id="renderCanvas" width="0" height="0" style="display:none"></canvas>
-      </div>
     </div>
   </div>
 

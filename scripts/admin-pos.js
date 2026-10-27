@@ -2,6 +2,7 @@ import { renderHeader, renderFooter, hydrateHeaderAuth, renderAdminBreadcrumb, h
 import { supabase, SUPABASE_ANON_KEY } from "../assets/supabase.js";
 import { escapeHtml, escapeAttr, safeSrc } from "../assets/safe.js";
 import { enqueueInvoice } from "../assets/print-queue.js";
+import { createPrintEngine } from "../assets/print-engine.js";
 
 document.getElementById("header").innerHTML = renderHeader("admin");
 document.getElementById("footer").innerHTML = renderFooter();
@@ -48,6 +49,39 @@ function toast(msg, kind = "", ms = 4500) {
   t.className = "show " + kind;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+}
+
+// ───────────── exhibition billing printer ─────────────
+// Scoped to "invoice" jobs only — this tablet never claims a QR-label job
+// meant for the home print station (admin-print-agent.html), even though
+// both read the same print_jobs table. See assets/print-engine.js.
+const printEngine = createPrintEngine({
+  kinds: ["invoice"],
+  getPaperWidth: () => { try { return parseInt(localStorage.getItem("ahamstreePaperWidth"), 10) || 384; } catch (_) { return 384; } },
+  onState: (st) => {
+    $("posPrinterName").textContent = st.deviceName || "no device";
+    const pill = $("posPrinterPill");
+    const pst = st.status === "connected" || st.status === "printing" ? "connected" : st.status === "reconnecting" ? "reconnecting" : "disconnected";
+    pill.dataset.state = pst;
+    pill.textContent = pst === "connected" ? "Connected" : pst === "reconnecting" ? "Reconnecting…" : "Disconnected";
+    const btn = $("posPrinterBtn");
+    if (pst === "connected") { btn.textContent = "Disconnect printer"; btn.disabled = false; }
+    else if (pst === "reconnecting") { btn.textContent = "Reconnecting…"; btn.disabled = true; }
+    else { btn.textContent = st.hasDefault ? "Reconnect printer" : "Connect printer"; btn.disabled = false; }
+  },
+  onToast: (msg, ms) => toast(msg, "", ms),
+});
+
+function wirePrinterWidget() {
+  $("posPrinterBtn").addEventListener("click", async () => {
+    try {
+      if (printEngine.isConnected()) { printEngine.disconnect(); return; }
+      if (localStorage.getItem("defaultPrinter")) await printEngine.reconnectDefault();
+      else await printEngine.connectBluetooth();
+    } catch (e) {
+      if (e.name !== "NotFoundError") toast(e.message || String(e), "err", 7000);
+    }
+  });
 }
 
 function flashLast(text, ok) {
@@ -434,6 +468,7 @@ function gateError(title, message) {
     $("loadingState").style.display = "none";
     $("pos").style.display = "block";
     wire(); syncCustUi(); render(); focusScan();
+    wirePrinterWidget(); printEngine.init();
   } catch (e) {
     gateError("Error", e.message || String(e));
   }
