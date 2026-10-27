@@ -262,6 +262,52 @@ async function fetchLatestActive(displayLimit = 8) {
   return normalizeProducts(data ?? []).filter(p => p.available_qty > 0).slice(0, displayLimit);
 }
 
+/* ------------------ Shop-by-category rails ------------------ */
+// A thin line (e.g. only 1-2 products) reads as a broken/empty section, not
+// "coming soon" — so each rail hides itself below this count rather than
+// rendering a near-empty row. The moment enough stock is tagged into a
+// weave line (or into category=suit), its rail appears on its own; nobody
+// needs to touch this code again to "turn on" Hand Block & Prints or Suits.
+const RAIL_MIN_COUNT = 4;
+const RAIL_SELECT =
+  "id,slug,title,price_inr,sale_price_inr,inventory_qty,reserved_qty,is_active,created_at,colour,fabric:fabrics(name), product_images(image_url, thumb_url, width, height, sort_order)";
+
+async function fetchCategoryRail({ category, weaveSlug, limit = 8 }) {
+  let q = supabase
+    .from("products")
+    .select(weaveSlug ? `${RAIL_SELECT}, weave_lines!inner(slug)` : RAIL_SELECT)
+    .eq("is_active", true)
+    .eq("category", category)
+    .gt("inventory_qty", 0)
+    .order("created_at", { ascending: false })
+    .limit(limit * 3);
+  if (weaveSlug) q = q.eq("weave_lines.slug", weaveSlug);
+
+  const { data, error } = await q;
+  if (error) throw error;
+  return normalizeProducts(data ?? []).filter(p => p.available_qty > 0).slice(0, limit);
+}
+
+async function hydrateCategoryRail({ sectionId, gridId, category, weaveSlug, limit = 8 }) {
+  const section = document.getElementById(sectionId);
+  if (!section) return;
+  try {
+    const items = await fetchCategoryRail({ category, weaveSlug, limit });
+    if (items.length < RAIL_MIN_COUNT) { section.hidden = true; return; }
+    renderGrid(gridId, items);
+    section.hidden = false;
+  } catch (e) {
+    console.error(e);
+    section.hidden = true; // fail quiet — never show a broken/empty rail
+  }
+}
+
+function hydrateCategoryRails() {
+  hydrateCategoryRail({ sectionId: "chanderiRailSection", gridId: "chanderiRailGrid", category: "saree", weaveSlug: "chanderi-handloom" });
+  hydrateCategoryRail({ sectionId: "handblockRailSection", gridId: "handblockRailGrid", category: "saree", weaveSlug: "hand-block-prints" });
+  hydrateCategoryRail({ sectionId: "suitsRailSection", gridId: "suitsRailGrid", category: "suit" });
+}
+
 /* ------------------ MAIN HYDRATOR ------------------ */
 
 // UX-027: stale-while-revalidate for the New Arrivals grid. Raw rows from
@@ -313,6 +359,7 @@ export async function hydrateHome() {
   const collections = await collectionsPromise;
   renderCollectionsShowcase(collections);
   hydrateQuickJumpRow(latestForQuickJump?.[0]?.image_url || null, collections);
+  hydrateCategoryRails();
 
   if (cached?.fresh) return;
 

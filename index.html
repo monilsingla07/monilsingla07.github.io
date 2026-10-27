@@ -329,6 +329,46 @@
         </div>
       </section>
 
+      <!-- Shop-by-category rails (round 6) — a few products per line, "See
+           more" to the fully-filtered listing. Each section starts hidden
+           and only un-hides once home.js's hydrateCategoryRail() finds at
+           least RAIL_MIN_COUNT matching products, so a thin line (e.g. Hand
+           Block & Prints today, 1 product) never shows up as an
+           awkward near-empty row — it appears on its own the moment enough
+           stock is tagged into it, no code change needed. -->
+      <section class="section" id="chanderiRailSection" hidden>
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">The Flagship Weave</span>
+            <h2 class="section-title">Chanderi Handloom</h2>
+          </div>
+          <a class="section-link" href="products.html?type=saree&amp;weave=chanderi-handloom">See more</a>
+        </div>
+        <div id="chanderiRailGrid" class="grid grid-4"></div>
+      </section>
+
+      <section class="section" id="handblockRailSection" hidden>
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Just Added</span>
+            <h2 class="section-title">Hand Block &amp; Prints</h2>
+          </div>
+          <a class="section-link" href="products.html?type=saree&amp;weave=hand-block-prints">See more</a>
+        </div>
+        <div id="handblockRailGrid" class="grid grid-4"></div>
+      </section>
+
+      <section class="section" id="suitsRailSection" hidden>
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Everyday Grace</span>
+            <h2 class="section-title">Suits</h2>
+          </div>
+          <a class="section-link" href="products.html?type=suit">See more</a>
+        </div>
+        <div id="suitsRailGrid" class="grid grid-4"></div>
+      </section>
+
       <!-- "Why handloom" story band — new section (homepage restructure,
            round 2-4). No homepage section previously told this story at
            all; it only lived on about.html, which a new visitor rarely
