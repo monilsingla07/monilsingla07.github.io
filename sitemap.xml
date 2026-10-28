@@ -89,6 +89,16 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.ahamstree.com/product.html?slug=steel-blue-saree-with-gold-pallu-motifs</loc>
+    <lastmod>2026-10-28</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=red-chanderi-saree</loc>
+    <lastmod>2026-10-28</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.ahamstree.com/product.html?slug=rust-orange-saree-with-gold-butti</loc>
     <lastmod>2026-10-28</lastmod>
     <priority>0.7</priority>
@@ -125,16 +135,6 @@
   </url>
   <url>
     <loc>https://www.ahamstree.com/product.html?slug=forest-green-saree-with-gold-butti</loc>
-    <lastmod>2026-10-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?slug=maroon-saree-with-wide-gold-brocade-border</loc>
-    <lastmod>2026-10-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?slug=coffee-brown-saree-with-maroon-gold-border</loc>
     <lastmod>2026-10-27</lastmod>
     <priority>0.7</priority>
   </url>
@@ -179,32 +179,12 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=black-printed-saree-with-green-tribal-border-red-florals</loc>
-    <lastmod>2026-10-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.ahamstree.com/product.html?slug=navy-blue-saree-with-gold-motif-border</loc>
     <lastmod>2026-10-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=dark-saree-with-maroon-gold-brocade-border</loc>
-    <lastmod>2026-10-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?slug=emerald-green-saree-with-rich-gold-border</loc>
-    <lastmod>2026-10-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?slug=red-chanderi-saree</loc>
-    <lastmod>2026-10-27</lastmod>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.ahamstree.com/product.html?slug=royal-blue-striped-saree-with-gold-lines</loc>
+    <loc>https://www.ahamstree.com/product.html?slug=black-printed-saree-with-green-tribal-border-red-florals</loc>
     <lastmod>2026-10-27</lastmod>
     <priority>0.7</priority>
   </url>
@@ -219,12 +199,32 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=steel-blue-saree-with-gold-pallu-motifs</loc>
+    <loc>https://www.ahamstree.com/product.html?slug=olive-green-saree-with-wide-gold-pallu</loc>
     <lastmod>2026-10-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.ahamstree.com/product.html?slug=olive-green-saree-with-wide-gold-pallu</loc>
+    <loc>https://www.ahamstree.com/product.html?slug=royal-blue-striped-saree-with-gold-lines</loc>
+    <lastmod>2026-10-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=dark-saree-with-maroon-gold-brocade-border</loc>
+    <lastmod>2026-10-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=emerald-green-saree-with-rich-gold-border</loc>
+    <lastmod>2026-10-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=maroon-saree-with-wide-gold-brocade-border</loc>
+    <lastmod>2026-10-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ahamstree.com/product.html?slug=coffee-brown-saree-with-maroon-gold-border</loc>
     <lastmod>2026-10-27</lastmod>
     <priority>0.7</priority>
   </url>
