@@ -116,13 +116,19 @@
         <button class="btn secondary" id="btnExport" type="button" style="padding:9px 14px; font-size:13px;">Export CSV</button>
       </div>
 
+      <div id="bulkBar" style="display:none; align-items:center; gap:10px; margin-bottom:10px; padding:8px 12px; border:1px solid var(--border-light); background:var(--surface); border-radius:6px; font-size:13px;">
+        <span id="bulkCount"></span>
+        <button class="btn secondary" id="btnBulkDelete" type="button" style="padding:7px 14px; font-size:13px; color:#a13d3d;">Delete selected</button>
+      </div>
+
       <div class="ledger-wrap">
         <table class="ledger" id="ledgerTable">
           <thead><tr>
+            <th><input type="checkbox" id="selectAll" title="Select all in-stock pieces on this page" /></th>
             <th></th><th>Serial</th><th>Product</th><th>Status</th><th>Cost</th><th>Weaver</th>
             <th>Intake</th><th>Sold</th><th>Sold via</th><th>Order</th><th>Actions</th>
           </tr></thead>
-          <tbody id="ledgerBody"><tr><td colspan="11" style="padding:24px; text-align:center; color:var(--text-light);">Loading…</td></tr></tbody>
+          <tbody id="ledgerBody"><tr><td colspan="12" style="padding:24px; text-align:center; color:var(--text-light);">Loading…</td></tr></tbody>
         </table>
       </div>
       <div class="pager">

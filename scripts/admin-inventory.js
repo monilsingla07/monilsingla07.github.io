@@ -28,6 +28,7 @@ let products = [];          // [{id,title,price_inr,...}]
 let rows = [];              // currently loaded ledger page
 let total = 0;
 let offset = 0;
+let selected = new Set();   // ids of in-stock pieces checked for bulk delete
 let chosen = null;          // {id,title} | {isNew:true}
 let editingId = null;
 let tagOpts = { saree_type: [], care_instruction: [] };   // active options for the Add modal dropdowns
@@ -102,10 +103,18 @@ function filters() {
   return f;
 }
 
+function updateBulkBar() {
+  const n = selected.size;
+  $("bulkBar").style.display = n ? "flex" : "none";
+  $("bulkCount").textContent = n + (n === 1 ? " piece selected" : " pieces selected");
+  const inStockIdsOnPage = rows.filter((r) => r.status === "in_stock").map((r) => r.id);
+  $("selectAll").checked = inStockIdsOnPage.length > 0 && inStockIdsOnPage.every((id) => selected.has(id));
+}
+
 function renderLedger() {
   const body = $("ledgerBody");
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="11" style="padding:24px; text-align:center; color:var(--text-light);">No pieces match.</td></tr>';
+    body.innerHTML = '<tr><td colspan="12" style="padding:24px; text-align:center; color:var(--text-light);">No pieces match.</td></tr>';
   } else {
     body.innerHTML = rows.map((r) => {
       const inStock = r.status === "in_stock";
@@ -117,7 +126,11 @@ function renderLedger() {
       const order = r.order_id
         ? '<a href="admin-orders.html?id=' + encodeURIComponent(r.order_id) + '" class="small">View order</a>'
         : "—";
+      const check = inStock
+        ? '<input type="checkbox" class="rowSel"' + (selected.has(r.id) ? " checked" : "") + " />"
+        : '<input type="checkbox" disabled title="Only in-stock pieces can be deleted" />';
       return '<tr data-id="' + escapeAttr(r.id) + '">' +
+        "<td>" + check + "</td>" +
         "<td>" + thumbOf(r) + "</td>" +
         '<td class="mono">' + escapeHtml(r.serial) + "</td>" +
         "<td>" + escapeHtml(r.products?.title || "—") + "</td>" +
@@ -136,20 +149,44 @@ function renderLedger() {
   $("pagerInfo").textContent = from + "–" + to + " of " + total;
   $("btnPrev").disabled = offset <= 0;
   $("btnNext").disabled = offset + PAGE_SIZE >= total;
+  updateBulkBar();
 }
 
 async function loadLedger() {
+  selected.clear();
   try {
     const r = await authedFetch(INV_FN, { action: "list", ...filters() });
     rows = r.rows || [];
     total = r.total || 0;
     renderLedger();
   } catch (e) {
-    $("ledgerBody").innerHTML = '<tr><td colspan="11" style="padding:24px; color:#a13d3d;">Failed to load: ' + escapeHtml(e.message) + "</td></tr>";
+    $("ledgerBody").innerHTML = '<tr><td colspan="12" style="padding:24px; color:#a13d3d;">Failed to load: ' + escapeHtml(e.message) + "</td></tr>";
   }
 }
 
 function applyFilters() { offset = 0; loadLedger(); }
+
+async function bulkDelete() {
+  const ids = Array.from(selected);
+  if (!ids.length) return;
+  if (!window.confirm("Delete " + ids.length + " selected piece(s)? This cannot be undone.")) return;
+  $("btnBulkDelete").disabled = true;
+  try {
+    const r = await authedFetch(INV_FN, { action: "bulk_delete", ids });
+    const skipped = r.skipped || [];
+    if (skipped.length) {
+      toast("Deleted " + r.deleted + ". Skipped " + skipped.length + " (already sold or removed by someone else).");
+    } else {
+      toast("Deleted " + r.deleted + " piece(s).");
+    }
+    selected.clear();
+    await Promise.all([loadLedger(), loadStats()]);
+  } catch (e) {
+    toast(escapeHtml(e.message));
+  } finally {
+    $("btnBulkDelete").disabled = false;
+  }
+}
 
 function csvCell(v) {
   const s = v === null || v === undefined ? "" : String(v);
@@ -543,6 +580,22 @@ function wire() {
     const row = rows.find((r) => r.id === tr.dataset.id);
     if (row) rowAction(btn.dataset.act, row, btn);
   });
+  $("ledgerBody").addEventListener("change", (e) => {
+    const box = e.target.closest("input.rowSel");
+    if (!box) return;
+    const tr = box.closest("tr[data-id]");
+    if (box.checked) selected.add(tr.dataset.id);
+    else selected.delete(tr.dataset.id);
+    updateBulkBar();
+  });
+  $("selectAll").addEventListener("change", () => {
+    const checked = $("selectAll").checked;
+    rows.filter((r) => r.status === "in_stock").forEach((r) => {
+      if (checked) selected.add(r.id); else selected.delete(r.id);
+    });
+    renderLedger();
+  });
+  $("btnBulkDelete").addEventListener("click", bulkDelete);
 
   $("btnAdd").addEventListener("click", () => { resetAddModal(); openModal("addModal"); });
   $("addCancel").addEventListener("click", () => closeModal("addModal"));
