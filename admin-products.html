@@ -569,12 +569,18 @@
     // admin-manage-catalog. This is what lets "add a new product" also add
     // a brand-new fabric/weave/collection in the same step, instead of
     // forcing a separate trip to that tab first.
-    async function resolveOrCreateCatalogId(entity, rawName, cacheGetter) {
+    async function resolveOrCreateCatalogId(entity, rawName, cacheGetter, extra) {
       const name = String(rawName || "").trim();
       if (!name) return null;
-      const existing = cacheGetter().find(it => String(it.name || "").trim().toLowerCase() === name.toLowerCase());
+      const candidates = cacheGetter().filter(it => String(it.name || "").trim().toLowerCase() === name.toLowerCase());
+      // Weave lines are scoped per category now, so the same name (rare, but
+      // possible) can exist once per category — match within that category
+      // rather than the first same-named row from any category.
+      const existing = entity === "weave_line" && extra && extra.category
+        ? candidates.find(it => it.category === extra.category)
+        : candidates[0];
       if (existing) return existing.id;
-      const r = await authedFetch(CATALOG_FN, { action: "save", entity, name });
+      const r = await authedFetch(CATALOG_FN, { action: "save", entity, name, ...(extra || {}) });
       await reloadTaxonomy(entity);
       return r.item.id;
     }
@@ -773,8 +779,12 @@
       const weaveSel  = document.getElementById("bulkWeaveLineSelect");
       fabricSel.innerHTML = '<option value="">Select fabric…</option>' +
         fabricsCache.map(f => `<option value="${escapeAttr(f.id)}">${escapeHtml(f.name)}</option>`).join("");
+      // Weave lines are scoped per category, so the label spells out which
+      // category each one belongs to — applying one to products in the
+      // wrong category (the Suits/"Chanderi Handloom" bug this replaced)
+      // should be obvious here, not just blocked server-side.
       weaveSel.innerHTML = '<option value="">Select weave line…</option>' +
-        weaveLinesCache.map(w => `<option value="${escapeAttr(w.id)}">${escapeHtml(w.name)}</option>`).join("");
+        weaveLinesCache.map(w => `<option value="${escapeAttr(w.id)}">${escapeHtml(w.name)} (${escapeHtml(w.category || "?")})</option>`).join("");
 
       const collBox = document.getElementById("bulkCollectionChips");
       collBox.innerHTML = collectionsCache.length
@@ -1018,6 +1028,7 @@
       document.getElementById("f_category_custom").value = "";
       document.getElementById("f_fabric_id").value = "";
       document.getElementById("f_weave_line_id").value = "";
+      refreshWeaveLineOptionsForCategory();
       document.getElementById("f_is_active").checked = true;
       setInventoryManagedUi(false, false);
       document.getElementById("f_price_inr").value = "";
@@ -1051,10 +1062,28 @@
       } else {
         sel.value = "__custom__"; custom.style.display = "block"; custom.value = category || "";
       }
+      refreshWeaveLineOptionsForCategory();
     }
+
+    function currentProductCategory() {
+      const sel = document.getElementById("f_category").value;
+      return sel === "__custom__" ? document.getElementById("f_category_custom").value.trim() : sel;
+    }
+
+    // Weave lines (subcategories) are scoped per category — Sarees and
+    // Suits each have their own list — so the autocomplete here only offers
+    // the ones that actually apply to the product's current category.
+    function refreshWeaveLineOptionsForCategory() {
+      const category = currentProductCategory();
+      const matching = weaveLinesCache.filter(w => w.category === category);
+      populateDatalist(document.getElementById("weaveLineOptions"), matching);
+    }
+
     document.getElementById("f_category").addEventListener("change", () => {
       document.getElementById("f_category_custom").style.display = document.getElementById("f_category").value === "__custom__" ? "block" : "none";
+      refreshWeaveLineOptionsForCategory();
     });
+    document.getElementById("f_category_custom").addEventListener("input", refreshWeaveLineOptionsForCategory);
 
     // Saree type / care instruction dropdowns: refreshed on every panel open.
     async function loadTagSelects(sareeTypeId, careId) {
@@ -1193,7 +1222,7 @@
         // gets created as a new catalog entry right here, rather than
         // failing or requiring a separate trip to those tabs first.
         const fabric_id = await resolveOrCreateCatalogId("fabric", document.getElementById("f_fabric_id").value, () => fabricsCache);
-        const weave_line_id = await resolveOrCreateCatalogId("weave_line", document.getElementById("f_weave_line_id").value, () => weaveLinesCache);
+        const weave_line_id = await resolveOrCreateCatalogId("weave_line", document.getElementById("f_weave_line_id").value, () => weaveLinesCache, { category });
 
         status.textContent = "Saving product…";
         const savePayload = {
@@ -1443,6 +1472,12 @@
               <input id="${entity}_f_name" class="input" placeholder="e.g. ${entity === "fabric" ? "Georgette" : entity === "weave_line" ? "Banarasi Handloom" : isSectionTemplate ? "Fabric Care" : isQuicklink ? "Sarees" : "Festive Edit"}" />
               ${isSectionTemplate ? '<div class="pm-hint">Shown to customers as the tab name on the product page.</div>' : ""}
             </div>
+            ${entity === "weave_line" ? `
+            <div>
+              <label class="pm-label">Category</label>
+              <select id="${entity}_f_category" class="input"></select>
+              <div class="pm-hint">Which top-level category this subcategory belongs to — Sarees and Suits each keep their own list.</div>
+            </div>` : ""}
             ${isQuicklink ? `
             <div class="full">
               <label class="pm-label">Redirect link</label>
@@ -1568,6 +1603,10 @@
       document.getElementById(entity + "_f_name").value = "";
       document.getElementById(entity + "_f_sort_order").value = "0";
       document.getElementById(entity + "_f_is_active").checked = true;
+      if (entity === "weave_line") {
+        const sel = document.getElementById(entity + "_f_category");
+        if (sel) sel.selectedIndex = 0;
+      }
       if (entity === "section_template") {
         document.getElementById(entity + "_f_internal_label").value = "";
         document.getElementById(entity + "_f_content").value = "";
@@ -1592,6 +1631,10 @@
       document.getElementById(entity + "_f_name").value = it.name || "";
       document.getElementById(entity + "_f_sort_order").value = String(it.sort_order ?? 0);
       document.getElementById(entity + "_f_is_active").checked = !!it.is_active;
+      if (entity === "weave_line") {
+        const sel = document.getElementById(entity + "_f_category");
+        if (sel) sel.value = it.category || "";
+      }
       if (entity === "section_template") {
         document.getElementById(entity + "_f_internal_label").value = it.internal_label || "";
         document.getElementById(entity + "_f_content").value = it.content || "";
@@ -1622,7 +1665,7 @@
       setTaxonomyCache(entity, items);
       if (document.getElementById(entity + "_list")) renderTaxonomyList(entity);
       if (entity === "fabric") populateDatalist(document.getElementById("fabricOptions"), fabricsCache);
-      if (entity === "weave_line") populateDatalist(document.getElementById("weaveLineOptions"), weaveLinesCache);
+      if (entity === "weave_line") refreshWeaveLineOptionsForCategory();
       if (entity === "collection" && document.getElementById("productEditorView").style.display !== "none") {
         // Collections tab also feeds the product editor's checkbox list — if
         // it's open (e.g. a collection was just auto-created from there),
@@ -1688,6 +1731,11 @@
           is_active: document.getElementById(entity + "_f_is_active").checked,
         };
         if (entity === "collection" || entity === "quicklink") payload.cover_image_url = document.getElementById(entity + "_f_cover_url").value;
+        if (entity === "weave_line") {
+          const category = document.getElementById(entity + "_f_category").value;
+          if (!category) { status.textContent = "Category is required."; return; }
+          payload.category = category;
+        }
         if (entity === "section_template") {
           payload.internal_label = document.getElementById(entity + "_f_internal_label").value;
           payload.content = document.getElementById(entity + "_f_content").value;
@@ -1882,6 +1930,11 @@
         clearTaxonomyForm("fabric"); clearTaxonomyForm("weave_line"); clearTaxonomyForm("collection"); clearTaxonomyForm("quicklink"); clearTaxonomyForm("section_template");
 
         await Promise.all([reloadTaxonomy("fabric"), reloadTaxonomy("weave_line"), reloadTaxonomy("collection"), reloadTaxonomy("quicklink"), reloadTaxonomy("section_template"), reloadFilterSettings()]);
+        const weaveCatSel = document.getElementById("weave_line_f_category");
+        if (weaveCatSel) {
+          weaveCatSel.innerHTML = filterSettingsCache.categories
+            .map(c => `<option value="${escapeAttr(c.category)}">${escapeHtml(c.label || c.category)}</option>`).join("");
+        }
         resetEditorForm();
         await loadProductsList();
       } catch (e) {

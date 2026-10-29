@@ -249,7 +249,12 @@
 
     // The target picker changes shape per link type — a slug dropdown for
     // taxonomy types, a free-text box for custom links, nothing for "none".
-    function targetFieldHtml(item) {
+    // parentCategory narrows the "weave" dropdown to just the subcategories
+    // that belong to the top-level item this is nested under (Sarees vs.
+    // Suits each have their own list) — without it, every weave line from
+    // every category showed up under any dropdown, which is how "Suits"
+    // ended up offering the saree-only "Chanderi Handloom".
+    function targetFieldHtml(item, parentCategory) {
       const t = item.link_type || "url";
       const val = item.link_value || "";
       if (t === "none") return `<span class="small" style="color:var(--text-light);">—</span>`;
@@ -259,6 +264,11 @@
       let opts = [];
       if (t === "category") opts = navState.categories.map(c => ({ value: c.category, label: c.label }));
       else if (t === "page") opts = SITE_PAGES.map(p => ({ value: p, label: p }));
+      else if (t === "weave") {
+        opts = (navState.targets.weave || [])
+          .filter(o => !parentCategory || o.category === parentCategory)
+          .map(o => ({ value: o.slug, label: o.name }));
+      }
       else opts = (navState.targets[t] || []).map(o => ({ value: o.slug, label: o.name }));
 
       // A slug that no longer exists still needs to show, or saving would
@@ -284,13 +294,13 @@
         </select>`;
     }
 
-    function navRowHtml(item, isChild) {
+    function navRowHtml(item, isChild, parentCategory) {
       return `
         <div class="${isChild ? "nav-kid" : "nav-top-head"} ${item.is_active === false ? "nav-off" : ""}" data-id="${escapeAttr(item.id)}">
           <input class="input nav-order" type="number" value="${Number(item.sort_order ?? 0)}" title="Order" />
           <input class="input nav-label" value="${escapeAttr(item.label)}" placeholder="Menu text" />
           ${linkTypeSelectHtml(item, isChild)}
-          <div class="nav-target">${targetFieldHtml(item)}</div>
+          <div class="nav-target">${targetFieldHtml(item, parentCategory)}</div>
           <div style="display:flex; gap:6px; align-items:center;">
             <label class="small" style="display:flex; align-items:center; gap:4px; white-space:nowrap;">
               <input type="checkbox" class="nav-active" ${item.is_active === false ? "" : "checked"} /> On
@@ -315,12 +325,15 @@
           const kids = navState.items
             .filter(i => i.parent_id === top.id)
             .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+          // Only a "category page" parent (Sarees, Suits) has a real
+          // category to scope its weave options by.
+          const parentCategory = top.link_type === "category" ? top.link_value : null;
           return `
             <div class="nav-top" data-top="${escapeAttr(top.id)}">
               ${navRowHtml(top, false)}
               <div class="nav-kids">
                 <div class="small" style="color:var(--text-light); font-weight:700; margin-bottom:4px;">Dropdown under "${escapeHtml(top.label)}"</div>
-                ${kids.length ? kids.map(k => navRowHtml(k, true)).join("") : '<div class="nav-kids-empty">No dropdown links — this is a plain menu item.</div>'}
+                ${kids.length ? kids.map(k => navRowHtml(k, true, parentCategory)).join("") : '<div class="nav-kids-empty">No dropdown links — this is a plain menu item.</div>'}
                 <button class="btn secondary nav-add-kid" type="button" style="margin-top:10px; padding:6px 12px; font-size:12px;">+ Add dropdown link</button>
               </div>
               <div class="nav-row-status"></div>
@@ -369,7 +382,9 @@
         // that cell rather than the whole tree (which would lose focus).
         rowEl.querySelector(".nav-type").addEventListener("change", (e) => {
           const stub = { link_type: e.target.value, link_value: "" };
-          rowEl.querySelector(".nav-target").innerHTML = targetFieldHtml(stub);
+          const top = isChild ? navState.items.find(i => i.id === parentId) : null;
+          const parentCategory = top && top.link_type === "category" ? top.link_value : null;
+          rowEl.querySelector(".nav-target").innerHTML = targetFieldHtml(stub, parentCategory);
         });
 
         ["change", "blur"].forEach(evt => {
