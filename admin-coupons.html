@@ -45,6 +45,19 @@
 
     .coupon-code-tag { font-family: monospace; font-weight: 700; font-size: 15px; letter-spacing: .02em; background: var(--bg-warm); padding: 2px 8px; }
 
+    .top-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-light); margin-bottom: 18px; }
+    .top-tab-btn { border: none; background: none; padding: 10px 14px; font-weight: 700; font-size: 13px; color: var(--text-light); cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1px; }
+    .top-tab-btn.active { color: var(--color-action); border-bottom-color: var(--color-action); }
+    .result-card { border: 1px solid var(--border-light); background: var(--bg-warm); padding: 16px; margin-top: 18px; }
+    .reward-type-row { display: flex; gap: 10px; margin-bottom: 4px; }
+    .reward-type-row label { flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--border-light); cursor: pointer; font-size: 13px; font-weight: 700; }
+    .reward-type-row input[type="radio"] { width: 16px; height: 16px; }
+    .cust-pick { border: 1px solid var(--border-light); max-height: 220px; overflow: auto; margin-top: 8px; }
+    .cust-pick-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border-light); font-size: 13px; }
+    .cust-pick-item:hover { background: var(--bg-warm); }
+    .cust-pick-item:last-child { border-bottom: none; }
+    .cust-selected { border: 1px solid var(--color-action); background: var(--bg-warm); padding: 10px 12px; margin-top: 8px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
     @media (max-width: 640px) {
       .pm-row { grid-template-columns: 1fr; }
     }
@@ -71,8 +84,13 @@
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div>
           <h2 style="margin:0;">Coupon Manager</h2>
-          <div class="small" style="color:var(--text-light); margin-top:4px;">Create and control every discount code on the site — value, limits, eligibility rules, and whether it's shown at checkout.</div>
+          <div class="small" style="color:var(--text-light); margin-top:4px;">Create and control every discount code on the site, or issue a one-off reward to a specific customer — the only place either happens.</div>
         </div>
+      </div>
+
+      <div class="top-tabs">
+        <button class="top-tab-btn active" data-tab="coupons" type="button">All coupons</button>
+        <button class="top-tab-btn" data-tab="issue" type="button">Issue to a customer</button>
       </div>
 
       <div id="couponListView">
@@ -138,6 +156,14 @@
               <label class="pm-label">Minimum order value (₹, optional)</label>
               <input id="f_min_order_inr" class="input" type="number" min="0" step="1" placeholder="Leave blank for no minimum" />
             </div>
+            <div class="full">
+              <label class="pm-label">Applies to</label>
+              <select id="f_price_basis" class="input">
+                <option value="discounted">Discounted price (default) — applies even on items already on sale</option>
+                <option value="mrp">Full MRP only — doesn't stack on top of a sale price</option>
+              </select>
+              <div class="pm-hint">"Full MRP only" computes the discount off each item's original price. If an item's current sale price is already lower than what this coupon would bring it to, the coupon simply does nothing for that item — it never makes an already-discounted item more expensive or stacks on top of it.</div>
+            </div>
           </div>
 
           <div class="section-title">Eligibility &amp; limits</div>
@@ -163,6 +189,13 @@
                 </label>
               </div>
               <div class="pm-hint">Leave both unchecked to apply to every category. Check one or more to restrict this coupon.</div>
+            </div>
+            <div class="full">
+              <label class="pm-label">Subcategories (optional)</label>
+              <div id="f_weave_lines" style="display:flex; gap:16px; flex-wrap:wrap; padding:8px 0;">
+                <span class="small" style="color:var(--text-light);">Loading…</span>
+              </div>
+              <div class="pm-hint">E.g. Chanderi Handloom, Hand Block &amp; Prints — the same subcategories shown under Sarees/Suits in the site menu. Leave all unchecked to apply to every subcategory.</div>
             </div>
             <div>
               <label class="pm-label">Total use limit across all customers (optional)</label>
@@ -220,6 +253,94 @@
         </div>
       </div>
 
+      <div id="issueView" style="display:none;">
+        <div class="pm-card">
+          <div class="section-title" style="margin-top:0;">Reward type</div>
+          <div class="reward-type-row">
+            <label><input type="radio" name="rewardType" value="coupon" id="rt_coupon" checked /> Coupon code</label>
+            <label><input type="radio" name="rewardType" value="wallet" id="rt_wallet" /> AhamStree Cash credit</label>
+          </div>
+
+          <div id="issueCouponPanel">
+            <div class="section-title">Customer</div>
+            <div class="pm-row">
+              <div>
+                <label class="pm-label" for="ic_phone">WhatsApp / mobile number</label>
+                <input id="ic_phone" class="input" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile" />
+              </div>
+              <div>
+                <label class="pm-label" for="ic_name">Customer name (optional)</label>
+                <input id="ic_name" class="input" placeholder="For a personalized message" />
+              </div>
+            </div>
+
+            <div class="section-title">Discount</div>
+            <div class="pm-row">
+              <div>
+                <label class="pm-label" for="ic_type">Discount type</label>
+                <select id="ic_type" class="input">
+                  <option value="percent">Percentage off</option>
+                  <option value="amount">Flat ₹ off</option>
+                </select>
+              </div>
+              <div>
+                <label class="pm-label" id="ic_value_label">Percentage off (%)</label>
+                <input id="ic_value" class="input" type="number" min="0" step="1" placeholder="e.g. 10" />
+              </div>
+              <div>
+                <label class="pm-label" for="ic_expires_in_days">Valid for (days)</label>
+                <input id="ic_expires_in_days" class="input" type="number" min="1" step="1" value="14" />
+              </div>
+            </div>
+
+            <div class="toggle-row">
+              <div>
+                <label class="tlabel" for="ic_send_whatsapp">Send via WhatsApp now</label>
+                <div class="thint">Only if this number has opted in to marketing.</div>
+              </div>
+              <label class="switch"><input id="ic_send_whatsapp" type="checkbox" checked /><span class="slider"></span></label>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; align-items:center;">
+              <button id="btnIssueCoupon" class="btn">Issue coupon</button>
+              <div id="issueCouponStatus" class="small" style="align-self:center;"></div>
+            </div>
+
+            <div id="issueCouponResult" class="result-card" style="display:none;"></div>
+          </div>
+
+          <div id="issueWalletPanel" style="display:none;">
+            <div class="section-title" style="margin-top:0;">Find customer</div>
+            <input id="iw_search" class="input" placeholder="Search by name, email or phone…" />
+            <div id="iw_results" class="cust-pick" style="display:none;"></div>
+            <div id="iw_selected" style="display:none;"></div>
+
+            <div class="section-title">Credit amount</div>
+            <div class="pm-row">
+              <div>
+                <label class="pm-label" for="iw_amount">Amount (₹)</label>
+                <input id="iw_amount" class="input" type="number" min="1" step="1" placeholder="e.g. 200" />
+              </div>
+              <div class="full">
+                <label class="pm-label" for="iw_note">Note (required — kept in the customer's wallet ledger)</label>
+                <input id="iw_note" class="input" placeholder="e.g. Goodwill credit for delayed delivery" />
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; align-items:center;">
+              <button id="btnIssueWallet" class="btn">Credit AhamStree Cash</button>
+              <div id="issueWalletStatus" class="small" style="align-self:center;"></div>
+            </div>
+
+            <div id="issueWalletResult" class="result-card" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div class="section-title">Recently issued coupons</div>
+        <div id="recentCount" class="small" style="color:var(--text-light); margin-bottom:10px;"></div>
+        <div id="recentList"></div>
+      </div>
+
     </div>
   </div>
 
@@ -238,6 +359,9 @@
 
     const BASE = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/";
     const COUPONS_FN = BASE + "admin-manage-coupons";
+    const CATALOG_FN = BASE + "admin-manage-catalog";
+    const ISSUE_FN = BASE + "admin-issue-coupon";
+    const WALLET_FN = BASE + "admin-manage-wallet";
 
     const loadingState = document.getElementById("loadingState");
     const dashboard    = document.getElementById("dashboard");
@@ -297,6 +421,37 @@
       return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes());
     }
 
+    // ══════════════════════════════════════ WEAVE LINES (subcategories) ══════════════════════════════════════
+    // Fetched, not hardcoded (unlike the two fixed top-level categories
+    // above) since weave lines/subcategories can change over time — see
+    // admin-manage-catalog's existing "weave_line" entity (same one the
+    // Product Catalogue's Weave Lines tab manages).
+    let weaveLinesCache = [];
+
+    async function loadWeaveLines() {
+      try {
+        const r = await authedFetch(CATALOG_FN, { action: "list", entity: "weave_line" });
+        weaveLinesCache = (r.items || []).filter(w => w.is_active);
+      } catch (_e) {
+        weaveLinesCache = [];
+      }
+      const box = document.getElementById("f_weave_lines");
+      if (!weaveLinesCache.length) {
+        box.innerHTML = '<span class="small" style="color:var(--text-light);">No subcategories set up yet (Product Catalogue → Weave Lines).</span>';
+        return;
+      }
+      box.innerHTML = weaveLinesCache.map(w => `
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" class="f_weave_cb" value="${escapeAttr(w.id)}" /> ${escapeHtml(w.name)}
+        </label>
+      `).join("");
+    }
+
+    function weaveLineName(id) {
+      const w = weaveLinesCache.find(x => String(x.id) === String(id));
+      return w ? w.name : null;
+    }
+
     // ══════════════════════════════════════ LIST ══════════════════════════════════════
     let couponsCache = [];
 
@@ -315,6 +470,11 @@
         const label = c.categories.map(x => x === "saree" ? "Sarees" : x === "suit" ? "Suits" : escapeHtml(x)).join(" + ");
         badges.push('<span class="pm-badge neutral">' + label + ' only</span>');
       }
+      if (Array.isArray(c.weave_line_ids) && c.weave_line_ids.length) {
+        const names = c.weave_line_ids.map(id => weaveLineName(id)).filter(Boolean);
+        if (names.length) badges.push('<span class="pm-badge neutral">' + escapeHtml(names.join(" + ")) + ' only</span>');
+      }
+      if (c.price_basis === "mrp") badges.push('<span class="pm-badge warn">MRP only (no sale stacking)</span>');
       const now = new Date();
       if (c.starts_at && new Date(c.starts_at) > now) badges.push('<span class="pm-badge neutral">Starts ' + fmtDate(c.starts_at) + '</span>');
       if (c.expires_at && new Date(c.expires_at) <= now) badges.push('<span class="pm-badge neutral">Expired ' + fmtDate(c.expires_at) + '</span>');
@@ -416,6 +576,8 @@
       document.getElementById("f_expires_at").value = "";
       document.getElementById("f_cat_saree").checked = false;
       document.getElementById("f_cat_suit").checked = false;
+      document.getElementById("f_price_basis").value = "discounted";
+      document.querySelectorAll(".f_weave_cb").forEach(cb => cb.checked = false);
       document.getElementById("f_first_order_only").checked = false;
       document.getElementById("f_one_per_customer").checked = true;
       document.getElementById("f_show_on_checkout").checked = false;
@@ -471,6 +633,9 @@
         const cCategories = Array.isArray(c.categories) ? c.categories : [];
         document.getElementById("f_cat_saree").checked = cCategories.includes("saree");
         document.getElementById("f_cat_suit").checked = cCategories.includes("suit");
+        document.getElementById("f_price_basis").value = c.price_basis === "mrp" ? "mrp" : "discounted";
+        const cWeaveLineIds = (Array.isArray(c.weave_line_ids) ? c.weave_line_ids : []).map(String);
+        document.querySelectorAll(".f_weave_cb").forEach(cb => { cb.checked = cWeaveLineIds.includes(cb.value); });
         document.getElementById("f_first_order_only").checked = !!c.first_order_only;
         document.getElementById("f_one_per_customer").checked = !!c.one_per_customer;
         document.getElementById("f_show_on_checkout").checked = !!c.show_on_checkout;
@@ -529,6 +694,8 @@
             document.getElementById("f_cat_saree").checked ? "saree" : null,
             document.getElementById("f_cat_suit").checked ? "suit" : null,
           ].filter(Boolean),
+          weave_line_ids: Array.from(document.querySelectorAll(".f_weave_cb:checked")).map(cb => Number(cb.value)),
+          price_basis: document.getElementById("f_price_basis").value,
           first_order_only: document.getElementById("f_first_order_only").checked,
           one_per_customer: document.getElementById("f_one_per_customer").checked,
           show_on_checkout: document.getElementById("f_show_on_checkout").checked,
@@ -558,6 +725,229 @@
       }
     });
 
+    // ══════════════════════════════════════ TOP TABS ══════════════════════════════════════
+    document.querySelectorAll(".top-tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".top-tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.dataset.tab;
+        document.getElementById("couponListView").style.display = tab === "coupons" ? "block" : "none";
+        document.getElementById("couponEditorView").style.display = "none";
+        document.getElementById("issueView").style.display = tab === "issue" ? "block" : "none";
+        if (tab === "issue") loadRecentIssued();
+      });
+    });
+
+    // ══════════════════════════════════════ ISSUE: reward type switch ══════════════════════════════════════
+    document.querySelectorAll('input[name="rewardType"]').forEach(r => {
+      r.addEventListener("change", () => {
+        const isCoupon = document.getElementById("rt_coupon").checked;
+        document.getElementById("issueCouponPanel").style.display = isCoupon ? "block" : "none";
+        document.getElementById("issueWalletPanel").style.display = isCoupon ? "none" : "block";
+      });
+    });
+
+    // ══════════════════════════════════════ ISSUE: coupon (ported from the former admin-issue-coupon.html) ══════════════════════════════════════
+    document.getElementById("ic_type").addEventListener("change", () => {
+      const isPercent = document.getElementById("ic_type").value === "percent";
+      document.getElementById("ic_value_label").textContent = isPercent ? "Percentage off (%)" : "Flat amount off (₹)";
+    });
+    document.getElementById("ic_phone").addEventListener("input", (e) => {
+      e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    });
+
+    const REASON_TEXT = {
+      no_consent: "This number hasn't opted in to WhatsApp marketing — the coupon was created but not sent. Share it yourself if appropriate.",
+      template_not_configured: "The WhatsApp coupon template hasn't been approved/configured yet — the coupon was created but not sent. Share it yourself for now.",
+      whatsapp_not_configured: "WhatsApp delivery isn't configured — the coupon was created but not sent.",
+      send_failed: "WhatsApp delivery failed, so the code was deactivated rather than left unsent. Try again, or share a fresh one manually.",
+      manual_share: "Coupon created. Share it with the customer yourself.",
+    };
+
+    function renderIssueCouponResult(r) {
+      const box = document.getElementById("issueCouponResult");
+      box.style.display = "block";
+      if (r.sent) {
+        box.innerHTML = `
+          <div style="font-weight:700; color:#3f6b4f;">✓ Sent on WhatsApp</div>
+          <div style="margin-top:8px;">Code: <span class="coupon-code-tag">${escapeHtml(r.coupon_code)}</span></div>
+        `;
+      } else {
+        box.innerHTML = `
+          <div style="font-weight:700; color:var(--color-accent);">Coupon created — not sent</div>
+          <div style="margin-top:8px;">Code: <span class="coupon-code-tag">${escapeHtml(r.coupon_code)}</span></div>
+          <div class="small" style="margin-top:8px; opacity:.85;">${escapeHtml(REASON_TEXT[r.reason] || "Not sent.")}</div>
+        `;
+      }
+    }
+
+    document.getElementById("btnIssueCoupon").addEventListener("click", async () => {
+      const status = document.getElementById("issueCouponStatus");
+      const phone = document.getElementById("ic_phone").value.trim();
+      if (!/^[6-9]\d{9}$/.test(phone)) { status.textContent = "Enter a valid 10-digit Indian mobile number."; return; }
+      const value = document.getElementById("ic_value").value;
+      if (value === "" || Number(value) <= 0) { status.textContent = "Enter a discount value greater than 0."; return; }
+
+      const btn = document.getElementById("btnIssueCoupon");
+      btn.disabled = true;
+      status.textContent = "Issuing…";
+      document.getElementById("issueCouponResult").style.display = "none";
+
+      try {
+        const r = await authedFetch(ISSUE_FN, {
+          phone,
+          customer_name: document.getElementById("ic_name").value.trim(),
+          type: document.getElementById("ic_type").value,
+          value: Number(value),
+          expires_in_days: Number(document.getElementById("ic_expires_in_days").value) || 14,
+          send_whatsapp: document.getElementById("ic_send_whatsapp").checked,
+        });
+        status.textContent = "";
+        renderIssueCouponResult(r);
+        loadRecentIssued();
+      } catch (e) {
+        status.textContent = "Error: " + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // Recently issued — coupons created via the issue-to-customer panel
+    // above, tagged with label "Admin issued" by admin-issue-coupon itself.
+    async function loadRecentIssued() {
+      const list = document.getElementById("recentList");
+      const count = document.getElementById("recentCount");
+      count.textContent = "Loading…";
+
+      let all;
+      try {
+        const r = await authedFetch(COUPONS_FN, { action: "list" });
+        all = (r.coupons || []).filter(c => c.label === "Admin issued");
+      } catch (e) {
+        count.textContent = "";
+        list.innerHTML = `<div class="small">Error loading history: ${escapeHtml(e.message)}</div>`;
+        return;
+      }
+
+      const data = all.slice(0, 20);
+      count.textContent = data.length + " shown";
+      if (!data.length) {
+        list.innerHTML = '<div class="small" style="color:var(--text-light); padding:12px 0;">None issued yet.</div>';
+        return;
+      }
+
+      list.innerHTML = data.map(c => {
+        const discount = c.type === "percent" ? c.value + "% off" : money(c.value) + " off";
+        const expired = c.expires_at && new Date(c.expires_at) <= new Date();
+        const used = Number(c.redemption_count || 0) > 0;
+        let badge = '<span class="pm-badge active">Active</span>';
+        if (used) badge = '<span class="pm-badge neutral">Redeemed</span>';
+        else if (expired) badge = '<span class="pm-badge warn">Expired</span>';
+        else if (!c.active) badge = '<span class="pm-badge neutral">Deactivated</span>';
+        return `
+          <div class="pm-list-item">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span class="coupon-code-tag">${escapeHtml(c.code)}</span>
+                <span style="font-weight:700;">${escapeHtml(discount)}</span>
+              </div>
+              <div class="small" style="color:var(--text-light); margin-top:4px;">${escapeHtml(c.description || "")}</div>
+              <div class="small" style="color:var(--text-light); margin-top:4px;">${c.expires_at ? "Expires " + escapeHtml(fmtDate(c.expires_at)) : "No expiry"}</div>
+            </div>
+            <div>${badge}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // ══════════════════════════════════════ ISSUE: AhamStree Cash credit ══════════════════════════════════════
+    let iwSelectedCustomer = null;
+    let iwSearchTimer = null;
+
+    function renderIwResults(customers) {
+      const box = document.getElementById("iw_results");
+      if (!customers.length) {
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
+      }
+      box.style.display = "block";
+      box.innerHTML = customers.map(c => `
+        <div class="cust-pick-item" data-id="${escapeAttr(c.user_id)}">
+          <strong>${escapeHtml(c.full_name || "Unnamed")}</strong> — ${escapeHtml(c.phone || c.email || "no contact on file")}
+          <span style="color:var(--text-light);"> · balance ${escapeHtml(money(c.balance_inr))}</span>
+        </div>
+      `).join("");
+      box.querySelectorAll(".cust-pick-item").forEach(el => {
+        el.addEventListener("click", () => {
+          const c = customers.find(x => String(x.user_id) === el.dataset.id);
+          selectIwCustomer(c);
+        });
+      });
+    }
+
+    function selectIwCustomer(c) {
+      iwSelectedCustomer = c;
+      document.getElementById("iw_results").style.display = "none";
+      document.getElementById("iw_search").value = "";
+      const box = document.getElementById("iw_selected");
+      box.style.display = "flex";
+      box.innerHTML = `
+        <span><strong>${escapeHtml(c.full_name || "Unnamed")}</strong> — ${escapeHtml(c.phone || c.email || "")} · balance ${escapeHtml(money(c.balance_inr))}</span>
+        <button class="btn secondary" type="button" style="padding:4px 10px; font-size:11px;" id="iw_clear">Change</button>
+      `;
+      document.getElementById("iw_clear").addEventListener("click", () => {
+        iwSelectedCustomer = null;
+        box.style.display = "none";
+        box.innerHTML = "";
+      });
+    }
+
+    document.getElementById("iw_search").addEventListener("input", (e) => {
+      const q = e.target.value.trim();
+      clearTimeout(iwSearchTimer);
+      if (q.length < 2) { renderIwResults([]); return; }
+      iwSearchTimer = setTimeout(async () => {
+        try {
+          const r = await authedFetch(WALLET_FN, { action: "search_customers", query: q, limit: 10 });
+          renderIwResults(r.customers || []);
+        } catch (_e) { renderIwResults([]); }
+      }, 300);
+    });
+
+    document.getElementById("btnIssueWallet").addEventListener("click", async () => {
+      const status = document.getElementById("issueWalletStatus");
+      if (!iwSelectedCustomer) { status.textContent = "Search for and select a customer first."; return; }
+      const amount = Number(document.getElementById("iw_amount").value);
+      if (!amount || amount <= 0) { status.textContent = "Enter an amount greater than 0."; return; }
+      const note = document.getElementById("iw_note").value.trim();
+      if (!note) { status.textContent = "A note is required (kept in the customer's wallet ledger)."; return; }
+
+      const btn = document.getElementById("btnIssueWallet");
+      btn.disabled = true;
+      status.textContent = "Crediting…";
+      document.getElementById("issueWalletResult").style.display = "none";
+
+      try {
+        const r = await authedFetch(WALLET_FN, {
+          action: "adjust_wallet",
+          user_id: iwSelectedCustomer.user_id,
+          amount_inr: amount,
+          note,
+        });
+        status.textContent = "";
+        const box = document.getElementById("issueWalletResult");
+        box.style.display = "block";
+        box.innerHTML = `<div style="font-weight:700; color:#3f6b4f;">✓ Credited ${escapeHtml(money(amount))}</div><div class="small" style="margin-top:6px;">New balance: ${escapeHtml(money(r.balance_inr))}</div>`;
+        document.getElementById("iw_amount").value = "";
+        document.getElementById("iw_note").value = "";
+      } catch (e) {
+        status.textContent = "Error: " + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
     // ══════════════════════════════════════ INIT ══════════════════════════════════════
     async function initAdmin() {
       try {
@@ -574,7 +964,7 @@
         dashboard.style.display = "block";
 
         resetEditorForm();
-        await loadCouponsList();
+        await Promise.all([loadCouponsList(), loadWeaveLines()]);
       } catch (e) {
         console.error("Coupon admin page error:", e);
         showGateError(ICON_WARN, "Something went wrong", e.message || "An unexpected error occurred.");
