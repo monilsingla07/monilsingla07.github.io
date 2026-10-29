@@ -150,6 +150,36 @@ function render() {
 // ───────────── scanning ─────────────
 function focusScan() { $("scan-input").focus(); }
 
+function addPieceToBill(piece) {
+  const real = String(piece.serial || "").toUpperCase();
+  if (bill.some((l) => l.serial === real)) {
+    flashLast(real, false); shake(); toast(real + " is already in this bill", "err"); return false;
+  }
+  if (piece.status !== "in_stock") {
+    flashLast(real, false);
+    if (piece.status === "sold") {
+      const when = piece.sold_at ? new Date(piece.sold_at).toLocaleDateString("en-IN") : "earlier";
+      toast("Already sold on " + when + " via " + (piece.sold_via || "unknown"), "err");
+    } else {
+      toast(real + " is not available (" + piece.status + ")", "err");
+    }
+    return false;
+  }
+  const prod = piece.products || {};
+  const price = prod.sale_price_inr ?? prod.price_inr ?? 0;
+  const imgs = (prod.product_images || []).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  const thumb = piece.photo_url || imgs[0]?.image_url || "";
+  bill.push({ id: piece.id, serial: real, title: prod.title || "Item", price: Number(price) || 0, thumb, bad: "" });
+  flashLast(real, true);
+  render();
+  return true;
+}
+
+// A scan box entry is usually a QR-scanned serial (exact match), but when a
+// cashier types a product number by hand it may not match the serial's exact
+// format. Rather than just fail, fall back to the same search used while
+// typing — if that resolves to exactly one in-stock piece, add it directly
+// instead of forcing a trip through the Browse/search dropdown.
 async function handleScan(raw) {
   const serial = String(raw || "").trim().toUpperCase();
   if (!serial || scanning) return;
@@ -163,31 +193,36 @@ async function handleScan(raw) {
   scanning = true;
   try {
     const { piece } = await authedFetch(INV_FN, { action: "get-by-serial", serial });
-    const real = String(piece.serial || serial).toUpperCase();
-    if (bill.some((l) => l.serial === real)) {
-      flashLast(real, false); shake(); toast(real + " is already in this bill", "err"); return;
-    }
-    if (piece.status !== "in_stock") {
-      flashLast(real, false);
-      if (piece.status === "sold") {
-        const when = piece.sold_at ? new Date(piece.sold_at).toLocaleDateString("en-IN") : "earlier";
-        toast("Already sold on " + when + " via " + (piece.sold_via || "unknown"), "err");
-      } else {
-        toast(real + " is not available (" + piece.status + ")", "err");
-      }
+    addPieceToBill(piece);
+    return;
+  } catch (e) {
+    if (e.status !== 404) {
+      flashLast(serial, false);
+      toast("Scan failed: " + (e.message || e), "err");
       return;
     }
-    const prod = piece.products || {};
-    const price = prod.sale_price_inr ?? prod.price_inr ?? 0;
-    const imgs = (prod.product_images || []).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-    const thumb = piece.photo_url || imgs[0]?.image_url || "";
-    bill.push({ id: piece.id, serial: real, title: prod.title || "Item", price: Number(price) || 0, thumb, bad: "" });
-    flashLast(real, true);
-    render();
+  } finally {
+    scanning = false;
+  }
+  // No exact serial match — try it as a search term (serial/title/SKU).
+  scanning = true;
+  try {
+    const r = await authedFetch(INV_FN, { action: "list", status: "in_stock", limit: 20, q: serial });
+    const rows = r.rows || [];
+    if (rows.length === 1) {
+      addPieceToBill(rows[0]);
+    } else if (rows.length > 1) {
+      flashLast(serial, false);
+      renderSearchResults(rows);
+      $("searchResults").hidden = false;
+      toast("Multiple matches for \"" + serial + "\" — pick one below.", "err");
+    } else {
+      flashLast(serial, false);
+      toast("Not found: " + serial, "err");
+    }
   } catch (e) {
     flashLast(serial, false);
-    if (e.status === 404) toast("Not found: " + serial, "err");
-    else toast("Scan failed: " + (e.message || e), "err");
+    toast("Scan failed: " + (e.message || e), "err");
   } finally {
     scanning = false;
   }
@@ -329,26 +364,14 @@ async function runSearch(query) {
   resEl.hidden = false;
   resEl.innerHTML = '<div class="search-row search-note">Searching…</div>';
   try {
-    // Pull in-stock pieces matching the query (serial OR title via two parallel calls).
+    // One server-side OR match across serial, product title and SKU —
+    // covers the whole in-stock catalog, not just the most recent pieces.
     const q = String(query || "").trim();
     const body = { action: "list", status: "in_stock", limit: 20 };
-    if (q) body.serial_contains = q;
+    if (q) body.q = q;
     const r = await authedFetch(INV_FN, body);
     if (seq !== searchSeq) return;
-    let rows = r.rows || [];
-    // If the user typed non-serial-looking text (letters only), also search by product title
-    if (q && /^[A-Za-z\s]+$/.test(q) && rows.length < 20) {
-      try {
-        const byTitle = await authedFetch(INV_FN, { action: "list", status: "in_stock", limit: 20 });
-        if (seq !== searchSeq) return;
-        const titleMatch = (byTitle.rows || []).filter((p) =>
-          (p.products?.title || "").toLowerCase().includes(q.toLowerCase()) &&
-          !rows.some((r2) => r2.id === p.id)
-        );
-        rows = rows.concat(titleMatch).slice(0, 20);
-      } catch (_) { /* ignore secondary search failure */ }
-    }
-    renderSearchResults(rows);
+    renderSearchResults(r.rows || []);
   } catch (e) {
     if (seq !== searchSeq) return;
     resEl.innerHTML = '<div class="search-row search-note err">Search failed: ' + (e.message || e) + '</div>';
