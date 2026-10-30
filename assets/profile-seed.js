@@ -190,7 +190,7 @@ export async function signInWithPin(phone10, pin) {
 // session is still active. Saves the name, marks has_pin true, then
 // attaches the PIN as this same phone identity's password — no new auth
 // identity is created, it's the exact account that just verified via OTP.
-export async function saveNameAndPin({ userId, name, pin }) {
+export async function saveNameAndPin({ userId, name, pin, phone, marketingOptIn }) {
   // Attach the password credential FIRST. If this fails (e.g. the
   // project's minimum-password-length setting rejects a 4-digit PIN),
   // has_pin must stay false — otherwise the account would claim to have a
@@ -204,8 +204,22 @@ export async function saveNameAndPin({ userId, name, pin }) {
     user_id: userId,
     full_name: name,
     has_pin: true,
+    marketing_opt_in: !!marketingOptIn,
   });
   if (profileErr) return { ok: false, message: profileErr.message };
+
+  // Best-effort audit trail (see 2026-10-25_marketing_consent.sql) — never
+  // blocks the signup itself if this write fails.
+  if (phone) {
+    try {
+      await supabase.from("marketing_consents").insert({
+        phone,
+        opted_in: !!marketingOptIn,
+        source: "signup",
+        user_id: userId,
+      });
+    } catch (_e) { /* non-fatal */ }
+  }
 
   return { ok: true };
 }

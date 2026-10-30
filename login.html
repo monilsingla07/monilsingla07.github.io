@@ -409,6 +409,10 @@ document.getElementById("footer").innerHTML = renderFooter();
             maxlength="4" placeholder="••••" style="letter-spacing:6px;font-weight:700;max-width:140px;" />
           <div id="errNameSetup" class="error-text" style="display:none;"></div>
         </div>
+        <label class="small" style="display:flex;align-items:flex-start;gap:8px;margin-top:12px;cursor:pointer;font-weight:400;">
+          <input type="checkbox" id="setupMarketingOptIn" checked style="margin-top:3px;width:16px;height:16px;flex-shrink:0;" />
+          <span>I'm ok receiving order updates and offers on WhatsApp</span>
+        </label>
         <button id="finishSetupBtn" class="btn" style="margin-top:12px;">Continue</button>
       </div>
     `;
@@ -659,6 +663,7 @@ document.getElementById("footer").innerHTML = renderFooter();
       if (googleBtnEl) googleBtnEl.style.display = "none";
       newPinInput.value = "";
       confirmPinInput.value = "";
+      document.getElementById("setupMarketingOptIn").checked = true;
       try {
         const { data: sess } = await supabase.auth.getSession();
         const uid = sess?.session?.user?.id;
@@ -701,9 +706,11 @@ document.getElementById("footer").innerHTML = renderFooter();
         return;
       }
 
+      const marketingOptIn = document.getElementById("setupMarketingOptIn").checked;
+
       finishSetupBtn.disabled = true;
       status.textContent = "Saving…";
-      const result = await saveNameAndPin({ userId: uid, name, pin });
+      const result = await saveNameAndPin({ userId: uid, name, pin, phone: currentPhone10, marketingOptIn });
       finishSetupBtn.disabled = false;
 
       if (!result.ok) {
