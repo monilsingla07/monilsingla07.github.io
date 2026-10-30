@@ -15,6 +15,7 @@ const INV_FN = BASE + "admin-manage-inventory";
 const POS_FN = BASE + "pos-checkout";
 const USERS_FN = BASE + "admin-users";
 const SETTINGS_FN = BASE + "admin-manage-settings";
+const WHATSAPP_INVOICE_FN = BASE + "send-whatsapp-invoice";
 
 const $ = (id) => document.getElementById(id);
 const money = (v) => "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
@@ -42,6 +43,7 @@ let customer = null;      // looked-up account {user_id, name, phone, address}
 let done = null;          // {order_id, invoice_url, total} after a successful charge
 let charging = false;
 let scanning = false;
+let whatsappSending = false;
 
 // POS auto-discount tiers (Settings → Site Settings). Falls back to the
 // pre-existing 20%/25% if settings fail to load for any reason.
@@ -178,11 +180,15 @@ function render() {
   const post = !!done;
   $("btnCharge").style.display = post ? "none" : "";
   $("btnPrint").style.display = post ? "" : "none";
+  $("btnSendWhatsapp").style.display = post ? "" : "none";
   $("btnNew").style.display = post ? "" : "none";
   $("btnCharge").disabled = !bill.length || charging;
   $("btnCharge").textContent = charging ? "Charging…" : "Charge (F9)";
   $("btnPrint").disabled = !(done && done.invoice_url);
   $("btnPrint").title = done && !done.invoice_url ? "Receipt could not be generated; open it from Orders." : "";
+  $("btnSendWhatsapp").disabled = !(done && done.phone) || whatsappSending;
+  $("btnSendWhatsapp").title = done && !done.phone ? "No phone number on file for this sale." : "";
+  $("btnSendWhatsapp").textContent = whatsappSending ? "Sending…" : "Send bill on WhatsApp";
 }
 
 // ───────────── scanning ─────────────
@@ -326,6 +332,26 @@ function customerPayload() {
   return null;
 }
 
+// ───────────── send bill on WhatsApp ─────────────
+// Reuses send-whatsapp-invoice (already used from admin-orders.html) —
+// generates the invoice PDF if needed and sends it via the approved
+// WhatsApp Business template.
+async function sendBillOnWhatsapp() {
+  if (!done || !done.order_id || whatsappSending) return;
+  whatsappSending = true; render();
+  try {
+    await authedFetch(WHATSAPP_INVOICE_FN, { order_id: done.order_id });
+    toast("Bill sent on WhatsApp.", "ok", 6000);
+  } catch (e) {
+    const err = e.body?.error || e.message || "";
+    if (err === "template_not_configured") toast("WhatsApp invoice template isn't approved yet.", "err", 7000);
+    else if (err === "no_phone") toast("No usable phone number on file for this sale.", "err", 6000);
+    else toast("Send failed: " + (e.message || e), "err", 7000);
+  } finally {
+    whatsappSending = false; render();
+  }
+}
+
 // ───────────── charge ─────────────
 async function charge() {
   if (done || charging || !bill.length) return;
@@ -341,7 +367,7 @@ async function charge() {
   charging = true; render();
   try {
     const r = await authedFetch(POS_FN, payload);
-    done = { order_id: r.order_id, invoice_url: r.invoice_url || null, total: r.total_inr ?? total() };
+    done = { order_id: r.order_id, invoice_url: r.invoice_url || null, total: r.total_inr ?? total(), phone: payload.customer?.phone || null };
     toast("Sale complete — order #" + r.order_id, "ok", 7000);
     // Also send the invoice to the shop printer (browser invoice button stays as a fallback).
     enqueueInvoice(r.order_id)
@@ -488,6 +514,7 @@ function wire() {
     const u = done && done.invoice_url;
     if (u && /^https?:/i.test(u)) window.open(u, "_blank", "noopener");
   });
+  $("btnSendWhatsapp").addEventListener("click", sendBillOnWhatsapp);
   $("btnNew").addEventListener("click", newSale);
   $("confirmYes").addEventListener("click", () => { $("confirmModal").classList.remove("open"); newSale(); });
   $("confirmNo").addEventListener("click", closeConfirm);
