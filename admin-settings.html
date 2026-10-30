@@ -128,6 +128,18 @@
             </div>
 
             <div class="full">
+              <label class="pm-label">POS auto-discount — 1 piece (%)</label>
+              <input id="f_pos_disc_single" class="input" type="number" min="0" max="100" placeholder="20" style="max-width:160px;" />
+              <div class="small" style="color:var(--text-light); margin-top:4px;">Applied automatically in POS when the bill has exactly one piece. The cashier can still override it for a specific sale.</div>
+            </div>
+
+            <div class="full">
+              <label class="pm-label">POS auto-discount — 2 or more pieces (%)</label>
+              <input id="f_pos_disc_multi" class="input" type="number" min="0" max="100" placeholder="25" style="max-width:160px;" />
+              <div class="small" style="color:var(--text-light); margin-top:4px;">Applied automatically once two or more pieces are in the bill — any mix of sarees and suits counts together.</div>
+            </div>
+
+            <div class="full">
               <label class="pm-label">Order notification emails</label>
               <input id="f_notify_admin_emails" class="input" placeholder="you@example.com, partner@example.com" />
               <div class="small" style="color:var(--text-light); margin-top:4px;">Comma-separated. Every address here gets an email the moment a new order (online or walk-in) is placed. Previously this could only be changed by editing a setting directly in Supabase — now it's controlled here.</div>
@@ -530,6 +542,8 @@
       document.getElementById("f_low_stock_threshold").value = s.low_stock_threshold ?? 3;
       document.getElementById("f_return_shipping_charge").value = s.return_shipping_charge_inr ?? 0;
       document.getElementById("f_notify_admin_emails").value = s.notify_admin_emails || "";
+      document.getElementById("f_pos_disc_single").value = s.pos_discount_single_percent ?? 20;
+      document.getElementById("f_pos_disc_multi").value = s.pos_discount_multi_percent ?? 25;
     }
 
     document.getElementById("btnSaveSettings").addEventListener("click", async () => {
@@ -546,6 +560,8 @@
           low_stock_threshold: Number(document.getElementById("f_low_stock_threshold").value),
           return_shipping_charge_inr: Number(document.getElementById("f_return_shipping_charge").value),
           notify_admin_emails: document.getElementById("f_notify_admin_emails").value,
+          pos_discount_single_percent: Number(document.getElementById("f_pos_disc_single").value),
+          pos_discount_multi_percent: Number(document.getElementById("f_pos_disc_multi").value),
         });
         statusEl.textContent = "Saved — live on the site immediately.";
       } catch (e) {

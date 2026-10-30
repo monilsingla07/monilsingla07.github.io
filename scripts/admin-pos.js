@@ -14,6 +14,7 @@ const BASE = "https://mgmgkwoxirvzdnmayhwq.supabase.co/functions/v1/";
 const INV_FN = BASE + "admin-manage-inventory";
 const POS_FN = BASE + "pos-checkout";
 const USERS_FN = BASE + "admin-users";
+const SETTINGS_FN = BASE + "admin-manage-settings";
 
 const $ = (id) => document.getElementById(id);
 const money = (v) => "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
@@ -41,6 +42,14 @@ let customer = null;      // looked-up account {user_id, name, phone, address}
 let done = null;          // {order_id, invoice_url, total} after a successful charge
 let charging = false;
 let scanning = false;
+
+// POS auto-discount tiers (Settings → Site Settings). Falls back to the
+// pre-existing 20%/25% if settings fail to load for any reason.
+let posDiscountTiers = { single: 20, multi: 25 };
+// Stays true until the cashier manually edits the discount fields for this
+// sale — once they do, auto-apply backs off so it doesn't stomp their
+// override every time the bill changes. Reset on New sale.
+let discountAutoApplied = true;
 
 let toastTimer;
 function toast(msg, kind = "", ms = 4500) {
@@ -113,9 +122,38 @@ function discountAmt() {
   const d = $("discType").value === "percent" ? Math.round(sub * Math.min(v, 100) / 100) : v;
   return Math.min(d, sub);
 }
-const total = () => Math.max(0, subtotal() - discountAmt());
+// POS rounds the final payable amount down to the nearest ₹10 (₹78 → ₹70,
+// ₹71 → ₹70, ₹79 → ₹70) — a cash-friendly round-off, not a tax adjustment.
+// Only the grand total is floored; subtotal and discount stay exact.
+const roundDownTo10 = (n) => Math.floor(n / 10) * 10;
+const total = () => roundDownTo10(Math.max(0, subtotal() - discountAmt()));
+
+// Auto-fills the discount tier by piece count — any mix of sarees/suits in
+// the bill counts together. Only runs while the cashier hasn't manually
+// touched the discount fields for this sale (see discountAutoApplied).
+function applyAutoDiscount() {
+  if (!discountAutoApplied || done) return;
+  if (!bill.length) { $("discValue").value = ""; return; }
+  const pct = bill.length >= 2 ? posDiscountTiers.multi : posDiscountTiers.single;
+  $("discType").value = "percent";
+  $("discValue").value = pct;
+}
+
+async function loadPosDiscountSettings() {
+  try {
+    const r = await authedFetch(SETTINGS_FN, { action: "get_settings" });
+    const s = r.settings || {};
+    posDiscountTiers = {
+      single: Number(s.pos_discount_single_percent ?? 20),
+      multi: Number(s.pos_discount_multi_percent ?? 25),
+    };
+  } catch (_e) {
+    // Keep the 20%/25% fallback — a settings hiccup shouldn't block billing.
+  }
+}
 
 function render() {
+  applyAutoDiscount();
   const body = $("billBody");
   if (!bill.length) {
     body.innerHTML = '<div class="bill-empty">No items yet — scan a QR label to start.</div>';
@@ -339,6 +377,7 @@ async function charge() {
 // ───────────── reset / confirm ─────────────
 function newSale() {
   bill = []; done = null; customer = null;
+  discountAutoApplied = true;
   $("discValue").value = "";
   $("discType").value = "flat";
   document.querySelector('input[name="custMode"][value="anon"]').checked = true;
@@ -433,8 +472,8 @@ function wire() {
     bill = bill.filter((l) => l.serial !== b.getAttribute("data-rm"));
     render(); focusScan();
   });
-  $("discType").addEventListener("change", render);
-  $("discValue").addEventListener("input", render);
+  $("discType").addEventListener("change", () => { discountAutoApplied = false; render(); });
+  $("discValue").addEventListener("input", () => { discountAutoApplied = false; render(); });
   document.querySelectorAll('input[name="custMode"]').forEach((r) => r.addEventListener("change", () => {
     resetCustomerLookup(); syncCustUi();
     if (custMode() !== "anon") $("custPhone").focus();
@@ -497,6 +536,8 @@ function gateError(title, message) {
     $("pos").style.display = "block";
     wire(); syncCustUi(); render(); focusScan();
     wirePrinterWidget(); printEngine.init();
+    await loadPosDiscountSettings();
+    render();
   } catch (e) {
     gateError("Error", e.message || String(e));
   }
