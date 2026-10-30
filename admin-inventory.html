@@ -82,6 +82,7 @@
           <a href="admin-pos.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">POS</a>
           <a href="admin-print-agent.html" class="btn secondary" style="padding:8px 14px; font-size:13px;">Print queue</a>
           <button class="btn secondary" id="btnTags" type="button" style="padding:8px 14px; font-size:13px;">Manage tag options</button>
+          <button class="btn secondary" id="btnBulkUpload" type="button" style="padding:8px 14px; font-size:13px;">Bulk upload</button>
           <button class="btn" id="btnAdd" type="button" style="padding:8px 18px;">+ Add inventory</button>
         </div>
       </div>
@@ -229,6 +230,43 @@
       <div class="m-actions">
         <button class="btn secondary" id="editCancel" type="button">Cancel</button>
         <button class="btn" id="editSave" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk upload inventory modal -->
+  <div class="modal-bg" id="bulkUploadModal">
+    <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="bulkUploadTitle">
+      <h3 id="bulkUploadTitle">Bulk upload inventory</h3>
+      <div class="small" style="color:var(--text-light); margin-bottom:10px; line-height:1.6;">
+        One row per SKU. Columns: <code>sku, quantity, cost_price, weaver_name, selling_price, category, photo_url</code>.
+        <code>sku</code> matches an existing SKU code or title. <code>selling_price</code> and <code>category</code>
+        (<code>saree</code> or <code>suit</code>) are only needed to create a brand-new SKU.
+        <button class="btn secondary" id="bulkDownloadTemplate" type="button" style="padding:4px 10px; font-size:12px; margin-left:4px;">Download template</button>
+      </div>
+      <div class="m-row"><label class="fld-label" for="bulkFile">CSV file</label><input id="bulkFile" type="file" accept=".csv,text/csv" /></div>
+      <div class="small" style="margin:8px 0 4px; color:var(--text-light);">…or paste CSV here:</div>
+      <textarea id="bulkPaste" class="input" rows="6" style="width:100%; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px;" placeholder="sku,quantity,cost_price,weaver_name,selling_price,category,photo_url"></textarea>
+
+      <div id="bulkPreviewWrap" style="display:none; margin-top:12px;">
+        <div class="small" id="bulkPreviewSummary" style="margin-bottom:6px; font-weight:600;"></div>
+        <div style="max-height:260px; overflow:auto; border:1px solid var(--border-light);">
+          <table style="width:100%; font-size:12px; border-collapse:collapse;" id="bulkPreviewTable"></table>
+        </div>
+      </div>
+
+      <div id="bulkResultsWrap" style="display:none; margin-top:12px;">
+        <div class="small" id="bulkResultsSummary" style="margin-bottom:6px; font-weight:600;"></div>
+        <div style="max-height:260px; overflow:auto; border:1px solid var(--border-light);">
+          <table style="width:100%; font-size:12px; border-collapse:collapse;" id="bulkResultsTable"></table>
+        </div>
+      </div>
+
+      <div class="err" id="bulkErr"></div>
+      <div class="m-actions">
+        <button class="btn secondary" id="bulkCancel" type="button">Close</button>
+        <button class="btn secondary" id="bulkParse" type="button">Preview</button>
+        <button class="btn" id="bulkSubmit" type="button" style="display:none;">Upload</button>
       </div>
     </div>
   </div>

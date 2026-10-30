@@ -206,6 +206,141 @@ function exportCsv() {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
+// ───────────────────────────── Bulk upload ─────────────────────────────
+const BULK_COLUMNS = ["sku", "quantity", "cost_price", "weaver_name", "selling_price", "category", "photo_url"];
+let bulkParsedRows = [];
+
+// Minimal CSV parser: handles quoted fields (with embedded commas/quotes) and
+// both \n and \r\n line endings. Good enough for a spreadsheet export.
+function parseCsvText(text) {
+  const table = [];
+  let row = [], field = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false;
+      } else field += c;
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ",") {
+      row.push(field); field = "";
+    } else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(field); field = "";
+      if (row.some((v) => v !== "")) table.push(row);
+      row = [];
+    } else {
+      field += c;
+    }
+  }
+  if (field !== "" || row.length) { row.push(field); if (row.some((v) => v !== "")) table.push(row); }
+  return table;
+}
+
+function csvRowsToObjects(table) {
+  if (!table.length) return [];
+  const header = table[0].map((h) => h.trim().toLowerCase());
+  return table.slice(1).map((r) => {
+    const obj = {};
+    header.forEach((h, i) => { if (BULK_COLUMNS.includes(h)) obj[h] = (r[i] ?? "").trim(); });
+    return obj;
+  });
+}
+
+function downloadBulkTemplate() {
+  const lines = [
+    BULK_COLUMNS.join(","),
+    "AHM-SAREE-001,10,1200,Ramesh Weaves,,,",
+    "New Chanderi Mint Green,5,1400,Ramesh Weaves,3499,saree,",
+  ];
+  const blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "inventory-bulk-upload-template.csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function resetBulkModal() {
+  bulkParsedRows = [];
+  $("bulkFile").value = "";
+  $("bulkPaste").value = "";
+  $("bulkErr").textContent = "";
+  $("bulkPreviewWrap").style.display = "none";
+  $("bulkResultsWrap").style.display = "none";
+  $("bulkParse").style.display = "";
+  $("bulkSubmit").style.display = "none";
+  $("bulkSubmit").disabled = false;
+}
+
+function renderBulkPreview() {
+  const n = bulkParsedRows.length;
+  $("bulkPreviewSummary").textContent = n + (n === 1 ? " row ready to upload." : " rows ready to upload.");
+  const head = "<tr>" + BULK_COLUMNS.map((c) => "<th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border-light);\">" + c + "</th>").join("") + "</tr>";
+  const body = bulkParsedRows.map((r) =>
+    "<tr>" + BULK_COLUMNS.map((c) => "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);" + (c === "sku" && !r[c] ? "color:#a13d3d;" : "") + "\">" + escapeHtml(r[c] || (c === "sku" ? "(missing)" : "—")) + "</td>").join("") + "</tr>"
+  ).join("");
+  $("bulkPreviewTable").innerHTML = head + body;
+  $("bulkPreviewWrap").style.display = "block";
+  $("bulkResultsWrap").style.display = "none";
+  $("bulkSubmit").style.display = n ? "" : "none";
+}
+
+function parseBulkInput() {
+  $("bulkErr").textContent = "";
+  const text = $("bulkPaste").value.trim();
+  if (!text) { $("bulkErr").textContent = "Choose a CSV file or paste CSV text first."; return; }
+  const table = parseCsvText(text);
+  const objs = csvRowsToObjects(table);
+  if (!objs.length) { $("bulkErr").textContent = "No data rows found — check the header row matches the template."; return; }
+  if (objs.length > 200) { $("bulkErr").textContent = "Too many rows (" + objs.length + ") — upload at most 200 at a time."; return; }
+  bulkParsedRows = objs;
+  renderBulkPreview();
+}
+
+function renderBulkResults(r) {
+  $("bulkPreviewWrap").style.display = "none";
+  const okCount = r.results.length, errCount = r.errors.length;
+  $("bulkResultsSummary").textContent = "Created " + r.created + " piece(s) across " + okCount + " row(s)." +
+    (errCount ? " " + errCount + " row(s) failed — see below." : "");
+  const okRows = r.results.map((x) =>
+    "<tr><td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);\">Row " + x.row + "</td>" +
+    "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);\">" + escapeHtml(x.sku) + (x.created_product ? " (new SKU)" : "") + "</td>" +
+    "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light); color:#3f6b4f;\">" + x.serials.length + " piece(s) created</td></tr>"
+  ).join("");
+  const errRows = r.errors.map((x) =>
+    "<tr><td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);\">Row " + x.row + "</td>" +
+    "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);\">" + escapeHtml(x.sku) + "</td>" +
+    "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light); color:#a13d3d;\">" + escapeHtml(x.error) + "</td></tr>"
+  ).join("");
+  $("bulkResultsTable").innerHTML =
+    "<tr><th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border-light);\">Row</th>" +
+    "<th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border-light);\">SKU</th>" +
+    "<th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border-light);\">Result</th></tr>" +
+    okRows + errRows;
+  $("bulkResultsWrap").style.display = "block";
+  $("bulkParse").style.display = "none";
+  $("bulkSubmit").style.display = "none";
+}
+
+async function submitBulkUpload() {
+  if (!bulkParsedRows.length) return;
+  $("bulkSubmit").disabled = true;
+  $("bulkErr").textContent = "";
+  try {
+    const r = await authedFetch(INV_FN, { action: "bulk_create", rows: bulkParsedRows });
+    renderBulkResults(r);
+    await Promise.all([loadLedger(), loadStats()]);
+  } catch (e) {
+    $("bulkErr").textContent = e.message || "Upload failed.";
+  } finally {
+    $("bulkSubmit").disabled = false;
+  }
+}
+
 // ───────────────────────────── Printing ─────────────────────────────
 function openPrint(serials) {
   const url = printUrl(serials);
@@ -649,7 +784,22 @@ function wire() {
 
   $("editCancel").addEventListener("click", () => closeModal("editModal"));
   $("editSave").addEventListener("click", saveEdit);
-  ["addModal", "editModal", "tagsModal"].forEach((id) => $(id).addEventListener("mousedown", (e) => { if (e.target === $(id)) closeModal(id); }));
+
+  $("btnBulkUpload").addEventListener("click", () => { resetBulkModal(); openModal("bulkUploadModal"); });
+  $("bulkDownloadTemplate").addEventListener("click", downloadBulkTemplate);
+  $("bulkFile").addEventListener("change", () => {
+    const file = $("bulkFile").files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { $("bulkPaste").value = String(reader.result || ""); };
+    reader.onerror = () => { $("bulkErr").textContent = "Could not read that file."; };
+    reader.readAsText(file);
+  });
+  $("bulkParse").addEventListener("click", parseBulkInput);
+  $("bulkSubmit").addEventListener("click", submitBulkUpload);
+  $("bulkCancel").addEventListener("click", () => closeModal("bulkUploadModal"));
+
+  ["addModal", "editModal", "tagsModal", "bulkUploadModal"].forEach((id) => $(id).addEventListener("mousedown", (e) => { if (e.target === $(id)) closeModal(id); }));
 }
 
 // ───────────────────────────── Boot ─────────────────────────────
