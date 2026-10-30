@@ -204,6 +204,7 @@ export function createPrintEngine({
   const infoCache = new Map();
   let hindiOk = false;
   let subscribed = false;
+  let keepaliveTimer = null;
 
   function loadDefault() {
     try { const v = JSON.parse(localStorage.getItem("defaultPrinter") || "null"); return v && v.deviceId ? v : null; } catch (_) { return null; }
@@ -486,6 +487,7 @@ export function createPrintEngine({
 
   function onTransportLost() {
     if (!transport) return;
+    stopKeepalive();
     try { transport.close(); } catch (_) {}
     transport = null;
     if (loadDefault() && !manualDisconnect) { startReconnect(); onToast("Printer disconnected. Reconnecting…", 5000); }
@@ -670,9 +672,27 @@ export function createPrintEngine({
 
   async function afterConnect() {
     requestWake();
+    startKeepalive();
     await syncQueued();
     onJobScheduled();
   }
+
+  // Some cheap BLE label printers (confirmed with this Seznik unit) drop
+  // the connection after a short idle period regardless of the GATT link
+  // itself — a firmware-side power-save timer tied to command traffic, not
+  // Bluetooth's own supervision timeout. A bare TSPL `CLS` with no
+  // following PRINT is a true no-op (clears the print buffer, advances no
+  // paper) and is already proven to parse cleanly on this printer since
+  // every real label job sends it — so it's safe to replay on its own as
+  // a keepalive. Only runs while idle; never overlaps an active print.
+  function startKeepalive() {
+    stopKeepalive();
+    keepaliveTimer = setInterval(async () => {
+      if (!transport || printing || processing) return;
+      try { await sendBytes(tsplCmd("CLS")); } catch (_) { /* onTransportLost already wired via gattserverdisconnected */ }
+    }, 20000);
+  }
+  function stopKeepalive() { clearInterval(keepaliveTimer); keepaliveTimer = null; }
 
   async function requestWake() {
     try {
