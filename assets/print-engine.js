@@ -626,12 +626,13 @@ export function createPrintEngine({
       if (transport) transport.close();
       transport = bleTransport(device, chosen.ch);
       reportState();
-      syncQueued();
+      afterConnect();
     });
     transport = bleTransport(device, cands[0].ch);
     manualDisconnect = false; stopReconnect();
     saveDefault(device.id, device.name || "Bluetooth printer", "bluetooth");
     reportState();
+    await afterConnect();
   }
 
   async function connectSerial() {
@@ -653,6 +654,7 @@ export function createPrintEngine({
     port.addEventListener?.("disconnect", onTransportLost);
     manualDisconnect = false; stopReconnect();
     reportState();
+    await afterConnect();
   }
 
   function mockConnect() {
@@ -674,6 +676,14 @@ export function createPrintEngine({
     requestWake();
     startKeepalive();
     await syncQueued();
+    // A job that arrived (e.g. via the realtime subscription) while this
+    // engine was disconnected gets added to `pending` and marked `seen`,
+    // but drain()'s own while-loop no-ops when transport is still null —
+    // and schedule() (the only other drain() caller) skips anything
+    // already in `seen`, so that job would otherwise sit unprocessed
+    // forever even after reconnecting. Explicitly draining here catches
+    // exactly that case.
+    drain();
     onJobScheduled();
   }
 
