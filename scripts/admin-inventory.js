@@ -207,7 +207,7 @@ function exportCsv() {
 }
 
 // ───────────────────────────── Bulk upload ─────────────────────────────
-const BULK_COLUMNS = ["sku", "quantity", "cost_price", "weaver_name", "selling_price", "category", "photo_url"];
+const BULK_COLUMNS = ["name", "quantity", "cost_price", "weaver_name", "selling_price", "category", "photo_url"];
 let bulkParsedRows = [];
 
 // Minimal CSV parser: handles quoted fields (with embedded commas/quotes) and
@@ -251,7 +251,7 @@ function csvRowsToObjects(table) {
 function downloadBulkTemplate() {
   const lines = [
     BULK_COLUMNS.join(","),
-    "AHM-SAREE-001,10,1200,Ramesh Weaves,,,",
+    "Champagne Beige Saree with Gold Border,10,1200,Ramesh Weaves,,,",
     "New Chanderi Mint Green,5,1400,Ramesh Weaves,3499,saree,",
   ];
   const blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
@@ -281,7 +281,7 @@ function renderBulkPreview() {
   $("bulkPreviewSummary").textContent = n + (n === 1 ? " row ready to upload." : " rows ready to upload.");
   const head = "<tr>" + BULK_COLUMNS.map((c) => "<th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border-light);\">" + c + "</th>").join("") + "</tr>";
   const body = bulkParsedRows.map((r) =>
-    "<tr>" + BULK_COLUMNS.map((c) => "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);" + (c === "sku" && !r[c] ? "color:#a13d3d;" : "") + "\">" + escapeHtml(r[c] || (c === "sku" ? "(missing)" : "—")) + "</td>").join("") + "</tr>"
+    "<tr>" + BULK_COLUMNS.map((c) => "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);" + (c === "name" && !r[c] ? "color:#a13d3d;" : "") + "\">" + escapeHtml(r[c] || (c === "name" ? "(missing)" : "—")) + "</td>").join("") + "</tr>"
   ).join("");
   $("bulkPreviewTable").innerHTML = head + body;
   $("bulkPreviewWrap").style.display = "block";
@@ -308,17 +308,17 @@ function renderBulkResults(r) {
     (errCount ? " " + errCount + " row(s) failed — see below." : "");
   const okRows = r.results.map((x) =>
     "<tr><td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);\">Row " + x.row + "</td>" +
-    "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);\">" + escapeHtml(x.sku) + (x.created_product ? " (new SKU)" : "") + "</td>" +
+    "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);\">" + escapeHtml(x.name) + (x.created_product ? " (new product)" : "") + "</td>" +
     "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light); color:#3f6b4f;\">" + x.serials.length + " piece(s) created</td></tr>"
   ).join("");
   const errRows = r.errors.map((x) =>
     "<tr><td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);\">Row " + x.row + "</td>" +
-    "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);\">" + escapeHtml(x.sku) + "</td>" +
+    "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light);\">" + escapeHtml(x.name) + "</td>" +
     "<td style=\"padding:5px 8px; border-bottom:1px solid var(--border-light); color:#a13d3d;\">" + escapeHtml(x.error) + "</td></tr>"
   ).join("");
   $("bulkResultsTable").innerHTML =
     "<tr><th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border-light);\">Row</th>" +
-    "<th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border-light);\">SKU</th>" +
+    "<th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border-light);\">Name</th>" +
     "<th style=\"text-align:left; padding:6px 8px; border-bottom:1px solid var(--border-light);\">Result</th></tr>" +
     okRows + errRows;
   $("bulkResultsWrap").style.display = "block";

@@ -239,14 +239,15 @@
     <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="bulkUploadTitle">
       <h3 id="bulkUploadTitle">Bulk upload inventory</h3>
       <div class="small" style="color:var(--text-light); margin-bottom:10px; line-height:1.6;">
-        One row per SKU. Columns: <code>sku, quantity, cost_price, weaver_name, selling_price, category, photo_url</code>.
-        <code>sku</code> matches an existing SKU code or title. <code>selling_price</code> and <code>category</code>
-        (<code>saree</code> or <code>suit</code>) are only needed to create a brand-new SKU.
+        One row per saree/suit. Columns: <code>name, quantity, cost_price, weaver_name, selling_price, category, photo_url</code>.
+        Just type the saree's <code>name</code> — if it already exists, this adds stock to it; if it's new,
+        <code>selling_price</code> and <code>category</code> (<code>saree</code> or <code>suit</code>) create it for you.
+        No SKU code to fill in — one is assigned automatically.
         <button class="btn secondary" id="bulkDownloadTemplate" type="button" style="padding:4px 10px; font-size:12px; margin-left:4px;">Download template</button>
       </div>
       <div class="m-row"><label class="fld-label" for="bulkFile">CSV file</label><input id="bulkFile" type="file" accept=".csv,text/csv" /></div>
       <div class="small" style="margin:8px 0 4px; color:var(--text-light);">…or paste CSV here:</div>
-      <textarea id="bulkPaste" class="input" rows="6" style="width:100%; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px;" placeholder="sku,quantity,cost_price,weaver_name,selling_price,category,photo_url"></textarea>
+      <textarea id="bulkPaste" class="input" rows="6" style="width:100%; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px;" placeholder="name,quantity,cost_price,weaver_name,selling_price,category,photo_url"></textarea>
 
       <div id="bulkPreviewWrap" style="display:none; margin-top:12px;">
         <div class="small" id="bulkPreviewSummary" style="margin-bottom:6px; font-weight:600;"></div>
