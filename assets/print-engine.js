@@ -518,10 +518,16 @@ export function createPrintEngine({
       mockConnect(); agentLog("Auto-reconnected to " + dp.deviceName); await afterConnect(); return true;
     }
     if (dp.transportKind === "bluetooth") {
-      if (!navigator.bluetooth || !navigator.bluetooth.getDevices) return false;
+      if (!navigator.bluetooth || !navigator.bluetooth.getDevices) {
+        agentLog("Silent reconnect unavailable: this browser doesn't support navigator.bluetooth.getDevices() — tap Reconnect manually.");
+        return false;
+      }
       const devs = await navigator.bluetooth.getDevices();
       const device = devs.find((d) => d.id === dp.deviceId);
-      if (!device) return false;
+      if (!device) {
+        agentLog("Silent reconnect found " + devs.length + " remembered device(s), none matching the saved printer (" + dp.deviceName + ") — tap Reconnect manually.");
+        return false;
+      }
       await connectBleDevice(device, true);
     } else if (dp.transportKind === "serial") {
       if (!navigator.serial) return false;
